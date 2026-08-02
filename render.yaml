@@ -11,3 +11,5 @@ services:
     envVars:
       - key: PORT
         value: 10000
+      - key: GOOGLE_TTS_KEY
+        sync: false # set this in the Render dashboard for authentic neural prayer voices

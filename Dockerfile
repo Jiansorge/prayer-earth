@@ -10,6 +10,7 @@ COPY . .
 RUN npm run build
 
 ENV PORT=8787
+# Optional: GOOGLE_TTS_KEY=<your key> enables authentic neural prayer voices
 EXPOSE 8787
 
 CMD ["node", "server/index.js"]

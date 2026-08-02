@@ -51,6 +51,11 @@ class SpeechEngine {
     this.primed = false
     this.lastCancel = 0
     this.voiceDead = false
+    // Server-proxied Google Cloud TTS (authentic neural voices). null until
+    // probed; then true/false.
+    this.cloud = null
+    this.cloudCache = new Map()
+    this.cloudAudio = null
 
     if (this.synth) {
       this.refreshVoices()
@@ -59,6 +64,97 @@ class SpeechEngine {
           this.refreshVoices()
         )
       }
+    }
+  }
+
+  // Ask the server whether the Google TTS proxy is available (once).
+  async probeCloud() {
+    try {
+      const res = await fetch('/api/tts?text=hi&lang=en')
+      this.cloud = res.ok
+    } catch {
+      this.cloud = false
+    }
+    if (!this.cloud) {
+      try {
+        this.synth.cancel()
+      } catch {}
+    }
+  }
+
+  cloudText(phrase, lang) {
+    return phrase.t || ''
+  }
+
+  async speakCloud(i) {
+    const job = this.job
+    if (!job || !job.active || job.mode !== 'tts') return false
+    const phrase = job.phrases[i]
+    if (!phrase) {
+      this.finishJob()
+      return true
+    }
+    try {
+      const text = this.cloudText(phrase, job.lang)
+      const key = `${job.lang}:${job.rate}:${text}`
+      let url = this.cloudCache.get(key)
+      if (!url) {
+        const res = await fetch(
+          `/api/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(job.lang)}`
+        )
+        if (!res.ok) return false
+        const blob = await res.blob()
+        url = URL.createObjectURL(blob)
+        this.cloudCache.set(key, url)
+        if (this.cloudCache.size > 128) {
+          const oldest = this.cloudCache.keys().next().value
+          URL.revokeObjectURL(oldest)
+          this.cloudCache.delete(oldest)
+        }
+      }
+      const audio = new Audio(url)
+      audio.volume = Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75)
+      audio.playbackRate = job.rate ?? 1
+      this.cloudAudio = audio
+      clearTimeout(job.guard)
+      clearTimeout(job.advTimer)
+      job.index = i
+      job.phraseStart = Date.now()
+      job.phraseHold = this.estimateMs(phrase)
+      const token = ++job.token
+      if (job.onPhrase) job.onPhrase(i, phrase)
+      await audio.play()
+      const finish = () => {
+        const j = this.job
+        if (!j || !j.active || j !== job || j.mode !== 'tts') return
+        if (job.done.has(token)) return
+        job.done.add(token)
+        this.advance(i)
+      }
+      audio.onended = finish
+      audio.onerror = finish
+      // Warm the next phrase so playback flows without a gap.
+      const next = i + 1
+      const np = job.phrases[next]
+      if (next < job.phrases.length && np && np.t) {
+        const nk = `${job.lang}:${job.rate}:${np.t}`
+        if (!this.cloudCache.has(nk)) {
+          fetch(
+            `/api/tts?text=${encodeURIComponent(np.t)}&lang=${encodeURIComponent(job.lang)}`
+          )
+            .then((r) => (r.ok ? r.blob() : null))
+            .then((b) => {
+              if (b) {
+                const nu = URL.createObjectURL(b)
+                this.cloudCache.set(nk, nu)
+              }
+            })
+            .catch(() => {})
+        }
+      }
+      return true
+    } catch {
+      return false
     }
   }
 
@@ -143,6 +239,13 @@ class SpeechEngine {
       return
     }
 
+    // Prefer authentic server-proxied neural voices (Google Cloud TTS).
+    if (this.cloud === null) await this.probeCloud()
+    if (this.cloud) {
+      this.speakIndex(0)
+      return
+    }
+
     // We already probed once and the platform reported no voices (Firefox's
     // Fingerprinting Protection blanks them, or the device has no TTS) — go
     // straight to the chant instead of waiting the probe window every play.
@@ -188,7 +291,25 @@ class SpeechEngine {
   // or when the platform has no voices (e.g. Fingerprinting Protection).
   preview() {
     const chosen = useStore.getState().voiceURI
-    if (chosen === CHANT_VOICE || !this.synth || !this.voices.length) {
+    if (chosen === CHANT_VOICE || !this.synth) {
+      ambient.ring(0.7)
+      return
+    }
+    // Prefer the authentic cloud voice for the sample.
+    if (this.cloud !== false) {
+      fetch(`/api/tts?text=${encodeURIComponent(SAMPLE_TEXT)}&lang=en`)
+        .then((r) => (r.ok ? r.blob() : null))
+        .then((b) => {
+          if (!b) return
+          const url = URL.createObjectURL(b)
+          const audio = new Audio(url)
+          audio.volume = Math.min(0.5, (useStore.getState().volume ?? 0.8) * 0.6)
+          audio.play()
+        })
+        .catch(() => {})
+      return
+    }
+    if (!this.voices.length) {
       ambient.ring(0.7)
       return
     }
@@ -233,6 +354,16 @@ class SpeechEngine {
     const phrase = job.phrases[i]
     if (!phrase) {
       this.finishJob()
+      return
+    }
+    if (this.cloud) {
+      this.speakCloud(i).then((ok) => {
+        const j = this.job
+        if (!ok && j && j.active && j === job && j.mode === 'tts' && j.index === i) {
+          this.cloud = false // proxy unusable for this — use the browser voices
+          this.speakIndex(i)
+        }
+      })
       return
     }
     clearTimeout(job.guard)
@@ -438,6 +569,12 @@ class SpeechEngine {
     this.job = null
     clearInterval(this.kicker)
     clearTimeout(this.timer)
+    if (this.cloudAudio) {
+      try {
+        this.cloudAudio.pause()
+        this.cloudAudio = null
+      } catch {}
+    }
     try {
       this.synth.cancel()
     } catch {}

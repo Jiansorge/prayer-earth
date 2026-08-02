@@ -84,11 +84,11 @@ const FRAG = /* glsl */ `
 
     vec3 col = lit + cities + radiance + aurora;
 
-    // a thin bright edge where land meets water
-    float landR = texture2D(uMaskTex, uv + vec2(0.002, 0.0)).r;
-    float landT = texture2D(uMaskTex, uv + vec2(0.0, 0.003)).r;
-    float coast = landMask * (1.0 - min(landR, landT));
-    col += coast * vec3(0.9, 0.93, 0.9) * 0.45;
+    // a thin, faint edge where land meets water — sleek and modern
+    float landR = texture2D(uMaskTex, uv + vec2(0.0011, 0.0)).r;
+    float landT = texture2D(uMaskTex, uv + vec2(0.0, 0.0016)).r;
+    float coast = smoothstep(0.32, 0.5, landMask) * (1.0 - smoothstep(0.4, 0.58, min(landR, landT)));
+    col += coast * vec3(0.92, 0.95, 0.94) * 0.26;
 
     // warm dawn band where day meets night
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));
@@ -127,16 +127,16 @@ const SIL_FRAG = /* glsl */ `
     vec3 sp = normalize(vPos);
     vec2 uv = equirect(sp);
 
-    // texture is sRGB-decoded (linear) â€” the mask thresholds below are chosen
+    // texture is sRGB-decoded (linear) — the mask thresholds below are chosen
     // for linear space: deep ocean ~0.02-0.06, land starts ~0.17.
     vec3 day = texture2D(uDayTex, uv).rgb;
     float lum = dot(day, vec3(0.299, 0.587, 0.114));
     // land is greener than the blue-dominant ocean
     float land = smoothstep(0.09, 0.17, lum) * step(-0.01, day.g - day.b);
 
-    // coastline: land that borders ocean
-    vec3 dR = texture2D(uDayTex, uv + vec2(0.004, 0.0)).rgb;
-    vec3 dT = texture2D(uDayTex, uv + vec2(0.0, 0.006)).rgb;
+    // coastline: land that borders ocean (thin + faint for a sleek look)
+    vec3 dR = texture2D(uDayTex, uv + vec2(0.002, 0.0)).rgb;
+    vec3 dT = texture2D(uDayTex, uv + vec2(0.0, 0.003)).rgb;
     float landR = smoothstep(0.09, 0.17, dot(dR, vec3(0.299, 0.587, 0.114))) * step(-0.01, dR.g - dR.b);
     float landT = smoothstep(0.09, 0.17, dot(dT, vec3(0.299, 0.587, 0.114))) * step(-0.01, dT.g - dT.b);
     float coast = land * (1.0 - min(landR, landT));
@@ -150,8 +150,8 @@ const SIL_FRAG = /* glsl */ `
     vec3 coastCol = mix(vec3(0.55, 0.85, 0.68), vec3(1.0, 0.86, 0.52), uGlow);
 
     float fillA = land * (0.04 + 0.05 * uGlow) * (0.6 + 0.4 * fres);
-    float coastA = coast * (0.10 + 0.5 * uGlow);
-    float rimA = fres * 0.09;
+    float coastA = coast * (0.05 + 0.3 * uGlow);
+    float rimA = fres * 0.07;
 
     vec3 col = base * fillA;
     col += coastCol * coastA;
@@ -189,15 +189,41 @@ const ATMO_VERT = /* glsl */ `
 
 const ATMO_FRAG = /* glsl */ `
   uniform float uGlow;
+  uniform float uTime;
   varying vec3 vNormal;
   varying vec3 vPos;
   void main() {
     vec3 viewDir = normalize(-vPos);
     float rim = 1.0 - max(dot(viewDir, normalize(vNormal)), 0.0);
-    float f = pow(rim, 2.6);
-    vec3 inner = mix(vec3(0.28, 0.5, 0.4), vec3(1.0, 0.84, 0.5), uGlow);
-    float alpha = f * (0.22 + 0.25 * uGlow);
-    gl_FragColor = vec4(inner, alpha);
+    float f = pow(rim, 1.7);
+    // ethereal atmosphere: cool teal-mist shifting to warm gold as prayer grows,
+    // with a soft violet shimmer breathing slowly
+    vec3 cool = vec3(0.42, 0.62, 0.85);
+    vec3 warm = vec3(1.0, 0.74, 0.42);
+    vec3 inner = mix(cool, warm, uGlow);
+    vec3 shimmer = vec3(0.62, 0.46, 0.92) * (0.6 + 0.4 * sin(uTime * 0.55));
+    vec3 col = inner * (0.7 + 0.3 * f) + shimmer * 0.28 * f;
+    float alpha = f * (0.16 + 0.3 * uGlow);
+    gl_FragColor = vec4(col, alpha);
+  }
+`
+
+// A wide, soft outer halo so the globe feels magical and alive.
+const ETHEREAL_FRAG = /* glsl */ `
+  uniform float uGlow;
+  uniform float uTime;
+  varying vec3 vNormal;
+  varying vec3 vPos;
+  void main() {
+    vec3 viewDir = normalize(-vPos);
+    float rim = 1.0 - max(dot(viewDir, normalize(vNormal)), 0.0);
+    float f = pow(rim, 3.2);
+    float breathe = 0.82 + 0.18 * sin(uTime * 0.45);
+    vec3 col = mix(vec3(0.32, 0.55, 0.72), vec3(0.95, 0.7, 0.4), uGlow);
+    vec3 violet = vec3(0.6, 0.5, 0.9);
+    col = mix(col, violet, 0.25 * (0.5 + 0.5 * sin(uTime * 0.3 + 1.5)));
+    float alpha = f * (0.10 + 0.15 * uGlow) * breathe;
+    gl_FragColor = vec4(col, alpha);
   }
 `
 
@@ -300,7 +326,8 @@ export class EarthScene {
     }
 
     // --- stars ---
-    this.scene.add(this.buildStars(this.backdrop ? 220 : 1000))
+    this.stars = this.buildStars(this.backdrop ? 220 : 1000)
+    this.scene.add(this.stars)
 
     this.bindResize()
     this.bindVisibility()
@@ -363,7 +390,7 @@ export class EarthScene {
       new THREE.ShaderMaterial({
         vertexShader: ATMO_VERT,
         fragmentShader: ATMO_FRAG,
-        uniforms: { uGlow: { value: this.glow } },
+        uniforms: { uGlow: { value: this.glow }, uTime: { value: 0 } },
         transparent: true,
         blending: THREE.AdditiveBlending,
         side: THREE.BackSide,
@@ -372,6 +399,22 @@ export class EarthScene {
     )
     this.atmo = atmo
     this.earthGroup.add(atmo)
+
+    // A wide, soft outer halo for the magical, etheric feel.
+    const ether = new THREE.Mesh(
+      new THREE.SphereGeometry(1.9, 48, 32),
+      new THREE.ShaderMaterial({
+        vertexShader: ATMO_VERT,
+        fragmentShader: ETHEREAL_FRAG,
+        uniforms: { uGlow: { value: this.glow }, uTime: { value: 0 } },
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        side: THREE.BackSide,
+        depthWrite: false
+      })
+    )
+    this.ether = ether
+    this.earthGroup.add(ether)
   }
 
   // A soft radial glow texture shared by all prayer lights.
@@ -393,9 +436,6 @@ export class EarthScene {
     return tex
   }
 
-  // Lights are billboarded sprites (not point sprites): they keep a consistent
-  // soft glow on every device and composite reliably. A pool is reused so only
-  // cells with people praying actually draw.
   // A clean binary land/ocean mask, classified once in JS from the real map
   // (where dark forests and ice read as land even though they look bluish).
   buildLandMaskCanvas() {
@@ -708,8 +748,16 @@ export class EarthScene {
 
     this.earthMat.uniforms.uTime.value = t
     this.earthMat.uniforms.uGlow.value = this.glow
-    if (this.atmo) this.atmo.material.uniforms.uGlow.value = this.glow
+    if (this.atmo) {
+      this.atmo.material.uniforms.uGlow.value = this.glow
+      this.atmo.material.uniforms.uTime.value = t
+    }
+    if (this.ether) {
+      this.ether.material.uniforms.uGlow.value = this.glow
+      this.ether.material.uniforms.uTime.value = t
+    }
     if (this.halo) this.halo.material.uniforms.uGlow.value = this.glow
+    if (this.stars) this.stars.material.opacity = 0.72 + 0.2 * Math.sin(t * 0.7)
 
     if (this.backdrop) {
       this.renderer.render(this.scene, this.camera)

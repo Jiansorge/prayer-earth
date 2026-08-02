@@ -26,6 +26,90 @@ const MIME = {
   '.ico': 'image/x-icon'
 }
 
+// ---- authentic neural voices via Google Cloud TTS, proxied through this
+// server so the API key never reaches the browser. Set GOOGLE_TTS_KEY env var.
+const GOOGLE_TTS_KEY = process.env.GOOGLE_TTS_KEY || ''
+// Map each prayer language to a natural Google voice. Languages without an
+// entry (Prakrit, Avestan, Yoruba, Zulu…) fall back to the browser's voices.
+const TTS_VOICES = {
+  ar: 'ar-XA-Wavenet-A',
+  he: 'he-IL-Wavenet-B',
+  zh: 'zh-CN-Wavenet-B',
+  ja: 'ja-JP-Wavenet-B',
+  ko: 'ko-KR-Wavenet-A',
+  hi: 'hi-IN-Wavenet-A',
+  sa: 'hi-IN-Wavenet-A',
+  pa: 'pa-IN-Wavenet-A',
+  en: 'en-US-Wavenet-E',
+  es: 'es-ES-Wavenet-B',
+  fr: 'fr-FR-Wavenet-B',
+  de: 'de-DE-Wavenet-B',
+  pt: 'pt-BR-Wavenet-A',
+  it: 'it-IT-Wavenet-B',
+  ru: 'ru-RU-Wavenet-B'
+}
+
+// Synthesize a short phrase to MP3 via Google Cloud Text-to-Speech.
+async function handleTTS(urlPath, req, res) {
+  if (req.method !== 'GET') {
+    res.writeHead(405)
+    res.end()
+    return
+  }
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Cache-Control', 'public, max-age=604800')
+  if (!GOOGLE_TTS_KEY) {
+    res.writeHead(503)
+    res.end('no TTS key configured')
+    return
+  }
+  const q = new URL(req.url, 'http://x').searchParams
+  const text = (q.get('text') || '').trim()
+  const lang = (q.get('lang') || 'en').split('-')[0]
+  if (!text) {
+    res.writeHead(400)
+    res.end()
+    return
+  }
+  const name = TTS_VOICES[lang]
+  if (!name) {
+    res.writeHead(503)
+    res.end('no voice for language')
+    return
+  }
+  const languageCode = name.split('-').slice(0, 2).join('-')
+  try {
+    const r = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': GOOGLE_TTS_KEY
+      },
+      body: JSON.stringify({
+        input: { text: text.slice(0, 500) },
+        voice: { languageCode, name },
+        audioConfig: { audioEncoding: 'MP3', speakingRate: 1.0 }
+      })
+    })
+    if (!r.ok) {
+      res.writeHead(502)
+      res.end('google error')
+      return
+    }
+    const data = await r.json()
+    if (!data.audioContent) {
+      res.writeHead(502)
+      res.end('no audio')
+      return
+    }
+    res.writeHead(200, { 'Content-Type': 'audio/mpeg' })
+    res.end(Buffer.from(data.audioContent, 'base64'))
+  } catch {
+    res.writeHead(502)
+    res.end('tts failed')
+  }
+}
+
 // Serve the built app. Hash-named assets are cacheable forever; everything
 // else (index.html, sw.js) is served fresh. Unknown paths fall back to
 // index.html so deep links never 404 (routing is hash-based anyway).
@@ -34,6 +118,10 @@ async function serveStatic(req, res) {
   try {
     urlPath = decodeURIComponent(new URL(req.url, 'http://x').pathname)
   } catch {}
+  if (urlPath === '/api/tts') {
+    await handleTTS(urlPath, req, res)
+    return
+  }
   const filePath = normalize(join(DIST, urlPath))
   if (!filePath.startsWith(DIST)) {
     res.writeHead(403)
