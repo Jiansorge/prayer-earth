@@ -79,6 +79,15 @@ export default function SettingsSheet() {
     if (open && ambient.ctx) ambient.setLevel(0.4)
   }, [open])
 
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+
   if (!open) return null
 
   const local = voices.filter((v) => v.localService)

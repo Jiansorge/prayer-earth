@@ -391,6 +391,9 @@ export default function PrayerPage() {
         <div className="prayer-sub">
           {prayer.langLabel} · {prayer.loop ? t('prayer.repeated') : t('prayer.recited')}
         </div>
+        <span className="sr-live" aria-live="polite">
+          {playing && active != null && phrases[active] ? phrases[active].t : ''}
+        </span>
 
         <div className="praying-now" title={t('prayer.prayingNowTitle')}>
           <span className="pulse-dot" />

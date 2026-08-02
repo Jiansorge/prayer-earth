@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
 import { useT } from '../i18n.js'
@@ -35,6 +35,15 @@ export default function PrayerPicker() {
   const close = useStore((s) => s.closePrayerPicker)
   const openPrayer = useStore((s) => s.openPrayer)
   const t = useT()
+
+  useEffect(() => {
+    if (!spiritId) return
+    const onKey = (e) => {
+      if (e.key === 'Escape') close()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [spiritId, close])
 
   if (!spiritId) return null
   const spirit = SPIRITUALITY_BY_ID[spiritId]

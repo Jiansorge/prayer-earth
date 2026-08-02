@@ -4,6 +4,7 @@ import { syncClient } from './sync/client.js'
 import { ambient } from './audio/ambience.js'
 import HomePage from './pages/HomePage.jsx'
 import PrayerPage from './pages/PrayerPage.jsx'
+import LegalPage from './pages/LegalPage.jsx'
 import Nav from './components/Nav.jsx'
 import SettingsSheet from './components/SettingsSheet.jsx'
 import InstallHint from './components/InstallHint.jsx'
@@ -114,6 +115,7 @@ export default function App() {
       }
       const [, view, sp, pr] = m
       if (view === 'earth') useStore.getState().go('earth')
+      else if (view === 'privacy' || view === 'terms') useStore.getState().openLegal(view)
       else if (view === 'pray' && sp && pr) useStore.getState().openPrayer(sp, pr)
     }
     route()
@@ -125,6 +127,7 @@ export default function App() {
   // (Skip the very first render — route() owns the initial deep link.)
   const spiritId = useStore((s) => s.spiritId)
   const prayerId = useStore((s) => s.prayerId)
+  const legalPage = useStore((s) => s.legalPage)
   const firstNav = useRef(true)
   useEffect(() => {
     if (firstNav.current) {
@@ -135,15 +138,16 @@ export default function App() {
     if (view === 'earth') target = '#/earth'
     else if (view === 'prayer' && spiritId && prayerId)
       target = `#/pray/${spiritId}/${prayerId}`
+    else if (view === 'legal' && legalPage) target = `#/${legalPage}`
     if (window.location.hash !== target) {
       window.location.hash = target
     }
-  }, [view, spiritId, prayerId])
+  }, [view, spiritId, prayerId, legalPage])
 
   return (
-    <div className="app" data-scene={scene}>
+    <div className="app" data-scene={view === 'home' ? scene : undefined}>
       <div className="sky" />
-      <Scenery />
+      {view === 'home' && <Scenery />}
       <div className="glow-field" />
       <div className="fireflies" aria-hidden="true">
         {[...Array(10)].map((_, i) => (
@@ -169,6 +173,7 @@ export default function App() {
         )}
         {view === 'home' && <HomePage key="home" />}
         {view === 'prayer' && <PrayerPage key="prayer" />}
+        {view === 'legal' && <LegalPage key="legal" />}
         {view === 'earth' && (
           <Suspense
             fallback={

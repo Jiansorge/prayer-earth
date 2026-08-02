@@ -330,6 +330,41 @@ h3,
   }
 }
 
+/* keyboard focus is always visible */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+  }
+  .fireflies,
+  .sky::before {
+    display: none;
+  }
+}
+
+/* visually-hidden live region for screen readers */
+.sr-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ---- views ---- */
 .view {
   position: absolute;
@@ -1596,6 +1631,35 @@ html[dir='rtl'] .chooser-arrow.right {
   padding-inline-start: 18px;
   display: grid;
   gap: 6px;
+}
+
+.legal-link {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.legal-view {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.legal-view .legal-page-section {
+  margin-top: 22px;
+}
+
+.legal-view h2,
+.legal-view h3 {
+  font-family: var(--serif);
+  color: var(--gold-soft);
+  margin-bottom: 8px;
+}
+
+.legal-view h2 {
+  font-size: 26px;
+}
+
+.legal-view h3 {
+  font-size: 18px;
 }
 
 .sheet-close {

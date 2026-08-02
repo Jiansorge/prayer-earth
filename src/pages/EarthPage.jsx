@@ -65,7 +65,7 @@ export default function EarthPage() {
 
   return (
     <div className="view earth-view">
-      <div ref={mountRef} className="earth-canvas" />
+      <div ref={mountRef} className="earth-canvas" role="img" aria-label={t('earth.title')} />
       <div className="earth-vignette" />
       <div className="earth-hud">
         <div className="eh-top fade-in">

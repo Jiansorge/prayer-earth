@@ -170,7 +170,26 @@ const en = {
   'legal.priv4': 'If authentic voices are enabled, your prayer text is sent through our server to Google Cloud Text-to-Speech to create audio. You can switch it off in Settings.',
   'legal.priv5': 'We don\u2019t sell data or show ads.',
   'legal.termsTitle': 'Terms',
-  'legal.termsBody': 'Prayer Earth is offered as-is, for personal reflection. Sacred texts are presented for contemplation and respect. Please treat others in the community with kindness. We may update the app and these notes over time.'
+  'legal.termsBody': 'Prayer Earth is offered as-is, for personal reflection. Sacred texts are presented for contemplation and respect. Please treat others in the community with kindness. We may update the app and these notes over time.',
+  'legal.pIntro': 'Prayer Earth is a quiet place to pray together with the world. This page explains, in plain language, what the app knows about you and how it is used.',
+  'legal.pWhatTitle': 'What we collect',
+  'legal.pUseTitle': 'How it is used',
+  'legal.pUseBody': 'Your anonymous presence (a made-up name and a coarse region) is shown to others only as a light on the Earth. Nothing is sold or shared with advertisers. If you enable authentic voices, the short text of your prayer is sent through our own server to Google Cloud Text-to-Speech solely to produce audio.',
+  'legal.pRightsTitle': 'Your rights',
+  'legal.pRightsBody': 'Because most of your data never leaves your device, you already control it: clearing your browser storage removes your prayer history and preferences. You may stop using the app at any time.',
+  'legal.pContactTitle': 'Contact',
+  'legal.pContactBody': 'Questions? Reach out through the contact link on our site.',
+  'legal.tIntro': 'By using Prayer Earth you agree to these terms.',
+  'legal.tUseTitle': 'Personal use',
+  'legal.tUseBody': 'Prayer Earth is offered for personal, non-commercial reflection. You agree not to misuse the service, spam others, or attempt to disrupt the shared world.',
+  'legal.tContentTitle': 'Content',
+  'legal.tContentBody': 'Sacred texts are presented respectfully for contemplation. They remain the heritage of their communities and are shown here for reflection, not ownership.',
+  'legal.tLiabilityTitle': 'No warranty',
+  'legal.tLiabilityBody': 'The app is provided as-is, without warranty. It is not a medical, psychological, or crisis service. If you are in distress, please contact a qualified professional or a local crisis line.',
+  'legal.tChangesTitle': 'Changes',
+  'legal.tChangesBody': 'We may update these terms and the app over time. Continued use after changes means you accept them.',
+  'legal.viewPrivacy': 'View full privacy policy',
+  'legal.viewTerms': 'View full terms of service'
 }
 
 const es = {

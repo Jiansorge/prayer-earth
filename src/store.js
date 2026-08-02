@@ -14,6 +14,7 @@ export const useStore = create(
   persist(
     (set, get) => ({
       view: 'home',
+      legalPage: null,
       spiritId: null,
       prayerId: null,
       praying: false,
@@ -72,6 +73,8 @@ export const useStore = create(
         }),
       openPrayer: (spiritId, prayerId) =>
         set({ view: 'prayer', spiritId, prayerId }),
+      openLegal: (legalPage) => set({ view: 'legal', legalPage }),
+      closeLegal: () => set({ view: 'home', legalPage: null }),
       closePrayer: () => set({ view: 'home', praying: false }),
       openPrayerPicker: (spiritId) => set({ prayerPickerSpiritId: spiritId }),
       closePrayerPicker: () => set({ prayerPickerSpiritId: null }),

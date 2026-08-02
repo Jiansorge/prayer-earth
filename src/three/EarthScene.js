@@ -775,7 +775,10 @@ export class EarthScene {
     }
     const up = () => {
       dragging = false
-      this.autoRotate = true
+    this.autoRotate = true
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.autoRotate = false // don't spin the globe for users who prefer stillness
+    }
     }
     el.addEventListener('pointerdown', down)
     window.addEventListener('pointermove', move)
