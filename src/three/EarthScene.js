@@ -42,7 +42,7 @@ const FRAG = /* glsl */ `
 
   vec2 equirect(vec3 p) {
     return vec2(
-      0.5 + atan(p.z, p.x) / 6.2831853,
+      0.5 - atan(p.z, p.x) / 6.2831853,
       0.5 + asin(clamp(p.y, -1.0, 1.0)) / 3.14159265
     );
   }
@@ -61,8 +61,8 @@ const FRAG = /* glsl */ `
     // shows cleanly with no underwater or speckled boundaries.
     float landMask = texture2D(uMaskTex, uv).r;
 
-    vec3 oceanC = vec3(0.005, 0.02, 0.055);        // dark water, darker than land
-    vec3 landC = vec3(0.085, 0.095, 0.09);         // neutral land
+    vec3 oceanC = vec3(0.004, 0.013, 0.038);        // very dark water
+    vec3 landC = vec3(0.05, 0.056, 0.054);          // darker neutral land, lighter than water
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -114,7 +114,7 @@ const SIL_FRAG = /* glsl */ `
 
   vec2 equirect(vec3 p) {
     return vec2(
-      0.5 + atan(p.z, p.x) / 6.2831853,
+      0.5 - atan(p.z, p.x) / 6.2831853,
       0.5 + asin(clamp(p.y, -1.0, 1.0)) / 3.14159265
     );
   }
@@ -338,7 +338,7 @@ export class EarthScene {
   }
 
   buildFullEarth(dayTex, nightTex) {
-    const geo = new THREE.SphereGeometry(1.42, 72, 72)
+    const geo = new THREE.SphereGeometry(1.42, 96, 96)
     this.earthMat = new THREE.ShaderMaterial({
       vertexShader: VERT,
       fragmentShader: FRAG,
@@ -355,7 +355,7 @@ export class EarthScene {
     this.earthGroup.add(this.earth)
 
     const atmo = new THREE.Mesh(
-      new THREE.SphereGeometry(1.52, 48, 48),
+      new THREE.SphereGeometry(1.52, 64, 64),
       new THREE.ShaderMaterial({
         vertexShader: ATMO_VERT,
         fragmentShader: ATMO_FRAG,
