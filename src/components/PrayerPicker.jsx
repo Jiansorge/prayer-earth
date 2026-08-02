@@ -6,7 +6,7 @@ import { useT } from '../i18n.js'
 // A quiet sheet that lists every prayer of a chosen tradition, so a person
 // can see and choose any of them instead of always landing on the first one.
 function PickerRow({ p, i, spirit, openPrayer, close, t }) {
-  const total = useStore((s) => s.getPrayerTotal(p.id))
+  const today = useStore((s) => s.getPrayerToday(p.id))
   const now = useStore((s) => s.prayerCounts[p.id] || 0)
   return (
     <button
@@ -22,7 +22,7 @@ function PickerRow({ p, i, spirit, openPrayer, close, t }) {
         <span className="picker-row-sub">{p.langLabel}</span>
       </span>
       <span className="picker-meta">
-        <span className="picker-total">{t('prayer.allTime', { n: total.toLocaleString() })}</span>
+        <span className="picker-total">{t('prayer.today', { n: today.toLocaleString() })}</span>
         <span className="picker-now">{t('prayer.peoplePraying', { n: now })}</span>
       </span>
       <span className="picker-go">→</span>

@@ -245,8 +245,8 @@ ok('praying count shown while praying', await c.waitFor(`document.body.innerText
 
 // --- all-time total + weekly per-prayer stats ---
 ok(
-  'all-time total shown under praying now',
-  await c.waitFor(`document.body.innerText.includes('all time')`)
+  'today count shown under praying now',
+  await c.waitFor(`document.body.innerText.includes('today')`)
 )
 ok(
   'weekly prayer stats chart present',
@@ -318,7 +318,7 @@ ok('no footer meter on prayer page', (await c.eval(`!document.querySelector('.pr
 
 // --- switch prayer via chip ---
 const chips = await c.eval(`document.querySelectorAll('.chooser .chip:not(.chip-all)').length`)
-ok('has 7 prayer chips per tradition', chips === 7, `chips=${chips}`)
+ok('Buddhism lists all its prayers as chips', chips === 21, `chips=${chips}`)
 await c.eval(`document.querySelectorAll('.chooser .chip')[1].click()`)
 ok('switching prayer updates stage', await c.waitFor(`document.querySelectorAll('.prayer-line').length >= 2`))
 await c.eval(`document.querySelector('.ctrl-btn.stop').click()`)
@@ -363,8 +363,8 @@ ok(
   !(await c.eval(`!!document.querySelector('.prayer-stage')`))
 )
 ok(
-  'picker shows an all-time total per prayer',
-  await c.eval(`[...document.querySelectorAll('.picker-row')].some((r) => r.innerText.includes('all time'))`)
+  'picker shows a today count per prayer',
+  await c.eval(`[...document.querySelectorAll('.picker-row')].some((r) => r.innerText.includes('today'))`)
 )
 await c.eval(`document.querySelectorAll('.picker-row')[4].click()`)
 ok('choosing a picker row opens that prayer', await c.waitFor(`!!document.querySelector('.prayer-stage')`))

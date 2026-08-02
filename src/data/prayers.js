@@ -541,6 +541,185 @@ export const SPIRITUALITIES = [
           { t: '南無阿彌陀佛', s: 'Nāmó Āmítuófó', e: 'Homage to Amitābha, the Buddha of boundless light.' }
         ],
         translation: 'The nianfo of Pure Land Buddhism, recited in gratitude for boundless light and compassion.'
+      },
+      {
+        id: 'medicine-buddha',
+        title: 'Medicine Buddha Mantra',
+        lang: 'bo',
+        langLabel: 'བོད་ཡིག · Tibetan · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Tayata om bekanze bekanze maha bekanze radza samudgate soha', s: 'Tayata om bekanze bekanze maha bekanze radza samudgate soha', e: 'May all beings be healed — the Medicine Buddha\u2019s mantra of healing and liberation.' },
+          { t: 'Tayata om bekanze bekanze maha bekanze radza samudgate soha', s: 'Tayata om bekanze bekanze maha bekanze radza samudgate soha', e: 'May all beings be healed — the Medicine Buddha\u2019s mantra of healing and liberation.' },
+          { t: 'Tayata om bekanze bekanze maha bekanze radza samudgate soha', s: 'Tayata om bekanze bekanze maha bekanze radza samudgate soha', e: 'May all beings be healed — the Medicine Buddha\u2019s mantra of healing and liberation.' }
+        ],
+        translation: 'The mantra of the Medicine Buddha, recited to heal body, speech, and mind — for oneself and for all beings.'
+      },
+      {
+        id: 'guru-rinpoche',
+        title: 'Guru Rinpoche Mantra',
+        lang: 'bo',
+        langLabel: 'བོད་ཡིག · Tibetan · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Om ah hum vajra guru padma siddhi hum', s: 'Om ah hum vajra guru padma siddhi hum', e: 'The prayer of Guru Rinpoche — the blessing of the lotus-born master.' },
+          { t: 'Om ah hum vajra guru padma siddhi hum', s: 'Om ah hum vajra guru padma siddhi hum', e: 'The prayer of Guru Rinpoche — the blessing of the lotus-born master.' },
+          { t: 'Om ah hum vajra guru padma siddhi hum', s: 'Om ah hum vajra guru padma siddhi hum', e: 'The prayer of Guru Rinpoche — the blessing of the lotus-born master.' }
+        ],
+        translation: 'The Vajra Guru mantra of Padmasambhava, recited for blessings, protection, and the swift attainment of siddhi.'
+      },
+      {
+        id: 'usnisa-vijaya',
+        title: 'Uṣṇīṣa Vijayā Dhāraṇī',
+        lang: 'bo',
+        langLabel: 'བོད་ཡིག · Tibetan',
+        phrases: [
+          { t: 'Om amrta ayur dade svaha', s: 'Om amrta ayur dade svaha', e: 'May we be blessed with long, radiant life.' },
+          { t: 'Om dhrum svaha om amrta ayur dade svaha', s: 'Om dhrum svaha om amrta ayur dade svaha', e: 'The dharani of the Victorious One, dispeller of obstacles.' }
+        ],
+        translation: 'The Uṣṇīṣa Vijayā dhāraṇī of Namgyalma, recited to purify and lengthen life and to open the path beyond death.'
+      },
+      {
+        id: 'great-compassion',
+        title: 'The Great Compassion Dhāraṇī',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit',
+        phrases: [
+          { t: 'Om namo ratna trayaya', s: 'Om namo ratna trayaya', e: 'Homage to the Three Jewels.' },
+          { t: 'Namah Aryavalokitesvaraya bodhisattvaya mahasattvaya mahakarunikaya', s: 'Namah Aryavalokitesvaraya bodhisattvaya mahasattvaya mahakarunikaya', e: 'Homage to Avalokitesvara, the great bodhisattva of great compassion.' },
+          { t: 'Om tara tara tiri tiri turu turu iti svaha', s: 'Om tara tara tiri tiri turu turu iti svaha', e: 'Swift and swift again, the heart of the dhāraṇī: so be it.' }
+        ],
+        translation: 'The opening of the Nīlakaṇṭha Dhāraṇī — the great compassion of Avalokitesvara, protector of all who call on it.'
+      },
+      {
+        id: 'heart-sutra',
+        title: 'Heart Sutra Mantra',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Gate gate paragate parasamgate bodhi svaha', s: 'Gate gate paragate parasamgate bodhi svaha', e: 'Gone, gone, gone beyond, gone utterly beyond — awakening, so be it.' },
+          { t: 'Gate gate paragate parasamgate bodhi svaha', s: 'Gate gate paragate parasamgate bodhi svaha', e: 'Gone, gone, gone beyond, gone utterly beyond — awakening, so be it.' },
+          { t: 'Gate gate paragate parasamgate bodhi svaha', s: 'Gate gate paragate parasamgate bodhi svaha', e: 'Gone, gone, gone beyond, gone utterly beyond — awakening, so be it.' }
+        ],
+        translation: 'The mantra of the Heart Sutra — the very heart of emptiness, recited as the crown of the Perfection of Wisdom.'
+      },
+      {
+        id: 'amitabha',
+        title: 'Amitābha Mantra',
+        lang: 'bo',
+        langLabel: 'བོད་ཡིག · Tibetan · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Om amideva hrīh', s: 'Om amideva hrīh', e: 'Homage to Amitabha, the Buddha of boundless light.' },
+          { t: 'Om amideva hrīh', s: 'Om amideva hrīh', e: 'Homage to Amitabha, the Buddha of boundless light.' },
+          { t: 'Om amideva hrīh', s: 'Om amideva hrīh', e: 'Homage to Amitabha, the Buddha of boundless light.' }
+        ],
+        translation: 'The mantra of Amitabha, recited for rebirth in the Pure Land of boundless light.'
+      },
+      {
+        id: 'shakyamuni',
+        title: 'Shākyamuni Mantra',
+        lang: 'bo',
+        langLabel: 'བོད་ཡིག · Tibetan · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Om muni muni maha muni shakya muniye svaha', s: 'Om muni muni maha muni shakya muniye svaha', e: 'Homage to Shakyamuni, the sage of the Shakyas.' },
+          { t: 'Om muni muni maha muni shakya muniye svaha', s: 'Om muni muni maha muni shakya muniye svaha', e: 'Homage to Shakyamuni, the sage of the Shakyas.' },
+          { t: 'Om muni muni maha muni shakya muniye svaha', s: 'Om muni muni maha muni shakya muniye svaha', e: 'Homage to Shakyamuni, the sage of the Shakyas.' }
+        ],
+        translation: 'The mantra of the historical Buddha, recited to awaken the sage within.'
+      },
+      {
+        id: 'amoghasiddhi',
+        title: 'Amoghasiddhi Mantra',
+        lang: 'bo',
+        langLabel: 'བོད་ཡིག · Tibetan · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Om amogha siddhi svaha', s: 'Om amogha siddhi svaha', e: 'Homage to Amoghasiddhi, the Buddha of unfailing accomplishment.' },
+          { t: 'Om amogha siddhi svaha', s: 'Om amogha siddhi svaha', e: 'Homage to Amoghasiddhi, the Buddha of unfailing accomplishment.' },
+          { t: 'Om amogha siddhi svaha', s: 'Om amogha siddhi svaha', e: 'Homage to Amoghasiddhi, the Buddha of unfailing accomplishment.' }
+        ],
+        translation: 'The mantra of the northern Buddha Amoghasiddhi — the power to complete whatever is undertaken.'
+      },
+      {
+        id: 'ksitigarbha',
+        title: 'Kṣitigarbha Mantra',
+        lang: 'bo',
+        langLabel: 'བོད་ཡིག · Tibetan · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Om aha ksiti garbha svaha', s: 'Om aha ksiti garbha svaha', e: 'Homage to Ksitigarbha, whose vow is the earth itself.' },
+          { t: 'Om aha ksiti garbha svaha', s: 'Om aha ksiti garbha svaha', e: 'Homage to Ksitigarbha, whose vow is the earth itself.' },
+          { t: 'Om aha ksiti garbha svaha', s: 'Om aha ksiti garbha svaha', e: 'Homage to Ksitigarbha, whose vow is the earth itself.' }
+        ],
+        translation: 'The mantra of Ksitigarbha Bodhisattva, who vowed not to rest until every being is saved.'
+      },
+      {
+        id: 'manjushri',
+        title: 'Mañjuśrī Mantra',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Om a ra pa ca na dhih', s: 'Om a ra pa ca na dhih', e: 'The seed syllables of Manjushri, the bodhisattva of wisdom.' },
+          { t: 'Om a ra pa ca na dhih', s: 'Om a ra pa ca na dhih', e: 'The seed syllables of Manjushri, the bodhisattva of wisdom.' },
+          { t: 'Om a ra pa ca na dhih', s: 'Om a ra pa ca na dhih', e: 'The seed syllables of Manjushri, the bodhisattva of wisdom.' }
+        ],
+        translation: 'The mantra of Manjushri, recited to sharpen wisdom and cut through confusion.'
+      },
+      {
+        id: 'ksitigarbha-name',
+        title: 'Namo Kṣitigarbha Bodhisattva',
+        lang: 'en',
+        langLabel: 'English · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Namo Ksitigarbha Bodhisattva', s: 'Namo Ksitigarbha Bodhisattva', e: 'Homage to Ksitigarbha Bodhisattva — the one who vows to save all beings.' },
+          { t: 'Namo Ksitigarbha Bodhisattva', s: 'Namo Ksitigarbha Bodhisattva', e: 'Homage to Ksitigarbha Bodhisattva — the one who vows to save all beings.' },
+          { t: 'Namo Ksitigarbha Bodhisattva', s: 'Namo Ksitigarbha Bodhisattva', e: 'Homage to Ksitigarbha Bodhisattva — the one who vows to save all beings.' }
+        ],
+        translation: 'The name-repetition of Ksitigarbha, the earth-vow bodhisattva, recited with single-pointed devotion.'
+      },
+      {
+        id: 'vajrasattva',
+        title: 'Vajrasattva Mantra',
+        lang: 'bo',
+        langLabel: 'བོད་ཡིག · Tibetan · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Om vajrasattva hum', s: 'Om vajrasattva hum', e: 'The essence of Vajrasattva — purification and confession.' },
+          { t: 'Om vajrasattva hum', s: 'Om vajrasattva hum', e: 'The essence of Vajrasattva — purification and confession.' },
+          { t: 'Om vajrasattva hum', s: 'Om vajrasattva hum', e: 'The essence of Vajrasattva — purification and confession.' }
+        ],
+        translation: 'The short Vajrasattva mantra, the heart of the hundred-syllable purification practice.'
+      },
+      {
+        id: 'cundi',
+        title: 'Cundī Mantra',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Om cale cule cunde svaha', s: 'Om cale cule cunde svaha', e: 'The Cundi mantra — the mother of all Buddhas, swift blessings.' },
+          { t: 'Om cale cule cunde svaha', s: 'Om cale cule cunde svaha', e: 'The Cundi mantra — the mother of all Buddhas, swift blessings.' },
+          { t: 'Om cale cule cunde svaha', s: 'Om cale cule cunde svaha', e: 'The Cundi mantra — the mother of all Buddhas, swift blessings.' }
+        ],
+        translation: 'The mantra of the Great Mother Cundi, recited for swift blessings and the removal of obstacles.'
+      },
+      {
+        id: 'bodhisattva-vow',
+        title: 'The Bodhisattva Vow',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Sentient beings are numberless; I vow to save them all.' },
+          { t: 'Delusions are inexhaustible; I vow to end them all.' },
+          { t: 'Dharma gates are boundless; I vow to enter them all.' },
+          { t: 'The Buddha\u2019s way is unsurpassable; I vow to realize it.' }
+        ],
+        translation: 'The four great vows of the bodhisattva — the promise to awaken together with every being.'
       }
     ]
   },

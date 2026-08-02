@@ -217,12 +217,12 @@ const ETHEREAL_FRAG = /* glsl */ `
   void main() {
     vec3 viewDir = normalize(-vPos);
     float rim = 1.0 - max(dot(viewDir, normalize(vNormal)), 0.0);
-    float f = pow(rim, 3.2);
+    float f = pow(rim, 2.2);
     float breathe = 0.82 + 0.18 * sin(uTime * 0.45);
     vec3 col = mix(vec3(0.32, 0.55, 0.72), vec3(0.95, 0.7, 0.4), uGlow);
     vec3 violet = vec3(0.6, 0.5, 0.9);
     col = mix(col, violet, 0.25 * (0.5 + 0.5 * sin(uTime * 0.3 + 1.5)));
-    float alpha = f * (0.10 + 0.15 * uGlow) * breathe;
+    float alpha = f * (0.12 + 0.18 * uGlow) * breathe;
     gl_FragColor = vec4(col, alpha);
   }
 `
@@ -322,6 +322,10 @@ export class EarthScene {
       this.motes = this.buildMotes()
       this.scene.add(this.motes)
 
+      // the moon, with its real phase, hangs in the sky
+      this.moon = this.buildMoon()
+      this.scene.add(this.moon)
+
       this.raycastDrag()
     }
 
@@ -402,7 +406,7 @@ export class EarthScene {
 
     // A wide, soft outer halo for the magical, etheric feel.
     const ether = new THREE.Mesh(
-      new THREE.SphereGeometry(1.9, 48, 32),
+      new THREE.SphereGeometry(2.15, 48, 32),
       new THREE.ShaderMaterial({
         vertexShader: ATMO_VERT,
         fragmentShader: ETHEREAL_FRAG,
@@ -415,6 +419,56 @@ export class EarthScene {
     )
     this.ether = ether
     this.earthGroup.add(ether)
+  }
+
+  // A soft, phase-accurate moon glowing in the sky. The lit sliver follows the
+  // real lunar cycle (roughly — we skip the exact limb position).
+  buildMoon() {
+    const S = 160
+    const c = document.createElement('canvas')
+    c.width = S
+    c.height = S
+    const ctx = c.getContext('2d')
+    const days = (Date.now() / 86400000 - 10957.76) % 29.53058867
+    const phase = ((days + 29.53058867) % 29.53058867) / 29.53058867
+    const R = S * 0.3
+    // soft moon-halo
+    const halo = ctx.createRadialGradient(S / 2, S / 2, R * 0.4, S / 2, S / 2, R * 1.6)
+    halo.addColorStop(0, 'rgba(225, 220, 200, 0.28)')
+    halo.addColorStop(1, 'rgba(225, 220, 200, 0)')
+    ctx.fillStyle = halo
+    ctx.fillRect(0, 0, S, S)
+    // the moon disc (dark unlit side first)
+    ctx.beginPath()
+    ctx.arc(S / 2, S / 2, R, 0, Math.PI * 2)
+    ctx.fillStyle = '#3f4350'
+    ctx.fill()
+    // lit crescent: overlap a bright circle offset by the terminator
+    const off = (2 * phase - 1) * R * 2.6
+    const g = ctx.createRadialGradient(S / 2 + off, S / 2 - R * 0.2, R * 0.2, S / 2, S / 2, R)
+    g.addColorStop(0, '#fdf8e6')
+    g.addColorStop(0.7, '#ece3c6')
+    g.addColorStop(1, '#d9d0b0')
+    ctx.save()
+    ctx.beginPath()
+    ctx.arc(S / 2, S / 2, R, 0, Math.PI * 2)
+    ctx.clip()
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.arc(S / 2 + off, S / 2, R, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+    const tex = new THREE.CanvasTexture(c)
+    const mat = new THREE.SpriteMaterial({
+      map: tex,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    })
+    const spr = new THREE.Sprite(mat)
+    spr.scale.set(0.72, 0.72, 1)
+    spr.position.set(-3.6, 2.5, -1.6)
+    return spr
   }
 
   // A soft radial glow texture shared by all prayer lights.
@@ -473,7 +527,11 @@ export class EarthScene {
           const b = d[i + 2] / 255
           const lum = 0.299 * r + 0.587 * g + 0.114 * b
           const gb = g - b
-          const land = y < arcticRow ? 0 : lum > 0.2 || (gb > -0.08 && lum > 0.08) ? 255 : 0
+          // bright land (desert/ice) must not be blue; darker land (forest) must
+          // be dim and not turquoise — keeps shallow straits from bridging land
+          const brightLand = lum > 0.2 && gb > -0.01
+          const darkLand = lum <= 0.2 && lum > 0.08 && gb > -0.08 && b < 0.28
+          const land = y < arcticRow ? 0 : brightLand || darkLand ? 255 : 0
           const o = (y * W + x) * 4
           out[o] = out[o + 1] = out[o + 2] = land
           out[o + 3] = 255

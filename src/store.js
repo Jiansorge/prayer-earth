@@ -51,6 +51,7 @@ export const useStore = create(
 
       // this person's own contributions to the all-time counts
       prayerCompletions: {},
+      prayerDayCompletions: {},
 
       // per-prayer seconds, bucketed by local day: { 'YYYY-MM-DD': { prayerId: secs } }
       prayerDayStats: {},
@@ -110,12 +111,25 @@ export const useStore = create(
 
       // One full cycle of a prayer finished — count it toward the all-time total.
       notePrayerComplete: (prayerId) =>
-        set((s) => ({
-          prayerCompletions: {
-            ...s.prayerCompletions,
-            [prayerId]: (s.prayerCompletions[prayerId] || 0) + 1
+        set((s) => {
+          const key = dayKey(new Date())
+          const day = s.prayerDayCompletions[key]
+            ? { ...s.prayerDayCompletions[key] }
+            : {}
+          day[prayerId] = (day[prayerId] || 0) + 1
+          const days = { ...s.prayerDayCompletions, [key]: day }
+          const keys = Object.keys(days).sort()
+          if (keys.length > 62) {
+            for (let i = 0; i < keys.length - 62; i++) delete days[keys[i]]
           }
-        })),
+          return {
+            prayerCompletions: {
+              ...s.prayerCompletions,
+              [prayerId]: (s.prayerCompletions[prayerId] || 0) + 1
+            },
+            prayerDayCompletions: days
+          }
+        }),
 
       // Attribute one prayed second to this prayer on the current local day.
       addPrayerSecond: (prayerId) =>
@@ -180,6 +194,11 @@ export const useStore = create(
           (s.prayerCompletions[prayerId] || 0)
         )
       },
+      // How many times this prayer was recited today (per-repetition for mantras).
+      getPrayerToday: (prayerId) => {
+        const key = dayKey(new Date())
+        return get().prayerDayCompletions[key]?.[prayerId] || 0
+      },
       getSpiritTotal: (spiritId) => {
         const s = get()
         let local = 0
@@ -205,6 +224,7 @@ export const useStore = create(
         locale: s.locale,
         profile: s.profile,
         prayerCompletions: s.prayerCompletions,
+        prayerDayCompletions: s.prayerDayCompletions,
         prayerDayStats: s.prayerDayStats,
         streak: s.streak,
         bestStreak: s.bestStreak,

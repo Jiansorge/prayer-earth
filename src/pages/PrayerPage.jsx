@@ -57,7 +57,7 @@ export default function PrayerPage() {
   const prayer = spirit ? spirit.prayers.find((p) => p.id === prayerId) : null
   const rtl = RTL_LANGS.has(prayer?.lang)
   const phrases = prayer ? prayer.phrases : []
-  const prayerTotal = useStore((s) => (prayer ? s.getPrayerTotal(prayer.id) : 0))
+  const prayerToday = useStore((s) => (prayer ? s.getPrayerToday(prayer.id) : 0))
   const t = useT()
 
   useEffect(() => {
@@ -401,8 +401,8 @@ export default function PrayerPage() {
               {t('prayer.across', { n: spiritCounts[spiritId] || 0, name: spirit.name })}
             </span>
           </span>
-          <span className="praying-now-total" title={t('prayer.allTimeTitle')}>
-            {t('prayer.allTime', { n: prayerTotal.toLocaleString() })}
+          <span className="praying-now-total" title={t('prayer.today')}>
+            {t('prayer.today', { n: prayerToday.toLocaleString() })}
           </span>
         </div>
 
