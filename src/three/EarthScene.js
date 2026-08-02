@@ -83,6 +83,15 @@ const FRAG = /* glsl */ `
 
     vec3 col = lit + cities + radiance + aurora;
 
+    // coastline: a soft, bright neutral line where land meets water, so the
+    // continents read clearly against the dark ocean
+    vec3 dR = texture2D(uDayTex, uv + vec2(0.004, 0.0)).rgb;
+    vec3 dT = texture2D(uDayTex, uv + vec2(0.0, 0.006)).rgb;
+    float landR = smoothstep(0.09, 0.17, dot(dR, vec3(0.299, 0.587, 0.114))) * step(-0.01, dR.g - dR.b);
+    float landT = smoothstep(0.09, 0.17, dot(dT, vec3(0.299, 0.587, 0.114))) * step(-0.01, dT.g - dT.b);
+    float coast = landMask * (1.0 - min(landR, landT));
+    col += coast * vec3(0.82, 0.86, 0.84) * (0.55 + 0.45 * uGlow);
+
     // warm dawn band where day meets night
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));
     vec3 dawn = vec3(1.0, 0.55, 0.3) * term * 0.08;
