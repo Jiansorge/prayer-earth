@@ -35,32 +35,35 @@ export default function Nav() {
 
   return (
     <nav className="nav">
-      {ITEMS.map((item) => {
+      {ITEMS.map((item, idx) => {
         const label = t(item.labelKey)
         return (
-          <button
-            key={item.id}
-            className={view === item.id ? 'active' : ''}
-            onClick={() => onTap(item.id)}
-            aria-label={label}
-          >
-            <span className="nav-icon">{item.icon}</span>
-            <span className="nav-label">
-              {label}
-              {item.id === 'prayer' && praying && (
-                <span className="pulse-dot" style={{ marginLeft: 6 }} />
-              )}
-            </span>
-          </button>
+          <React.Fragment key={item.id}>
+            <button
+              className={view === item.id ? 'active' : ''}
+              onClick={() => onTap(item.id)}
+              aria-label={label}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">
+                {label}
+                {item.id === 'prayer' && praying && (
+                  <span className="pulse-dot" style={{ marginLeft: 6 }} />
+                )}
+              </span>
+            </button>
+            {item.id === 'prayer' && (
+              <button
+                className={`nav-play ${playing && !paused ? 'on' : ''}`}
+                onClick={requestPlayToggle}
+                aria-label={playing && !paused ? t('prayer.pause') : t('prayer.pray')}
+              >
+                {playing && !paused ? '❚❚' : '▶'}
+              </button>
+            )}
+          </React.Fragment>
         )
       })}
-      <button
-        className={`nav-play ${playing && !paused ? 'on' : ''}`}
-        onClick={requestPlayToggle}
-        aria-label={playing && !paused ? t('prayer.pause') : t('prayer.pray')}
-      >
-        {playing && !paused ? '❚❚' : '▶'}
-      </button>
     </nav>
   )
 }

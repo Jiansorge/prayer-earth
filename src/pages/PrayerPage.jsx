@@ -127,7 +127,7 @@ export default function PrayerPage() {
       lang: prayer.lang,
       rate: speechRate,
       loop: loopOn,
-      gapMs: prayer.loop ? 850 : 700,
+      gapMs: prayer.loop ? 250 : 700,
       onPhrase: (i) => {
         setActive(i)
         // A repeated mantra is one prayer per recitation, not per cycle.
