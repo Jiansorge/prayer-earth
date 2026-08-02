@@ -148,6 +148,40 @@ export default function PrayerPage() {
     }
   }, [prayerId, spiritId])
 
+  // Left/right arrows make the horizontal prayer list obviously scrollable.
+  const [canLeft, setCanLeft] = useState(false)
+  const [canRight, setCanRight] = useState(false)
+  const updateArrows = () => {
+    const el = chooserRef.current
+    if (!el) return
+    setCanLeft(el.scrollLeft > 4)
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4)
+  }
+  useEffect(() => {
+    updateArrows()
+    const el = chooserRef.current
+    if (!el) return
+    el.addEventListener('scroll', updateArrows, { passive: true })
+    window.addEventListener('resize', updateArrows)
+    return () => {
+      el.removeEventListener('scroll', updateArrows)
+      window.removeEventListener('resize', updateArrows)
+    }
+  }, [spiritId])
+  const scrollChooser = (dir) => {
+    const el = chooserRef.current
+    if (!el) return
+    el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: 'smooth' })
+  }
+
+  // While playing, keep the phrase being voiced centred on screen.
+  const linesRef = useRef(null)
+  useEffect(() => {
+    if (!playing || active == null) return
+    const el = linesRef.current?.querySelector('.prayer-line.on')
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }, [active, playing])
+
   const stopJob = () => {
     speech.stop()
     setPlaying(false)
@@ -263,6 +297,14 @@ export default function PrayerPage() {
       </div>
 
       <div className="chooser-wrap">
+        <button
+          className={`chooser-arrow left ${canLeft ? '' : 'off'}`}
+          onClick={() => scrollChooser(-1)}
+          disabled={!canLeft}
+          aria-label={t('prayer.back')}
+        >
+          ‹
+        </button>
         <div className="chooser" ref={chooserRef}>
           <button
             className="chip chip-all"
@@ -284,6 +326,14 @@ export default function PrayerPage() {
             </button>
           ))}
         </div>
+        <button
+          className={`chooser-arrow right ${canRight ? '' : 'off'}`}
+          onClick={() => scrollChooser(1)}
+          disabled={!canRight}
+          aria-label={t('prayer.share')}
+        >
+          ›
+        </button>
       </div>
 
       <div className="prayer-stage fade-in" key={prayer.id}>
@@ -317,7 +367,7 @@ export default function PrayerPage() {
           </span>
         </div>
 
-        <div className="prayer-lines">
+        <div className="prayer-lines" ref={linesRef}>
           {phrases.map((ph, i) => (
             <div
               key={i}

@@ -248,7 +248,7 @@ export class EarthScene {
     this.camera.lookAt(0, 0, 0)
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.backdrop ? 1.25 : 1.8))
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.backdrop ? 1.25 : 2))
     this.renderer.setSize(w, h)
     this.renderer.setClearColor(0x000000, 0)
     container.appendChild(this.renderer.domElement)
@@ -342,7 +342,7 @@ export class EarthScene {
   }
 
   buildFullEarth(dayTex, nightTex) {
-    const geo = new THREE.SphereGeometry(1.42, 160, 160)
+    const geo = new THREE.SphereGeometry(1.42, 192, 192)
     this.earthMat = new THREE.ShaderMaterial({
       vertexShader: VERT,
       fragmentShader: FRAG,
@@ -399,14 +399,13 @@ export class EarthScene {
   // A clean binary land/ocean mask, classified once in JS from the real map
   // (where dark forests and ice read as land even though they look bluish).
   buildLandMaskCanvas() {
-    const W = 1024
-    const H = 512
+    const W = 2048
+    const H = 1024
     const c = document.createElement('canvas')
     c.width = W
     c.height = H
     this._maskCtx = c.getContext('2d')
     this._maskData = this._maskCtx.createImageData(W, H)
-    this._maskImg = null
     this.maskTex = new THREE.CanvasTexture(c)
     this.maskTex.colorSpace = THREE.NoColorSpace
     return this.maskTex
@@ -423,6 +422,7 @@ export class EarthScene {
       const W = this._maskData.width
       const H = this._maskData.height
       const out = this._maskData.data
+      const arcticRow = Math.floor((H * 10) / 180) // keep the far-north ice as water
       for (let y = 0; y < H; y++) {
         const sy = Math.floor((y / H) * c2.height)
         for (let x = 0; x < W; x++) {
@@ -433,13 +433,31 @@ export class EarthScene {
           const b = d[i + 2] / 255
           const lum = 0.299 * r + 0.587 * g + 0.114 * b
           const gb = g - b
-          // land = bright (desert/ice) OR not-quite-blue enough to be deep ocean
-          const land = lum > 0.2 || (gb > -0.08 && lum > 0.08) ? 255 : 0
+          const land = y < arcticRow ? 0 : lum > 0.2 || (gb > -0.08 && lum > 0.08) ? 255 : 0
           const o = (y * W + x) * 4
           out[o] = out[o + 1] = out[o + 2] = land
           out[o + 3] = 255
         }
       }
+      // soften the mask edges so coastlines render smooth instead of blocky
+      const soft = new Uint8ClampedArray(out.length)
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          let s = 0
+          for (let dy = -1; dy <= 1; dy++) {
+            const ny = Math.max(0, Math.min(H - 1, y + dy))
+            for (let dx = -1; dx <= 1; dx++) {
+              const nx = (x + dx + W) % W
+              s += out[(ny * W + nx) * 4]
+            }
+          }
+          const v = s / 9
+          const o = (y * W + x) * 4
+          soft[o] = soft[o + 1] = soft[o + 2] = v
+          soft[o + 3] = 255
+        }
+      }
+      out.set(soft)
       this._maskCtx.putImageData(this._maskData, 0, 0)
       this.maskTex.needsUpdate = true
     } catch {}

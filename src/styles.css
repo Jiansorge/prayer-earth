@@ -488,6 +488,54 @@ html[dir='rtl'] .chooser-wrap::after {
   background: linear-gradient(90deg, var(--bg-1), transparent);
 }
 
+.chooser-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(9, 25, 16, 0.85);
+  color: var(--ink-dim);
+  font-size: 19px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.chooser-arrow.left {
+  left: 2px;
+}
+
+.chooser-arrow.right {
+  right: 2px;
+}
+
+.chooser-arrow.off {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chooser-arrow:not(.off):hover {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+html[dir='rtl'] .chooser-arrow.left {
+  left: auto;
+  right: 2px;
+}
+
+html[dir='rtl'] .chooser-arrow.right {
+  right: auto;
+  left: 2px;
+}
+
 .chooser {
   display: flex;
   gap: 8px;
