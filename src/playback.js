@@ -1,6 +1,7 @@
 import { useStore } from './store.js'
 import { speech } from './audio/speech.js'
 import { syncClient } from './sync/client.js'
+import { ambient } from './audio/ambience.js'
 
 // The footer play button works from anywhere. If nothing is playing it goes
 // straight to the last prayer and starts it; otherwise it pauses/resumes.
@@ -18,6 +19,7 @@ export function requestPlayToggle() {
   if (s.playing && s.paused) {
     // Paused — resume if the job is still alive, otherwise restart the prayer.
     if (!speech.resume()) {
+      ambient.ensure() // prime audio inside the user gesture
       const spiritId = s.spiritId || 'christianity'
       const prayerId = s.prayerId || 'lords-prayer'
       useStore.setState({
@@ -35,6 +37,7 @@ export function requestPlayToggle() {
   }
 
   // Nothing playing — go to the last prayer and start it.
+  ambient.ensure() // prime audio inside the user gesture
   const spiritId = s.spiritId || 'christianity'
   const prayerId = s.prayerId || 'lords-prayer'
   useStore.setState({ view: 'prayer', spiritId, prayerId, pendingPlay: true })

@@ -66,10 +66,14 @@ export default function PrayerPage() {
   }, [spirit])
 
   // One prayer at a time per browser: another tab starting playback pauses us.
+  // BroadcastChannel also delivers to this same tab, so ignore our own starts.
+  const localStart = useRef(0)
   useEffect(() => {
     const ch = new BroadcastChannel('prayer-earth')
     ch.onmessage = (e) => {
-      if (e.data === 'play' && useStore.getState().playing && !useStore.getState().paused) {
+      if (e.data !== 'play') return
+      if (Date.now() - (localStart.current || 0) < 1500) return
+      if (useStore.getState().playing && !useStore.getState().paused) {
         togglePlay()
       }
     }
@@ -108,6 +112,7 @@ export default function PrayerPage() {
   }, [prayerId])
 
   const startJob = () => {
+    localStart.current = Date.now()
     stopJob()
     setActive(0)
     setPaused(false)

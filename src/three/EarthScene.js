@@ -87,16 +87,13 @@ const FRAG = /* glsl */ `
 
     vec3 col = lit + radiance + aurora;
 
-    // a hair-thin, luminous blue-white coastline — a bright filament of light
-    // tracing the continents, with a faint halo glow bleeding just off the edge
-    float landR = texture2D(uMaskTex, uv + vec2(0.0004, 0.0)).r;
-    float landT = texture2D(uMaskTex, uv + vec2(0.0, 0.0006)).r;
-    float edge = smoothstep(0.3, 0.5, landMask) * (1.0 - smoothstep(0.42, 0.48, min(landR, landT)));
-    float landF = texture2D(uMaskTex, uv + vec2(0.0015, 0.0)).r;
-    float landG = texture2D(uMaskTex, uv + vec2(0.0, 0.002)).r;
-    float glow = landMask * (1.0 - smoothstep(0.45, 0.55, min(landF, landG)));
-    vec3 coastCol = vec3(0.82, 0.94, 1.0) * (0.9 + 0.5 * uGlow + 0.4 * uSurge + 0.3 * uTier);
-    col += edge * coastCol * 0.85 + glow * coastCol * 0.4;
+    // a hair-thin, luminous blue-white coastline — a delicate filament tracing
+    // the continents, brightening as the world prays but never blowing out white
+    float landR = texture2D(uMaskTex, vec2(fract(uv.x + 0.0004), uv.y)).r;
+    float landT = texture2D(uMaskTex, vec2(uv.x, fract(uv.y + 0.001))).r;
+    float edge = smoothstep(0.32, 0.5, landMask) * (1.0 - smoothstep(0.46, 0.5, min(landR, landT)));
+    vec3 coastCol = vec3(0.7, 0.86, 1.0) * (0.75 + 0.3 * uGlow + 0.2 * uSurge + 0.15 * uTier);
+    col += edge * coastCol * 0.45;
 
     // warm dawn band where day meets night
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));
