@@ -99,6 +99,10 @@ const FRAG = /* glsl */ `
     float limb = smoothstep(0.0, 0.6, dot(n, vec3(0.0, 0.0, 1.0)));
     col *= 0.5 + 0.5 * limb;
 
+    // dither a hair to break up banding in the dark ocean gradient
+    float dh = fract(sin(dot(uv * vec2(1024.0, 512.0), vec2(12.9898, 78.233))) * 43758.5453);
+    col += (dh - 0.5) * 0.006;
+
     gl_FragColor = vec4(col, 1.0);
   }
 `
@@ -244,7 +248,7 @@ export class EarthScene {
     this.camera.lookAt(0, 0, 0)
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.backdrop ? 1.25 : 1.6))
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.backdrop ? 1.25 : 1.8))
     this.renderer.setSize(w, h)
     this.renderer.setClearColor(0x000000, 0)
     container.appendChild(this.renderer.domElement)
@@ -338,7 +342,7 @@ export class EarthScene {
   }
 
   buildFullEarth(dayTex, nightTex) {
-    const geo = new THREE.SphereGeometry(1.42, 96, 96)
+    const geo = new THREE.SphereGeometry(1.42, 160, 160)
     this.earthMat = new THREE.ShaderMaterial({
       vertexShader: VERT,
       fragmentShader: FRAG,
