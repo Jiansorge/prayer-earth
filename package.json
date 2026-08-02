@@ -1,0 +1,27 @@
+{
+  "name": "prayer-earth",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A quiet place where the whole world prays together.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "node server/index.js",
+    "start": "node scripts/start-all.mjs",
+    "test": "node scripts/test-server.mjs && node scripts/test-usage.mjs"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.169.0",
+    "ws": "^8.18.0",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}

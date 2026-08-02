@@ -1,0 +1,60 @@
+{
+  "name": "Prayer Earth",
+  "short_name": "Prayer Earth",
+  "id": "/",
+  "description": "One Earth. One breath. Pray together with the world.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#070b1d",
+  "theme_color": "#0b1026",
+  "lang": "en",
+  "categories": ["lifestyle", "social"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Our living Earth",
+      "short_name": "Earth",
+      "url": "/#/earth",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Pray the Buddhist mantra",
+      "short_name": "Mantra",
+      "url": "/#/pray/buddhism/mani"
+    },
+    {
+      "name": "Pray the Lord's Prayer",
+      "short_name": "Lord's Prayer",
+      "url": "/#/pray/christianity/lords-prayer"
+    }
+  ]
+}
