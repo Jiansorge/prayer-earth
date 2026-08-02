@@ -87,13 +87,14 @@ const FRAG = /* glsl */ `
 
     vec3 col = lit + radiance + aurora;
 
-    // a hair-thin, softly luminous coastline — a faint filament tracing the
-    // continents, glowing with prayer but reading as a shimmer, not a bright line
+    // a hair-thin, faintly shimmering coastline — light tracing the continents,
+    // so subtle it reads as living edge-light, never as a line
     float landR = texture2D(uMaskTex, vec2(fract(uv.x + 0.0005), uv.y)).r;
     float landT = texture2D(uMaskTex, vec2(uv.x, fract(uv.y + 0.0008))).r;
     float edge = smoothstep(0.35, 0.5, landMask) * (1.0 - smoothstep(0.42, 0.5, min(landR, landT)));
-    vec3 coastCol = vec3(0.7, 0.85, 1.0) * (0.65 + 0.25 * uGlow + 0.15 * uSurge + 0.1 * uTier);
-    col += edge * coastCol * 0.32;
+    float shimmer = 0.7 + 0.3 * sin(uv.y * 20.0 + uTime * 0.5);
+    vec3 coastCol = vec3(0.7, 0.85, 1.0) * (0.45 + 0.2 * uGlow + 0.12 * uSurge + 0.08 * uTier);
+    col += edge * coastCol * 0.18 * shimmer;
 
     // warm dawn band where day meets night
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));
@@ -151,8 +152,8 @@ const SIL_FRAG = /* glsl */ `
     vec3 coastCol = mix(vec3(0.55, 0.85, 0.68), vec3(1.0, 0.86, 0.52), uGlow);
 
     float fillA = land * (0.04 + 0.05 * uGlow) * (0.6 + 0.4 * fres);
-    float coastA = coast * (0.05 + 0.3 * uGlow);
-    float rimA = fres * 0.07;
+    float coastA = coast * (0.03 + 0.12 * uGlow);
+    float rimA = fres * 0.05;
 
     vec3 col = base * fillA;
     col += coastCol * coastA;
@@ -205,7 +206,7 @@ const ATMO_FRAG = /* glsl */ `
     vec3 inner = mix(cool, warm, uGlow);
     vec3 shimmer = vec3(0.62, 0.46, 0.92) * (0.6 + 0.4 * sin(uTime * 0.55));
     vec3 col = inner * (0.7 + 0.3 * f) + shimmer * 0.28 * f;
-    float alpha = f * (0.12 + 0.24 * uGlow + 0.15 * uSurge);
+    float alpha = f * (0.1 + 0.18 * uGlow + 0.12 * uSurge);
     gl_FragColor = vec4(col, alpha);
   }
 `
@@ -227,8 +228,8 @@ const ETHEREAL_FRAG = /* glsl */ `
     col = mix(col, violet, 0.25 * (0.5 + 0.5 * sin(uTime * 0.3 + 1.5)));
     // aura waves: rings pulse outward from the globe when many pray at once
     float waves = pow(0.5 + 0.5 * sin(rim * 40.0 - uTime * 3.2 + uGlow * 5.0), 3.0) * uSurge;
-    float alpha = (f * (0.1 + 0.16 * uGlow) + waves * 0.1) * breathe;
-    gl_FragColor = vec4(col + vec3(0.2, 0.35, 0.6) * waves * 0.25, alpha);
+    float alpha = (f * (0.08 + 0.12 * uGlow) + waves * 0.08) * breathe;
+    gl_FragColor = vec4(col + vec3(0.2, 0.35, 0.6) * waves * 0.2, alpha);
   }
 `
 
