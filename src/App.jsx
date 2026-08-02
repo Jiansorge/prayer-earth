@@ -9,7 +9,7 @@ import SettingsSheet from './components/SettingsSheet.jsx'
 import InstallHint from './components/InstallHint.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import PrayerPicker from './components/PrayerPicker.jsx'
-import { useT } from './i18n.js'
+import { useT, RTL_LOCALES } from './i18n.js'
 
 // The 3D Earth (three.js) is heavy — load it only when the Earth view opens.
 const EarthPage = lazy(() => import('./pages/EarthPage.jsx'))
@@ -68,6 +68,13 @@ export default function App() {
   const view = useStore((s) => s.view)
   const glowRef = useRef(0)
   const t = useT()
+
+  // Flip the whole interface for right-to-left locales (e.g. Arabic).
+  const locale = useStore((s) => s.locale)
+  useEffect(() => {
+    document.documentElement.dir = RTL_LOCALES.has(locale) ? 'rtl' : 'ltr'
+    document.documentElement.lang = locale
+  }, [locale])
 
   // Begin the global connection and let the ambient engine breathe quietly.
   useEffect(() => {

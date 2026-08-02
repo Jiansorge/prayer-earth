@@ -167,8 +167,8 @@ ok('settings sheet closes', await c.waitFor(`!document.querySelector('.sheet')`)
 await c.eval(`document.querySelector('.gear-btn').click()`)
 await c.waitFor(`!!document.querySelector('#locale-picker')`)
 ok(
-  'language picker offers 9 locales',
-  (await c.eval(`document.querySelectorAll('#locale-picker option').length`)) === 9,
+  'language picker offers 10 locales',
+  (await c.eval(`document.querySelectorAll('#locale-picker option').length`)) === 10,
   `opts=${await c.eval(`document.querySelectorAll('#locale-picker option').length`)}`
 )
 await c.eval(`(() => { const s = document.querySelector('#locale-picker'); s.value = 'es'; s.dispatchEvent(new Event('change', { bubbles: true })) })()`)
