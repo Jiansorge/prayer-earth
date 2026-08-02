@@ -58,7 +58,7 @@ const FRAG = /* glsl */ `
     vec3 cities = texture2D(uNightTex, uv).rgb * night * (0.3 + 0.7 * uGlow) * 1.5;
 
     // the Earth's own growing radiance — collected prayer
-    vec3 radiance = vec3(0.16, 0.3, 0.58) * uGlow * uGlow * 1.5;
+    vec3 radiance = vec3(0.16, 0.4, 0.3) * uGlow * uGlow * 1.5;
 
     // polar aurora
     float aur = polar * (0.5 + 0.5 * sin(uTime * 0.4 + sp.y * 6.0));
@@ -118,8 +118,8 @@ const SIL_FRAG = /* glsl */ `
     vec3 viewDir = normalize(cameraPosition - vPos);
     float fres = pow(1.0 - clamp(dot(n, viewDir), 0.0, 1.0), 1.8);
 
-    vec3 base = vec3(0.09, 0.13, 0.22);
-    vec3 coastCol = mix(vec3(0.55, 0.72, 1.0), vec3(1.0, 0.88, 0.55), uGlow);
+    vec3 base = vec3(0.045, 0.11, 0.085);
+    vec3 coastCol = mix(vec3(0.55, 0.85, 0.68), vec3(1.0, 0.86, 0.52), uGlow);
 
     float fillA = land * (0.04 + 0.05 * uGlow) * (0.6 + 0.4 * fres);
     float coastA = coast * (0.10 + 0.5 * uGlow);
@@ -127,7 +127,7 @@ const SIL_FRAG = /* glsl */ `
 
     vec3 col = base * fillA;
     col += coastCol * coastA;
-    col += vec3(0.4, 0.5, 0.75) * rimA;
+    col += vec3(0.38, 0.6, 0.48) * rimA;
 
     float alpha = fillA + coastA + rimA;
     if (alpha < 0.004) discard;
@@ -143,7 +143,7 @@ const HALO_FRAG = /* glsl */ `
     vec3 viewDir = normalize(-vPos);
     float rim = 1.0 - max(dot(viewDir, normalize(vNormal)), 0.0);
     float f = pow(rim, 2.0);
-    vec3 inner = mix(vec3(0.2, 0.3, 0.5), vec3(1.0, 0.9, 0.6), uGlow);
+    vec3 inner = mix(vec3(0.16, 0.32, 0.24), vec3(1.0, 0.88, 0.58), uGlow);
     gl_FragColor = vec4(inner, f * (0.04 + 0.09 * uGlow));
   }
 `
@@ -167,7 +167,7 @@ const ATMO_FRAG = /* glsl */ `
     vec3 viewDir = normalize(-vPos);
     float rim = 1.0 - max(dot(viewDir, normalize(vNormal)), 0.0);
     float f = pow(rim, 2.6);
-    vec3 inner = mix(vec3(0.25, 0.45, 0.9), vec3(1.0, 0.85, 0.5), uGlow);
+    vec3 inner = mix(vec3(0.28, 0.5, 0.4), vec3(1.0, 0.84, 0.5), uGlow);
     float alpha = f * (0.55 + 0.6 * uGlow);
     gl_FragColor = vec4(inner, alpha);
   }

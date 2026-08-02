@@ -1,17 +1,17 @@
 :root {
-  --bg-0: #070b1d;
-  --bg-1: #0b1026;
-  --bg-2: #141b3c;
-  --ink: #eef0ff;
-  --ink-dim: rgba(238, 240, 255, 0.72);
-  --ink-faint: rgba(238, 240, 255, 0.55);
-  --gold: #e8c47a;
-  --gold-soft: #f5e3b3;
-  --sky: #9fb7ff;
-  --bloom: #cfe0ff;
-  --accent-1: #7fd6c2;
-  --accent-2: #b9a6f5;
-  --danger: #ff8f8f;
+  --bg-0: #07150d;
+  --bg-1: #0b1f14;
+  --bg-2: #13301e;
+  --ink: #f1f5e8;
+  --ink-dim: rgba(241, 245, 232, 0.74);
+  --ink-faint: rgba(241, 245, 232, 0.56);
+  --gold: #dfb05c;
+  --gold-soft: #f3e2b0;
+  --sky: #a9d6b8;
+  --bloom: #d9ecdd;
+  --accent-1: #7fc9a0;
+  --accent-2: #e8b06f;
+  --danger: #ff9e8f;
   --serif: 'Cormorant Garamond', Georgia, serif;
   --sans: 'Inter', system-ui, -apple-system, sans-serif;
   --radius: 20px;
@@ -62,16 +62,54 @@ h3,
   overflow: hidden;
 }
 
-/* ---- layered background ---- */
+/* ---- layered background: a living forest at dusk ---- */
 .sky {
   position: fixed;
   inset: 0;
   z-index: 0;
+  overflow: hidden;
   background:
-    radial-gradient(120% 90% at 50% 110%, #1b2a5e 0%, transparent 55%),
-    radial-gradient(80% 60% at 80% -10%, #2a2058 0%, transparent 60%),
-    radial-gradient(60% 50% at 10% 0%, #0d2c4a 0%, transparent 55%),
-    linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 100%);
+    radial-gradient(120% 95% at 50% 118%, rgba(232, 182, 100, 0.22) 0%, transparent 52%),
+    radial-gradient(85% 70% at 88% -6%, rgba(126, 206, 156, 0.17) 0%, transparent 55%),
+    radial-gradient(70% 60% at 6% -2%, rgba(96, 168, 124, 0.15) 0%, transparent 55%),
+    radial-gradient(90% 55% at 50% 42%, rgba(92, 162, 126, 0.10) 0%, transparent 60%),
+    linear-gradient(180deg, #0a1a11 0%, #0e2416 48%, #162f1c 100%);
+}
+
+/* dappled light filtering through the canopy, drifting slowly */
+.sky::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(150px 95px at 30% 40%, rgba(255, 235, 205, 0.055), transparent 70%),
+    radial-gradient(190px 125px at 70% 18%, rgba(190, 240, 205, 0.045), transparent 70%),
+    radial-gradient(165px 105px at 62% 72%, rgba(255, 225, 170, 0.045), transparent 70%),
+    radial-gradient(205px 135px at 12% 82%, rgba(185, 235, 205, 0.05), transparent 70%),
+    radial-gradient(120px 80px at 86% 55%, rgba(255, 230, 180, 0.045), transparent 70%),
+    radial-gradient(140px 95px at 45% 8%, rgba(200, 245, 215, 0.04), transparent 70%);
+  background-size: 720px 520px;
+  mix-blend-mode: screen;
+  opacity: 0.8;
+  animation: dapple 46s ease-in-out infinite alternate;
+}
+
+/* gentle vignette so the light gathers toward the centre */
+.sky::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 100% at 50% 42%, transparent 52%, rgba(0, 0, 0, 0.4) 100%);
+  pointer-events: none;
+}
+
+@keyframes dapple {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 100% 12%;
+  }
 }
 
 .glow-field {
@@ -80,9 +118,49 @@ h3,
   z-index: 1;
   pointer-events: none;
   background:
-    radial-gradient(600px 600px at var(--mx, 50%) var(--my, 40%),
-      rgba(160, 190, 255, 0.10) 0%, transparent 70%);
+    radial-gradient(560px 560px at var(--mx, 50%) var(--my, 40%),
+      rgba(235, 190, 122, 0.13) 0%, transparent 70%);
   mix-blend-mode: screen;
+}
+
+/* fireflies rising from the forest floor */
+.fireflies {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.fireflies .ff {
+  position: absolute;
+  left: var(--x);
+  top: 100%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe9b0 0%, rgba(255, 220, 150, 0.55) 40%, transparent 70%);
+  box-shadow: 0 0 10px 3px rgba(255, 220, 150, 0.35);
+  opacity: 0;
+  animation: firefly var(--d) linear infinite;
+  animation-delay: var(--delay);
+}
+
+@keyframes firefly {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--o, 0.6);
+  }
+  60% {
+    opacity: var(--o, 0.6);
+  }
+  100% {
+    transform: translateY(-105dvh) translateX(var(--sway, 0px));
+    opacity: 0;
+  }
 }
 
 /* ---- views ---- */
@@ -136,7 +214,7 @@ h3,
   gap: 4px;
   padding: 6px;
   border-radius: 999px;
-  background: rgba(13, 18, 46, 0.72);
+  background: rgba(9, 25, 16, 0.72);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.09);
@@ -170,7 +248,7 @@ h3,
 }
 
 .nav button.active {
-  color: #0b1026;
+  color: #0d2214;
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
   box-shadow: 0 6px 22px rgba(232, 196, 122, 0.35);
 }
@@ -204,6 +282,11 @@ h3,
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: 0.01em;
+  background: linear-gradient(120deg, var(--gold-soft) 0%, var(--gold) 34%, var(--accent-1) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 18px rgba(223, 176, 92, 0.18));
 }
 
 .subtitle {
@@ -266,7 +349,7 @@ h3,
   color: var(--ink);
   background:
     radial-gradient(120% 120% at 20% 0%, rgba(255, 255, 255, 0.07), transparent 55%),
-    rgba(20, 26, 62, 0.55);
+    rgba(15, 37, 23, 0.55);
   transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), border-color 0.35s var(--ease);
   overflow: hidden;
 }
@@ -393,7 +476,7 @@ h3,
 }
 
 .chooser .chip.on {
-  color: #0b1026;
+  color: #0d2214;
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
   border-color: transparent;
   box-shadow: 0 6px 20px rgba(232, 196, 122, 0.3);
@@ -417,8 +500,8 @@ h3,
 }
 
 .chooser .chip.on .chip-count {
-  background: rgba(11, 16, 38, 0.22);
-  color: #0b1026;
+  background: rgba(8, 24, 14, 0.22);
+  color: #0d2214;
 }
 
 .chooser .chip.chip-all {
@@ -595,7 +678,7 @@ h3,
   border-radius: 50%;
   display: grid;
   place-items: center;
-  color: #0b1026;
+  color: #0d2214;
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
   box-shadow: 0 8px 26px rgba(232, 196, 122, 0.4);
   transition: transform 0.3s var(--ease);
@@ -665,7 +748,7 @@ h3,
   gap: 12px;
   padding: 14px 16px;
   border-radius: 16px;
-  background: rgba(13, 18, 46, 0.86);
+  background: rgba(9, 25, 16, 0.86);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -704,7 +787,7 @@ h3,
   margin: 6px 18px 18px;
   padding: 14px 16px 12px;
   border-radius: 16px;
-  background: rgba(13, 18, 46, 0.6);
+  background: rgba(9, 25, 16, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -1119,7 +1202,7 @@ h3,
   border: none;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
-  color: #0b1026;
+  color: #0d2214;
   font-family: var(--sans);
   font-size: 15px;
   font-weight: 600;
@@ -1267,7 +1350,7 @@ h3,
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
-  background: rgba(20, 26, 62, 0.95);
+  background: rgba(15, 37, 23, 0.95);
   border: 1px solid rgba(127, 214, 194, 0.4);
   color: var(--accent-1);
   padding: 9px 18px;
@@ -1323,7 +1406,7 @@ h3,
   padding: 12px 16px;
   border-radius: 14px;
   text-align: start;
-  background: rgba(20, 26, 62, 0.6);
+  background: rgba(15, 37, 23, 0.6);
   border: 1px solid rgba(232, 196, 122, 0.25);
   animation: fadeUp 0.3s var(--ease) both;
 }
@@ -1385,7 +1468,7 @@ h3,
   max-width: calc(100vw - 40px);
   padding: 12px 40px 12px 16px;
   border-radius: 14px;
-  background: rgba(20, 26, 62, 0.88);
+  background: rgba(15, 37, 23, 0.88);
   border: 1px solid rgba(232, 196, 122, 0.3);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
   animation: fadeUp 0.3s var(--ease) both;
@@ -1402,7 +1485,7 @@ h3,
   padding: 8px 14px;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
-  color: #0b1026;
+  color: #0d2214;
   font-family: var(--sans);
   font-weight: 600;
   font-size: 13px;
@@ -1516,7 +1599,7 @@ h3,
   border: none;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
-  color: #0b1026;
+  color: #0d2214;
   font-family: var(--sans);
   font-weight: 600;
   font-size: 15px;
@@ -1582,7 +1665,7 @@ h3,
   gap: 6px;
   padding: 6px 11px;
   border-radius: 999px;
-  background: rgba(20, 26, 62, 0.55);
+  background: rgba(15, 37, 23, 0.55);
   border: 1px solid rgba(185, 166, 245, 0.2);
   font-size: 12.5px;
   color: var(--ink);
@@ -1753,7 +1836,7 @@ h3,
   padding: 12px;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
-  color: #0b1026;
+  color: #0d2214;
   font-family: var(--sans);
   font-weight: 600;
   font-size: 14px;
@@ -1815,7 +1898,7 @@ textarea:focus-visible {
   max-height: 82dvh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, rgba(22, 29, 66, 0.97), rgba(11, 16, 38, 0.99));
+  background: linear-gradient(180deg, rgba(13, 34, 21, 0.97), rgba(8, 24, 14, 0.99));
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-bottom: none;
   border-radius: 26px 26px 0 0;

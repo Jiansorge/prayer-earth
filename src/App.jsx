@@ -114,6 +114,21 @@ export default function App() {
     <div className="app">
       <div className="sky" />
       <div className="glow-field" />
+      <div className="fireflies" aria-hidden="true">
+        {[...Array(10)].map((_, i) => (
+          <span
+            key={i}
+            className="ff"
+            style={{
+              '--x': `${(i * 11 + 4) % 100}%`,
+              '--d': `${14 + ((i * 7) % 12)}s`,
+              '--delay': `${(i * 3.7) % 14}s`,
+              '--o': 0.35 + ((i * 13) % 40) / 100,
+              '--sway': `${((i % 5) - 2) * 22}px`
+            }}
+          />
+        ))}
+      </div>
 
       <Boundary>
         {view === 'prayer' && (
