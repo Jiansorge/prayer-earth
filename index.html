@@ -3,13 +3,50 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b1026" />
+    <meta name="theme-color" content="#07150d" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Prayer Earth" />
-    <meta name="description" content="One Earth. One Breath. Pray together with the world." />
+    <meta name="application-name" content="Prayer Earth" />
+    <meta
+      name="description"
+      content="Pray together with the whole world. Choose a sacred prayer from a dozen traditions — and watch the Earth glow as the world prays."
+    />
+    <meta name="robots" content="index, follow" />
     <title>Prayer Earth — Pray With the World</title>
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Prayer Earth" />
+    <meta property="og:title" content="Prayer Earth — Pray With the World" />
+    <meta
+      property="og:description"
+      content="Choose a sacred prayer from a dozen traditions and pray together with the world. Watch the Earth glow as prayer spreads."
+    />
+    <meta property="og:image" content="/icons/icon-512.png" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Prayer Earth — Pray With the World" />
+    <meta
+      name="twitter:description"
+      content="Choose a sacred prayer from a dozen traditions and pray together with the world."
+    />
+    <meta name="twitter:image" content="/icons/icon-512.png" />
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Prayer Earth",
+        "applicationCategory": "LifestyleApplication",
+        "description": "Pray together with the whole world, in a dozen traditions.",
+        "operatingSystem": "Web"
+      }
+    </script>
+
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
@@ -19,6 +56,22 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Fill in the canonical/OG URLs once the deployed origin is known.
+      try {
+        const origin = window.location.origin
+        const link = document.createElement('link')
+        link.rel = 'canonical'
+        link.href = origin + '/'
+        document.head.appendChild(link)
+        for (const prop of ['og:url']) {
+          const m = document.createElement('meta')
+          m.setAttribute('property', prop)
+          m.setAttribute('content', origin + '/')
+          document.head.appendChild(m)
+        }
+      } catch {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

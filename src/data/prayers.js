@@ -1078,6 +1078,127 @@ export const SPIRITUALITIES = [
     ]
   },
   {
+    id: 'confucianism',
+    name: 'Confucianism',
+    emoji: '🏮',
+    glow: 'rgba(224, 90, 90, 0.26)',
+    lightColor: '#e05a5a',
+    tagline: 'Ren, ritual, and the harmony of all under heaven.',
+    prayers: [
+      {
+        id: 'great-learning',
+        title: 'The Great Learning — 大學',
+        lang: 'zh',
+        langLabel: '中文 · Chinese',
+        phrases: [
+          { t: '大學之道，在明明德，在親民，在止於至善。', s: 'Dàxué zhī dào, zài míng míngdé, zài qīnmín, zài zhǐ yú zhìshàn.', e: 'The way of the Great Learning is to illuminate bright virtue, to renew the people, and to rest in the highest good.' },
+          { t: '知止而后有定，定而后能靜，靜而后能安。', s: 'Zhī zhǐ érhòu yǒu dìng, dìng érhòu néng jìng, jìng érhòu néng ān.', e: 'Knowing where to rest, one becomes settled; settled, one can be still; still, one can be at peace.' }
+        ],
+        translation: 'The opening of the Great Learning, a core Confucian text on self-cultivation as the root of harmony.'
+      },
+      {
+        id: 'golden-rule',
+        title: 'The Golden Rule — 己所不欲',
+        lang: 'zh',
+        langLabel: '中文 · Chinese',
+        phrases: [
+          { t: '己所不欲，勿施於人。', s: 'Jǐ suǒ bù yù, wù shī yú rén.', e: 'Do not do to others what you would not have done to you.' },
+          { t: '夫仁者，己欲立而立人，己欲達而達人。', s: 'Fū rén zhě, jǐ yù lì ér lì rén, jǐ yù dá ér dá rén.', e: 'The human-hearted: wishing to stand, they help others stand; wishing to succeed, they help others succeed.' }
+        ],
+        translation: 'The Confucian Golden Rule from the Analects — empathy as the very heart of ren.'
+      },
+      {
+        id: 'learning-joy',
+        title: 'Learning Is a Joy — 學而時習之',
+        lang: 'zh',
+        langLabel: '中文 · Chinese',
+        phrases: [
+          { t: '學而時習之，不亦說乎？', s: 'Xué ér shí xí zhī, bù yì yuè hū?', e: 'To learn and practise it often — is that not a joy?' },
+          { t: '有朋自遠方來，不亦樂乎？', s: 'Yǒu péng zì yuǎnfāng lái, bù yì lè hū?', e: 'To have friends come from afar — is that not a pleasure?' }
+        ],
+        translation: 'The opening of the Analects — learning, practice, and friendship as quiet joys of the good life.'
+      },
+      {
+        id: 'ren',
+        title: 'A Meditation on Ren — 仁',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Let me be truly human-hearted today.' },
+          { t: 'Let me see the other as myself,' },
+          { t: 'and treat every meeting as a guest to honour.' },
+          { t: 'Ritual without love is empty;' },
+          { t: 'let my courtesy come from a full heart.' }
+        ],
+        translation: 'A reflection on ren — Confucian human-heartedness expressed through empathy, ritual, and care.'
+      }
+    ]
+  },
+  {
+    id: 'african',
+    name: 'African Traditions',
+    emoji: '🐘',
+    glow: 'rgba(224, 164, 88, 0.26)',
+    lightColor: '#e0a458',
+    tagline: 'Ancestors, the Great Spirit, and the living land.',
+    prayers: [
+      {
+        id: 'ase',
+        title: 'Àṣẹ — So Be It',
+        lang: 'yo',
+        langLabel: 'Yorùbá · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Olódùmarè, Ẹlẹ́dàá', s: 'Olódùmarè, Ẹlẹ́dàá', e: 'Olodumare, the Creator of all.' },
+          { t: 'Àṣẹ.', s: 'Àṣẹ.', e: 'So be it.' },
+          { t: 'Àṣẹ.', s: 'Àṣẹ.', e: 'So be it.' },
+          { t: 'Àṣẹ.', s: 'Àṣẹ.', e: 'So be it.' }
+        ],
+        translation: 'The Yoruba affirmation of the power of spoken prayer — each word spoken with the force of Àṣẹ, "so be it."'
+      },
+      {
+        id: 'odomankoma',
+        title: 'Odomankoma — The Creator',
+        lang: 'ak',
+        langLabel: 'Akan · Twi',
+        phrases: [
+          { t: 'Odomankoma', s: 'Odomankoma', e: 'The Creator of all things.' },
+          { t: 'Nyame', s: 'Nyame', e: 'God, who is above.' },
+          { t: 'Yɛda wo ase', s: 'Yɛda wo ase', e: 'We give You thanks.' }
+        ],
+        translation: 'An Akan prayer of thanksgiving to Odomankoma, the Creator — gratitude spoken before all else.'
+      },
+      {
+        id: 'umvelinqangi',
+        title: 'Umvelinqangi — The Great Spirit',
+        lang: 'zu',
+        langLabel: 'isiZulu · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Umvelinqangi', s: 'Umvelinqangi', e: 'The Great Spirit, present from the beginning.' },
+          { t: 'Umvelinqangi', s: 'Umvelinqangi', e: 'The Great Spirit, present from the beginning.' },
+          { t: 'Umvelinqangi', s: 'Umvelinqangi', e: 'The Great Spirit, present from the beginning.' }
+        ],
+        translation: 'A Zulu name for the Great Spirit, repeated as a meditation on the divine that was before all things.'
+      },
+      {
+        id: 'ancestors',
+        title: 'A Prayer for the Ancestors',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'We call on those who walked before us,' },
+          { t: 'the elders of our blood and our land.' },
+          { t: 'Guide our hands to be gentle' },
+          { t: 'and our words to be true.' },
+          { t: 'May we remember where we come from,' },
+          { t: 'and carry that memory forward, kindly. Àṣẹ.' }
+        ],
+        translation: 'A prayer of remembrance for the ancestors, honoured across African traditions — the living carried by the living.'
+      }
+    ]
+  },
+  {
     id: 'nonreligious',
     name: 'Agnostic · Atheist',
     emoji: '🌌',
