@@ -52,21 +52,15 @@ const FRAG = /* glsl */ `
 
     vec2 uv = equirect(sp);
 
-    // A deep, living earth at night: the day texture is used only as a land
-    // mask, so bright deserts and ice never glare. Oceans sink to near-black,
-    // continents read as soft dark-green silhouettes that the prayer lights
-    // shine out from.
+    // A deep, quiet earth: the real geography is kept but dimmed far down, so
+    // the major continents stay clearly readable while bright deserts and ice
+    // never glare, and the prayer lights shine out from the dark.
     vec3 day = texture2D(uDayTex, uv).rgb;
-    float lum = dot(day, vec3(0.299, 0.587, 0.114));
-    // land is greener than the blue-dominant ocean; the gate keeps bright
-    // oceans and ice from being counted as land (no bright desert/ice glare)
-    float isLand = step(-0.01, day.g - day.b);
-    float landMask = smoothstep(0.09, 0.17, lum) * isLand;
-    vec3 base = mix(vec3(0.004, 0.011, 0.01), vec3(0.04, 0.095, 0.075), landMask);
+    vec3 base = day * 0.13 + vec3(0.003, 0.011, 0.01);
 
     float ndl = dot(n, normalize(uSunDir));
     float sun = smoothstep(-0.15, 0.35, ndl);
-    vec3 lit = base * (0.4 + 0.6 * sun);
+    vec3 lit = base * (0.45 + 0.55 * sun);
 
     // genuine city lights on the night side, awakening as the world prays
     float night = 1.0 - smoothstep(-0.25, 0.08, ndl);
@@ -74,7 +68,7 @@ const FRAG = /* glsl */ `
 
     // the Earth's own breathing glow — kept subtle so the world stays deep
     // and the prayer lights remain the brightest things on it
-    vec3 radiance = vec3(0.18, 0.35, 0.24) * uGlow * uGlow * 0.25;
+    vec3 radiance = vec3(0.18, 0.35, 0.24) * uGlow * uGlow * 0.2;
 
     // polar aurora
     float polar = smoothstep(0.86, 0.99, abs(sp.y));
@@ -85,6 +79,9 @@ const FRAG = /* glsl */ `
 
     // coastline: a soft, bright neutral line where land meets water, so the
     // continents read clearly against the dark ocean
+    float lum = dot(day, vec3(0.299, 0.587, 0.114));
+    float isLand = step(-0.01, day.g - day.b);
+    float landMask = smoothstep(0.09, 0.17, lum) * isLand;
     vec3 dR = texture2D(uDayTex, uv + vec2(0.004, 0.0)).rgb;
     vec3 dT = texture2D(uDayTex, uv + vec2(0.0, 0.006)).rgb;
     float landR = smoothstep(0.09, 0.17, dot(dR, vec3(0.299, 0.587, 0.114))) * step(-0.01, dR.g - dR.b);

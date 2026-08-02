@@ -1698,6 +1698,19 @@ h3,
   margin-top: 2px;
 }
 
+.onboard-profile {
+  margin-top: 20px;
+  text-align: start;
+}
+
+.onboard-profile .field-input {
+  margin-top: 8px;
+}
+
+.onboard-profile .avatar-grid {
+  margin-top: 10px;
+}
+
 .onboard-begin {
   width: 100%;
   margin-top: 22px;
