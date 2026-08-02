@@ -537,6 +537,33 @@ export class EarthScene {
           out[o + 3] = 255
         }
       }
+      // fill small water speckles inside land so continents read clean, not
+      // full of "lakes" (wide straits are left alone)
+      for (let iter = 0; iter < 2; iter++) {
+        const fill = new Uint8Array(W * H)
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            if (out[(y * W + x) * 4] > 128) continue
+            let landN = 0
+            for (let dy = -1; dy <= 1; dy++) {
+              const ny = Math.max(0, Math.min(H - 1, y + dy))
+              for (let dx = -1; dx <= 1; dx++) {
+                const nx = (x + dx + W) % W
+                if (out[(ny * W + nx) * 4] > 128) landN++
+              }
+            }
+            if (landN >= 6) fill[y * W + x] = 1
+          }
+        }
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            if (fill[y * W + x]) {
+              const o = (y * W + x) * 4
+              out[o] = out[o + 1] = out[o + 2] = 255
+            }
+          }
+        }
+      }
       // soften the mask edges so coastlines render smooth instead of blocky
       const soft = new Uint8ClampedArray(out.length)
       for (let y = 0; y < H; y++) {

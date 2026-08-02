@@ -100,7 +100,10 @@ export default function App() {
   useEffect(() => {
     const route = () => {
       const m = window.location.hash.match(/^#\/(\w+)(?:\/([^/]+)\/([^/]+))?/)
-      if (!m) return
+      if (!m) {
+        useStore.getState().go('home')
+        return
+      }
       const [, view, sp, pr] = m
       if (view === 'earth') useStore.getState().go('earth')
       else if (view === 'pray' && sp && pr) useStore.getState().openPrayer(sp, pr)
@@ -109,6 +112,25 @@ export default function App() {
     window.addEventListener('hashchange', route)
     return () => window.removeEventListener('hashchange', route)
   }, [])
+
+  // Keep the address bar in sync so the browser back/forward buttons work.
+  // (Skip the very first render — route() owns the initial deep link.)
+  const spiritId = useStore((s) => s.spiritId)
+  const prayerId = useStore((s) => s.prayerId)
+  const firstNav = useRef(true)
+  useEffect(() => {
+    if (firstNav.current) {
+      firstNav.current = false
+      return
+    }
+    let target = '#/'
+    if (view === 'earth') target = '#/earth'
+    else if (view === 'prayer' && spiritId && prayerId)
+      target = `#/pray/${spiritId}/${prayerId}`
+    if (window.location.hash !== target) {
+      window.location.hash = target
+    }
+  }, [view, spiritId, prayerId])
 
   return (
     <div className="app">

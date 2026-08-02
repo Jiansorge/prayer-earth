@@ -444,8 +444,10 @@ await c.send('Page.addScriptToEvaluateOnNewDocument', {
     }
   }`
 })
-// The URL is already the mani deep link, so force a fresh document with a
-// real reload for the override to take effect.
+// Point the URL at the mani deep link, then force a fresh document with a
+// real reload so the override takes effect.
+await c.eval(`location.hash = '#/pray/buddhism/mani'`)
+await sleep(400)
 await c.send('Page.reload', { ignoreCache: true })
 await c.waitFor('document.readyState === "complete"', 10000)
 await sleep(600)
