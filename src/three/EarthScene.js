@@ -52,15 +52,23 @@ const FRAG = /* glsl */ `
 
     vec2 uv = equirect(sp);
 
-    // A deep, quiet earth: the real geography is kept but dimmed far down, so
-    // the major continents stay clearly readable while bright deserts and ice
-    // never glare, and the prayer lights shine out from the dark.
+    // A clean, deep continental earth: the day texture is read only as a land
+    // mask, so continents render as solid, quiet shapes on near-black water —
+    // no satellite noise, no bright desert/ice glare, no speckled islands.
     vec3 day = texture2D(uDayTex, uv).rgb;
-    vec3 base = day * 0.13 + vec3(0.003, 0.011, 0.01);
+    float lum = dot(day, vec3(0.299, 0.587, 0.114));
+    float isLand = step(0.0, day.g - day.b);            // greener than the blue ocean
+    float landMask = smoothstep(0.04, 0.09, lum) * isLand;
+
+    vec3 oceanC = vec3(0.003, 0.009, 0.008);
+    // a clean, quiet land colour with a faint whisper of the real geography so
+    // deserts and forests read differently, but no satellite noise or islands
+    vec3 landC = vec3(0.05, 0.115, 0.088) + day * 0.08;
+    vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
     float sun = smoothstep(-0.15, 0.35, ndl);
-    vec3 lit = base * (0.45 + 0.55 * sun);
+    vec3 lit = base * (0.5 + 0.5 * sun);
 
     // genuine city lights on the night side, awakening as the world prays
     float night = 1.0 - smoothstep(-0.25, 0.08, ndl);
@@ -68,7 +76,7 @@ const FRAG = /* glsl */ `
 
     // the Earth's own breathing glow — kept subtle so the world stays deep
     // and the prayer lights remain the brightest things on it
-    vec3 radiance = vec3(0.18, 0.35, 0.24) * uGlow * uGlow * 0.2;
+    vec3 radiance = vec3(0.18, 0.35, 0.24) * uGlow * uGlow * 0.18;
 
     // polar aurora
     float polar = smoothstep(0.86, 0.99, abs(sp.y));
@@ -77,17 +85,13 @@ const FRAG = /* glsl */ `
 
     vec3 col = lit + cities + radiance + aurora;
 
-    // coastline: a soft, bright neutral line where land meets water, so the
-    // continents read clearly against the dark ocean
-    float lum = dot(day, vec3(0.299, 0.587, 0.114));
-    float isLand = step(-0.01, day.g - day.b);
-    float landMask = smoothstep(0.09, 0.17, lum) * isLand;
-    vec3 dR = texture2D(uDayTex, uv + vec2(0.004, 0.0)).rgb;
-    vec3 dT = texture2D(uDayTex, uv + vec2(0.0, 0.006)).rgb;
-    float landR = smoothstep(0.09, 0.17, dot(dR, vec3(0.299, 0.587, 0.114))) * step(-0.01, dR.g - dR.b);
-    float landT = smoothstep(0.09, 0.17, dot(dT, vec3(0.299, 0.587, 0.114))) * step(-0.01, dT.g - dT.b);
+    // crisp coastline where the solid land meets the water
+    vec3 dR = texture2D(uDayTex, uv + vec2(0.0035, 0.0)).rgb;
+    vec3 dT = texture2D(uDayTex, uv + vec2(0.0, 0.005)).rgb;
+    float landR = smoothstep(0.04, 0.09, dot(dR, vec3(0.299, 0.587, 0.114))) * step(0.0, dR.g - dR.b);
+    float landT = smoothstep(0.04, 0.09, dot(dT, vec3(0.299, 0.587, 0.114))) * step(0.0, dT.g - dT.b);
     float coast = landMask * (1.0 - min(landR, landT));
-    col += coast * vec3(0.82, 0.86, 0.84) * (0.55 + 0.45 * uGlow);
+    col += coast * vec3(0.82, 0.86, 0.84) * (0.6 + 0.4 * uGlow);
 
     // warm dawn band where day meets night
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));
@@ -191,7 +195,7 @@ const ATMO_FRAG = /* glsl */ `
     float rim = 1.0 - max(dot(viewDir, normalize(vNormal)), 0.0);
     float f = pow(rim, 2.6);
     vec3 inner = mix(vec3(0.28, 0.5, 0.4), vec3(1.0, 0.84, 0.5), uGlow);
-    float alpha = f * (0.3 + 0.35 * uGlow);
+    float alpha = f * (0.22 + 0.25 * uGlow);
     gl_FragColor = vec4(inner, alpha);
   }
 `
