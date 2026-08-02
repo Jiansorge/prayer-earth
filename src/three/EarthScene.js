@@ -69,9 +69,7 @@ const FRAG = /* glsl */ `
     float sun = smoothstep(-0.15, 0.35, ndl);
     vec3 lit = base * (0.5 + 0.5 * sun);
 
-    // genuine city lights on the night side, awakening as the world prays
     float night = 1.0 - smoothstep(-0.25, 0.08, ndl);
-    vec3 cities = texture2D(uNightTex, uv).rgb * night * 1.1;
 
     // the Earth's own breathing glow — kept subtle so the world stays deep
     // and the prayer lights remain the brightest things on it
@@ -82,7 +80,7 @@ const FRAG = /* glsl */ `
     float aur = polar * (0.5 + 0.5 * sin(uTime * 0.4 + sp.y * 6.0));
     vec3 aurora = vec3(0.1, 0.9, 0.6) * aur * night * 0.3;
 
-    vec3 col = lit + cities + radiance + aurora;
+    vec3 col = lit + radiance + aurora;
 
     // a thin, faint edge where land meets water — sleek and modern
     float landR = texture2D(uMaskTex, uv + vec2(0.0011, 0.0)).r;
@@ -533,39 +531,57 @@ export class EarthScene {
           out[o + 3] = 255
         }
       }
-      // morphological closing (dilate → erode) fills small interior holes so
-      // continents read as solid shapes, not a patchwork of "lakes"
-      const dil = new Uint8Array(W * H)
-      for (let y = 0; y < H; y++) {
-        for (let x = 0; x < W; x++) {
-          let any = false
-          for (let dy = -1; dy <= 1 && !any; dy++) {
-            const ny = Math.max(0, Math.min(H - 1, y + dy))
-            for (let dx = -1; dx <= 1; dx++) {
-              const nx = (x + dx + W) % W
-              if (out[(ny * W + nx) * 4] > 128) { any = true; break }
+      // fill enclosed water "lakes" inside continents so they read as solid
+      // shapes (large real seas are left alone). Flood the open ocean from the
+      // borders, then fill any enclosed water region smaller than the cap.
+      {
+        const isLand = (i) => out[i * 4] > 128
+        const visited = new Uint8Array(W * H)
+        const stack = []
+        const seed = (i) => { if (!visited[i] && !isLand(i)) { visited[i] = 1; stack.push(i) } }
+        for (let x = 0; x < W; x++) { seed(x); seed((H - 1) * W + x) }
+        for (let y = 0; y < H; y++) { seed(y * W); seed(y * W + W - 1) }
+        while (stack.length) {
+          const i = stack.pop()
+          const x = i % W, y = (i / W) | 0
+          const n = [
+            x > 0 ? i - 1 : i + W - 1,
+            x < W - 1 ? i + 1 : i - W + 1,
+            y > 0 ? i - W : -1,
+            y < H - 1 ? i + W : -1
+          ]
+          for (const ni of n) {
+            if (ni >= 0 && !visited[ni] && !isLand(ni)) { visited[ni] = 1; stack.push(ni) }
+          }
+        }
+        const MAX_LAKE = Math.round((W * H) / 800)
+        const seen = new Uint8Array(W * H)
+        for (let i = 0; i < W * H; i++) {
+          if (seen[i] || isLand(i) || visited[i]) continue
+          const region = []
+          const q = [i]
+          seen[i] = 1
+          while (q.length) {
+            const c = q.pop()
+            region.push(c)
+            const x = c % W, y = (c / W) | 0
+            const n = [
+              x > 0 ? c - 1 : -1,
+              x < W - 1 ? c + 1 : -1,
+              y > 0 ? c - W : -1,
+              y < H - 1 ? c + W : -1
+            ]
+            for (const ni of n) {
+              if (ni >= 0 && !seen[ni] && !isLand(ni) && !visited[ni]) { seen[ni] = 1; q.push(ni) }
             }
           }
-          dil[y * W + x] = any ? 1 : 0
-        }
-      }
-      const ero = new Uint8Array(W * H)
-      for (let y = 0; y < H; y++) {
-        for (let x = 0; x < W; x++) {
-          let all = true
-          for (let dy = -1; dy <= 1 && all; dy++) {
-            const ny = Math.max(0, Math.min(H - 1, y + dy))
-            for (let dx = -1; dx <= 1; dx++) {
-              const nx = (x + dx + W) % W
-              if (!dil[ny * W + nx]) { all = false; break }
+          if (region.length < MAX_LAKE) {
+            for (const c of region) {
+              const o = c * 4
+              out[o] = out[o + 1] = out[o + 2] = 255
             }
           }
-          ero[y * W + x] = all ? 255 : 0
         }
-      }
-      for (let i = 0; i < W * H; i++) {
-        const o = i * 4
-        out[o] = out[o + 1] = out[o + 2] = ero[i]
       }
       // soften the mask edges so coastlines render smooth instead of blocky
       const soft = new Uint8ClampedArray(out.length)
