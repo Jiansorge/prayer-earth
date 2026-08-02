@@ -10,7 +10,8 @@ import SettingsSheet from './components/SettingsSheet.jsx'
 import InstallHint from './components/InstallHint.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import PrayerPicker from './components/PrayerPicker.jsx'
-import Scenery, { getScene } from './components/Scenery.jsx'
+import { getScene } from './components/Scenery.jsx'
+import NatureBackdrop from './components/NatureBackdrop.jsx'
 import { useT, RTL_LOCALES } from './i18n.js'
 
 // The 3D Earth (three.js) is heavy — load it only when the Earth view opens.
@@ -147,7 +148,7 @@ export default function App() {
   return (
     <div className="app" data-scene={view === 'home' ? scene : undefined}>
       <div className="sky" />
-      {view === 'home' && <Scenery />}
+      {view === 'home' && <NatureBackdrop />}
       <div className="glow-field" />
       <div className="fireflies" aria-hidden="true">
         {[...Array(10)].map((_, i) => (

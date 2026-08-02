@@ -136,6 +136,15 @@ h3,
 }
 
 /* ---- scenic nature layers: mountains, pines, sun/moon ---- */
+.nature-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 .scenery {
   position: fixed;
   inset: 0;
