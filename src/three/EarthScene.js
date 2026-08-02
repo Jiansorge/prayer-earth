@@ -52,18 +52,15 @@ const FRAG = /* glsl */ `
 
     vec2 uv = equirect(sp);
 
-    // A clean, deep continental earth: the day texture is read only as a land
-    // mask, so continents render as solid, quiet shapes on near-black water —
-    // no satellite noise, no bright desert/ice glare, no speckled islands.
+    // A clean, graphic world map: solid landmasses on a coloured ocean — no
+    // satellite noise, no fuzzy or wide coastlines, just readable continents.
     vec3 day = texture2D(uDayTex, uv).rgb;
     float lum = dot(day, vec3(0.299, 0.587, 0.114));
-    float isLand = step(0.0, day.g - day.b);            // greener than the blue ocean
-    float landMask = smoothstep(0.04, 0.09, lum) * isLand;
+    float isLand = step(0.0, day.g - day.b);
+    float landMask = smoothstep(0.05, 0.075, lum) * isLand;   // sharp, clean edges
 
-    vec3 oceanC = vec3(0.003, 0.009, 0.008);
-    // a clean, quiet land colour with a faint whisper of the real geography so
-    // deserts and forests read differently, but no satellite noise or islands
-    vec3 landC = vec3(0.05, 0.115, 0.088) + day * 0.08;
+    vec3 oceanC = vec3(0.02, 0.07, 0.165);                    // deep graphic blue
+    vec3 landC = vec3(0.055, 0.135, 0.095) + day * 0.06;      // flat green land
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -85,13 +82,13 @@ const FRAG = /* glsl */ `
 
     vec3 col = lit + cities + radiance + aurora;
 
-    // crisp coastline where the solid land meets the water
-    vec3 dR = texture2D(uDayTex, uv + vec2(0.0035, 0.0)).rgb;
-    vec3 dT = texture2D(uDayTex, uv + vec2(0.0, 0.005)).rgb;
-    float landR = smoothstep(0.04, 0.09, dot(dR, vec3(0.299, 0.587, 0.114))) * step(0.0, dR.g - dR.b);
-    float landT = smoothstep(0.04, 0.09, dot(dT, vec3(0.299, 0.587, 0.114))) * step(0.0, dT.g - dT.b);
+    // a thin bright edge where land meets water (sampled close, kept subtle)
+    vec3 dR = texture2D(uDayTex, uv + vec2(0.002, 0.0)).rgb;
+    vec3 dT = texture2D(uDayTex, uv + vec2(0.0, 0.003)).rgb;
+    float landR = smoothstep(0.05, 0.075, dot(dR, vec3(0.299, 0.587, 0.114))) * step(0.0, dR.g - dR.b);
+    float landT = smoothstep(0.05, 0.075, dot(dT, vec3(0.299, 0.587, 0.114))) * step(0.0, dT.g - dT.b);
     float coast = landMask * (1.0 - min(landR, landT));
-    col += coast * vec3(0.82, 0.86, 0.84) * (0.6 + 0.4 * uGlow);
+    col += coast * vec3(0.9, 0.93, 0.9) * 0.4;
 
     // warm dawn band where day meets night
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));
