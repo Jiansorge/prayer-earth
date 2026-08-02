@@ -173,29 +173,6 @@ const ATMO_FRAG = /* glsl */ `
   }
 `
 
-const POINT_VERT = /* glsl */ `
-  attribute float aSize;
-  attribute float aAlpha;
-  varying float vAlpha;
-  void main() {
-    vAlpha = aAlpha;
-    vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = aSize * (60.0 / max(1.0, -mv.z));
-    gl_Position = projectionMatrix * mv;
-  }
-`
-
-const POINT_FRAG = /* glsl */ `
-  varying float vAlpha;
-  void main() {
-    vec2 uv = gl_PointCoord - 0.5;
-    float d = length(uv);
-    float a = smoothstep(0.5, 0.05, d) * vAlpha;
-    if (a < 0.01) discard;
-    gl_FragColor = vec4(1.0, 0.9, 0.65, a);
-  }
-`
-
 // 2-degree lat/lon grid of possible light positions. The shared server rounds
 // every praying user's location onto the same grid, so a light appears exactly
 // where people are praying.
@@ -277,8 +254,9 @@ export class EarthScene {
 
     // --- people lights (on the surface, at real locations) ---
     this.lights = this.buildLights()
-    this.earthGroup.add(this.lights)
+    this.earthGroup.add(this.lights.group)
     this.scene.add(this.earthGroup)
+    if (import.meta.env?.DEV) window.__earthScene = this
 
     if (!this.backdrop) {
       // --- orbiting little planets ---
@@ -366,37 +344,79 @@ export class EarthScene {
     this.earthGroup.add(atmo)
   }
 
+  // A soft radial glow texture shared by all prayer lights.
+  buildLightGlowTexture() {
+    const S = 64
+    const c = document.createElement('canvas')
+    c.width = S
+    c.height = S
+    const ctx = c.getContext('2d')
+    const g = ctx.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2)
+    g.addColorStop(0, 'rgba(255, 244, 214, 1)')
+    g.addColorStop(0.25, 'rgba(255, 224, 160, 0.85)')
+    g.addColorStop(0.6, 'rgba(255, 190, 110, 0.28)')
+    g.addColorStop(1, 'rgba(255, 170, 90, 0)')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, S, S)
+    const tex = new THREE.CanvasTexture(c)
+    tex.colorSpace = THREE.SRGBColorSpace
+    return tex
+  }
+
+  // Lights are billboarded sprites (not point sprites): they keep a consistent
+  // soft glow on every device and composite reliably. A pool is reused so only
+  // cells with people praying actually draw.
   buildLights() {
-    const keys = buildLightKeys()
-    const N = keys.length
-    const pos = new Float32Array(N * 3)
-    const size = new Float32Array(N)
-    const alpha = new Float32Array(N)
+    const glow = this.buildLightGlowTexture()
+    this.lightKeys = buildLightKeys()
     const r = 1.435
-    for (let i = 0; i < N; i++) {
-      const k = keys[i]
+    const pool = []
+    const MAX = 256
+    for (let i = 0; i < MAX; i++) {
+      const mat = new THREE.SpriteMaterial({
+        map: glow,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        opacity: 0
+      })
+      const spr = new THREE.Sprite(mat)
+      spr.visible = false
+      spr.userData.lat = 0
+      spr.userData.lon = 0
+      pool.push(spr)
+    }
+    const group = new THREE.Group()
+    group.add(...pool)
+    return { group, pool, r, MAX }
+  }
+
+  // Reuse the sprite pool: position/scale/light one per active grid cell.
+  setLights(map) {
+    if (!this.lights) return
+    const { pool, r, MAX } = this.lights
+    let used = 0
+    for (let i = 0; i < this.lightKeys.length; i++) {
+      const k = this.lightKeys[i]
+      const n = map ? map[k] : 0
+      if (!n) continue
+      const spr = pool[used]
+      if (!spr) break
       const c = k.indexOf(',')
       const lat = parseFloat(k.slice(0, c)) * (Math.PI / 180)
       const lon = parseFloat(k.slice(c + 1)) * (Math.PI / 180)
-      pos[i * 3] = r * Math.cos(lat) * Math.cos(lon)
-      pos[i * 3 + 1] = r * Math.sin(lat)
-      pos[i * 3 + 2] = r * Math.cos(lat) * Math.sin(lon)
-      size[i] = 1.4
-      alpha[i] = 0
+      spr.position.set(
+        r * Math.cos(lat) * Math.cos(lon),
+        r * Math.sin(lat),
+        r * Math.cos(lat) * Math.sin(lon)
+      )
+      spr.material.opacity = Math.min(0.95, 0.35 + n * 0.15)
+      const s = 0.13 + Math.min(n, 8) * 0.02
+      spr.scale.set(s, s, s)
+      spr.visible = true
+      used++
     }
-    const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    g.setAttribute('aSize', new THREE.BufferAttribute(size, 1))
-    g.setAttribute('aAlpha', new THREE.BufferAttribute(alpha, 1))
-    const m = new THREE.ShaderMaterial({
-      vertexShader: POINT_VERT,
-      fragmentShader: POINT_FRAG,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending
-    })
-    this.lightKeys = keys
-    return new THREE.Points(g, m)
+    for (let i = used; i < MAX; i++) pool[i].visible = false
   }
 
   buildPlanets() {
@@ -560,22 +580,6 @@ export class EarthScene {
     this.glow = Math.max(0, Math.min(1, v))
   }
 
-  setLights(map) {
-    if (!this.lights) return
-    const keys = this.lightKeys
-    const a = this.lights.geometry.attributes.aAlpha
-    const s = this.lights.geometry.attributes.aSize
-    const arr = a.array
-    const sarr = s.array
-    for (let i = 0; i < keys.length; i++) {
-      const n = map ? map[keys[i]] : 0
-      arr[i] = n ? Math.min(1, 0.3 + n * 0.2) : 0
-      sarr[i] = n ? 1.3 + Math.min(n, 6) * 0.3 : 1.3
-    }
-    a.needsUpdate = true
-    s.needsUpdate = true
-  }
-
   animate = () => {
     if (this.disposed) return
     requestAnimationFrame(this.animate)
@@ -640,6 +644,11 @@ export class EarthScene {
     this.renderer.dispose()
     if (this.dayTex) this.dayTex.dispose()
     if (this.nightTex) this.nightTex.dispose()
+    if (this.lights) {
+      const mat = this.lights.pool[0]?.material
+      if (mat?.map) mat.map.dispose()
+      for (const spr of this.lights.pool) spr.material.dispose()
+    }
     if (this.renderer.domElement.parentNode) {
       this.renderer.domElement.parentNode.removeChild(this.renderer.domElement)
     }
