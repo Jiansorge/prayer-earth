@@ -69,11 +69,52 @@ h3,
   z-index: 0;
   overflow: hidden;
   background:
-    radial-gradient(120% 95% at 50% 118%, rgba(232, 182, 100, 0.22) 0%, transparent 52%),
-    radial-gradient(85% 70% at 88% -6%, rgba(126, 206, 156, 0.17) 0%, transparent 55%),
+    radial-gradient(120% 95% at 50% 118%, var(--glow-amber, rgba(232, 182, 100, 0.22)) 0%, transparent 52%),
+    radial-gradient(85% 70% at 88% -6%, var(--glow-sage, rgba(126, 206, 156, 0.17)) 0%, transparent 55%),
     radial-gradient(70% 60% at 6% -2%, rgba(96, 168, 124, 0.15) 0%, transparent 55%),
     radial-gradient(90% 55% at 50% 42%, rgba(92, 162, 126, 0.10) 0%, transparent 60%),
-    linear-gradient(180deg, #0a1a11 0%, #0e2416 48%, #162f1c 100%);
+    linear-gradient(180deg, var(--sky-top, #0a1a11) 0%, var(--sky-mid, #0e2416) 48%, var(--sky-bottom, #162f1c) 100%);
+}
+
+/* ---- scenic times of day (sky palettes) ---- */
+.app[data-scene='night'] {
+  --sky-top: #04060f;
+  --sky-mid: #0a1226;
+  --sky-bottom: #16203c;
+  --glow-amber: rgba(120, 160, 220, 0.2);
+  --glow-sage: rgba(150, 190, 255, 0.15);
+}
+
+.app[data-scene='dawn'] {
+  --sky-top: #1b2240;
+  --sky-mid: #6a4a72;
+  --sky-bottom: #e0925f;
+  --glow-amber: rgba(255, 180, 120, 0.32);
+  --glow-sage: rgba(255, 200, 160, 0.2);
+}
+
+.app[data-scene='day'] {
+  --sky-top: #2a6cc9;
+  --sky-mid: #7fb8e8;
+  --sky-bottom: #cfe8ff;
+  --glow-amber: rgba(255, 240, 210, 0.3);
+  --glow-sage: rgba(255, 255, 235, 0.25);
+}
+
+.app[data-scene='golden'] {
+  --sky-top: #7a5a4a;
+  --sky-mid: #d9914e;
+  --sky-bottom: #f6c57e;
+  --glow-amber: rgba(255, 190, 120, 0.38);
+  --glow-sage: rgba(255, 220, 170, 0.24);
+}
+
+.app[data-scene='dusk'] {
+  --sky-top: #1a2340;
+  --sky-mid: #5a4a80;
+  --sky-bottom: #c66a50;
+  --glow-amber: rgba(255, 160, 110, 0.32);
+  --glow-sage: rgba(200, 150, 210, 0.22);
 }
 
 /* dappled light filtering through the canopy, drifting slowly */
@@ -92,6 +133,132 @@ h3,
   mix-blend-mode: screen;
   opacity: 0.8;
   animation: dapple 46s ease-in-out infinite alternate;
+}
+
+/* ---- scenic nature layers: mountains, pines, sun/moon ---- */
+.scenery {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.scenery .hills,
+.scenery .trees {
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  bottom: 0;
+  width: 104%;
+}
+
+.scenery .hills {
+  height: 30%;
+}
+
+.scenery .trees {
+  height: 14%;
+}
+
+.scenery svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.scenery .orb {
+  position: absolute;
+  border-radius: 50%;
+  transition: all 1.4s ease;
+}
+
+.app[data-scene='night'] .orb {
+  width: 54px;
+  height: 54px;
+  top: 14%;
+  right: 24%;
+  background: radial-gradient(circle at 38% 38%, #fffbe8, #d9d2b4 60%, transparent 74%);
+  box-shadow: 0 0 70px rgba(230, 226, 202, 0.75), 0 0 26px rgba(230, 226, 202, 0.4);
+}
+
+.app[data-scene='dawn'] .orb {
+  width: 66px;
+  height: 66px;
+  top: 60%;
+  right: 30%;
+  background: radial-gradient(circle at 40% 40%, #fff6e2, #ffd9a0 60%, transparent 74%);
+  box-shadow: 0 0 90px rgba(255, 190, 120, 0.85);
+}
+
+.app[data-scene='day'] .orb {
+  width: 82px;
+  height: 82px;
+  top: 12%;
+  right: 16%;
+  background: radial-gradient(circle at 36% 36%, #ffffff, #ffe9a8 62%, transparent 76%);
+  box-shadow: 0 0 110px rgba(255, 225, 150, 0.9), 0 0 46px rgba(255, 240, 200, 0.5);
+}
+
+.app[data-scene='golden'] .orb {
+  width: 90px;
+  height: 90px;
+  top: 48%;
+  right: 20%;
+  background: radial-gradient(circle at 40% 40%, #fff3d6, #ffc26b 62%, transparent 78%);
+  box-shadow: 0 0 130px rgba(255, 170, 90, 0.95);
+}
+
+.app[data-scene='dusk'] .orb {
+  width: 60px;
+  height: 60px;
+  top: 56%;
+  right: 22%;
+  background: radial-gradient(circle at 40% 40%, #ffe7c8, #e89a6b 62%, transparent 76%);
+  box-shadow: 0 0 90px rgba(255, 150, 100, 0.85);
+}
+
+.app[data-scene='night'] .hills {
+  fill: rgba(6, 10, 22, 0.9);
+}
+.app[data-scene='night'] .trees {
+  fill: rgba(4, 8, 18, 0.94);
+}
+
+.app[data-scene='dawn'] .hills {
+  fill: rgba(38, 34, 58, 0.8);
+}
+.app[data-scene='dawn'] .trees {
+  fill: rgba(26, 28, 50, 0.9);
+}
+
+.app[data-scene='day'] .hills {
+  fill: rgba(24, 82, 62, 0.4);
+}
+.app[data-scene='day'] .trees {
+  fill: rgba(14, 66, 46, 0.55);
+}
+
+.app[data-scene='golden'] .hills {
+  fill: rgba(94, 62, 40, 0.55);
+}
+.app[data-scene='golden'] .trees {
+  fill: rgba(60, 44, 28, 0.7);
+}
+
+.app[data-scene='dusk'] .hills {
+  fill: rgba(30, 26, 52, 0.75);
+}
+.app[data-scene='dusk'] .trees {
+  fill: rgba(18, 20, 42, 0.88);
+}
+
+/* fireflies only in the evening-ish scenes */
+.app[data-scene='day'] .fireflies {
+  opacity: 0;
+}
+.app[data-scene='golden'] .fireflies {
+  opacity: 0.45;
 }
 
 /* gentle vignette so the light gathers toward the centre */
@@ -1397,6 +1564,38 @@ html[dir='rtl'] .chooser-arrow.right {
 .swatch.on {
   transform: scale(1.15);
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5), 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.legal-sheet {
+  max-height: 84dvh;
+  overflow-y: auto;
+}
+
+.legal-block {
+  margin-top: 16px;
+}
+
+.legal-h {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--gold-soft);
+  margin-bottom: 6px;
+}
+
+.legal-p {
+  color: var(--ink-dim);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.legal-list {
+  color: var(--ink-dim);
+  font-size: 13px;
+  line-height: 1.6;
+  padding-inline-start: 18px;
+  display: grid;
+  gap: 6px;
 }
 
 .sheet-close {

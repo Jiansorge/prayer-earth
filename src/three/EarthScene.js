@@ -61,7 +61,7 @@ const FRAG = /* glsl */ `
     // shows cleanly with no underwater or speckled boundaries.
     float landMask = texture2D(uMaskTex, uv).r;
 
-    vec3 oceanC = vec3(0.004, 0.013, 0.038);        // very dark water
+    vec3 oceanC = vec3(0.006, 0.02, 0.05);         // rich deep water
     vec3 landC = vec3(0.05, 0.056, 0.054);          // darker neutral land, lighter than water
     vec3 base = mix(oceanC, landC, landMask);
 
@@ -88,7 +88,7 @@ const FRAG = /* glsl */ `
     float landR = texture2D(uMaskTex, uv + vec2(0.0011, 0.0)).r;
     float landT = texture2D(uMaskTex, uv + vec2(0.0, 0.0016)).r;
     float coast = smoothstep(0.32, 0.5, landMask) * (1.0 - smoothstep(0.4, 0.58, min(landR, landT)));
-    col += coast * vec3(0.92, 0.95, 0.94) * 0.26;
+    col += coast * vec3(0.92, 0.95, 0.94) * 0.18;
 
     // warm dawn band where day meets night
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));

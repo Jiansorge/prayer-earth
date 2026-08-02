@@ -158,7 +158,19 @@ const en = {
   'profile.namePlaceholder': 'Sacred name',
   'profile.avatar': 'Avatar',
   'profile.color': 'Your light',
-  'profile.you': 'you'
+  'profile.you': 'you',
+  'settings.legal': 'Privacy & care',
+  'legal.title': 'Privacy & care',
+  'legal.wellnessTitle': 'A note on wellbeing',
+  'legal.wellnessBody': 'Prayer Earth is a place for quiet reflection and connection — not medical, psychological, or crisis care. It does not diagnose or treat any condition. If you are in distress, please reach out to a qualified health professional or a local crisis line. Please also look after your body: keep volume comfortable, and don\u2019t use the app while driving or operating machinery.',
+  'legal.privacyTitle': 'Privacy',
+  'legal.priv1': 'No account is required to pray.',
+  'legal.priv2': 'Your prayer history and preferences are stored on your own device.',
+  'legal.priv3': 'When you pray, an anonymous name and a coarse region are shared with the Prayer Earth server so others see a light where people are praying — no real name or exact address is used.',
+  'legal.priv4': 'If authentic voices are enabled, your prayer text is sent through our server to Google Cloud Text-to-Speech to create audio. You can switch it off in Settings.',
+  'legal.priv5': 'We don\u2019t sell data or show ads.',
+  'legal.termsTitle': 'Terms',
+  'legal.termsBody': 'Prayer Earth is offered as-is, for personal reflection. Sacred texts are presented for contemplation and respect. Please treat others in the community with kindness. We may update the app and these notes over time.'
 }
 
 const es = {

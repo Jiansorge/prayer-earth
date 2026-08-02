@@ -5,6 +5,7 @@ import { ambient } from '../audio/ambience.js'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
 import { useT, LOCALES } from '../i18n.js'
 import QRCard from './QRCard.jsx'
+import LegalSheet from './LegalSheet.jsx'
 
 const isInstalled = () =>
   window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone
@@ -32,6 +33,7 @@ export default function SettingsSheet() {
 
   const [voices, setVoices] = useState([])
   const [qrOpen, setQrOpen] = useState(false)
+  const [legalOpen, setLegalOpen] = useState(false)
   const [previewing, setPreviewing] = useState(false)
   const [appCopied, setAppCopied] = useState(false)
   const previewTimer = useRef(null)
@@ -251,10 +253,17 @@ export default function SettingsSheet() {
           {t('install.button')}
         </button>
 
+        <div className="field-divider" />
+        <button className="field-btn" onClick={() => setLegalOpen(true)}>
+          {t('settings.legal')}
+        </button>
+
         <button className="sheet-close" onClick={() => setOpen(false)}>
           {t('settings.done')}
         </button>
       </div>
+
+      {legalOpen && <LegalSheet onClose={() => setLegalOpen(false)} />}
 
       {qrOpen && spirit && prayer && (
         <QRCard spirit={spirit} prayer={prayer} onClose={() => setQrOpen(false)} />

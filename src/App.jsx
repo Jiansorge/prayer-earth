@@ -1,4 +1,4 @@
-import React, { Component, Suspense, lazy, useEffect, useRef } from 'react'
+import React, { Component, Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { useStore } from './store.js'
 import { syncClient } from './sync/client.js'
 import { ambient } from './audio/ambience.js'
@@ -9,6 +9,7 @@ import SettingsSheet from './components/SettingsSheet.jsx'
 import InstallHint from './components/InstallHint.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import PrayerPicker from './components/PrayerPicker.jsx'
+import Scenery, { getScene } from './components/Scenery.jsx'
 import { useT, RTL_LOCALES } from './i18n.js'
 
 // The 3D Earth (three.js) is heavy — load it only when the Earth view opens.
@@ -76,6 +77,13 @@ export default function App() {
     document.documentElement.lang = locale
   }, [locale])
 
+  // Which scenic time of day the world is in right now.
+  const [scene, setScene] = useState(getScene())
+  useEffect(() => {
+    const t = setInterval(() => setScene(getScene()), 60000)
+    return () => clearInterval(t)
+  }, [])
+
   // Begin the global connection and let the ambient engine breathe quietly.
   useEffect(() => {
     syncClient.start()
@@ -133,8 +141,9 @@ export default function App() {
   }, [view, spiritId, prayerId])
 
   return (
-    <div className="app">
+    <div className="app" data-scene={scene}>
       <div className="sky" />
+      <Scenery />
       <div className="glow-field" />
       <div className="fireflies" aria-hidden="true">
         {[...Array(10)].map((_, i) => (
