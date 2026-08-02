@@ -131,13 +131,13 @@ await nav(APP)
 
 ok('home renders title', await c.waitFor(`document.body.innerText.includes('Pray with the whole world')`))
 ok(
-  '12 spirituality tiles render',
-  (await c.eval(`document.querySelectorAll('.tile').length`)) === 12,
-  'tiles=12'
+  '13 spirituality tiles render',
+  (await c.eval(`document.querySelectorAll('.tile').length`)) === 13,
+  'tiles=13'
 )
 ok(
   'tiles show per-spirit counts',
-  (await c.eval(`document.querySelectorAll('.tile-praying').length`)) === 12
+  (await c.eval(`document.querySelectorAll('.tile-praying').length`)) === 13
 )
 
 // --- settings sheet ---

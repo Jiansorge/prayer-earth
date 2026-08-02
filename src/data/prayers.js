@@ -780,6 +780,21 @@ export const SPIRITUALITIES = [
           { t: 'This day is a gift. I receive it with both hands.' }
         ],
         translation: 'A reflection on the Shinto sense of the sacred — the kami present in all of nature.'
+      },
+      {
+        id: 'kannagara',
+        title: 'Kannagara — With the Kami',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Living in accord with the kami,' },
+          { t: 'I walk gently through this day.' },
+          { t: 'Every river, every grove, every ordinary moment' },
+          { t: 'holds a presence worthy of reverence.' },
+          { t: 'May my life be a quiet bow' },
+          { t: 'to the sacred woven through all things.' }
+        ],
+        translation: 'A reflection on kannagara — the Shinto way of living in harmony with the divine that pervades the world.'
       }
     ]
   },
@@ -844,6 +859,20 @@ export const SPIRITUALITIES = [
           { t: 'In this vast web of life, I take my place gently.' }
         ],
         translation: 'A reflection on the five great vows of Mahavira — non-violence, truth, non-stealing, chastity, and non-attachment.'
+      },
+      {
+        id: 'pratikraman',
+        title: 'Pratikramaṇa — Returning to the Path',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'I bow to the way of ahimsa, and turn back from harm.' },
+          { t: 'For any hurt I have caused by thought, word, or deed,' },
+          { t: 'I ask forgiveness of all living beings.' },
+          { t: 'And I forgive all who have wronged me.' },
+          { t: 'Let me begin again, gently, with every being.' }
+        ],
+        translation: 'A reflection on pratikramana — the Jain practice of confession and turning back to the path of non-violence.'
       }
     ]
   },
@@ -906,6 +935,18 @@ export const SPIRITUALITIES = [
           { t: 'Say: Praised be God! He is God! All are His servants, and all abide by His bidding!' }
         ],
         translation: 'A short, beloved prayer of Baháʼuʼlláh recited in times of hardship and need.'
+      },
+      {
+        id: 'healing',
+        title: 'A Prayer for Healing',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Thy name is my healing, O my God, and remembrance of Thee is my remedy.' },
+          { t: 'Nearness to Thee is my hope, and love for Thee is my companion.' },
+          { t: 'Thy mercy to me is my healing and my succor in both this world and the world to come.' }
+        ],
+        translation: 'A prayer of Baháʼuʼlláh for healing and nearness to God, offered in times of illness and need.'
       }
     ]
   },
@@ -957,6 +998,82 @@ export const SPIRITUALITIES = [
           { t: 'and to the center where we stand — all my relations. Aho.' }
         ],
         translation: 'A widely shared honoring of the directions — a prayer of gratitude to the world that holds us.'
+      },
+      {
+        id: 'thanksgiving-land',
+        title: 'Thanksgiving for the Land',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'For the soil beneath our feet, we give thanks.' },
+          { t: 'For the water that gives life, we give thanks.' },
+          { t: 'For the corn, the fish, and the fruit of the land, we give thanks.' },
+          { t: 'May we remember that we borrow this Earth from our children.' },
+          { t: 'With every harvest, let us give back more than we take.' }
+        ],
+        translation: 'A prayer of thanksgiving for the living land — gratitude that keeps us humble and generous.'
+      }
+    ]
+  },
+  {
+    id: 'zoroastrianism',
+    name: 'Zoroastrianism',
+    emoji: '🕯️',
+    glow: 'rgba(255, 190, 90, 0.26)',
+    lightColor: '#ffc46b',
+    tagline: 'Good thoughts, good words, good deeds — the flame of truth.',
+    prayers: [
+      {
+        id: 'ashem-vohu',
+        title: 'Ashem Vohu',
+        lang: 'ae',
+        langLabel: 'Avestan · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', s: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness — happiness to the one who is righteous for the sake of the highest righteousness.' },
+          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', s: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness — happiness to the one who is righteous for the sake of the highest righteousness.' },
+          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', s: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness — happiness to the one who is righteous for the sake of the highest righteousness.' }
+        ],
+        translation: 'One of the most sacred prayers of Zoroastrianism — the vow of a life aligned with truth and righteousness.'
+      },
+      {
+        id: 'humata',
+        title: 'Humata, Hukhta, Huvarshta',
+        lang: 'ae',
+        langLabel: 'Avestan · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Humata, hukhta, huvarshta.', s: 'Humata, hukhta, huvarshta.', e: 'Good thoughts, good words, good deeds.' },
+          { t: 'Humata, hukhta, huvarshta.', s: 'Humata, hukhta, huvarshta.', e: 'Good thoughts, good words, good deeds.' },
+          { t: 'Humata, hukhta, huvarshta.', s: 'Humata, hukhta, huvarshta.', e: 'Good thoughts, good words, good deeds.' }
+        ],
+        translation: 'The threefold path at the heart of Zoroastrian faith — thought, speech, and action kept pure.'
+      },
+      {
+        id: 'ahuna-vairya',
+        title: 'Ahuna Vairya',
+        lang: 'ae',
+        langLabel: 'Avestan',
+        phrases: [
+          { t: 'Yatā ahū vairyō, aθā ratuš ašāt̰cīt̰ hacā', s: 'Yatā ahū vairyō, athā ratush ashatchit hachā', e: 'As the heavenly Lord is to be chosen, so is the earthly judge, in accord with truth.' },
+          { t: 'vaŋhə̄uš dazdā manaŋhō, šyaoθananąm aŋhə̄uš mazdāi', s: 'Vanghēush dazdā mananghō, shyaothananām anghēush mazdāi', e: 'By the good mind, may deeds be done for Mazda.' },
+          { t: 'xšaθrəmcā ahurāi, ā yim drigubyō dadat̰ vāstārəm.', s: 'Khshathremchā ahurāi, ā yim drigubyō dadat vāstārem.', e: 'And the Kingdom of Ahura — for those who give the poor a shepherd.' }
+        ],
+        translation: 'The Ahuna Vairya, the most sacred formula of the Zoroastrian faith — the seal of truth and care for the vulnerable.'
+      },
+      {
+        id: 'fire-blessing',
+        title: 'Before the Sacred Fire',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'The fire that burns before me is the light of truth.' },
+          { t: 'Let my thoughts be good, my words true, and my deeds kind.' },
+          { t: 'Let me warm the cold, lighten the dark, and strengthen the weak.' },
+          { t: 'This day, I will tend the flame within me,' },
+          { t: 'and by it, be a little light to the world.' }
+        ],
+        translation: 'A reflection on the sacred fire — a reminder that each person carries a flame of truth to tend and share.'
       }
     ]
   },
