@@ -95,8 +95,12 @@ export default function PrayerPage() {
       lang: prayer.lang,
       rate: speechRate,
       loop: loopOn,
-      gapMs: prayer.loop ? 1400 : 700,
-      onPhrase: (i) => setActive(i),
+      gapMs: prayer.loop ? 350 : 700,
+      onPhrase: (i) => {
+        setActive(i)
+        // A repeated mantra is one prayer per recitation, not per cycle.
+        if (prayer.loop) notePrayerComplete(prayer.id)
+      },
       onFallback: (reason) => {
         setChantMode(true)
         setChantReason(reason)
@@ -105,12 +109,11 @@ export default function PrayerPage() {
       onCycle: () => {
         ambient.ring(0.5)
         useStore.getState().markPrayedToday()
-        notePrayerComplete(prayer.id)
         celebrateStreak()
       },
       onEnd: () => {
         useStore.getState().markPrayedToday()
-        notePrayerComplete(prayer.id)
+        if (!prayer.loop) notePrayerComplete(prayer.id)
         celebrateStreak()
         setPlaying(false)
         setPraying(false)

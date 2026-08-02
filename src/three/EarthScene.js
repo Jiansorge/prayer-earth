@@ -422,7 +422,7 @@ export class EarthScene {
       const W = this._maskData.width
       const H = this._maskData.height
       const out = this._maskData.data
-      const arcticRow = Math.floor((H * 10) / 180) // keep the far-north ice as water
+      const arcticRow = Math.floor((H * 4) / 180) // only the central polar ocean, real arctic land stays
       for (let y = 0; y < H; y++) {
         const sy = Math.floor((y / H) * c2.height)
         for (let x = 0; x < W; x++) {

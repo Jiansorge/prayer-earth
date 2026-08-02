@@ -214,9 +214,9 @@ class SpeechEngine {
   // highlight and a slow one isn't clipped.
   estimateMs(phrase) {
     const words = (phrase.t || '').split(/\s+/).length
-    const base = Math.max(1800, words * 380 + 500)
+    const base = Math.max(1200, words * 360 + 450)
     const rate = this.job?.rate ?? 1
-    return Math.max(1200, base / rate)
+    return Math.max(900, base / rate)
   }
 
   // text: { t, s } phrase; choose the speakable form for this device's voices.
