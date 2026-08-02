@@ -2,6 +2,7 @@ import React from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITIES } from '../data/prayers.js'
 import { useT } from '../i18n.js'
+import { requestPlayToggle } from '../playback.js'
 
 const ITEMS = [
   { id: 'home', icon: '🌙', labelKey: 'nav.home' },
@@ -16,7 +17,6 @@ export default function Nav() {
   const praying = useStore((s) => s.praying)
   const playing = useStore((s) => s.playing)
   const paused = useStore((s) => s.paused)
-  const requestPlayToggle = useStore((s) => s.requestPlayToggle)
   const t = useT()
 
   const onTap = (id) => {

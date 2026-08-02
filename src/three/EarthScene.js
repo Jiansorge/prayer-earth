@@ -37,6 +37,8 @@ const FRAG = /* glsl */ `
   uniform sampler2D uDayTex;
   uniform sampler2D uNightTex;
   uniform sampler2D uMaskTex;
+  uniform float uSurge;
+  uniform float uTier;
   varying vec3 vNormal;
   varying vec3 vPos;
 
@@ -61,8 +63,10 @@ const FRAG = /* glsl */ `
     // shows cleanly with no underwater or speckled boundaries.
     float landMask = texture2D(uMaskTex, uv).r;
 
-    vec3 oceanC = vec3(0.006, 0.02, 0.05);         // rich deep water
-    vec3 landC = vec3(0.05, 0.056, 0.054);          // darker neutral land, lighter than water
+    // the world's prayer accumulates forever — the ocean and land slowly
+    // brighten with it, a permanent shift in the living map
+    vec3 oceanC = vec3(0.006, 0.02, 0.05) + vec3(0.004, 0.012, 0.02) * uTier;
+    vec3 landC = vec3(0.05, 0.056, 0.054) + vec3(0.012, 0.014, 0.013) * uTier;
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -71,9 +75,10 @@ const FRAG = /* glsl */ `
 
     float night = 1.0 - smoothstep(-0.25, 0.08, ndl);
 
-    // the Earth's own breathing glow — kept subtle so the world stays deep
-    // and the prayer lights remain the brightest things on it
-    vec3 radiance = vec3(0.18, 0.35, 0.24) * uGlow * uGlow * 0.18;
+    // the Earth's own breathing glow — a gentle radiance that swells when many
+    // people are praying at once
+    vec3 radiance = vec3(0.18, 0.35, 0.24) * uGlow * uGlow * 0.18
+      + vec3(0.34, 0.55, 0.42) * uGlow * uSurge * 0.28;
 
     // polar aurora
     float polar = smoothstep(0.86, 0.99, abs(sp.y));
@@ -82,11 +87,16 @@ const FRAG = /* glsl */ `
 
     vec3 col = lit + radiance + aurora;
 
-    // a thin, faint edge where land meets water — sleek and modern
-    float landR = texture2D(uMaskTex, uv + vec2(0.0011, 0.0)).r;
-    float landT = texture2D(uMaskTex, uv + vec2(0.0, 0.0016)).r;
-    float coast = smoothstep(0.32, 0.5, landMask) * (1.0 - smoothstep(0.4, 0.58, min(landR, landT)));
-    col += coast * vec3(0.92, 0.95, 0.94) * 0.18;
+    // a hair-thin, luminous blue-white coastline — a bright filament of light
+    // tracing the continents, with a faint halo glow bleeding just off the edge
+    float landR = texture2D(uMaskTex, uv + vec2(0.0004, 0.0)).r;
+    float landT = texture2D(uMaskTex, uv + vec2(0.0, 0.0006)).r;
+    float edge = smoothstep(0.3, 0.5, landMask) * (1.0 - smoothstep(0.42, 0.48, min(landR, landT)));
+    float landF = texture2D(uMaskTex, uv + vec2(0.0015, 0.0)).r;
+    float landG = texture2D(uMaskTex, uv + vec2(0.0, 0.002)).r;
+    float glow = landMask * (1.0 - smoothstep(0.45, 0.55, min(landF, landG)));
+    vec3 coastCol = vec3(0.82, 0.94, 1.0) * (0.9 + 0.5 * uGlow + 0.4 * uSurge + 0.3 * uTier);
+    col += edge * coastCol * 0.85 + glow * coastCol * 0.4;
 
     // warm dawn band where day meets night
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));
@@ -184,6 +194,7 @@ const ATMO_VERT = /* glsl */ `
 const ATMO_FRAG = /* glsl */ `
   uniform float uGlow;
   uniform float uTime;
+  uniform float uSurge;
   varying vec3 vNormal;
   varying vec3 vPos;
   void main() {
@@ -197,7 +208,7 @@ const ATMO_FRAG = /* glsl */ `
     vec3 inner = mix(cool, warm, uGlow);
     vec3 shimmer = vec3(0.62, 0.46, 0.92) * (0.6 + 0.4 * sin(uTime * 0.55));
     vec3 col = inner * (0.7 + 0.3 * f) + shimmer * 0.28 * f;
-    float alpha = f * (0.16 + 0.3 * uGlow);
+    float alpha = f * (0.16 + 0.3 * uGlow + 0.2 * uSurge);
     gl_FragColor = vec4(col, alpha);
   }
 `
@@ -206,6 +217,7 @@ const ATMO_FRAG = /* glsl */ `
 const ETHEREAL_FRAG = /* glsl */ `
   uniform float uGlow;
   uniform float uTime;
+  uniform float uSurge;
   varying vec3 vNormal;
   varying vec3 vPos;
   void main() {
@@ -216,8 +228,10 @@ const ETHEREAL_FRAG = /* glsl */ `
     vec3 col = mix(vec3(0.32, 0.55, 0.72), vec3(0.95, 0.7, 0.4), uGlow);
     vec3 violet = vec3(0.6, 0.5, 0.9);
     col = mix(col, violet, 0.25 * (0.5 + 0.5 * sin(uTime * 0.3 + 1.5)));
-    float alpha = f * (0.12 + 0.18 * uGlow) * breathe;
-    gl_FragColor = vec4(col, alpha);
+    // aura waves: rings pulse outward from the globe when many pray at once
+    float waves = pow(0.5 + 0.5 * sin(rim * 40.0 - uTime * 3.2 + uGlow * 5.0), 3.0) * uSurge;
+    float alpha = (f * (0.12 + 0.18 * uGlow) + waves * 0.16) * breathe;
+    gl_FragColor = vec4(col + vec3(0.2, 0.35, 0.6) * waves * 0.4, alpha);
   }
 `
 
@@ -251,6 +265,8 @@ export class EarthScene {
     this.container = container
     this.backdrop = !!options.backdrop
     this.glow = 0.2
+    this.surge = 0
+    this.tier = 0
     this.autoRotate = true
     this.disposed = false
     this.hidden = false
@@ -320,6 +336,10 @@ export class EarthScene {
       this.moon = this.buildMoon()
       this.scene.add(this.moon)
 
+      // sparks that shimmer out as collective prayer surges
+      this.sparkPts = this.buildSparks()
+      this.scene.add(this.sparkPts)
+
       this.raycastDrag()
     }
 
@@ -377,7 +397,9 @@ export class EarthScene {
         uSunDir: { value: this.sunDir },
         uDayTex: { value: dayTex },
         uNightTex: { value: nightTex },
-        uMaskTex: { value: this.maskTex }
+        uMaskTex: { value: this.maskTex },
+        uSurge: { value: 0 },
+        uTier: { value: 0 }
       }
     })
     this.earth = new THREE.Mesh(geo, this.earthMat)
@@ -388,7 +410,7 @@ export class EarthScene {
       new THREE.ShaderMaterial({
         vertexShader: ATMO_VERT,
         fragmentShader: ATMO_FRAG,
-        uniforms: { uGlow: { value: this.glow }, uTime: { value: 0 } },
+        uniforms: { uGlow: { value: this.glow }, uTime: { value: 0 }, uSurge: { value: 0 } },
         transparent: true,
         blending: THREE.AdditiveBlending,
         side: THREE.BackSide,
@@ -404,7 +426,7 @@ export class EarthScene {
       new THREE.ShaderMaterial({
         vertexShader: ATMO_VERT,
         fragmentShader: ETHEREAL_FRAG,
-        uniforms: { uGlow: { value: this.glow }, uTime: { value: 0 } },
+        uniforms: { uGlow: { value: this.glow }, uTime: { value: 0 }, uSurge: { value: 0 } },
         transparent: true,
         blending: THREE.AdditiveBlending,
         side: THREE.BackSide,
@@ -465,6 +487,49 @@ export class EarthScene {
     return spr
   }
 
+  // Little sparks that shimmer out from the globe as collective prayer surges.
+  buildSparks() {
+    const N = 200
+    const pos = new Float32Array(N * 3)
+    const col = new Float32Array(N * 3)
+    this.sparkDir = new Float32Array(N * 3)
+    this.sparkPhase = new Float32Array(N)
+    for (let i = 0; i < N; i++) {
+      const th = Math.random() * Math.PI * 2
+      const ph = Math.acos(2 * Math.random() - 1)
+      const x = Math.sin(ph) * Math.cos(th)
+      const y = Math.cos(ph)
+      const z = Math.sin(ph) * Math.sin(th)
+      this.sparkDir[i * 3] = x
+      this.sparkDir[i * 3 + 1] = y
+      this.sparkDir[i * 3 + 2] = z
+      this.sparkPhase[i] = Math.random() * Math.PI * 2
+      const warm = Math.random()
+      col[i * 3] = warm > 0.5 ? 1 : 0.9
+      col[i * 3 + 1] = warm > 0.5 ? 0.92 : 0.86
+      col[i * 3 + 2] = 0.62
+      pos[i * 3] = x * 1.47
+      pos[i * 3 + 1] = y * 1.47
+      pos[i * 3 + 2] = z * 1.47
+    }
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3))
+    const m = new THREE.PointsMaterial({
+      size: 0.02,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      depthTest: false
+    })
+    const pts = new THREE.Points(g, m)
+    this.sparkPos = pos
+    this.sparkMat = m
+    return pts
+  }
+
   // A soft radial glow texture shared by all prayer lights.
   buildLightGlowTexture() {
     const S = 64
@@ -496,6 +561,8 @@ export class EarthScene {
     this._maskData = this._maskCtx.createImageData(W, H)
     this.maskTex = new THREE.CanvasTexture(c)
     this.maskTex.colorSpace = THREE.NoColorSpace
+    // Wraps horizontally so there's no seam at the anti-meridian (Pacific).
+    this.maskTex.wrapS = THREE.RepeatWrapping
     return this.maskTex
   }
 
@@ -602,6 +669,12 @@ export class EarthScene {
         }
       }
       out.set(soft)
+      // make the wrap seam exact: the first and last columns must match so no
+      // vertical line appears where the map wraps around the Pacific
+      for (let y = 0; y < H; y++) {
+        const last = y * W + W - 1
+        out[last * 4] = out[last * 4 + 1] = out[last * 4 + 2] = out[(y * W) * 4]
+      }
       this._maskCtx.putImageData(this._maskData, 0, 0)
       this.maskTex.needsUpdate = true
     } catch {}
@@ -829,6 +902,16 @@ export class EarthScene {
     this.glow = Math.max(0, Math.min(1, v))
   }
 
+  // How many souls are praying right now (surge) and how much prayer the world
+  // has ever carried (tier). Surge drives sparks + aura waves; tier permanently
+  // brightens the map as the world's prayer accumulates.
+  setMood(people, totalSeconds) {
+    const surge = Math.min(1, (people || 0) / 30)
+    const tier = Math.min(1, Math.log10(1 + (totalSeconds || 0)) / 6.3)
+    this.surge = surge
+    this.tier = tier
+  }
+
   animate = () => {
     if (this.disposed) return
     requestAnimationFrame(this.animate)
@@ -855,13 +938,33 @@ export class EarthScene {
 
     this.earthMat.uniforms.uTime.value = t
     this.earthMat.uniforms.uGlow.value = this.glow
+    if (this.earthMat.uniforms.uSurge) this.earthMat.uniforms.uSurge.value = this.surge || 0
+    if (this.earthMat.uniforms.uTier) this.earthMat.uniforms.uTier.value = this.tier || 0
     if (this.atmo) {
       this.atmo.material.uniforms.uGlow.value = this.glow
       this.atmo.material.uniforms.uTime.value = t
+      if (this.atmo.material.uniforms.uSurge) this.atmo.material.uniforms.uSurge.value = this.surge || 0
     }
     if (this.ether) {
       this.ether.material.uniforms.uGlow.value = this.glow
       this.ether.material.uniforms.uTime.value = t
+      if (this.ether.material.uniforms.uSurge) this.ether.material.uniforms.uSurge.value = this.surge || 0
+    }
+
+    // sparks shimmer out from the globe when collective prayer surges
+    if (this.sparkPts) {
+      const s = this.surge || 0
+      this.sparkMat.opacity = Math.min(0.9, s * 1.4)
+      if (s > 0.02) {
+        const N = this.sparkPhase.length
+        for (let i = 0; i < N; i++) {
+          const rad = 1.47 + Math.sin(t * 1.7 + this.sparkPhase[i]) * 0.35 * s
+          this.sparkPos[i * 3] = this.sparkDir[i * 3] * rad
+          this.sparkPos[i * 3 + 1] = this.sparkDir[i * 3 + 1] * rad
+          this.sparkPos[i * 3 + 2] = this.sparkDir[i * 3 + 2] * rad
+        }
+        this.sparkPos.needsUpdate = true
+      }
     }
     if (this.halo) this.halo.material.uniforms.uGlow.value = this.glow
     if (this.stars) this.stars.material.opacity = 0.72 + 0.2 * Math.sin(t * 0.7)

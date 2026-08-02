@@ -28,7 +28,6 @@ export default function PrayerPage() {
   const setPlaying = useStore((s) => s.setPlaying)
   const paused = useStore((s) => s.paused)
   const setPaused = useStore((s) => s.setPaused)
-  const playTick = useStore((s) => s.playTick)
   const addLocalPrayer = useStore((s) => s.addLocalPrayer)
   const addPrayerSecond = useStore((s) => s.addPrayerSecond)
   const notePrayerComplete = useStore((s) => s.notePrayerComplete)
@@ -77,11 +76,14 @@ export default function PrayerPage() {
     return () => ch.close()
   }, [playing])
 
-  // The footer play button asks us to toggle.
+  // The footer play button from home/earth lands here ready to play.
   useEffect(() => {
-    if (playTick > 0) togglePlay()
+    if (useStore.getState().pendingPlay) {
+      useStore.getState().setPendingPlay(false)
+      startJob()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playTick])
+  }, [])
 
   // If the tab is hidden, the user isn't really praying — pause quietly.
   useEffect(() => {
@@ -240,12 +242,15 @@ export default function PrayerPage() {
     return () => clearInterval(t)
   }, [playing, prayer, addLocalPrayer, addPrayerSecond])
 
-  // Always send the presence signal to the world when leaving
+  // Leaving the prayer tab: pause gracefully so the footer can resume the same
+  // prayer later, and always drop our presence from the world.
   useEffect(() => {
     return () => {
+      const s = useStore.getState()
+      if (s.playing && !s.paused) s.setPaused(true)
+      speech.stop()
       setPraying(false)
       syncClient.presenceNow()
-      speech.stop()
     }
   }, [setPraying])
 
@@ -255,17 +260,17 @@ export default function PrayerPage() {
       return
     }
     if (!paused) {
-      try {
-        window.speechSynthesis.pause()
-      } catch {}
+      speech.pause()
       setPaused(true)
       setPraying(false)
       syncClient.presenceNow()
       ambient.setLevel(0.35)
     } else {
-      try {
-        window.speechSynthesis.resume()
-      } catch {}
+      // Resume. If the job died (we left the tab and came back), start fresh.
+      if (!speech.resume()) {
+        startJob()
+        return
+      }
       setPaused(false)
       setPraying(true)
       syncClient.presenceNow()

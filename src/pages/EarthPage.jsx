@@ -10,6 +10,7 @@ export default function EarthPage() {
   const [webglFail, setWebglFail] = useState(false)
   const glowPct = useStore((s) => Math.round(s.getGlow() * 100))
   const people = useStore((s) => s.peoplePraying)
+  const totalSeconds = useStore((s) => s.totalPrayerSeconds)
   const connected = useStore((s) => s.connected)
   const lights = useStore((s) => s.lights)
   const lightSpirits = useStore((s) => s.lightSpirits)
@@ -42,7 +43,8 @@ export default function EarthPage() {
     if (!scene) return
     scene.setGlow(useStore.getState().getGlow())
     scene.setLights(lights, lightSpirits)
-  }, [glowPct, lights, lightSpirits])
+    scene.setMood(people, totalSeconds)
+  }, [glowPct, lights, lightSpirits, people, totalSeconds])
 
   if (webglFail) {
     const company = connected

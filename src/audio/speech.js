@@ -532,6 +532,10 @@ class SpeechEngine {
     let i = j.index || 0
     const step = () => {
       if (!j.active || this.job !== j) return
+      if (j.paused) {
+        j.timer = setTimeout(step, 300)
+        return
+      }
       if (chant) ambient.hum(0.65)
       j.onPhrase(i, opts.phrases[i])
       const dur = this.estimateMs(opts.phrases[i])
@@ -558,6 +562,35 @@ class SpeechEngine {
       clearTimeout(j.advTimer)
       if (j.onEnd) j.onEnd()
     }
+  }
+
+  // Gracefully pause mid-utterance. The job survives so it can be resumed.
+  pause() {
+    if (this.cloudAudio) {
+      try {
+        this.cloudAudio.pause()
+      } catch {}
+    }
+    if (this.job) this.job.paused = true
+    try {
+      this.synth.pause()
+    } catch {}
+  }
+
+  // Resume a paused job, or report that there is nothing left to resume.
+  resume() {
+    const j = this.job
+    if (!j || !j.active) return false
+    j.paused = false
+    if (this.cloudAudio) {
+      try {
+        this.cloudAudio.play()
+      } catch {}
+    }
+    try {
+      this.synth.resume()
+    } catch {}
+    return true
   }
 
   stop() {
