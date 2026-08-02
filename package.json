@@ -10,7 +10,10 @@
     "preview": "vite preview",
     "server": "node server/index.js",
     "start": "node scripts/start-all.mjs",
-    "test": "node scripts/test-server.mjs && node scripts/test-usage.mjs"
+    "serve": "npm run build && node server/index.js",
+    "test": "node scripts/test-server.mjs && node scripts/test-usage.mjs",
+    "test:prod": "node scripts/test-prod.mjs",
+    "test:live": "node scripts/test-live.mjs"
   },
   "dependencies": {
     "qrcode": "^1.5.4",

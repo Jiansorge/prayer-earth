@@ -1,0 +1,13 @@
+# Render.com blueprint — one web service runs the whole app: static build + sync socket.
+# The client connects to the socket on the same origin, so no extra services needed.
+services:
+  - type: web
+    name: prayer-earth
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: node server/index.js
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 10000

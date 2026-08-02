@@ -5,3 +5,6 @@ server/data-test.json
 
 # Godot import artifacts (accidentally copied in from the healing game)
 *.import
+
+# local QA captures
+qa-shots/

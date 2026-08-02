@@ -45,11 +45,16 @@ function lightKey(lat, lon) {
   return `${la},${lo}`
 }
 
-// Same host that served the page, port 8787 by default — so a phone on the
-// same network as the server joins the shared prayer. Override in production.
+// Same host that served the page. In development the socket lives on 8787
+// (a separate process); in production one process serves both the app and the
+// socket on the same port, so we connect to the page's own origin.
 function defaultUrl() {
   const host = window.location.hostname || 'localhost'
   const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
+  if (import.meta.env.PROD) {
+    const port = window.location.port
+    return `${proto}://${host}${port ? `:${port}` : ''}`
+  }
   return `${proto}://${host}:8787`
 }
 

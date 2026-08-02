@@ -3,11 +3,66 @@
 // collective prayer time, and broadcasts it to everyone.
 
 import { WebSocketServer } from 'ws'
+import { createServer } from 'node:http'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFile, stat } from 'node:fs/promises'
+import { extname, join, normalize } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const PORT = process.env.PORT || 8787
+const DIST = fileURLToPath(new URL('../dist/', import.meta.url))
 
-const wss = new WebSocketServer({ port: PORT })
+const MIME = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.ico': 'image/x-icon'
+}
+
+// Serve the built app. Hash-named assets are cacheable forever; everything
+// else (index.html, sw.js) is served fresh. Unknown paths fall back to
+// index.html so deep links never 404 (routing is hash-based anyway).
+async function serveStatic(req, res) {
+  let urlPath = '/'
+  try {
+    urlPath = decodeURIComponent(new URL(req.url, 'http://x').pathname)
+  } catch {}
+  const filePath = normalize(join(DIST, urlPath))
+  if (!filePath.startsWith(DIST)) {
+    res.writeHead(403)
+    res.end('Forbidden')
+    return
+  }
+  let target = filePath
+  try {
+    const info = await stat(target)
+    if (info.isDirectory()) target = join(target, 'index.html')
+  } catch {
+    target = join(DIST, 'index.html')
+  }
+  try {
+    const body = await readFile(target)
+    const isAsset = /\/assets\//.test(urlPath)
+    res.writeHead(200, {
+      'Content-Type': MIME[extname(target)] || 'application/octet-stream',
+      'Cache-Control': isAsset ? 'public, max-age=31536000, immutable' : 'no-cache'
+    })
+    res.end(body)
+  } catch {
+    res.writeHead(404)
+    res.end('Not found')
+  }
+}
+
+const httpServer = createServer(serveStatic)
+const wss = new WebSocketServer({ server: httpServer })
 
 let people = 0
 let totalPrayerSeconds = 0
@@ -203,4 +258,6 @@ wss.on('connection', (ws) => {
   })
 })
 
-console.log(`☮  Prayer Earth server listening on ws://localhost:${PORT}`)
+httpServer.listen(PORT, () => {
+  console.log(`☮  Prayer Earth is up: app + sync on port ${PORT}`)
+})

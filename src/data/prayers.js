@@ -637,6 +637,319 @@ export const SPIRITUALITIES = [
     ]
   },
   {
+    id: 'taoism',
+    name: 'Taoism',
+    emoji: '☯️',
+    glow: 'rgba(200, 180, 255, 0.24)',
+    tagline: 'Harmony, wu wei, and the flow of the Dao.',
+    prayers: [
+      {
+        id: 'qingjing',
+        title: 'The Classic of Purity and Stillness',
+        lang: 'zh',
+        langLabel: '中文 · Chinese',
+        phrases: [
+          { t: '大道無形，生育天地；', s: 'Dàodào wúxíng, shēngyù tiāndì;', e: 'The Great Dao has no form, yet gives birth to heaven and earth.' },
+          { t: '大道無情，運行日月；', s: 'Dàodào wúqíng, yùnxíng rìyuè;', e: 'The Great Dao has no feelings, yet moves the sun and moon.' },
+          { t: '大道無名，長養萬物。', s: 'Dàodào wúmíng, zhǎngyǎng wànwù.', e: 'The Great Dao has no name, yet nourishes all things.' },
+          { t: '人能常清靜，天地悉皆歸。', s: 'Rén néng cháng qīngjìng, tiāndì xī jiē guī.', e: 'If a person remains always clear and still, all of heaven and earth returns to them.' }
+        ],
+        translation: 'A core Taoist text on emptying the mind to return to the natural, spontaneous flow of the Dao.'
+      },
+      {
+        id: 'dao-de-jing-opening',
+        title: 'The Dao That Can Be Told',
+        lang: 'zh',
+        langLabel: '中文 · Chinese',
+        phrases: [
+          { t: '道可道，非常道；', s: 'Dào kě dào, fēi cháng dào;', e: 'The Dao that can be told is not the eternal Dao.' },
+          { t: '名可名，非常名。', s: 'Míng kě míng, fēi cháng míng.', e: 'The name that can be named is not the eternal name.' },
+          { t: '無名，天地之始；', s: 'Wúmíng, tiāndì zhī shǐ;', e: 'The nameless is the beginning of heaven and earth.' },
+          { t: '有名，萬物之母。', s: 'Yǒumíng, wànwù zhī mǔ.', e: 'The named is the mother of the ten thousand things.' }
+        ],
+        translation: 'The opening of the Dao De Jing — the mystery beyond words from which all things arise.'
+      },
+      {
+        id: 'wu-wei',
+        title: 'A Prayer of Wu Wei',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Let me act without forcing,' },
+          { t: 'and flow like water around every stone.' },
+          { t: 'Let me yield to the season of this day,' },
+          { t: 'and trust the silent work of not-doing.' },
+          { t: 'In letting go, may I be filled;' },
+          { t: 'in stillness, may I be moved.' }
+        ],
+        translation: 'A meditation on wu wei — effortless action in harmony with the Dao.'
+      },
+      {
+        id: 'ganying',
+        title: 'From the Treatise on Response and Retribution',
+        lang: 'zh',
+        langLabel: '中文 · Chinese',
+        phrases: [
+          { t: '禍福無門，惟人自召；', s: 'Huò fú wú mén, wéi rén zì zhào;', e: 'Fortune and misfortune have no door; only a person summons them.' },
+          { t: '善惡之報，如影隨形。', s: 'Shàn è zhī bào, rú yǐng suí xíng.', e: 'The reward of good and evil follows like a shadow.' },
+          { t: '是道則進，非道則退。', s: 'Shì dào zé jìn, fēi dào zé tuì.', e: 'Walk the way of goodness; step back from what is not the way.' }
+        ],
+        translation: 'A famous Taoist teaching on moral living — the quiet law by which good deeds find their way home.'
+      },
+      {
+        id: 'three-treasures',
+        title: 'The Three Treasures',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'I hold three treasures close and guard them well:' },
+          { t: 'compassion, frugality, and humility.' },
+          { t: 'For the compassionate are truly brave,' },
+          { t: 'the frugal are truly generous,' },
+          { t: 'and those who do not lead are able to lead all.' },
+          { t: 'Dare to be gentle. That is to accord with heaven.' }
+        ],
+        translation: 'The three treasures of the Dao De Jing — the quiet strengths that keep a life in harmony.'
+      }
+    ]
+  },
+  {
+    id: 'shinto',
+    name: 'Shinto',
+    emoji: '⛩️',
+    glow: 'rgba(255, 150, 120, 0.24)',
+    tagline: 'Kami, purity, and gratitude before nature.',
+    prayers: [
+      {
+        id: 'oharai',
+        title: 'Ōharae — The Great Purification',
+        lang: 'ja',
+        langLabel: '日本語 · Japanese',
+        phrases: [
+          { t: '祓へ給へ、清め給へ', s: 'Harae tamae, kiyome tamae', e: 'Purify us, cleanse us.' },
+          { t: '高天原に神留り坐す', s: 'Takama-ga-hara ni kamuzumari-masu', e: 'The kami who abide in the High Plain of Heaven,' },
+          { t: '諸々の禍事・罪・穢れを', s: 'Moromoro no magagoto, tsumi, kegare o', e: 'take away every misfortune, fault, and defilement,' },
+          { t: '祓へ給ひ清め給ふことを', s: 'Harae-tamai kiyome-tamau koto o', e: 'and purify them away.' }
+        ],
+        translation: 'The ancient rite of purification spoken at shrines — an offering of cleansing before the kami.'
+      },
+      {
+        id: 'amaterasu',
+        title: 'Before Amaterasu',
+        lang: 'ja',
+        langLabel: '日本語 · Japanese',
+        phrases: [
+          { t: '天照大御神', s: 'Amaterasu Ōmikami', e: 'Great Shining One of Heaven,' },
+          { t: '此の朝の光をありがとう', s: 'Kono asa no hikari o arigatō', e: 'thank you for the light of this morning.' },
+          { t: '心を静かに清め', s: 'Kokoro o shizuka ni kiyome', e: 'quiet my heart and make it pure,' },
+          { t: '今日を誠実に生きん。', s: 'Kyō o seijitsu ni ikin.', e: 'that I may live this day in honesty and truth.' }
+        ],
+        translation: 'A simple morning offering of gratitude to the Sun Goddess — the source of light and life.'
+      },
+      {
+        id: 'misono',
+        title: 'A Norito of the Heart',
+        lang: 'ja',
+        langLabel: '日本語 · Japanese',
+        phrases: [
+          { t: '清き明き直きこころにて', s: 'Kiyoki aki tadaki kokoro nite', e: 'With a heart pure, open, and upright,' },
+          { t: '言挙げせぬ道を行き', s: 'Kotoage senu michi o iki', e: 'I walk the path of quiet sincerity,' },
+          { t: '神の恵みに感謝します。', s: 'Kami no megumi ni kansha shimasu.', e: 'and give thanks for the blessings of the kami.' }
+        ],
+        translation: 'A short norito of sincerity — a clean heart offered before the divine presence in all things.'
+      },
+      {
+        id: 'kami-presence',
+        title: 'In the Presence of the Kami',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'The divine dwells in the mountain, the river, and the tree.' },
+          { t: 'In the breath of morning and the hush of the shrine,' },
+          { t: 'I bow in gratitude before what is greater than me.' },
+          { t: 'May my hands do no harm,' },
+          { t: 'and my steps disturb nothing.' },
+          { t: 'This day is a gift. I receive it with both hands.' }
+        ],
+        translation: 'A reflection on the Shinto sense of the sacred — the kami present in all of nature.'
+      }
+    ]
+  },
+  {
+    id: 'jainism',
+    name: 'Jainism',
+    emoji: '🪷',
+    glow: 'rgba(255, 210, 200, 0.24)',
+    tagline: 'Ahimsa, reverence for all life, and inner freedom.',
+    prayers: [
+      {
+        id: 'navakar',
+        title: 'The Navakār Mantra',
+        lang: 'pra',
+        langLabel: 'प्राकृत · Prakrit',
+        phrases: [
+          { t: 'णमो अरिहंताणं', s: 'Namo arihantāṇaṁ', e: 'I bow to the perfected ones.' },
+          { t: 'णमो सिद्धाणं', s: 'Namo siddhāṇaṁ', e: 'I bow to the liberated souls.' },
+          { t: 'णमो आइरियाणं', s: 'Namo āiriyāṇaṁ', e: 'I bow to the spiritual teachers.' },
+          { t: 'णमो उवज्झायाणं', s: 'Namo uvajjhāyāṇaṁ', e: 'I bow to the preceptors.' },
+          { t: 'णमो लोए सव्व साहूणं', s: 'Namo loe savva sāhūṇaṁ', e: 'I bow to all the saints in the world.' }
+        ],
+        translation: 'The supreme Jain mantra of veneration — bowing to those who have freed themselves, and to all seekers on the path.'
+      },
+      {
+        id: 'ahimsa',
+        title: 'Ahimsā Paramo Dharmaḥ',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit',
+        phrases: [
+          { t: 'अहिंसा परमो धर्मः', s: 'Ahimsā paramo dharmaḥ', e: 'Non-violence is the supreme religion.' },
+          { t: 'अहिंसा परमो तपः', s: 'Ahimsā paramo tapaḥ', e: 'Non-violence is the highest penance.' },
+          { t: 'अहिंसा परमं सत्यं', s: 'Ahimsā paramaṁ satyam', e: 'Non-violence is the highest truth,' },
+          { t: 'अहिंसा परमं ज्ञानम्', s: 'Ahimsā paramaṁ jñānam', e: 'and non-violence the highest knowledge.' }
+        ],
+        translation: 'The great Jain declaration — harmlessness toward every living being as the root of all virtue.'
+      },
+      {
+        id: 'khamavani',
+        title: 'Khamāvaṇī — The Forgiveness Prayer',
+        lang: 'pra',
+        langLabel: 'प्राकृत · Prakrit',
+        phrases: [
+          { t: 'खमेमि सव्वे जीवा', s: 'Khamemi savve jīvā', e: 'I forgive all living beings.' },
+          { t: 'सव्वे जीवा खमंतु मे', s: 'Savve jīvā khamantu me', e: 'May all living beings forgive me.' },
+          { t: 'मित्ति मे सव्व भूएसु', s: 'Mitti me savva bhūesu', e: 'I am a friend to all beings.' },
+          { t: 'वेरं मझं न केणइ', s: 'Veraṁ majjhaṁ na keṇai', e: 'I hold enmity with no one.' }
+        ],
+        translation: 'The Jain prayer of reconciliation, spoken at the close of the holy days — forgiveness given and received.'
+      },
+      {
+        id: 'mahavira-vow',
+        title: 'The Vow of Mahāvīra',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'May all beings be at ease.' },
+          { t: 'May no creature be harmed by thought, word, or deed of mine.' },
+          { t: 'Let me speak the truth, and harm none by it.' },
+          { t: 'Let me be content with little, and generous with all.' },
+          { t: 'In this vast web of life, I take my place gently.' }
+        ],
+        translation: 'A reflection on the five great vows of Mahavira — non-violence, truth, non-stealing, chastity, and non-attachment.'
+      }
+    ]
+  },
+  {
+    id: 'bahai',
+    name: 'Baháʼí Faith',
+    emoji: '✴️',
+    glow: 'rgba(220, 180, 120, 0.24)',
+    tagline: 'Oneness of God, oneness of religion, oneness of humankind.',
+    prayers: [
+      {
+        id: 'obligatory-short',
+        title: 'The Short Obligatory Prayer',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'I bear witness, O my God, that Thou hast created me to know Thee and to worship Thee.' },
+          { t: 'I testify, at this moment, to my powerlessness and to Thy might,' },
+          { t: 'to my poverty and to Thy wealth.' },
+          { t: 'There is none other God but Thee, the Help in Peril, the Self-Subsisting.' }
+        ],
+        translation: 'The daily obligatory prayer of the Baháʼí Faith — a witness of trust and surrender before God.'
+      },
+      {
+        id: 'son-of-spirit',
+        title: 'O Son of Spirit',
+        lang: 'en',
+        langLabel: 'English · from the Hidden Words',
+        phrases: [
+          { t: 'O Son of Spirit! My first counsel is this: possess a pure, kindly, and radiant heart,' },
+          { t: 'that thine may be a sovereignty ancient, imperishable, and everlasting.' },
+          { t: 'The best beloved of all things in My sight is Justice;' },
+          { t: 'turn not away therefrom if thou desirest Me, and neglect it not' },
+          { t: 'that I may confide in thee.' }
+        ],
+        translation: 'A passage from Baháʼuʼlláhʼs Hidden Words — the counsels that begin the spiritual life.'
+      },
+      {
+        id: 'unity',
+        title: 'O Thou Kind Lord',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'O Thou kind Lord! Unite all.' },
+          { t: 'Let the religions agree, and make us as brothers and sisters,' },
+          { t: 'that we may treat one another as we love ourselves.' },
+          { t: 'We are all the fruits of one tree, and the leaves of one branch.' }
+        ],
+        translation: 'A prayer for unity from the Baháʼí writings — one humanity, one tree.'
+      },
+      {
+        id: 'remover-difficulties',
+        title: 'Remover of Difficulties',
+        lang: 'en',
+        langLabel: 'English · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Is there any Remover of difficulties save God?' },
+          { t: 'Say: Praised be God! He is God! All are His servants, and all abide by His bidding!' }
+        ],
+        translation: 'A short, beloved prayer of Baháʼuʼlláh recited in times of hardship and need.'
+      }
+    ]
+  },
+  {
+    id: 'earthway',
+    name: 'Earthway · Indigenous',
+    emoji: '🌿',
+    glow: 'rgba(120, 200, 140, 0.24)',
+    tagline: 'All my relations — gratitude to the living world.',
+    prayers: [
+      {
+        id: 'mitakuye-oyasin',
+        title: 'Mitákuye Oyásʼiŋ — All My Relations',
+        lang: 'lkt',
+        langLabel: 'Lakȟótiyapi · Lakota · repeated',
+        loop: true,
+        phrases: [
+          { t: 'Mitákuye Oyásʼiŋ', s: 'Mitákuye Oyásʼiŋ', e: 'All my relations — we are all connected.' },
+          { t: 'Mitákuye Oyásʼiŋ', s: 'Mitákuye Oyásʼiŋ', e: 'All my relations — we are all connected.' },
+          { t: 'Mitákuye Oyásʼiŋ', s: 'Mitákuye Oyásʼiŋ', e: 'All my relations — we are all connected.' }
+        ],
+        translation: 'A Lakota prayer of kinship — "all my relations" — repeated as a meditation on our connection to every living thing.'
+      },
+      {
+        id: 'hooponopono',
+        title: 'Hoʼoponopono',
+        lang: 'haw',
+        langLabel: 'ʻŌlelo Hawaiʻi · Hawaiian',
+        phrases: [
+          { t: 'E kala mai iaʻu', s: 'E kala mai iaʻu', e: 'Please forgive me.' },
+          { t: 'Ua kala aku au iā ʻoe', s: 'Ua kala aku au iā ʻoe', e: 'I forgive you.' },
+          { t: 'Mahalo iā ʻoe', s: 'Mahalo iā ʻoe', e: 'Thank you.' },
+          { t: 'Aloha wau iā ʻoe', s: 'Aloha wau iā ʻoe', e: 'I love you.' }
+        ],
+        translation: 'The Hawaiian practice of reconciliation and healing — forgiveness, gratitude, and love offered to set things right.'
+      },
+      {
+        id: 'seven-directions',
+        title: 'A Prayer to the Seven Directions',
+        lang: 'en',
+        langLabel: 'English · shared with gratitude',
+        phrases: [
+          { t: 'To the East, where the sun rises, we give thanks for new beginnings.' },
+          { t: 'To the South, where warmth grows, we give thanks for abundance.' },
+          { t: 'To the West, where the day rests, we give thanks for what is fulfilled.' },
+          { t: 'To the North, where wisdom lives, we give thanks for endurance.' },
+          { t: 'To the sky above and the earth below,' },
+          { t: 'and to the center where we stand — all my relations. Aho.' }
+        ],
+        translation: 'A widely shared honoring of the directions — a prayer of gratitude to the world that holds us.'
+      }
+    ]
+  },
+  {
     id: 'nonreligious',
     name: 'Agnostic · Atheist',
     emoji: '🌌',
