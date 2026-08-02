@@ -31,6 +31,9 @@ export const useStore = create(
       lightSpirits: {},
       feed: [],
 
+      // who you are on the Earth: a sacred name, a nature avatar, a light
+      profile: { name: '', avatar: '🌿', color: '#7fc9a0' },
+
       localPrayerSeconds: 0,
       loopOn: true,
       voiceURI: null,
@@ -85,6 +88,7 @@ export const useStore = create(
       setSpiritCounts: (spiritCounts) => set({ spiritCounts }),
       setLights: (lights) => set({ lights }),
       setLightSpirits: (lightSpirits) => set({ lightSpirits }),
+      setProfile: (patch) => set((s) => ({ profile: { ...s.profile, ...patch } })),
       setPrayerTotals: (prayerTotals) => set({ prayerTotals }),
       setSpiritTotals: (spiritTotals) => set({ spiritTotals }),
       setFeed: (feed) => set({ feed }),
@@ -193,6 +197,7 @@ export const useStore = create(
         ambienceLevel: s.ambienceLevel,
         volume: s.volume,
         locale: s.locale,
+        profile: s.profile,
         prayerCompletions: s.prayerCompletions,
         prayerDayStats: s.prayerDayStats,
         streak: s.streak,

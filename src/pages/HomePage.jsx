@@ -28,6 +28,7 @@ export default function HomePage() {
   const streak = useStore((s) => s.streak)
   const bestStreak = useStore((s) => s.bestStreak)
   const lastPrayedDay = useStore((s) => s.lastPrayedDay)
+  const profile = useStore((s) => s.profile)
   const [, force] = useState(0)
   const t = useT()
 
@@ -61,6 +62,11 @@ export default function HomePage() {
       <WorldFeed limit={10} />
 
       <div className="life-card">
+        <span className="you-avatar" style={{ borderColor: profile.color }}>
+          {profile.avatar}
+        </span>
+        <span className="you-name">{profile.name || t('profile.you')}</span>
+        <span className="life-sep">·</span>
         <span className="life-dot" />
         <span>
           {t('home.carried', { time: fmtLife(localPrayerSeconds) })}

@@ -74,6 +74,13 @@ function pickName() {
   return `${a} ${n}`
 }
 
+// The name the user chose in their profile (falls back to a gentle random one
+// the first time, which is then saved so it stays stable).
+function profileName() {
+  const p = useStore.getState().profile
+  return (p.name || '').trim() || pickName()
+}
+
 const SIM_FEED_NAMES = ['Lotus', 'Noor', 'River', 'Kavi', 'Amara', 'Rumi', 'Mei', 'Pax']
 
 class SyncClient {
@@ -89,6 +96,12 @@ class SyncClient {
   start() {
     this.stop()
     this.ensureLocation()
+    // settle on a stable name the very first time (the random one is saved so
+    // the world knows you the next time you arrive)
+    if (!useStore.getState().profile.name) {
+      useStore.getState().setProfile({ name: pickName() })
+    }
+    this.name = profileName()
     this.connect()
   }
 
@@ -197,14 +210,14 @@ class SyncClient {
       if (this.mode === 'sim' && this.sim) this.simState()
       return
     }
-    this.sock.send(
-      JSON.stringify({
-        type: 'presence',
-        praying: s.praying,
-        prayerId: s.praying ? s.prayerId : null,
-        spiritId: s.praying ? s.spiritId : null,
-        name: this.name,
-        lat: this.loc ? this.loc.lat : null,
+      this.sock.send(
+        JSON.stringify({
+          type: 'presence',
+          praying: s.praying,
+          prayerId: s.praying ? s.prayerId : null,
+          spiritId: s.praying ? s.spiritId : null,
+          name: profileName(),
+          lat: this.loc ? this.loc.lat : null,
         lon: this.loc ? this.loc.lon : null
       })
     )
@@ -286,7 +299,7 @@ class SyncClient {
       this.simFeed.push({
         id: ++this.simSeq,
         t: now,
-        name: this.name,
+        name: profileName(),
         spiritId: s.spiritId,
         prayerId: s.prayerId
       })

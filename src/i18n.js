@@ -145,7 +145,13 @@ const en = {
   'trad.bahai.name': 'Baháʼí Faith',
   'trad.bahai.tagline': 'Oneness of God, oneness of religion, oneness of humankind.',
   'trad.earthway.name': 'Earthway · Indigenous',
-  'trad.earthway.tagline': 'All my relations — gratitude to the living world.'
+  'trad.earthway.tagline': 'All my relations — gratitude to the living world.',
+  'profile.title': 'Your presence',
+  'profile.nameHint': 'What the world sees when you pray.',
+  'profile.namePlaceholder': 'Sacred name',
+  'profile.avatar': 'Avatar',
+  'profile.color': 'Your light',
+  'profile.you': 'you'
 }
 
 const es = {
@@ -289,7 +295,13 @@ const es = {
   'trad.bahai.name': 'Fe baháʼí',
   'trad.bahai.tagline': 'Unidad de Dios, unidad de religión, unidad de la humanidad.',
   'trad.earthway.name': 'Camino de la Tierra · Indígena',
-  'trad.earthway.tagline': 'Todos mis parientes — gratitud al mundo vivo.'
+  'trad.earthway.tagline': 'Todos mis parientes — gratitud al mundo vivo.',
+  'profile.title': 'Tu presencia',
+  'profile.nameHint': 'Lo que el mundo ve cuando rezas.',
+  'profile.namePlaceholder': 'Nombre sagrado',
+  'profile.avatar': 'Avatar',
+  'profile.color': 'Tu luz',
+  'profile.you': 'tú'
 }
 
 const fr = {
@@ -433,7 +445,13 @@ const fr = {
   'trad.bahai.name': 'Foi baháʼíe',
   'trad.bahai.tagline': 'Unité de Dieu, unité de la religion, unité de lʼhumanité.',
   'trad.earthway.name': 'Voie de la Terre · Autochtone',
-  'trad.earthway.tagline': 'Toutes mes relations — gratitude envers le monde vivant.'
+  'trad.earthway.tagline': 'Toutes mes relations — gratitude envers le monde vivant.',
+  'profile.title': 'Votre présence',
+  'profile.nameHint': 'Ce que le monde voit quand vous priez.',
+  'profile.namePlaceholder': 'Nom sacré',
+  'profile.avatar': 'Avatar',
+  'profile.color': 'Votre lumière',
+  'profile.you': 'vous'
 }
 
 const de = {
@@ -577,7 +595,13 @@ const de = {
   'trad.bahai.name': 'Baháʼí-Glaube',
   'trad.bahai.tagline': 'Einheit Gottes, Einheit der Religion, Einheit der Menschheit.',
   'trad.earthway.name': 'Erdenweg · Indigen',
-  'trad.earthway.tagline': 'Alle meine Verwandten — Dankbarkeit gegenüber der lebendigen Welt.'
+  'trad.earthway.tagline': 'Alle meine Verwandten — Dankbarkeit gegenüber der lebendigen Welt.',
+  'profile.title': 'Deine Präsenz',
+  'profile.nameHint': 'Was die Welt sieht, wenn du betest.',
+  'profile.namePlaceholder': 'Heiliger Name',
+  'profile.avatar': 'Avatar',
+  'profile.color': 'Dein Licht',
+  'profile.you': 'du'
 }
 
 const hi = {
@@ -721,7 +745,13 @@ const hi = {
   'trad.bahai.name': 'बहाई धर्म',
   'trad.bahai.tagline': 'ईश्वर की एकता, धर्म की एकता, मानवता की एकता।',
   'trad.earthway.name': 'पृथ्वी-मार्ग · आदिवासी',
-  'trad.earthway.tagline': 'मेरे सभी संबंध — जीवित दुनिया के प्रति कृतज्ञता।'
+  'trad.earthway.tagline': 'मेरे सभी संबंध — जीवित दुनिया के प्रति कृतज्ञता।',
+  'profile.title': 'आपकी उपस्थिति',
+  'profile.nameHint': 'दुनिया आपकी प्रार्थना करते समय क्या देखती है।',
+  'profile.namePlaceholder': 'पवित्र नाम',
+  'profile.avatar': 'अवतार',
+  'profile.color': 'आपका प्रकाश',
+  'profile.you': 'आप'
 }
 
 const pt = {
@@ -810,7 +840,13 @@ const pt = {
   'trad.shinto.name': 'Xintoísmo', 'trad.shinto.tagline': 'Kami, pureza e gratidão diante da natureza.',
   'trad.jainism.name': 'Jainismo', 'trad.jainism.tagline': 'Ahimsa, reverência por toda vida e liberdade interior.',
   'trad.bahai.name': 'Fé baháʼí', 'trad.bahai.tagline': 'Unidade de Deus, unidade da religião, unidade da humanidade.',
-  'trad.earthway.name': 'Caminho da Terra · Indígena', 'trad.earthway.tagline': 'Todos os meus parentes — gratidão ao mundo vivo.'
+  'trad.earthway.name': 'Caminho da Terra · Indígena', 'trad.earthway.tagline': 'Todos os meus parentes — gratidão ao mundo vivo.',
+  'profile.title': 'Sua presença',
+  'profile.nameHint': 'O que o mundo vê quando você reza.',
+  'profile.namePlaceholder': 'Nome sagrado',
+  'profile.avatar': 'Avatar',
+  'profile.color': 'Sua luz',
+  'profile.you': 'você'
 }
 
 const it = {
@@ -899,7 +935,13 @@ const it = {
   'trad.shinto.name': 'Shintoismo', 'trad.shinto.tagline': 'Kami, purezza e gratitudine davanti alla natura.',
   'trad.jainism.name': 'Giainismo', 'trad.jainism.tagline': 'Ahimsa, rispetto per ogni vita e libertà interiore.',
   'trad.bahai.name': 'Fede baháʼí', 'trad.bahai.tagline': 'Unità di Dio, unità della religione, unità dell\u2019umanità.',
-  'trad.earthway.name': 'Via della Terra · Indigena', 'trad.earthway.tagline': 'Tutti i miei parenti — gratitudine al mondo vivente.'
+  'trad.earthway.name': 'Via della Terra · Indigena', 'trad.earthway.tagline': 'Tutti i miei parenti — gratitudine al mondo vivente.',
+  'profile.title': 'La tua presenza',
+  'profile.nameHint': 'Ciò che il mondo vede quando preghi.',
+  'profile.namePlaceholder': 'Nome sacro',
+  'profile.avatar': 'Avatar',
+  'profile.color': 'La tua luce',
+  'profile.you': 'tu'
 }
 
 const ru = {
@@ -988,7 +1030,13 @@ const ru = {
   'trad.shinto.name': 'Синтоизм', 'trad.shinto.tagline': 'Ками, чистота и благодарность природе.',
   'trad.jainism.name': 'Джайнизм', 'trad.jainism.tagline': 'Ахимса, благоговение перед жизнью и внутренняя свобода.',
   'trad.bahai.name': 'Вера бахаи', 'trad.bahai.tagline': 'Единство Бога, единство религии, единство человечества.',
-  'trad.earthway.name': 'Путь Земли · Коренные', 'trad.earthway.tagline': 'Все мои родные — благодарность живому миру.'
+  'trad.earthway.name': 'Путь Земли · Коренные', 'trad.earthway.tagline': 'Все мои родные — благодарность живому миру.',
+  'profile.title': 'Ваше присутствие',
+  'profile.nameHint': 'Что мир видит, когда вы молитесь.',
+  'profile.namePlaceholder': 'Священное имя',
+  'profile.avatar': 'Аватар',
+  'profile.color': 'Ваш свет',
+  'profile.you': 'вы'
 }
 
 const zh = {
@@ -1077,7 +1125,13 @@ const zh = {
   'trad.shinto.name': '神道教', 'trad.shinto.tagline': '神道，纯净，与面对自然的感恩。',
   'trad.jainism.name': '耆那教', 'trad.jainism.tagline': '非暴力，敬畏一切生命，内心的自由。',
   'trad.bahai.name': '巴哈伊信仰', 'trad.bahai.tagline': '神之一体，宗教之一体，人类之一体。',
-  'trad.earthway.name': '大地之路 · 原住民', 'trad.earthway.tagline': '我与万物皆为一体——对活着的世界的感恩。'
+  'trad.earthway.name': '大地之路 · 原住民', 'trad.earthway.tagline': '我与万物皆为一体——对活着的世界的感恩。',
+  'profile.title': '你的存在',
+  'profile.nameHint': '世界在你祈祷时看到的名字。',
+  'profile.namePlaceholder': '圣名',
+  'profile.avatar': '头像',
+  'profile.color': '你的光',
+  'profile.you': '你'
 }
 
 const ar = {
@@ -1166,7 +1220,13 @@ const ar = {
   'trad.shinto.name': 'الشنتوية', 'trad.shinto.tagline': 'كامي، نقاءٌ، وامتنانٌ أمام الطبيعة.',
   'trad.jainism.name': 'الجاينية', 'trad.jainism.tagline': 'أهيمسا، تبجيلٌ لكل حياة، وحريةٌ داخلية.',
   'trad.bahai.name': 'الديانة البهائية', 'trad.bahai.tagline': 'وحدةُ الله ووحدةُ الدين ووحدةُ البشرية.',
-  'trad.earthway.name': 'طريق الأرض · أصليّ', 'trad.earthway.tagline': 'كلّ أقربائي — امتنانٌ للعالم الحيّ.'
+  'trad.earthway.name': 'طريق الأرض · أصليّ', 'trad.earthway.tagline': 'كلّ أقربائي — امتنانٌ للعالم الحيّ.',
+  'profile.title': 'حضورك',
+  'profile.nameHint': 'ما يراه العالم عندما تصلّي.',
+  'profile.namePlaceholder': 'الاسم المقدّس',
+  'profile.avatar': 'الصورة الرمزية',
+  'profile.color': 'ضوءك',
+  'profile.you': 'أنت'
 }
 
 const dict = { en, es, fr, de, hi, pt, it, ru, zh, ar }

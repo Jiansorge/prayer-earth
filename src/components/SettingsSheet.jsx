@@ -6,6 +6,10 @@ import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
 import { useT, LOCALES } from '../i18n.js'
 import QRCard from './QRCard.jsx'
 
+// Nature avatars and light colours for your presence on the Earth.
+const AVATARS = ['🌿', '🌙', '🌺', '🕊️', '🌊', '⛰️', '🌾', '🦋', '☀️', '🍃', '🐚', '🌟', '🌸', '🍁', '🪷', '🔥']
+const COLORS = ['#7fc9a0', '#dfb05c', '#7aa2ff', '#ff9e4f', '#ffd166', '#b09dff', '#e8b06f', '#7fd488']
+
 export default function SettingsSheet() {
   const open = useStore((s) => s.settingsOpen)
   const setOpen = useStore((s) => s.setSettingsOpen)
@@ -17,6 +21,8 @@ export default function SettingsSheet() {
   const setAmbienceLevel = useStore((s) => s.setAmbienceLevel)
   const locale = useStore((s) => s.locale)
   const setLocale = useStore((s) => s.setLocale)
+  const profile = useStore((s) => s.profile)
+  const setProfile = useStore((s) => s.setProfile)
   const spiritId = useStore((s) => s.spiritId)
   const prayerId = useStore((s) => s.prayerId)
   const t = useT()
@@ -155,6 +161,47 @@ export default function SettingsSheet() {
             </option>
           ))}
         </select>
+
+        <div className="field-divider" />
+
+        <label className="field-label">{t('profile.title')}</label>
+        <div className="field-hint">{t('profile.nameHint')}</div>
+        <input
+          id="profile-name"
+          className="field-input"
+          maxLength={20}
+          value={profile.name}
+          placeholder={t('profile.namePlaceholder')}
+          onChange={(e) => setProfile({ name: e.target.value })}
+        />
+
+        <label className="field-label">{t('profile.avatar')}</label>
+        <div className="avatar-grid">
+          {AVATARS.map((a) => (
+            <button
+              key={a}
+              type="button"
+              className={`avatar-btn ${profile.avatar === a ? 'on' : ''}`}
+              onClick={() => setProfile({ avatar: a })}
+            >
+              {a}
+            </button>
+          ))}
+        </div>
+
+        <label className="field-label">{t('profile.color')}</label>
+        <div className="swatch-row">
+          {COLORS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              className={`swatch ${profile.color === c ? 'on' : ''}`}
+              style={{ background: c }}
+              onClick={() => setProfile({ color: c })}
+              aria-label={c}
+            />
+          ))}
+        </div>
 
         <div className="field-divider" />
 
