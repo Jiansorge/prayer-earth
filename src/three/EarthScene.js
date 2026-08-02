@@ -99,11 +99,6 @@ const FRAG = /* glsl */ `
     float limb = smoothstep(0.0, 0.6, dot(n, vec3(0.0, 0.0, 1.0)));
     col *= 0.5 + 0.5 * limb;
 
-    // dither a hair to break up banding in the dark ocean gradient (never on
-    // the flat land, which must stay clean)
-    float dh = fract(sin(dot(uv * vec2(1024.0, 512.0), vec2(12.9898, 78.233))) * 43758.5453);
-    col += (dh - 0.5) * 0.006 * (1.0 - landMask);
-
     gl_FragColor = vec4(col, 1.0);
   }
 `
