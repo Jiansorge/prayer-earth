@@ -12,6 +12,7 @@ import Onboarding from './components/Onboarding.jsx'
 import PrayerPicker from './components/PrayerPicker.jsx'
 import { getScene } from './components/Scenery.jsx'
 import NatureBackdrop from './components/NatureBackdrop.jsx'
+import MysticBackdrop from './components/MysticBackdrop.jsx'
 import { useT, RTL_LOCALES } from './i18n.js'
 
 // The 3D Earth (three.js) is heavy — load it only when the Earth view opens.
@@ -69,6 +70,7 @@ class Boundary extends Component {
 
 export default function App() {
   const view = useStore((s) => s.view)
+  const theme = useStore((s) => s.theme)
   const glowRef = useRef(0)
   const t = useT()
 
@@ -146,9 +148,9 @@ export default function App() {
   }, [view, spiritId, prayerId, legalPage])
 
   return (
-    <div className="app" data-scene={view === 'home' ? scene : undefined}>
+    <div className="app" data-scene={view === 'home' && theme === 'nature' ? scene : undefined}>
       <div className="sky" />
-      {view === 'home' && <NatureBackdrop />}
+      {view === 'home' && (theme === 'nature' ? <NatureBackdrop /> : <MysticBackdrop />)}
       <div className="glow-field" />
       <div className="fireflies" aria-hidden="true">
         {[...Array(10)].map((_, i) => (

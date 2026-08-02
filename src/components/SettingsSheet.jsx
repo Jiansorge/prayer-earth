@@ -25,6 +25,8 @@ export default function SettingsSheet() {
   const setAmbienceLevel = useStore((s) => s.setAmbienceLevel)
   const locale = useStore((s) => s.locale)
   const setLocale = useStore((s) => s.setLocale)
+  const theme = useStore((s) => s.theme)
+  const setTheme = useStore((s) => s.setTheme)
   const profile = useStore((s) => s.profile)
   const setProfile = useStore((s) => s.setProfile)
   const spiritId = useStore((s) => s.spiritId)
@@ -175,6 +177,29 @@ export default function SettingsSheet() {
             </option>
           ))}
         </select>
+
+        <label className="field-label">{t('settings.theme')}</label>
+        <div className="field-hint">{t('settings.themeHint')}</div>
+        <div className="theme-pick">
+          <button
+            type="button"
+            className={`theme-opt ${theme === 'mystic' ? 'on' : ''}`}
+            onClick={() => setTheme('mystic')}
+            aria-pressed={theme === 'mystic'}
+          >
+            <span className="theme-emoji">🌌</span>
+            <span>{t('theme.mystic')}</span>
+          </button>
+          <button
+            type="button"
+            className={`theme-opt ${theme === 'nature' ? 'on' : ''}`}
+            onClick={() => setTheme('nature')}
+            aria-pressed={theme === 'nature'}
+          >
+            <span className="theme-emoji">🌲</span>
+            <span>{t('theme.nature')}</span>
+          </button>
+        </div>
 
         <div className="field-divider" />
 

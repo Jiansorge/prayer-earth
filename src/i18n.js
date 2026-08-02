@@ -45,6 +45,10 @@ const en = {
   'settings.ambientLow': 'Whisper',
   'settings.ambientHigh': 'Heart',
   'settings.languageLabel': 'Language',
+  'settings.theme': 'Home theme',
+  'settings.themeHint': 'The world behind your home screen',
+  'theme.mystic': 'Mystical',
+  'theme.nature': 'Nature',
   'settings.automatic': 'Automatic',
   'settings.sharePrayerLabel': 'Share a prayer',
   'settings.sharePrayerHint':

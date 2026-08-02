@@ -45,6 +45,7 @@ export const useStore = create(
       ambienceLevel: 0.7,
       volume: 0.5,
       locale: 'en',
+      theme: 'mystic',
 
       // collective all-time totals (from the server)
       prayerTotals: {},
@@ -90,6 +91,7 @@ export const useStore = create(
       setAmbienceLevel: (ambienceLevel) => set({ ambienceLevel }),
       setVolume: (volume) => set({ volume }),
       setLocale: (locale) => set({ locale }),
+      setTheme: (theme) => set({ theme }),
 
       // ---- sync ----
       setConnected: (connected) => set({ connected }),
@@ -225,6 +227,7 @@ export const useStore = create(
         ambienceLevel: s.ambienceLevel,
         volume: s.volume,
         locale: s.locale,
+        theme: s.theme,
         profile: s.profile,
         prayerCompletions: s.prayerCompletions,
         prayerDayCompletions: s.prayerDayCompletions,
