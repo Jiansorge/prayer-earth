@@ -80,12 +80,17 @@ export default function PrayerPage() {
     return () => ch.close()
   }, [playing])
 
-  // The footer play button from home/earth lands here ready to play.
+  // The footer play button from home/earth lands here ready to play. Delayed a
+  // moment so React StrictMode's dev remount (mount → unmount → mount) settles,
+  // otherwise the first mount would consume pendingPlay and get torn down.
   useEffect(() => {
-    if (useStore.getState().pendingPlay) {
-      useStore.getState().setPendingPlay(false)
-      startJob()
-    }
+    const t = setTimeout(() => {
+      if (useStore.getState().pendingPlay) {
+        useStore.getState().setPendingPlay(false)
+        startJob()
+      }
+    }, 60)
+    return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

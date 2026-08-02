@@ -87,13 +87,13 @@ const FRAG = /* glsl */ `
 
     vec3 col = lit + radiance + aurora;
 
-    // a hair-thin, luminous blue-white coastline — a delicate filament tracing
-    // the continents, brightening as the world prays but never blowing out white
-    float landR = texture2D(uMaskTex, vec2(fract(uv.x + 0.0004), uv.y)).r;
-    float landT = texture2D(uMaskTex, vec2(uv.x, fract(uv.y + 0.001))).r;
-    float edge = smoothstep(0.32, 0.5, landMask) * (1.0 - smoothstep(0.46, 0.5, min(landR, landT)));
-    vec3 coastCol = vec3(0.7, 0.86, 1.0) * (0.75 + 0.3 * uGlow + 0.2 * uSurge + 0.15 * uTier);
-    col += edge * coastCol * 0.45;
+    // a hair-thin, softly luminous coastline — a faint filament tracing the
+    // continents, glowing with prayer but reading as a shimmer, not a bright line
+    float landR = texture2D(uMaskTex, vec2(fract(uv.x + 0.0005), uv.y)).r;
+    float landT = texture2D(uMaskTex, vec2(uv.x, fract(uv.y + 0.0008))).r;
+    float edge = smoothstep(0.35, 0.5, landMask) * (1.0 - smoothstep(0.42, 0.5, min(landR, landT)));
+    vec3 coastCol = vec3(0.7, 0.85, 1.0) * (0.65 + 0.25 * uGlow + 0.15 * uSurge + 0.1 * uTier);
+    col += edge * coastCol * 0.32;
 
     // warm dawn band where day meets night
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));
@@ -205,7 +205,7 @@ const ATMO_FRAG = /* glsl */ `
     vec3 inner = mix(cool, warm, uGlow);
     vec3 shimmer = vec3(0.62, 0.46, 0.92) * (0.6 + 0.4 * sin(uTime * 0.55));
     vec3 col = inner * (0.7 + 0.3 * f) + shimmer * 0.28 * f;
-    float alpha = f * (0.16 + 0.3 * uGlow + 0.2 * uSurge);
+    float alpha = f * (0.12 + 0.24 * uGlow + 0.15 * uSurge);
     gl_FragColor = vec4(col, alpha);
   }
 `
@@ -227,8 +227,8 @@ const ETHEREAL_FRAG = /* glsl */ `
     col = mix(col, violet, 0.25 * (0.5 + 0.5 * sin(uTime * 0.3 + 1.5)));
     // aura waves: rings pulse outward from the globe when many pray at once
     float waves = pow(0.5 + 0.5 * sin(rim * 40.0 - uTime * 3.2 + uGlow * 5.0), 3.0) * uSurge;
-    float alpha = (f * (0.12 + 0.18 * uGlow) + waves * 0.16) * breathe;
-    gl_FragColor = vec4(col + vec3(0.2, 0.35, 0.6) * waves * 0.4, alpha);
+    float alpha = (f * (0.1 + 0.16 * uGlow) + waves * 0.1) * breathe;
+    gl_FragColor = vec4(col + vec3(0.2, 0.35, 0.6) * waves * 0.25, alpha);
   }
 `
 
