@@ -70,6 +70,9 @@ const clients = new Map()
 const prayerCounts = {}
 const spiritCounts = {}
 const lights = {}
+// Which tradition is brightest at each light cell, so clients can colour a
+// cell's glow by faith. Falls back to a generic gold when absent.
+const lightSpirits = {}
 
 // Rounds a coordinate onto the shared 2-degree light grid the app renders.
 // Praying users nearby land on the same cell and become one brighter light.
@@ -125,6 +128,7 @@ function recount() {
   for (const k in prayerCounts) delete prayerCounts[k]
   for (const k in spiritCounts) delete spiritCounts[k]
   for (const k in lights) delete lights[k]
+  for (const k in lightSpirits) delete lightSpirits[k]
   people = 0
   for (const { praying, prayerId, spiritId, lat, lon } of clients.values()) {
     if (!praying) continue
@@ -134,6 +138,7 @@ function recount() {
     if (typeof lat === 'number' && typeof lon === 'number') {
       const key = gridKey(lat, lon)
       lights[key] = (lights[key] || 0) + 1
+      if (spiritId) lightSpirits[key] = spiritId
     }
   }
 }
@@ -146,6 +151,7 @@ function broadcast() {
     prayers: prayerCounts,
     spirits: spiritCounts,
     lights,
+    lightSpirits,
     totals: {
       prayers: prayerTotals,
       spirits: spiritTotals
@@ -243,6 +249,7 @@ wss.on('connection', (ws) => {
       prayers: prayerCounts,
       spirits: spiritCounts,
       lights,
+      lightSpirits,
       totals: {
         prayers: prayerTotals,
         spirits: spiritTotals

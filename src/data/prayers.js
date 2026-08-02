@@ -8,6 +8,7 @@ export const SPIRITUALITIES = [
     name: 'Christianity',
     emoji: '✝️',
     glow: 'rgba(201, 160, 60, 0.28)',
+    lightColor: '#e8c47a',
     tagline: 'Grace, love, and the still small voice.',
     prayers: [
       {
@@ -132,6 +133,7 @@ export const SPIRITUALITIES = [
     name: 'Islam',
     emoji: '☪️',
     glow: 'rgba(80, 200, 160, 0.28)',
+    lightColor: '#5fd4a0',
     tagline: 'Surrender, peace, and the Mercy of God.',
     prayers: [
       {
@@ -235,6 +237,7 @@ export const SPIRITUALITIES = [
     name: 'Judaism',
     emoji: '✡️',
     glow: 'rgba(120, 150, 255, 0.28)',
+    lightColor: '#7aa2ff',
     tagline: 'Covenant, memory, and the Oneness of God.',
     prayers: [
       {
@@ -340,6 +343,7 @@ export const SPIRITUALITIES = [
     name: 'Hinduism',
     emoji: '🕉️',
     glow: 'rgba(255, 170, 110, 0.28)',
+    lightColor: '#ff9e4f',
     tagline: 'Unity of all, the divine light within.',
     prayers: [
       {
@@ -439,6 +443,7 @@ export const SPIRITUALITIES = [
     name: 'Buddhism',
     emoji: '☸️',
     glow: 'rgba(255, 210, 120, 0.26)',
+    lightColor: '#ffd166',
     tagline: 'Compassion, stillness, and the middle way.',
     prayers: [
       {
@@ -544,6 +549,7 @@ export const SPIRITUALITIES = [
     name: 'Sikhism',
     emoji: '💠',
     glow: 'rgba(120, 220, 220, 0.26)',
+    lightColor: '#59d8d8',
     tagline: 'One Creator, truthful living, service to all.',
     prayers: [
       {
@@ -641,6 +647,7 @@ export const SPIRITUALITIES = [
     name: 'Taoism',
     emoji: '☯️',
     glow: 'rgba(200, 180, 255, 0.24)',
+    lightColor: '#b09dff',
     tagline: 'Harmony, wu wei, and the flow of the Dao.',
     prayers: [
       {
@@ -718,6 +725,7 @@ export const SPIRITUALITIES = [
     name: 'Shinto',
     emoji: '⛩️',
     glow: 'rgba(255, 150, 120, 0.24)',
+    lightColor: '#ff8f7a',
     tagline: 'Kami, purity, and gratitude before nature.',
     prayers: [
       {
@@ -780,6 +788,7 @@ export const SPIRITUALITIES = [
     name: 'Jainism',
     emoji: '🪷',
     glow: 'rgba(255, 210, 200, 0.24)',
+    lightColor: '#ff9fbf',
     tagline: 'Ahimsa, reverence for all life, and inner freedom.',
     prayers: [
       {
@@ -843,6 +852,7 @@ export const SPIRITUALITIES = [
     name: 'Baháʼí Faith',
     emoji: '✴️',
     glow: 'rgba(220, 180, 120, 0.24)',
+    lightColor: '#ffc26b',
     tagline: 'Oneness of God, oneness of religion, oneness of humankind.',
     prayers: [
       {
@@ -904,6 +914,7 @@ export const SPIRITUALITIES = [
     name: 'Earthway · Indigenous',
     emoji: '🌿',
     glow: 'rgba(120, 200, 140, 0.24)',
+    lightColor: '#7fd488',
     tagline: 'All my relations — gratitude to the living world.',
     prayers: [
       {
@@ -954,6 +965,7 @@ export const SPIRITUALITIES = [
     name: 'Agnostic · Atheist',
     emoji: '🌌',
     glow: 'rgba(150, 170, 255, 0.24)',
+    lightColor: '#a9b0ff',
     tagline: 'Wonder, kindness, and the cosmos we share.',
     prayers: [
       {

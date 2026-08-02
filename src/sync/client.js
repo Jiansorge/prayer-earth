@@ -157,6 +157,7 @@ class SyncClient {
             useStore.getState().setPrayerCounts(msg.prayers || {})
             useStore.getState().setSpiritCounts(msg.spirits || {})
             if (msg.lights) useStore.getState().setLights(msg.lights)
+            if (msg.lightSpirits) useStore.getState().setLightSpirits(msg.lightSpirits)
             if (msg.totals) {
               useStore.getState().setPrayerTotals(msg.totals.prayers || {})
               useStore.getState().setSpiritTotals(msg.totals.spirits || {})
@@ -242,27 +243,30 @@ class SyncClient {
     const prayers = {}
     const spirits = {}
     const lights = {}
-    const addLight = (lat, lon) => {
+    const lightSpirits = {}
+    const addLight = (lat, lon, spId) => {
       if (typeof lat !== 'number' || typeof lon !== 'number') return
       const k = lightKey(lat, lon)
       lights[k] = (lights[k] || 0) + 1
+      if (spId) lightSpirits[k] = spId
     }
     for (const [sp, pr, lat, lon] of SIM_PEOPLE) {
       prayers[pr] = (prayers[pr] || 0) + 1
       spirits[sp] = (spirits[sp] || 0) + 1
-      addLight(lat, lon)
+      addLight(lat, lon, sp)
     }
     // Always count the person praying right here.
     if (s.praying && s.spiritId && s.prayerId) {
       prayers[s.prayerId] = (prayers[s.prayerId] || 0) + 1
       spirits[s.spiritId] = (spirits[s.spiritId] || 0) + 1
     }
-    if (this.loc) addLight(this.loc.lat, this.loc.lon)
+    if (this.loc) addLight(this.loc.lat, this.loc.lon, s.spiritId)
     const total = Object.values(spirits).reduce((a, b) => a + b, 0)
     s.setPeoplePraying(total)
     s.setPrayerCounts(prayers)
     s.setSpiritCounts(spirits)
     s.setLights(lights)
+    s.setLightSpirits(lightSpirits)
     s.setTotalPrayerSeconds(s.totalPrayerSeconds + 1.5)
 
     // A gentle trickle of "now praying" entries, including the person here.

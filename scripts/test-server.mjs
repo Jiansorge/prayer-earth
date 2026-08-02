@@ -100,6 +100,8 @@ ok('buddhism = 2', state?.spirits?.['buddhism'] === 2, `count=${state?.spirits?.
 ok('lights merge nearby praying users', state?.lights?.['22,40'] === 2, `22,40=${state?.lights?.['22,40']}`)
 ok('lights spread across distinct cells', Object.keys(state?.lights || {}).length === 4, `cells=${Object.keys(state?.lights || {}).length}`)
 ok('idle user contributes no light', !state?.lights?.['40,-74'], `idle=${state?.lights?.['40,-74']}`)
+ok('lightSpirits carry faith per cell', state?.lightSpirits?.['22,40'] === 'islam' && state?.lightSpirits?.['28,78'] === 'buddhism', `22,40=${state?.lightSpirits?.['22,40']} 28,78=${state?.lightSpirits?.['28,78']}`)
+ok('idle user adds no spirit', !state?.lightSpirits?.['40,-74'], `idleSp=${state?.lightSpirits?.['40,-74']}`)
 
 // all-time totals ride along in every state broadcast
 ok('state carries totals', !!(state?.totals?.prayers && state?.totals?.spirits))

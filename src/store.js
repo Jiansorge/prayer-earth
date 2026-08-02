@@ -28,6 +28,7 @@ export const useStore = create(
       prayerCounts: {},
       spiritCounts: {},
       lights: {},
+      lightSpirits: {},
       feed: [],
 
       localPrayerSeconds: 0,
@@ -83,6 +84,7 @@ export const useStore = create(
       setPrayerCounts: (prayerCounts) => set({ prayerCounts }),
       setSpiritCounts: (spiritCounts) => set({ spiritCounts }),
       setLights: (lights) => set({ lights }),
+      setLightSpirits: (lightSpirits) => set({ lightSpirits }),
       setPrayerTotals: (prayerTotals) => set({ prayerTotals }),
       setSpiritTotals: (spiritTotals) => set({ spiritTotals }),
       setFeed: (feed) => set({ feed }),

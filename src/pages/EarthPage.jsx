@@ -12,6 +12,7 @@ export default function EarthPage() {
   const people = useStore((s) => s.peoplePraying)
   const connected = useStore((s) => s.connected)
   const lights = useStore((s) => s.lights)
+  const lightSpirits = useStore((s) => s.lightSpirits)
   const [, force] = useState(0)
   const t = useT()
 
@@ -21,7 +22,7 @@ export default function EarthPage() {
       scene = new EarthScene(mountRef.current)
       sceneRef.current = scene
       scene.setGlow(useStore.getState().getGlow())
-      scene.setLights(useStore.getState().lights)
+      scene.setLights(useStore.getState().lights, useStore.getState().lightSpirits)
     } catch {
       setWebglFail(true)
     }
@@ -40,8 +41,8 @@ export default function EarthPage() {
     const scene = sceneRef.current
     if (!scene) return
     scene.setGlow(useStore.getState().getGlow())
-    scene.setLights(lights)
-  }, [glowPct, lights])
+    scene.setLights(lights, lightSpirits)
+  }, [glowPct, lights, lightSpirits])
 
   if (webglFail) {
     const company = connected

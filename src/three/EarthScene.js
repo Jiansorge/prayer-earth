@@ -1,6 +1,14 @@
 import * as THREE from 'three'
 import dayUrl from '../assets/textures/earth_atmos.jpg'
 import nightUrl from '../assets/textures/earth_lights_2048.png'
+import { SPIRITUALITIES } from '../data/prayers.js'
+
+// Each tradition's prayer-light colour, so the lights of the world glow by
+// faith (fall back to warm gold when a cell's faith is unknown).
+const TRAD_LIGHT = Object.fromEntries(
+  SPIRITUALITIES.map((s) => [s.id, new THREE.Color(s.lightColor || '#dfb05c')])
+)
+const GOLD_LIGHT = new THREE.Color('#dfb05c')
 
 // Living Earth.
 // Full view: real continents and coastlines with the NASA Blue Marble
@@ -44,31 +52,40 @@ const FRAG = /* glsl */ `
 
     vec2 uv = equirect(sp);
 
-    // real geography: continents, oceans, ice
+    // A deep, living earth at night: the day texture is used only as a land
+    // mask, so bright deserts and ice never glare. Oceans sink to near-black,
+    // continents read as soft dark-green silhouettes that the prayer lights
+    // shine out from.
     vec3 day = texture2D(uDayTex, uv).rgb;
-    float polar = smoothstep(0.86, 0.99, abs(sp.y));
-    vec3 base = mix(day * 1.1, vec3(0.85, 0.89, 0.97), polar);
+    float lum = dot(day, vec3(0.299, 0.587, 0.114));
+    // land is greener than the blue-dominant ocean; the gate keeps bright
+    // oceans and ice from being counted as land (no bright desert/ice glare)
+    float isLand = step(-0.01, day.g - day.b);
+    float landMask = smoothstep(0.09, 0.17, lum) * isLand;
+    vec3 base = mix(vec3(0.004, 0.011, 0.01), vec3(0.04, 0.095, 0.075), landMask);
 
     float ndl = dot(n, normalize(uSunDir));
-    float sun = smoothstep(-0.08, 0.4, ndl);
-    vec3 lit = base * (0.3 + 0.7 * sun) * (0.9 + 0.4 * uGlow);
+    float sun = smoothstep(-0.15, 0.35, ndl);
+    vec3 lit = base * (0.4 + 0.6 * sun);
 
     // genuine city lights on the night side, awakening as the world prays
     float night = 1.0 - smoothstep(-0.25, 0.08, ndl);
-    vec3 cities = texture2D(uNightTex, uv).rgb * night * (0.3 + 0.7 * uGlow) * 1.5;
+    vec3 cities = texture2D(uNightTex, uv).rgb * night * 1.1;
 
-    // the Earth's own growing radiance — collected prayer
-    vec3 radiance = vec3(0.16, 0.4, 0.3) * uGlow * uGlow * 1.5;
+    // the Earth's own breathing glow — kept subtle so the world stays deep
+    // and the prayer lights remain the brightest things on it
+    vec3 radiance = vec3(0.18, 0.35, 0.24) * uGlow * uGlow * 0.25;
 
     // polar aurora
+    float polar = smoothstep(0.86, 0.99, abs(sp.y));
     float aur = polar * (0.5 + 0.5 * sin(uTime * 0.4 + sp.y * 6.0));
-    vec3 aurora = vec3(0.1, 0.9, 0.6) * aur * night * 0.35;
+    vec3 aurora = vec3(0.1, 0.9, 0.6) * aur * night * 0.3;
 
     vec3 col = lit + cities + radiance + aurora;
 
     // warm dawn band where day meets night
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));
-    vec3 dawn = vec3(1.0, 0.55, 0.3) * term * 0.12 * (0.5 + 0.5 * uGlow);
+    vec3 dawn = vec3(1.0, 0.55, 0.3) * term * 0.08;
     col += dawn;
 
     // soft vignette at the limb
@@ -168,7 +185,7 @@ const ATMO_FRAG = /* glsl */ `
     float rim = 1.0 - max(dot(viewDir, normalize(vNormal)), 0.0);
     float f = pow(rim, 2.6);
     vec3 inner = mix(vec3(0.28, 0.5, 0.4), vec3(1.0, 0.84, 0.5), uGlow);
-    float alpha = f * (0.55 + 0.6 * uGlow);
+    float alpha = f * (0.3 + 0.35 * uGlow);
     gl_FragColor = vec4(inner, alpha);
   }
 `
@@ -352,10 +369,10 @@ export class EarthScene {
     c.height = S
     const ctx = c.getContext('2d')
     const g = ctx.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2)
-    g.addColorStop(0, 'rgba(255, 244, 214, 1)')
-    g.addColorStop(0.25, 'rgba(255, 224, 160, 0.85)')
-    g.addColorStop(0.6, 'rgba(255, 190, 110, 0.28)')
-    g.addColorStop(1, 'rgba(255, 170, 90, 0)')
+    g.addColorStop(0, 'rgba(255, 255, 255, 1)')
+    g.addColorStop(0.25, 'rgba(255, 255, 255, 0.9)')
+    g.addColorStop(0.6, 'rgba(255, 255, 255, 0.32)')
+    g.addColorStop(1, 'rgba(255, 255, 255, 0)')
     ctx.fillStyle = g
     ctx.fillRect(0, 0, S, S)
     const tex = new THREE.CanvasTexture(c)
@@ -377,6 +394,7 @@ export class EarthScene {
         map: glow,
         transparent: true,
         depthWrite: false,
+        depthTest: false,
         blending: THREE.AdditiveBlending,
         opacity: 0
       })
@@ -391,8 +409,10 @@ export class EarthScene {
     return { group, pool, r, MAX }
   }
 
-  // Reuse the sprite pool: position/scale/light one per active grid cell.
-  setLights(map) {
+  // Reuse the sprite pool: position/scale/colour one per active grid cell.
+  // The colour comes from the cell's dominant tradition, so the world's lights
+  // glow by faith; unknown cells glow warm gold.
+  setLights(map, spirits) {
     if (!this.lights) return
     const { pool, r, MAX } = this.lights
     let used = 0
@@ -410,9 +430,11 @@ export class EarthScene {
         r * Math.sin(lat),
         r * Math.cos(lat) * Math.sin(lon)
       )
-      spr.material.opacity = Math.min(0.95, 0.35 + n * 0.15)
-      const s = 0.13 + Math.min(n, 8) * 0.02
+      spr.material.opacity = Math.min(1, 0.5 + n * 0.14)
+      const s = 0.2 + Math.min(n, 8) * 0.03
       spr.scale.set(s, s, s)
+      const color = TRAD_LIGHT[spirits?.[k]] || GOLD_LIGHT
+      spr.material.color.set(color)
       spr.visible = true
       used++
     }

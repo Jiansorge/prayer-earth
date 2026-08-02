@@ -11,13 +11,14 @@ export default function EarthBackdrop() {
   const sceneRef = useRef(null)
   const glow = useStore((s) => s.getGlow())
   const lights = useStore((s) => s.lights)
+  const lightSpirits = useStore((s) => s.lightSpirits)
 
   useEffect(() => {
     let scene = null
     try {
       scene = new EarthScene(mountRef.current, { backdrop: true })
       scene.setGlow(useStore.getState().getGlow())
-      scene.setLights(useStore.getState().lights)
+      scene.setLights(useStore.getState().lights, useStore.getState().lightSpirits)
     } catch {}
     sceneRef.current = scene
     return () => {
@@ -30,8 +31,8 @@ export default function EarthBackdrop() {
     const scene = sceneRef.current
     if (!scene) return
     scene.setGlow(glow)
-    scene.setLights(lights)
-  }, [glow, lights])
+    scene.setLights(lights, lightSpirits)
+  }, [glow, lights, lightSpirits])
 
   return (
     <div className="earth-backdrop" aria-hidden="true">

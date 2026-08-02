@@ -117,6 +117,8 @@ ok('server reports 2 praying users', last?.people === 2, `people=${last?.people}
 ok('London light present (52,0)', !!last?.lights?.['52,0'], `count=${last?.lights?.['52,0']}`)
 ok('Delhi light present (28,78)', !!last?.lights?.['28,78'], `count=${last?.lights?.['28,78']}`)
 ok('no stray light cells', Object.keys(last?.lights || {}).length === 2, `cells=${Object.keys(last?.lights || {}).length}`)
+ok('London light tagged buddhism', last?.lightSpirits?.['52,0'] === 'buddhism', `sp=${last?.lightSpirits?.['52,0']}`)
+ok('Delhi light tagged islam', last?.lightSpirits?.['28,78'] === 'islam', `sp=${last?.lightSpirits?.['28,78']}`)
 
 // One user leaves → their light disappears
 A.edge.kill()
