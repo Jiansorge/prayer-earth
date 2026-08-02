@@ -305,6 +305,16 @@ h3,
   display: block;
 }
 
+.tile .tile-tagline {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-faint);
+  font-size: 11.5px;
+  font-family: var(--sans);
+  line-height: 1.35;
+  opacity: 0.85;
+}
+
 .tile .tile-prayers {
   color: var(--ink-faint);
   font-size: 12px;
@@ -496,9 +506,10 @@ h3,
 }
 
 .prayer-line {
-  font-family: var(--serif);
+  font-family: var(--serif), 'Noto Serif', 'Noto Serif CJK SC', 'Noto Serif CJK JP',
+    'Yu Mincho', 'Hiragino Mincho ProN', 'Songti SC', 'Geeza Pro', serif;
   font-size: clamp(20px, 4.6vw, 26px);
-  line-height: 1.5;
+  line-height: 1.6;
   color: var(--ink-faint);
   transition: color 0.35s var(--ease), text-shadow 0.35s var(--ease), transform 0.35s var(--ease);
 }
@@ -507,6 +518,15 @@ h3,
   color: var(--ink);
   text-shadow: 0 0 26px rgba(200, 215, 255, 0.55);
   transform: translateX(2px);
+}
+
+/* Transliteration and meaning always read left-to-right, even beneath an
+   Arabic/Hebrew line — the original text alone flows right-to-left. */
+.prayer-line .sub,
+.prayer-line .en {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: left;
 }
 
 .prayer-line .sub {

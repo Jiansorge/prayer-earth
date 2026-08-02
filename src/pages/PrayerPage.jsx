@@ -13,6 +13,10 @@ const fmt = (s) => {
   return m > 0 ? `${m}m ${sec}s` : `${sec}s`
 }
 
+// Scripts that read right-to-left — their original text must flow RTL even
+// though the transliteration and meaning below stay left-to-right.
+const RTL_LANGS = new Set(['ar', 'he', 'fa', 'ur', 'sd', 'dv'])
+
 export default function PrayerPage() {
   const closePrayer = useStore((s) => s.closePrayer)
   const openPrayer = useStore((s) => s.openPrayer)
@@ -48,6 +52,7 @@ export default function PrayerPage() {
   const [celebration, setCelebration] = useState(0)
   const celebrationTimer = useRef(null)
   const prayer = spirit ? spirit.prayers.find((p) => p.id === prayerId) : null
+  const rtl = RTL_LANGS.has(prayer?.lang)
   const phrases = prayer ? prayer.phrases : []
   const prayerTotal = useStore((s) => (prayer ? s.getPrayerTotal(prayer.id) : 0))
   const t = useT()
@@ -241,10 +246,10 @@ export default function PrayerPage() {
         </button>
         <div>
           <div style={{ fontSize: 14, color: 'var(--ink-dim)' }}>
-            {spirit.emoji} {spirit.name}
+            {spirit.emoji} {t(`trad.${spirit.id}.name`)}
           </div>
           <div className="subtitle" style={{ fontSize: 13, marginTop: 2 }}>
-            {spirit.tagline}
+            {t(`trad.${spirit.id}.tagline`)}
           </div>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -312,7 +317,12 @@ export default function PrayerPage() {
 
         <div className="prayer-lines">
           {phrases.map((ph, i) => (
-            <div key={i} className={`prayer-line ${active === i ? 'on' : ''}`}>
+            <div
+              key={i}
+              className={`prayer-line ${active === i ? 'on' : ''}`}
+              dir={rtl ? 'rtl' : 'ltr'}
+              lang={prayer.lang}
+            >
               <span className="hlt">{ph.t}</span>
               {ph.s && (
                 <span className="sub">

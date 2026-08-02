@@ -106,7 +106,7 @@ const en = {
   'install.dismiss': 'Dismiss',
   'onboard.s1': 'Pick a sacred path',
   'onboard.s1b':
-    'Choose a prayer from any tradition — Christian, Muslim, Buddhist, Jewish, and more.',
+    'Choose a prayer from Christian, Muslim, Jewish, Hindu, Sikh, Buddhist, Taoist, Shinto, Jain, and Baháʼí traditions — or from the quiet wonder of being alive.',
   'onboard.s2': 'Pray together, right now',
   'onboard.s2b':
     'Your prayer joins everyone else praying this moment. You\u2019ll see them as a gentle world feed.',
@@ -121,7 +121,31 @@ const en = {
   'stats.foot': 'Seconds of this prayer, one bar per day.',
   'picker.title': 'Choose a prayer',
   'picker.all': 'All',
-  'picker.close': 'Close'
+  'picker.close': 'Close',
+  'trad.christianity.name': 'Christianity',
+  'trad.christianity.tagline': 'Grace, love, and the still small voice.',
+  'trad.islam.name': 'Islam',
+  'trad.islam.tagline': 'Surrender, peace, and the Mercy of God.',
+  'trad.judaism.name': 'Judaism',
+  'trad.judaism.tagline': 'Covenant, memory, and the Oneness of God.',
+  'trad.hinduism.name': 'Hinduism',
+  'trad.hinduism.tagline': 'Unity of all, the divine light within.',
+  'trad.buddhism.name': 'Buddhism',
+  'trad.buddhism.tagline': 'Compassion, stillness, and the middle way.',
+  'trad.sikhism.name': 'Sikhism',
+  'trad.sikhism.tagline': 'One Creator, truthful living, service to all.',
+  'trad.nonreligious.name': 'Agnostic · Atheist',
+  'trad.nonreligious.tagline': 'Wonder, kindness, and the cosmos we share.',
+  'trad.taoism.name': 'Taoism',
+  'trad.taoism.tagline': 'Harmony, wu wei, and the flow of the Dao.',
+  'trad.shinto.name': 'Shinto',
+  'trad.shinto.tagline': 'Kami, purity, and gratitude before nature.',
+  'trad.jainism.name': 'Jainism',
+  'trad.jainism.tagline': 'Ahimsa, reverence for all life, and inner freedom.',
+  'trad.bahai.name': 'Baháʼí Faith',
+  'trad.bahai.tagline': 'Oneness of God, oneness of religion, oneness of humankind.',
+  'trad.earthway.name': 'Earthway · Indigenous',
+  'trad.earthway.tagline': 'All my relations — gratitude to the living world.'
 }
 
 const es = {
@@ -226,7 +250,7 @@ const es = {
   'install.dismiss': 'Descartar',
   'onboard.s1': 'Elige un camino sagrado',
   'onboard.s1b':
-    'Elige una oración de cualquier tradición — cristiana, musulmana, budista, judía y más.',
+    'Elige una oración de las tradiciones cristiana, musulmana, judía, hindú, sij, budista, taoísta, sintoísta, jainista y baháʼí — o de la simple maravilla de estar vivo.',
   'onboard.s2': 'Reza juntos, ahora mismo',
   'onboard.s2b':
     'Tu oración se une a todos los que rezan en este momento. Los verás como un suave flujo del mundo.',
@@ -241,7 +265,31 @@ const es = {
   'stats.foot': 'Segundos de esta oración, una barra por día.',
   'picker.title': 'Elige una oración',
   'picker.all': 'Todas',
-  'picker.close': 'Cerrar'
+  'picker.close': 'Cerrar',
+  'trad.christianity.name': 'Cristianismo',
+  'trad.christianity.tagline': 'Gracia, amor y la pequeña voz tranquila.',
+  'trad.islam.name': 'Islam',
+  'trad.islam.tagline': 'Sumisión, paz y la Misericordia de Dios.',
+  'trad.judaism.name': 'Judaísmo',
+  'trad.judaism.tagline': 'Alianza, memoria y la Unidad de Dios.',
+  'trad.hinduism.name': 'Hinduismo',
+  'trad.hinduism.tagline': 'Unidad de todo, la luz divina interior.',
+  'trad.buddhism.name': 'Budismo',
+  'trad.buddhism.tagline': 'Compasión, quietud y el camino medio.',
+  'trad.sikhism.name': 'Sijismo',
+  'trad.sikhism.tagline': 'Un Creador, vida honesta, servicio a todos.',
+  'trad.nonreligious.name': 'Agnóstico · Ateo',
+  'trad.nonreligious.tagline': 'Asombro, bondad y el cosmos que compartimos.',
+  'trad.taoism.name': 'Taoísmo',
+  'trad.taoism.tagline': 'Armonía, wu wei y el flujo del Dao.',
+  'trad.shinto.name': 'Sintoísmo',
+  'trad.shinto.tagline': 'Kami, pureza y gratitud ante la naturaleza.',
+  'trad.jainism.name': 'Jainismo',
+  'trad.jainism.tagline': 'Ahimsa, reverencia por toda vida y libertad interior.',
+  'trad.bahai.name': 'Fe baháʼí',
+  'trad.bahai.tagline': 'Unidad de Dios, unidad de religión, unidad de la humanidad.',
+  'trad.earthway.name': 'Camino de la Tierra · Indígena',
+  'trad.earthway.tagline': 'Todos mis parientes — gratitud al mundo vivo.'
 }
 
 const fr = {
@@ -346,7 +394,7 @@ const fr = {
   'install.dismiss': 'Fermer',
   'onboard.s1': 'Choisissez un chemin sacré',
   'onboard.s1b':
-    'Choisissez une prière de n\u2019importe quelle tradition — chrétienne, musulmane, bouddhiste, juive et plus.',
+    'Choisissez une prière parmi les traditions chrétienne, musulmane, juive, hindoue, sikhe, bouddhiste, taoïste, shintoïste, jaïne et baháʼíe — ou du simple émerveillement d\u2019être vivant.',
   'onboard.s2': 'Priez ensemble, maintenant',
   'onboard.s2b':
     'Votre prière rejoint toutes celles du moment. Vous les verrez comme un doux fil du monde.',
@@ -361,7 +409,31 @@ const fr = {
   'stats.foot': 'Secondes de cette prière, une barre par jour.',
   'picker.title': 'Choisissez une prière',
   'picker.all': 'Toutes',
-  'picker.close': 'Fermer'
+  'picker.close': 'Fermer',
+  'trad.christianity.name': 'Christianisme',
+  'trad.christianity.tagline': 'Grâce, amour et la petite voix tranquille.',
+  'trad.islam.name': 'Islam',
+  'trad.islam.tagline': 'Soumission, paix et la Miséricorde de Dieu.',
+  'trad.judaism.name': 'Judaïsme',
+  'trad.judaism.tagline': 'Alliance, mémoire et lʼUnité de Dieu.',
+  'trad.hinduism.name': 'Hindouisme',
+  'trad.hinduism.tagline': 'Unité de tout, la lumière divine intérieure.',
+  'trad.buddhism.name': 'Bouddhisme',
+  'trad.buddhism.tagline': 'Compassion, silence et la voie du milieu.',
+  'trad.sikhism.name': 'Sikhisme',
+  'trad.sikhism.tagline': 'Un seul Créateur, une vie sincère, le service de tous.',
+  'trad.nonreligious.name': 'Agnostique · Athée',
+  'trad.nonreligious.tagline': 'Merveille, bonté et le cosmos que nous partageons.',
+  'trad.taoism.name': 'Taoïsme',
+  'trad.taoism.tagline': 'Harmonie, wu wei et le flux du Dao.',
+  'trad.shinto.name': 'Shintoïsme',
+  'trad.shinto.tagline': 'Kami, pureté et gratitude devant la nature.',
+  'trad.jainism.name': 'Jaïnisme',
+  'trad.jainism.tagline': 'Ahimsa, respect de toute vie et liberté intérieure.',
+  'trad.bahai.name': 'Foi baháʼíe',
+  'trad.bahai.tagline': 'Unité de Dieu, unité de la religion, unité de lʼhumanité.',
+  'trad.earthway.name': 'Voie de la Terre · Autochtone',
+  'trad.earthway.tagline': 'Toutes mes relations — gratitude envers le monde vivant.'
 }
 
 const de = {
@@ -466,7 +538,7 @@ const de = {
   'install.dismiss': 'Schließen',
   'onboard.s1': 'Wähle einen heiligen Weg',
   'onboard.s1b':
-    'Wähle ein Gebet aus jeder Tradition — christlich, muslimisch, buddhistisch, jüdisch und mehr.',
+    'Wähle ein Gebet aus christlichen, muslimischen, jüdischen, hinduistischen, sikhischen, buddhistischen, taoistischen, shintoistischen, jainistischen und baháʼí-Traditionen — oder aus dem stillen Staunen, am Leben zu sein.',
   'onboard.s2': 'Bete jetzt gemeinsam',
   'onboard.s2b':
     'Dein Gebet schließt sich allen an, die in diesem Moment beten. Du siehst sie als sanften Welt-Feed.',
@@ -481,7 +553,31 @@ const de = {
   'stats.foot': 'Sekunden dieses Gebets, ein Balken pro Tag.',
   'picker.title': 'Wähle ein Gebet',
   'picker.all': 'Alle',
-  'picker.close': 'Schließen'
+  'picker.close': 'Schließen',
+  'trad.christianity.name': 'Christentum',
+  'trad.christianity.tagline': 'Gnade, Liebe und die stille, kleine Stimme.',
+  'trad.islam.name': 'Islam',
+  'trad.islam.tagline': 'Hingabe, Frieden und die Barmherzigkeit Gottes.',
+  'trad.judaism.name': 'Judentum',
+  'trad.judaism.tagline': 'Bund, Erinnerung und die Einheit Gottes.',
+  'trad.hinduism.name': 'Hinduismus',
+  'trad.hinduism.tagline': 'Einheit allen Seins, das göttliche Licht in uns.',
+  'trad.buddhism.name': 'Buddhismus',
+  'trad.buddhism.tagline': 'Mitgefühl, Stille und der mittlere Weg.',
+  'trad.sikhism.name': 'Sikhismus',
+  'trad.sikhism.tagline': 'Ein Schöpfer, wahrhaftiges Leben, Dienst für alle.',
+  'trad.nonreligious.name': 'Agnostisch · Atheistisch',
+  'trad.nonreligious.tagline': 'Staunen, Freundlichkeit und der Kosmos, den wir teilen.',
+  'trad.taoism.name': 'Daoismus',
+  'trad.taoism.tagline': 'Harmonie, Wu Wei und das Fließen des Dao.',
+  'trad.shinto.name': 'Shintoismus',
+  'trad.shinto.tagline': 'Kami, Reinheit und Dankbarkeit vor der Natur.',
+  'trad.jainism.name': 'Jainismus',
+  'trad.jainism.tagline': 'Ahimsa, Ehrfurcht vor allem Leben und innere Freiheit.',
+  'trad.bahai.name': 'Baháʼí-Glaube',
+  'trad.bahai.tagline': 'Einheit Gottes, Einheit der Religion, Einheit der Menschheit.',
+  'trad.earthway.name': 'Erdenweg · Indigen',
+  'trad.earthway.tagline': 'Alle meine Verwandten — Dankbarkeit gegenüber der lebendigen Welt.'
 }
 
 const hi = {
@@ -586,7 +682,7 @@ const hi = {
   'install.dismiss': 'हटाएँ',
   'onboard.s1': 'एक पवित्र मार्ग चुनें',
   'onboard.s1b':
-    'किसी भी परंपरा की प्रार्थना चुनें — ईसाई, मुस्लिम, बौद्ध, यहूदी और अन्य।',
+    'ईसाई, मुस्लिम, यहूदी, हिन्दू, सिख, बौद्ध, ताओ, शिंतो, जैन और बहाई परंपराओं से प्रार्थना चुनें — या बस जीवित होने के शांत अचरज से।',
   'onboard.s2': 'अभी, साथ में प्रार्थना करें',
   'onboard.s2b':
     'आपकी प्रार्थना उन सबसे जुड़ती है जो इस क्षण प्रार्थना कर रहे हैं। उन्हें आप एक शांत विश्व-फ़ीड में देखेंगे।',
@@ -601,7 +697,31 @@ const hi = {
   'stats.foot': 'इस प्रार्थना के सेकंड, प्रति दिन एक पट्टी।',
   'picker.title': 'प्रार्थना चुनें',
   'picker.all': 'सभी',
-  'picker.close': 'बंद करें'
+  'picker.close': 'बंद करें',
+  'trad.christianity.name': 'ईसाई धर्म',
+  'trad.christianity.tagline': 'कृपा, प्रेम और वह शांत छोटी सी आवाज़।',
+  'trad.islam.name': 'इस्लाम',
+  'trad.islam.tagline': 'समर्पण, शांति और ईश्वर की दया।',
+  'trad.judaism.name': 'यहूदी धर्म',
+  'trad.judaism.tagline': 'वाचा, स्मृति और ईश्वर की एकता।',
+  'trad.hinduism.name': 'हिन्दू धर्म',
+  'trad.hinduism.tagline': 'सबकी एकता, भीतर का दिव्य प्रकाश।',
+  'trad.buddhism.name': 'बौद्ध धर्म',
+  'trad.buddhism.tagline': 'करुणा, शांति और मध्य मार्ग।',
+  'trad.sikhism.name': 'सिख धर्म',
+  'trad.sikhism.tagline': 'एक स्रष्टा, सत्य जीवन, सबकी सेवा।',
+  'trad.nonreligious.name': 'अज्ञेयवादी · नास्तिक',
+  'trad.nonreligious.tagline': 'विस्मय, दया और वह ब्रह्मांड जो हम साझा करते हैं।',
+  'trad.taoism.name': 'ताओ धर्म',
+  'trad.taoism.tagline': 'सामंजस्य, वू-वेई और दाओ का प्रवाह।',
+  'trad.shinto.name': 'शिंतो धर्म',
+  'trad.shinto.tagline': 'कामी, पवित्रता और प्रकृति के प्रति कृतज्ञता।',
+  'trad.jainism.name': 'जैन धर्म',
+  'trad.jainism.tagline': 'अहिंसा, सभी जीवन के प्रति श्रद्धा और आंतरिक स्वतंत्रता।',
+  'trad.bahai.name': 'बहाई धर्म',
+  'trad.bahai.tagline': 'ईश्वर की एकता, धर्म की एकता, मानवता की एकता।',
+  'trad.earthway.name': 'पृथ्वी-मार्ग · आदिवासी',
+  'trad.earthway.tagline': 'मेरे सभी संबंध — जीवित दुनिया के प्रति कृतज्ञता।'
 }
 
 const dict = { en, es, fr, de, hi }

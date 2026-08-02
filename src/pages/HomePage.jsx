@@ -114,7 +114,8 @@ export default function HomePage() {
             onClick={() => openPrayerPicker(s.id)}
           >
             <span className="tile-emoji">{s.emoji}</span>
-            <span className="tile-name">{s.name}</span>
+            <span className="tile-name">{t(`trad.${s.id}.name`)}</span>
+            <span className="tile-tagline">{t(`trad.${s.id}.tagline`)}</span>
             <span className="tile-prayers">
               {t(s.prayers.length === 1 ? 'home.prayers.one' : 'home.prayers.other', {
                 n: s.prayers.length

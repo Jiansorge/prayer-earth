@@ -47,7 +47,7 @@ export default function PrayerPicker() {
           <span className="picker-emoji">{spirit.emoji}</span>
           <div>
             <div className="picker-title">{t('picker.title')}</div>
-            <div className="picker-sub">{spirit.name} · {spirit.tagline}</div>
+            <div className="picker-sub">{t(`trad.${spirit.id}.name`)} · {t(`trad.${spirit.id}.tagline`)}</div>
           </div>
           <button className="picker-x" onClick={close} aria-label={t('picker.close')}>
             ✕
