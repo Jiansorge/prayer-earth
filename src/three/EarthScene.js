@@ -220,7 +220,7 @@ export class EarthScene {
     this.camera.lookAt(0, 0, 0)
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.backdrop ? 1.25 : 1.8))
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.backdrop ? 1.25 : 1.6))
     this.renderer.setSize(w, h)
     this.renderer.setClearColor(0x000000, 0)
     container.appendChild(this.renderer.domElement)
@@ -271,7 +271,7 @@ export class EarthScene {
     }
 
     // --- stars ---
-    this.scene.add(this.buildStars(this.backdrop ? 260 : 1800))
+    this.scene.add(this.buildStars(this.backdrop ? 220 : 1000))
 
     this.bindResize()
     this.bindVisibility()
@@ -313,7 +313,7 @@ export class EarthScene {
   }
 
   buildFullEarth(dayTex, nightTex) {
-    const geo = new THREE.SphereGeometry(1.42, 96, 96)
+    const geo = new THREE.SphereGeometry(1.42, 72, 72)
     this.earthMat = new THREE.ShaderMaterial({
       vertexShader: VERT,
       fragmentShader: FRAG,
@@ -329,7 +329,7 @@ export class EarthScene {
     this.earthGroup.add(this.earth)
 
     const atmo = new THREE.Mesh(
-      new THREE.SphereGeometry(1.52, 64, 64),
+      new THREE.SphereGeometry(1.52, 48, 48),
       new THREE.ShaderMaterial({
         vertexShader: ATMO_VERT,
         fragmentShader: ATMO_FRAG,
@@ -490,7 +490,7 @@ export class EarthScene {
   }
 
   buildMotes() {
-    const N = 140
+    const N = 90
     const pos = new Float32Array(N * 3)
     const phase = new Float32Array(N)
     const speed = new Float32Array(N)

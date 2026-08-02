@@ -9,6 +9,15 @@ export default defineConfig({
   },
   build: {
     target: 'es2020',
-    chunkSizeWarningLimit: 1200
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // three.js is the heavyweight: keep it in one immutable, cacheable chunk
+          // so repeat visits (even after app updates) skip re-downloading it.
+          if (id.includes('node_modules/three')) return 'three'
+        }
+      }
+    }
   }
 })
