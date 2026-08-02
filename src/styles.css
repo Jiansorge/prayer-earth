@@ -225,8 +225,7 @@ h3,
 .nav button {
   border: none;
   background: transparent;
-  color: var(--ink-dim);
-  font-family: var(--sans);
+  color: var(--ink-dim);  font-family: var(--sans);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.08em;
@@ -255,6 +254,31 @@ h3,
 
 .nav button:not(.active):hover {
   color: var(--ink);
+}
+
+.nav .nav-play {
+  border: none;
+  border-radius: 999px;
+  width: 46px;
+  height: 46px;
+  margin-inline-start: 6px;
+  flex: 0 0 auto;
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  color: #0d2214;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.nav .nav-play.on {
+  box-shadow: 0 0 20px rgba(223, 176, 92, 0.55);
+}
+
+.nav .nav-play:active {
+  transform: scale(0.92);
 }
 
 @media (max-width: 420px) {

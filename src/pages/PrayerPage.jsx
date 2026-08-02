@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+﻿import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
 import { speech } from '../audio/speech.js'
@@ -13,7 +13,7 @@ const fmt = (s) => {
   return m > 0 ? `${m}m ${sec}s` : `${sec}s`
 }
 
-// Scripts that read right-to-left — their original text must flow RTL even
+// Scripts that read right-to-left â€” their original text must flow RTL even
 // though the transliteration and meaning below stay left-to-right.
 const RTL_LANGS = new Set(['ar', 'he', 'fa', 'ur', 'sd', 'dv'])
 
@@ -24,6 +24,11 @@ export default function PrayerPage() {
   const spiritId = useStore((s) => s.spiritId)
   const prayerId = useStore((s) => s.prayerId)
   const setPraying = useStore((s) => s.setPraying)
+  const playing = useStore((s) => s.playing)
+  const setPlaying = useStore((s) => s.setPlaying)
+  const paused = useStore((s) => s.paused)
+  const setPaused = useStore((s) => s.setPaused)
+  const playTick = useStore((s) => s.playTick)
   const addLocalPrayer = useStore((s) => s.addLocalPrayer)
   const addPrayerSecond = useStore((s) => s.addPrayerSecond)
   const notePrayerComplete = useStore((s) => s.notePrayerComplete)
@@ -40,8 +45,6 @@ export default function PrayerPage() {
 
   const spirit = SPIRITUALITY_BY_ID[spiritId]
   const [active, setActive] = useState(null)
-  const [playing, setPlaying] = useState(false)
-  const [paused, setPaused] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [finished, setFinished] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -62,6 +65,32 @@ export default function PrayerPage() {
       useStore.getState().go('home')
     }
   }, [spirit])
+
+  // One prayer at a time per browser: another tab starting playback pauses us.
+  useEffect(() => {
+    const ch = new BroadcastChannel('prayer-earth')
+    ch.onmessage = (e) => {
+      if (e.data === 'play' && useStore.getState().playing && !useStore.getState().paused) {
+        togglePlay()
+      }
+    }
+    return () => ch.close()
+  }, [playing])
+
+  // The footer play button asks us to toggle.
+  useEffect(() => {
+    if (playTick > 0) togglePlay()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playTick])
+
+  // If the tab is hidden, the user isn't really praying â€” pause quietly.
+  useEffect(() => {
+    const onVis = () => {
+      if (document.hidden && playing && !paused) togglePlay()
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [playing, paused])
 
   useEffect(() => {
     setActive(null)
@@ -89,13 +118,16 @@ export default function PrayerPage() {
     ambient.setLevel(0.9)
     ambient.ring(0.6)
     setElapsed(0)
+    try {
+      new BroadcastChannel('prayer-earth').postMessage('play')
+    } catch {}
 
     const opts = {
       phrases,
       lang: prayer.lang,
       rate: speechRate,
       loop: loopOn,
-      gapMs: prayer.loop ? 350 : 700,
+      gapMs: prayer.loop ? 850 : 700,
       onPhrase: (i) => {
         setActive(i)
         // A repeated mantra is one prayer per recitation, not per cycle.
@@ -227,12 +259,16 @@ export default function PrayerPage() {
         window.speechSynthesis.pause()
       } catch {}
       setPaused(true)
+      setPraying(false)
+      syncClient.presenceNow()
       ambient.setLevel(0.35)
     } else {
       try {
         window.speechSynthesis.resume()
       } catch {}
       setPaused(false)
+      setPraying(true)
+      syncClient.presenceNow()
       ambient.setLevel(0.9)
     }
   }
@@ -261,7 +297,7 @@ export default function PrayerPage() {
 
   const share = async () => {
     const url = `${window.location.origin}/#/pray/${spiritId}/${prayerId}`
-    const text = `${prayer.title} · ${spirit.name}. Pray with the world: ${url}`
+    const text = `${prayer.title} Â· ${spirit.name}. Pray with the world: ${url}`
     try {
       if (navigator.share) {
         await navigator.share({ title: 'Prayer Earth', text, url })
@@ -279,7 +315,7 @@ export default function PrayerPage() {
     <div className="view prayer-page">
       <div className="back-row">
         <button onClick={closePrayer} aria-label={t('prayer.back')}>
-          ←
+          â†
         </button>
         <div>
           <div style={{ fontSize: 14, color: 'var(--ink-dim)' }}>
@@ -293,7 +329,7 @@ export default function PrayerPage() {
           <span className="pulse-dot" />
           <span style={{ fontSize: 13, color: 'var(--ink-dim)' }}>{t('prayer.peoplePraying', { n: people })}</span>
           <button className="share-btn" onClick={share} aria-label={t('prayer.share')} title={t('prayer.share')}>
-            ⇪
+            â‡ª
           </button>
           {copied && <span className="copied-pill">{t('settings.copied')}</span>}
         </div>
@@ -306,7 +342,7 @@ export default function PrayerPage() {
           disabled={!canLeft}
           aria-label={t('prayer.back')}
         >
-          ‹
+          â€¹
         </button>
         <div className="chooser" ref={chooserRef}>
           <button
@@ -314,7 +350,7 @@ export default function PrayerPage() {
             onClick={() => openPrayerPicker(spiritId)}
             title={t('picker.all')}
           >
-            ☰ <span className="chip-all-label">{t('picker.all')}</span>
+            â˜° <span className="chip-all-label">{t('picker.all')}</span>
           </button>
           {spirit.prayers.map((p) => (
             <button
@@ -335,7 +371,7 @@ export default function PrayerPage() {
           disabled={!canRight}
           aria-label={t('prayer.share')}
         >
-          ›
+          â€º
         </button>
       </div>
 
@@ -353,7 +389,7 @@ export default function PrayerPage() {
 
         <div className="prayer-title">{prayer.title}</div>
         <div className="prayer-sub">
-          {prayer.langLabel} · {prayer.loop ? t('prayer.repeated') : t('prayer.recited')}
+          {prayer.langLabel} Â· {prayer.loop ? t('prayer.repeated') : t('prayer.recited')}
         </div>
 
         <div className="praying-now" title={t('prayer.prayingNowTitle')}>
@@ -397,7 +433,7 @@ export default function PrayerPage() {
 
         {finished && !playing && (
           <div className="done-card fade-in">
-            <div className="done-emoji">🕊️</div>
+            <div className="done-emoji">ðŸ•Šï¸</div>
             <div className="done-title">{t('prayer.doneTitle')}</div>
             <div className="done-sub">
               {t('prayer.doneSub', { time: fmt(elapsed) })}
@@ -413,21 +449,21 @@ export default function PrayerPage() {
             aria-label="Repeat"
             title={t('prayer.repeat')}
           >
-            ⟳
+            âŸ³
           </button>
           <button
             className="ctrl-btn play"
             onClick={togglePlay}
             aria-label={playing ? t('prayer.pause') : t('prayer.pray')}
           >
-            {playing && !paused ? '❚❚' : '▶'}
+            {playing && !paused ? 'âšâš' : 'â–¶'}
           </button>
           <button
             className="ctrl-btn stop"
             onClick={stopJob}
             aria-label={t('prayer.stop')}
           >
-            ◼
+            â—¼
           </button>
           <button
             className={`ctrl-btn tune ${tuning ? 'on' : ''}`}
@@ -435,7 +471,7 @@ export default function PrayerPage() {
             aria-label={t('prayer.tuneLabel')}
             title={t('prayer.tune')}
           >
-            ♪
+            â™ª
           </button>
         </div>
 
@@ -460,12 +496,12 @@ export default function PrayerPage() {
                 id="pt-rate"
                 type="range"
                 min="0.6"
-                max="1.5"
+                max="2.5"
                 step="0.05"
                 value={speechRate}
                 onChange={(e) => setLiveRate(parseFloat(e.target.value))}
               />
-              <span className="pt-val">{speechRate.toFixed(2)}×</span>
+              <span className="pt-val">{speechRate.toFixed(2)}Ã—</span>
             </div>
           </div>
         )}
@@ -476,7 +512,7 @@ export default function PrayerPage() {
 
         {celebration > 0 && (
           <div className="streak-toast" role="status">
-            🔥 {celebration} {t(celebration === 1 ? 'day.one' : 'day.other', { n: celebration })}
+            ðŸ”¥ {celebration} {t(celebration === 1 ? 'day.one' : 'day.other', { n: celebration })}
           </div>
         )}
 
@@ -487,7 +523,7 @@ export default function PrayerPage() {
               onClick={() => setVoiceNote(false)}
               aria-label={t('prayer.close')}
             >
-              ✕
+              âœ•
             </button>
             <div className="voice-note-title">
               {chantMode ? t('prayer.softChant') : t('prayer.voiceUnavailable')}

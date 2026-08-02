@@ -14,6 +14,9 @@ export default function Nav() {
   const go = useStore((s) => s.go)
   const openPrayer = useStore((s) => s.openPrayer)
   const praying = useStore((s) => s.praying)
+  const playing = useStore((s) => s.playing)
+  const paused = useStore((s) => s.paused)
+  const requestPlayToggle = useStore((s) => s.requestPlayToggle)
   const t = useT()
 
   const onTap = (id) => {
@@ -51,6 +54,13 @@ export default function Nav() {
           </button>
         )
       })}
+      <button
+        className={`nav-play ${playing && !paused ? 'on' : ''}`}
+        onClick={requestPlayToggle}
+        aria-label={playing && !paused ? t('prayer.pause') : t('prayer.pray')}
+      >
+        {playing && !paused ? '❚❚' : '▶'}
+      </button>
     </nav>
   )
 }

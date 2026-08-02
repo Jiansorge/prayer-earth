@@ -3,13 +3,21 @@ import { useT } from '../i18n.js'
 
 let prompted = false
 
+// A phone/tablet — desktop users can find Install in Settings instead.
+function isMobile() {
+  return (
+    /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent) ||
+    (navigator.maxTouchPoints > 0 && window.innerWidth < 900)
+  )
+}
+
 export default function InstallHint() {
   const [kind, setKind] = useState(null)
   const [deferred, setDeferred] = useState(null)
   const t = useT()
 
   useEffect(() => {
-    if (prompted) return
+    if (prompted || !isMobile()) return
     const ios =
       /iphone|ipad|ipod/i.test(navigator.userAgent) &&
       !window.navigator.standalone &&
@@ -24,6 +32,7 @@ export default function InstallHint() {
       prompted = true
       e.preventDefault()
       setDeferred(e)
+      window.__installPrompt = e // also reachable from Settings
       setKind('install')
     }
     window.addEventListener('beforeinstallprompt', onPrompt)

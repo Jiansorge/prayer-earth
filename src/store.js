@@ -17,6 +17,9 @@ export const useStore = create(
       spiritId: null,
       prayerId: null,
       praying: false,
+      playing: false,
+      paused: false,
+      playTick: 0,
       settingsOpen: false,
       prayerPickerSpiritId: null,
 
@@ -74,6 +77,9 @@ export const useStore = create(
       setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
 
       setPraying: (praying) => set({ praying }),
+      setPlaying: (playing) => set({ playing }),
+      setPaused: (paused) => set({ paused }),
+      requestPlayToggle: () => set((s) => ({ playTick: (s.playTick || 0) + 1 })),
       setLoopOn: (loopOn) => set({ loopOn }),
       setVoiceURI: (voiceURI) => set({ voiceURI }),
       setSpeechRate: (speechRate) => set({ speechRate }),
