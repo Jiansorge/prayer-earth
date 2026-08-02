@@ -52,15 +52,16 @@ const FRAG = /* glsl */ `
 
     vec2 uv = equirect(sp);
 
-    // A clean, graphic world map: solid landmasses on a coloured ocean — no
-    // satellite noise, no fuzzy or wide coastlines, just readable continents.
+    // A clean, graphic world map: solid neutral-dark landmasses on a deep blue
+    // ocean. Land is told apart by being greener than the blue water, so every
+    // continent shows regardless of how dark its texture is.
     vec3 day = texture2D(uDayTex, uv).rgb;
     float lum = dot(day, vec3(0.299, 0.587, 0.114));
     float isLand = step(0.0, day.g - day.b);
-    float landMask = smoothstep(0.05, 0.075, lum) * isLand;   // sharp, clean edges
+    float landMask = isLand * step(0.01, lum);
 
-    vec3 oceanC = vec3(0.02, 0.07, 0.165);                    // deep graphic blue
-    vec3 landC = vec3(0.055, 0.135, 0.095) + day * 0.06;      // flat green land
+    vec3 oceanC = vec3(0.02, 0.07, 0.165);        // deep graphic blue
+    vec3 landC = vec3(0.08, 0.088, 0.085);        // neutral dark
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -82,13 +83,13 @@ const FRAG = /* glsl */ `
 
     vec3 col = lit + cities + radiance + aurora;
 
-    // a thin bright edge where land meets water (sampled close, kept subtle)
+    // a thin bright edge where land meets water (same green-gate test)
     vec3 dR = texture2D(uDayTex, uv + vec2(0.002, 0.0)).rgb;
     vec3 dT = texture2D(uDayTex, uv + vec2(0.0, 0.003)).rgb;
-    float landR = smoothstep(0.05, 0.075, dot(dR, vec3(0.299, 0.587, 0.114))) * step(0.0, dR.g - dR.b);
-    float landT = smoothstep(0.05, 0.075, dot(dT, vec3(0.299, 0.587, 0.114))) * step(0.0, dT.g - dT.b);
+    float landR = step(0.0, dR.g - dR.b) * step(0.01, dot(dR, vec3(0.299, 0.587, 0.114)));
+    float landT = step(0.0, dT.g - dT.b) * step(0.01, dot(dT, vec3(0.299, 0.587, 0.114)));
     float coast = landMask * (1.0 - min(landR, landT));
-    col += coast * vec3(0.9, 0.93, 0.9) * 0.4;
+    col += coast * vec3(0.9, 0.93, 0.9) * 0.45;
 
     // warm dawn band where day meets night
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));

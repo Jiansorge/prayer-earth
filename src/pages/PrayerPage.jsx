@@ -262,26 +262,28 @@ export default function PrayerPage() {
         </div>
       </div>
 
-      <div className="chooser" ref={chooserRef}>
-        <button
-          className="chip chip-all"
-          onClick={() => openPrayerPicker(spiritId)}
-          title={t('picker.all')}
-        >
-          ☰ <span className="chip-all-label">{t('picker.all')}</span>
-        </button>
-        {spirit.prayers.map((p) => (
+      <div className="chooser-wrap">
+        <div className="chooser" ref={chooserRef}>
           <button
-            key={p.id}
-            className={`chip ${p.id === prayerId ? 'on' : ''}`}
-            onClick={() => openPrayer(spiritId, p.id)}
+            className="chip chip-all"
+            onClick={() => openPrayerPicker(spiritId)}
+            title={t('picker.all')}
           >
-            {p.title}
-            <span className={`chip-count ${p.id === prayerId ? 'on' : ''}`}>
-              {prayerCounts[p.id] || 0}
-            </span>
+            ☰ <span className="chip-all-label">{t('picker.all')}</span>
           </button>
-        ))}
+          {spirit.prayers.map((p) => (
+            <button
+              key={p.id}
+              className={`chip ${p.id === prayerId ? 'on' : ''}`}
+              onClick={() => openPrayer(spiritId, p.id)}
+            >
+              {p.title}
+              <span className={`chip-count ${p.id === prayerId ? 'on' : ''}`}>
+                {prayerCounts[p.id] || 0}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="prayer-stage fade-in" key={prayer.id}>

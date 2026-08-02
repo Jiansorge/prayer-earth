@@ -450,20 +450,72 @@ h3,
   cursor: pointer;
 }
 
+.chooser-wrap {
+  position: relative;
+}
+
+/* soft fade hints at each end so it clearly reads as swipeable */
+.chooser-wrap::before,
+.chooser-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.chooser-wrap::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--bg-1), transparent);
+}
+
+.chooser-wrap::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--bg-1), transparent);
+}
+
+html[dir='rtl'] .chooser-wrap::before {
+  left: auto;
+  right: 0;
+  background: linear-gradient(270deg, var(--bg-1), transparent);
+}
+
+html[dir='rtl'] .chooser-wrap::after {
+  right: auto;
+  left: 0;
+  background: linear-gradient(90deg, var(--bg-1), transparent);
+}
+
 .chooser {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(223, 176, 92, 0.4) transparent;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
-  padding-bottom: 4px;
-  mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+  padding-bottom: 6px;
+  margin-bottom: -6px;
+}
+
+.chooser::-webkit-scrollbar {
+  height: 4px;
+}
+
+.chooser::-webkit-scrollbar-thumb {
+  background: rgba(223, 176, 92, 0.35);
+  border-radius: 999px;
+}
+
+.chooser::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .chooser .chip {
   scroll-snap-align: start;
+  flex: 0 0 auto;
 }
 
 .chooser::-webkit-scrollbar {
