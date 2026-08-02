@@ -39,7 +39,7 @@ export const useStore = create(
       voiceURI: null,
       speechRate: 0.85,
       ambienceLevel: 0.7,
-      volume: 0.8,
+      volume: 0.5,
       locale: 'en',
 
       // collective all-time totals (from the server)

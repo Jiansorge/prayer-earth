@@ -215,8 +215,8 @@ ok(
   `sliders=${await c.eval(`document.querySelectorAll('.prayer-tune input[type="range"]').length`)}`
 )
 ok(
-  'volume default 80%',
-  (await c.eval(`window.__store?.getState().volume`)) === 0.8
+  'volume default 50%',
+  (await c.eval(`window.__store?.getState().volume`)) === 0.5
 )
 await c.eval(`document.querySelector('.ctrl-btn.tune').click()`)
 ok('tune panel closes', await c.waitFor(`!document.querySelector('.prayer-tune')`))

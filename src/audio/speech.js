@@ -16,6 +16,32 @@ import { useStore } from '../store.js'
 // Sentinel "voice" in the settings picker meaning: no spoken voice, chant only.
 export const CHANT_VOICE = '__chant__'
 
+// Flatten sacred transliterations into something a fallback English voice can
+// read sensibly: strip diacritics, map the special consonants used in these
+// texts, and drop glottal marks — far closer to the real sound than the raw
+// diacritic-heavy text.
+function phoneticForSpeech(text) {
+  if (!text) return text
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ḍ/g, 'd')
+    .replace(/ṭ/g, 't')
+    .replace(/ṣ/g, 's')
+    .replace(/ḥ/g, 'h')
+    .replace(/ġ/g, 'g')
+    .replace(/ṛ/g, 'r')
+    .replace(/ṅ/g, 'ng')
+    .replace(/ñ/g, 'ny')
+    .replace(/ṁ/g, 'm')
+    .replace(/ṃ/g, 'm')
+    .replace(/[ʼʿʔ']/g, '')
+    .replace(/\s+/g, ' ')
+}
+
+// The user can hear what a real voice will sound like, quietly.
+const SAMPLE_TEXT = 'May peace be with you.'
+
 class SpeechEngine {
   constructor() {
     this.synth = window.speechSynthesis
@@ -174,10 +200,10 @@ class SpeechEngine {
     try {
       // Don't cancel an active prayer's voice — the sample will follow it.
       if (!this.job?.active) this.synth.cancel()
-      const u = new SpeechSynthesisUtterance('May peace be with you.')
+      const u = new SpeechSynthesisUtterance(SAMPLE_TEXT)
       u.lang = voice.lang
       u.voice = voice
-      u.volume = useStore.getState().volume ?? 1
+      u.volume = Math.min(0.5, (useStore.getState().volume ?? 0.8) * 0.6)
       u.rate = useStore.getState().speechRate || 1
       this.synth.speak(u)
     } catch {}
@@ -197,7 +223,7 @@ class SpeechEngine {
   utteranceText(phrase, lang) {
     const voice = this.pickVoice(lang)
     if (voice) return { text: phrase.t, lang, voice }
-    if (phrase.s) return { text: phrase.s, lang: 'en-US', voice: null }
+    if (phrase.s) return { text: phoneticForSpeech(phrase.s), lang: 'en-US', voice: null }
     return { text: phrase.t, lang, voice: null }
   }
 
@@ -215,7 +241,8 @@ class SpeechEngine {
     const u = new SpeechSynthesisUtterance(text)
     u.lang = lang
     u.rate = job.rate ?? 1
-    u.volume = useStore.getState().volume ?? 1
+    // Speech sits gently under the ambient bed rather than shouting over it.
+    u.volume = Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75)
     u.pitch = 1.0
     if (voice) u.voice = voice
 
