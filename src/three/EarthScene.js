@@ -1,4 +1,4 @@
-import * as THREE from 'three'
+﻿import * as THREE from 'three'
 import dayUrl from '../assets/textures/earth_atmos.jpg'
 import nightUrl from '../assets/textures/earth_lights_2048.png'
 import { SPIRITUALITIES } from '../data/prayers.js'
@@ -36,6 +36,7 @@ const FRAG = /* glsl */ `
   uniform vec3 uSunDir;
   uniform sampler2D uDayTex;
   uniform sampler2D uNightTex;
+  uniform sampler2D uMaskTex;
   varying vec3 vNormal;
   varying vec3 vPos;
 
@@ -55,13 +56,13 @@ const FRAG = /* glsl */ `
     // A clean, graphic world map: solid neutral-dark landmasses on a deep blue
     // ocean. Land is told apart by being greener than the blue water, so every
     // continent shows regardless of how dark its texture is.
-    vec3 day = texture2D(uDayTex, uv).rgb;
-    float lum = dot(day, vec3(0.299, 0.587, 0.114));
-    float isLand = step(0.0, day.g - day.b);
-    float landMask = isLand * step(0.01, lum);
+    // A clean, graphic world map: solid neutral-dark landmasses on deep water.
+    // Land comes from a binary mask classified once in JS, so every continent
+    // shows cleanly with no underwater or speckled boundaries.
+    float landMask = texture2D(uMaskTex, uv).r;
 
-    vec3 oceanC = vec3(0.02, 0.07, 0.165);        // deep graphic blue
-    vec3 landC = vec3(0.08, 0.088, 0.085);        // neutral dark
+    vec3 oceanC = vec3(0.005, 0.02, 0.055);        // dark water, darker than land
+    vec3 landC = vec3(0.085, 0.095, 0.09);         // neutral land
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -72,7 +73,7 @@ const FRAG = /* glsl */ `
     float night = 1.0 - smoothstep(-0.25, 0.08, ndl);
     vec3 cities = texture2D(uNightTex, uv).rgb * night * 1.1;
 
-    // the Earth's own breathing glow — kept subtle so the world stays deep
+    // the Earth's own breathing glow â€” kept subtle so the world stays deep
     // and the prayer lights remain the brightest things on it
     vec3 radiance = vec3(0.18, 0.35, 0.24) * uGlow * uGlow * 0.18;
 
@@ -83,11 +84,9 @@ const FRAG = /* glsl */ `
 
     vec3 col = lit + cities + radiance + aurora;
 
-    // a thin bright edge where land meets water (same green-gate test)
-    vec3 dR = texture2D(uDayTex, uv + vec2(0.002, 0.0)).rgb;
-    vec3 dT = texture2D(uDayTex, uv + vec2(0.0, 0.003)).rgb;
-    float landR = step(0.0, dR.g - dR.b) * step(0.01, dot(dR, vec3(0.299, 0.587, 0.114)));
-    float landT = step(0.0, dT.g - dT.b) * step(0.01, dot(dT, vec3(0.299, 0.587, 0.114)));
+    // a thin bright edge where land meets water
+    float landR = texture2D(uMaskTex, uv + vec2(0.002, 0.0)).r;
+    float landT = texture2D(uMaskTex, uv + vec2(0.0, 0.003)).r;
     float coast = landMask * (1.0 - min(landR, landT));
     col += coast * vec3(0.9, 0.93, 0.9) * 0.45;
 
@@ -124,7 +123,7 @@ const SIL_FRAG = /* glsl */ `
     vec3 sp = normalize(vPos);
     vec2 uv = equirect(sp);
 
-    // texture is sRGB-decoded (linear) — the mask thresholds below are chosen
+    // texture is sRGB-decoded (linear) â€” the mask thresholds below are chosen
     // for linear space: deep ocean ~0.02-0.06, land starts ~0.17.
     vec3 day = texture2D(uDayTex, uv).rgb;
     float lum = dot(day, vec3(0.299, 0.587, 0.114));
@@ -250,7 +249,7 @@ export class EarthScene {
     this.renderer.setClearColor(0x000000, 0)
     container.appendChild(this.renderer.domElement)
 
-    // sun light for the earth shader — toward the camera so the day side faces us
+    // sun light for the earth shader â€” toward the camera so the day side faces us
     this.sunDir = new THREE.Vector3(0.35, 0.28, 0.89).normalize()
     this.rotVel = this.backdrop ? 0.0008 : 0.0016
 
@@ -258,7 +257,8 @@ export class EarthScene {
     this.earthGroupRotation = 1.25
 
     const loader = new THREE.TextureLoader()
-    const dayTex = loader.load(dayUrl)
+    this.maskTex = this.buildLandMaskCanvas()
+    const dayTex = loader.load(dayUrl, (tex) => this.processLandMask(tex.image))
     dayTex.colorSpace = THREE.SRGBColorSpace
     dayTex.wrapS = THREE.RepeatWrapping
     this.dayTex = dayTex
@@ -347,7 +347,8 @@ export class EarthScene {
         uGlow: { value: this.glow },
         uSunDir: { value: this.sunDir },
         uDayTex: { value: dayTex },
-        uNightTex: { value: nightTex }
+        uNightTex: { value: nightTex },
+        uMaskTex: { value: this.maskTex }
       }
     })
     this.earth = new THREE.Mesh(geo, this.earthMat)
@@ -391,6 +392,55 @@ export class EarthScene {
   // Lights are billboarded sprites (not point sprites): they keep a consistent
   // soft glow on every device and composite reliably. A pool is reused so only
   // cells with people praying actually draw.
+  // A clean binary land/ocean mask, classified once in JS from the real map
+  // (where dark forests and ice read as land even though they look bluish).
+  buildLandMaskCanvas() {
+    const W = 1024
+    const H = 512
+    const c = document.createElement('canvas')
+    c.width = W
+    c.height = H
+    this._maskCtx = c.getContext('2d')
+    this._maskData = this._maskCtx.createImageData(W, H)
+    this._maskImg = null
+    this.maskTex = new THREE.CanvasTexture(c)
+    this.maskTex.colorSpace = THREE.NoColorSpace
+    return this.maskTex
+  }
+
+  processLandMask(img) {
+    try {
+      const c2 = document.createElement('canvas')
+      c2.width = img.naturalWidth || img.width
+      c2.height = img.naturalHeight || img.height
+      const ctx2 = c2.getContext('2d')
+      ctx2.drawImage(img, 0, 0)
+      const d = ctx2.getImageData(0, 0, c2.width, c2.height).data
+      const W = this._maskData.width
+      const H = this._maskData.height
+      const out = this._maskData.data
+      for (let y = 0; y < H; y++) {
+        const sy = Math.floor((y / H) * c2.height)
+        for (let x = 0; x < W; x++) {
+          const sx = Math.floor((x / W) * c2.width)
+          const i = (sy * c2.width + sx) * 4
+          const r = d[i] / 255
+          const g = d[i + 1] / 255
+          const b = d[i + 2] / 255
+          const lum = 0.299 * r + 0.587 * g + 0.114 * b
+          const gb = g - b
+          // land = bright (desert/ice) OR not-quite-blue enough to be deep ocean
+          const land = lum > 0.2 || (gb > -0.08 && lum > 0.08) ? 255 : 0
+          const o = (y * W + x) * 4
+          out[o] = out[o + 1] = out[o + 2] = land
+          out[o + 3] = 255
+        }
+      }
+      this._maskCtx.putImageData(this._maskData, 0, 0)
+      this.maskTex.needsUpdate = true
+    } catch {}
+  }
+
   buildLights() {
     const glow = this.buildLightGlowTexture()
     this.lightKeys = buildLightKeys()
