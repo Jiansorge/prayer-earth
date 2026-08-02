@@ -73,7 +73,7 @@ const FRAG = /* glsl */ `
     float night = 1.0 - smoothstep(-0.25, 0.08, ndl);
     vec3 cities = texture2D(uNightTex, uv).rgb * night * 1.1;
 
-    // the Earth's own breathing glow â€” kept subtle so the world stays deep
+    // the Earth's own breathing glow — kept subtle so the world stays deep
     // and the prayer lights remain the brightest things on it
     vec3 radiance = vec3(0.18, 0.35, 0.24) * uGlow * uGlow * 0.18;
 
@@ -99,9 +99,10 @@ const FRAG = /* glsl */ `
     float limb = smoothstep(0.0, 0.6, dot(n, vec3(0.0, 0.0, 1.0)));
     col *= 0.5 + 0.5 * limb;
 
-    // dither a hair to break up banding in the dark ocean gradient
+    // dither a hair to break up banding in the dark ocean gradient (never on
+    // the flat land, which must stay clean)
     float dh = fract(sin(dot(uv * vec2(1024.0, 512.0), vec2(12.9898, 78.233))) * 43758.5453);
-    col += (dh - 0.5) * 0.006;
+    col += (dh - 0.5) * 0.006 * (1.0 - landMask);
 
     gl_FragColor = vec4(col, 1.0);
   }
@@ -537,32 +538,39 @@ export class EarthScene {
           out[o + 3] = 255
         }
       }
-      // fill small water speckles inside land so continents read clean, not
-      // full of "lakes" (wide straits are left alone)
-      for (let iter = 0; iter < 2; iter++) {
-        const fill = new Uint8Array(W * H)
-        for (let y = 0; y < H; y++) {
-          for (let x = 0; x < W; x++) {
-            if (out[(y * W + x) * 4] > 128) continue
-            let landN = 0
-            for (let dy = -1; dy <= 1; dy++) {
-              const ny = Math.max(0, Math.min(H - 1, y + dy))
-              for (let dx = -1; dx <= 1; dx++) {
-                const nx = (x + dx + W) % W
-                if (out[(ny * W + nx) * 4] > 128) landN++
-              }
-            }
-            if (landN >= 6) fill[y * W + x] = 1
-          }
-        }
-        for (let y = 0; y < H; y++) {
-          for (let x = 0; x < W; x++) {
-            if (fill[y * W + x]) {
-              const o = (y * W + x) * 4
-              out[o] = out[o + 1] = out[o + 2] = 255
+      // morphological closing (dilate → erode) fills small interior holes so
+      // continents read as solid shapes, not a patchwork of "lakes"
+      const dil = new Uint8Array(W * H)
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          let any = false
+          for (let dy = -1; dy <= 1 && !any; dy++) {
+            const ny = Math.max(0, Math.min(H - 1, y + dy))
+            for (let dx = -1; dx <= 1; dx++) {
+              const nx = (x + dx + W) % W
+              if (out[(ny * W + nx) * 4] > 128) { any = true; break }
             }
           }
+          dil[y * W + x] = any ? 1 : 0
         }
+      }
+      const ero = new Uint8Array(W * H)
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          let all = true
+          for (let dy = -1; dy <= 1 && all; dy++) {
+            const ny = Math.max(0, Math.min(H - 1, y + dy))
+            for (let dx = -1; dx <= 1; dx++) {
+              const nx = (x + dx + W) % W
+              if (!dil[ny * W + nx]) { all = false; break }
+            }
+          }
+          ero[y * W + x] = all ? 255 : 0
+        }
+      }
+      for (let i = 0; i < W * H; i++) {
+        const o = i * 4
+        out[o] = out[o + 1] = out[o + 2] = ero[i]
       }
       // soften the mask edges so coastlines render smooth instead of blocky
       const soft = new Uint8ClampedArray(out.length)
