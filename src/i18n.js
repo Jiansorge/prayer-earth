@@ -357,7 +357,16 @@ const es = {
   'profile.namePlaceholder': 'Nombre sagrado',
   'profile.avatar': 'Avatar',
   'profile.color': 'Tu luz',
-  'profile.you': 'tú'
+  'profile.you': 'tú',
+  'settings.theme': 'Tema de inicio',
+  'settings.themeHint': 'El mundo detrás de tu pantalla de inicio',
+  'theme.mystic': 'Místico',
+  'theme.nature': 'Naturaleza',
+  'theme.space': 'Espacio',
+  'theme.temple': 'Templo antiguo',
+  'theme.ocean': 'Océano',
+  'prayer.once': 'Reproducir una vez',
+  'prayer.voice': 'Voz',
 }
 
 const fr = {
@@ -513,7 +522,16 @@ const fr = {
   'profile.namePlaceholder': 'Nom sacré',
   'profile.avatar': 'Avatar',
   'profile.color': 'Votre lumière',
-  'profile.you': 'vous'
+  'profile.you': 'vous',
+  'settings.theme': 'Thème de l’accueil',
+  'settings.themeHint': 'Le monde derrière votre écran d’accueil',
+  'theme.mystic': 'Mystique',
+  'theme.nature': 'Nature',
+  'theme.space': 'Espace',
+  'theme.temple': 'Temple ancien',
+  'theme.ocean': 'Océan',
+  'prayer.once': 'Jouer une fois',
+  'prayer.voice': 'Voix',
 }
 
 const de = {
@@ -669,7 +687,16 @@ const de = {
   'profile.namePlaceholder': 'Heiliger Name',
   'profile.avatar': 'Avatar',
   'profile.color': 'Dein Licht',
-  'profile.you': 'du'
+  'profile.you': 'du',
+  'settings.theme': 'Startbildschirm-Design',
+  'settings.themeHint': 'Die Welt hinter deinem Startbildschirm',
+  'theme.mystic': 'Mystisch',
+  'theme.nature': 'Natur',
+  'theme.space': 'Weltraum',
+  'theme.temple': 'Alter Tempel',
+  'theme.ocean': 'Ozean',
+  'prayer.once': 'Einmal abspielen',
+  'prayer.voice': 'Stimme',
 }
 
 const hi = {
@@ -829,7 +856,16 @@ const hi = {
   'profile.namePlaceholder': 'पवित्र नाम',
   'profile.avatar': 'अवतार',
   'profile.color': 'आपका प्रकाश',
-  'profile.you': 'आप'
+  'profile.you': 'आप',
+  'settings.theme': 'होम थीम',
+  'settings.themeHint': 'आपकी होम स्क्रीन के पीछे की दुनिया',
+  'theme.mystic': 'रहस्यमय',
+  'theme.nature': 'प्रकृति',
+  'theme.space': 'अंतरिक्ष',
+  'theme.temple': 'प्राचीन मंदिर',
+  'theme.ocean': 'महासागर',
+  'prayer.once': 'एक बार चलाएँ',
+  'prayer.voice': 'आवाज़',
 }
 
 const pt = {
@@ -928,7 +964,16 @@ const pt = {
   'profile.namePlaceholder': 'Nome sagrado',
   'profile.avatar': 'Avatar',
   'profile.color': 'Sua luz',
-  'profile.you': 'você'
+  'profile.you': 'você',
+  'settings.theme': 'Tema inicial',
+  'settings.themeHint': 'O mundo por trás da sua tela inicial',
+  'theme.mystic': 'Místico',
+  'theme.nature': 'Natureza',
+  'theme.space': 'Espaço',
+  'theme.temple': 'Templo antigo',
+  'theme.ocean': 'Oceano',
+  'prayer.once': 'Reproduzir uma vez',
+  'prayer.voice': 'Voz',
 }
 
 const it = {
@@ -1027,7 +1072,16 @@ const it = {
   'profile.namePlaceholder': 'Nome sacro',
   'profile.avatar': 'Avatar',
   'profile.color': 'La tua luce',
-  'profile.you': 'tu'
+  'profile.you': 'tu',
+  'settings.theme': 'Tema iniziale',
+  'settings.themeHint': 'Il mondo dietro la tua schermata iniziale',
+  'theme.mystic': 'Mistico',
+  'theme.nature': 'Natura',
+  'theme.space': 'Spazio',
+  'theme.temple': 'Tempio antico',
+  'theme.ocean': 'Oceano',
+  'prayer.once': 'Riproduci una volta',
+  'prayer.voice': 'Voce',
 }
 
 const ru = {
@@ -1126,7 +1180,16 @@ const ru = {
   'profile.namePlaceholder': 'Священное имя',
   'profile.avatar': 'Аватар',
   'profile.color': 'Ваш свет',
-  'profile.you': 'вы'
+  'profile.you': 'вы',
+  'settings.theme': 'Тема главного экрана',
+  'settings.themeHint': 'Мир за вашим главным экраном',
+  'theme.mystic': 'Мистический',
+  'theme.nature': 'Природа',
+  'theme.space': 'Космос',
+  'theme.temple': 'Древний храм',
+  'theme.ocean': 'Океан',
+  'prayer.once': 'Воспроизвести один раз',
+  'prayer.voice': 'Голос',
 }
 
 const zh = {
@@ -1225,7 +1288,16 @@ const zh = {
   'profile.namePlaceholder': '圣名',
   'profile.avatar': '头像',
   'profile.color': '你的光',
-  'profile.you': '你'
+  'profile.you': '你',
+  'settings.theme': '首页主题',
+  'settings.themeHint': '首页背后的世界',
+  'theme.mystic': '神秘',
+  'theme.nature': '自然',
+  'theme.space': '太空',
+  'theme.temple': '古寺',
+  'theme.ocean': '海洋',
+  'prayer.once': '播放一次',
+  'prayer.voice': '声音',
 }
 
 const ar = {
@@ -1324,7 +1396,16 @@ const ar = {
   'profile.namePlaceholder': 'الاسم المقدّس',
   'profile.avatar': 'الصورة الرمزية',
   'profile.color': 'ضوءك',
-  'profile.you': 'أنت'
+  'profile.you': 'أنت',
+  'settings.theme': 'سمة الرئيسية',
+  'settings.themeHint': 'العالم خلف شاشتك الرئيسية',
+  'theme.mystic': 'روحاني',
+  'theme.nature': 'طبيعة',
+  'theme.space': 'الفضاء',
+  'theme.temple': 'معبد قديم',
+  'theme.ocean': 'المحيط',
+  'prayer.once': 'تشغيل مرة واحدة',
+  'prayer.voice': 'صوت',
 }
 
 const ja = {
@@ -1419,7 +1500,16 @@ const ja = {
   'trad.confucianism.name': '儒教', 'trad.confucianism.tagline': '仁、礼、そして天の下の調和。', 'trad.chinese.name': '中国の伝統信仰', 'trad.chinese.tagline': '天、祖先、そして家と土地の精霊。',
   'trad.african.name': 'アフリカの伝統', 'trad.african.tagline': '祖先、偉大なる霊、そして生きた大地。',
   'profile.title': 'あなたの存在', 'profile.nameHint': '祈るときに世界が見る名前。',
-  'profile.namePlaceholder': '聖なる名前', 'profile.avatar': 'アバター', 'profile.color': 'あなたの光', 'profile.you': 'あなた'
+  'profile.namePlaceholder': '聖なる名前', 'profile.avatar': 'アバター', 'profile.color': 'あなたの光', 'profile.you': 'あなた',
+  'settings.theme': 'ホームテーマ',
+  'settings.themeHint': 'ホーム画面の背後にある世界',
+  'theme.mystic': '神秘',
+  'theme.nature': '自然',
+  'theme.space': '宇宙',
+  'theme.temple': '古代寺院',
+  'theme.ocean': '海',
+  'prayer.once': '一度だけ再生',
+  'prayer.voice': '声',
 }
 
 const ko = {
@@ -1514,7 +1604,16 @@ const ko = {
   'trad.confucianism.name': '유교', 'trad.confucianism.tagline': '인(仁), 예(禮), 그리고 천하의 조화.', 'trad.chinese.name': '중국 전통 신앙', 'trad.chinese.tagline': '하늘, 조상, 그리고 집과 땅의 정령들.',
   'trad.african.name': '아프리카 전통', 'trad.african.tagline': '조상, 위대한 영, 그리고 살아있는 땅.',
   'profile.title': '당신의 존재', 'profile.nameHint': '기도할 때 세상이 보는 이름.',
-  'profile.namePlaceholder': '거룩한 이름', 'profile.avatar': '아바타', 'profile.color': '당신의 빛', 'profile.you': '당신'
+  'profile.namePlaceholder': '거룩한 이름', 'profile.avatar': '아바타', 'profile.color': '당신의 빛', 'profile.you': '당신',
+  'settings.theme': '홈 테마',
+  'settings.themeHint': '홈 화면 뒤의 세계',
+  'theme.mystic': '신비',
+  'theme.nature': '자연',
+  'theme.space': '우주',
+  'theme.temple': '고대 사원',
+  'theme.ocean': '바다',
+  'prayer.once': '한 번 재생',
+  'prayer.voice': '목소리',
 }
 
 const dict = { en, es, fr, de, hi, pt, it, ru, zh, ar, ja, ko }
