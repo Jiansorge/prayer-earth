@@ -87,14 +87,17 @@ const FRAG = /* glsl */ `
 
     vec3 col = lit + radiance + aurora;
 
-    // a hair-thin, faintly shimmering coastline — light tracing the continents,
-    // so subtle it reads as living edge-light, never as a line
-    float landR = texture2D(uMaskTex, vec2(fract(uv.x + 0.0005), uv.y)).r;
-    float landT = texture2D(uMaskTex, vec2(uv.x, fract(uv.y + 0.0008))).r;
-    float edge = smoothstep(0.35, 0.5, landMask) * (1.0 - smoothstep(0.42, 0.5, min(landR, landT)));
-    float shimmer = 0.7 + 0.3 * sin(uv.y * 20.0 + uTime * 0.5);
-    vec3 coastCol = vec3(0.7, 0.85, 1.0) * (0.45 + 0.2 * uGlow + 0.12 * uSurge + 0.08 * uTier);
-    col += edge * coastCol * 0.18 * shimmer;
+    // a luminous shoreline: a bright thin core softened by a gentle glow on both
+    // sides, so it reads as light tracing the continents — never a drawn line
+    float a = texture2D(uMaskTex, vec2(fract(uv.x + 0.0005), uv.y)).r;
+    float b = texture2D(uMaskTex, vec2(uv.x, fract(uv.y + 0.0008))).r;
+    float c = texture2D(uMaskTex, vec2(fract(uv.x + 0.0011), uv.y)).r;
+    float d = texture2D(uMaskTex, vec2(uv.x, fract(uv.y + 0.0016))).r;
+    float core = smoothstep(0.3, 0.5, landMask) * (1.0 - smoothstep(0.42, 0.5, min(a, b)));
+    float landGlow = smoothstep(0.25, 0.45, landMask) * (1.0 - smoothstep(0.5, 0.6, min(c, d)));
+    float waterGlow = (1.0 - landMask) * smoothstep(0.4, 0.55, max(c, d));
+    vec3 coastCol = vec3(0.72, 0.88, 1.0) * (0.75 + 0.3 * uGlow + 0.15 * uSurge + 0.1 * uTier);
+    col += coastCol * (core * 0.4 + landGlow * 0.22 + waterGlow * 0.12);
 
     // warm dawn band where day meets night
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));
@@ -151,9 +154,9 @@ const SIL_FRAG = /* glsl */ `
     vec3 base = vec3(0.045, 0.11, 0.085);
     vec3 coastCol = mix(vec3(0.55, 0.85, 0.68), vec3(1.0, 0.86, 0.52), uGlow);
 
-    float fillA = land * (0.04 + 0.05 * uGlow) * (0.6 + 0.4 * fres);
-    float coastA = coast * (0.03 + 0.12 * uGlow);
-    float rimA = fres * 0.05;
+    float fillA = land * (0.05 + 0.06 * uGlow) * (0.6 + 0.4 * fres);
+    float coastA = coast * (0.14 + 0.3 * uGlow);
+    float rimA = fres * 0.06;
 
     vec3 col = base * fillA;
     col += coastCol * coastA;
