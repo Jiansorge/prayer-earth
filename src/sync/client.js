@@ -106,8 +106,9 @@ class SyncClient {
   }
 
   // Ask once for a coarse location so the world can show a light where you
-  // are. If it's not granted or available, fall back to a coarse connection
-  // guess, then to a stable stand-in city so your prayer still lands somewhere.
+  // are. If it's not granted or available, fall back to a stable stand-in
+  // city so your prayer still lands somewhere on the map. This is fully
+  // local — no location ever leaves the device.
   ensureLocation() {
     const publish = () => useStore.getState().setYouLoc(this.loc)
     try {
@@ -120,32 +121,20 @@ class SyncClient {
             }
             publish()
           },
-          () => this.fallbackLoc().then(publish),
+          () => {
+            this.fallbackLoc()
+            publish()
+          },
           { timeout: 8000, maximumAge: 600000, enableHighAccuracy: false }
         )
         return
       }
     } catch {}
-    this.fallbackLoc().then(publish)
+    this.fallbackLoc()
+    publish()
   }
 
-  // A coarse, city-level guess from the connection so the map can mark where
-  // you are without ever sharing a precise position. This sends only your IP
-  // to a privacy-respecting geolocation service and uses its approximate
-  // result; if that isn't available, it falls back to a stable stand-in city.
-  async fallbackLoc() {
-    try {
-      const r = await fetch('https://ipapi.co/json/', {
-        signal: AbortSignal.timeout(6000)
-      })
-      if (r.ok) {
-        const j = await r.json()
-        if (typeof j.latitude === 'number' && typeof j.longitude === 'number') {
-          this.loc = { lat: +j.latitude.toFixed(1), lon: +j.longitude.toFixed(1) }
-          return
-        }
-      }
-    } catch {}
+  fallbackLoc() {
     let h = 0
     const n = this.name
     for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) >>> 0
