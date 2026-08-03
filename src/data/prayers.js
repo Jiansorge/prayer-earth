@@ -1192,6 +1192,61 @@ export const SPIRITUALITIES = [
           { t: 'With every harvest, let us give back more than we take.' }
         ],
         translation: 'A prayer of thanksgiving for the living land — gratitude that keeps us humble and generous.'
+      },
+      {
+        id: 'hoozho',
+        title: 'Hózhó — The Beauty Way',
+        lang: 'en',
+        langLabel: 'English · from the Navajo tradition',
+        phrases: [
+          { t: 'In beauty I walk.' },
+          { t: 'With beauty before me, beauty behind me,' },
+          { t: 'beauty above me, beauty below me,' },
+          { t: 'beauty all around me.' },
+          { t: 'It is finished in beauty. Hózhó náhásdlíí.' }
+        ],
+        translation: 'The Beauty Way of the Navajo — walking in harmony with all that is, begun in beauty and finished in beauty.'
+      },
+      {
+        id: 'karakia',
+        title: 'Karakia Whakamutunga — A Blessing of Peace',
+        lang: 'mi',
+        langLabel: 'Te Reo Māori · Māori',
+        phrases: [
+          { t: 'Kia hora te marino', e: 'May peace be widespread.' },
+          { t: 'Kia whakapapa pounamu te moana', e: 'May the sea be like greenstone.' },
+          { t: 'Kia tere te kārohirohi i mua i tōu huarahi', e: 'May the shimmer of light dance across your path.' },
+          { t: 'Kia tau te aroha', e: 'May love settle upon you.' }
+        ],
+        translation: 'A karakia of peace and blessing from Aotearoa — calm waters, dancing light, and love.'
+      },
+      {
+        id: 'pachamama',
+        title: 'Pachamama — Mother Earth',
+        lang: 'en',
+        langLabel: 'English · from the Andean tradition',
+        phrases: [
+          { t: 'Pachamama, Mother Earth, we give you thanks.' },
+          { t: 'For the fields that feed us and the mountains that hold us,' },
+          { t: 'for the rain that falls and the sun that ripens.' },
+          { t: 'We return to you what we take,' },
+          { t: 'and walk softly upon your body.' }
+        ],
+        translation: 'A reflection in the Andean tradition — gratitude and reciprocity with Pachamama, Mother Earth.'
+      },
+      {
+        id: 'seven-teachings',
+        title: 'The Seven Grandfather Teachings',
+        lang: 'en',
+        langLabel: 'English · from the Anishinaabe tradition',
+        phrases: [
+          { t: 'The elders gave us seven gifts to live by:' },
+          { t: 'Wisdom, Love, Respect,' },
+          { t: 'Bravery, Honesty, Humility, and Truth.' },
+          { t: 'May I honour each one today' },
+          { t: 'in the way I speak and the way I live.' }
+        ],
+        translation: 'A reflection on the Seven Grandfather Teachings of the Anishinaabe — the virtues that make a good life.'
       }
     ]
   },
