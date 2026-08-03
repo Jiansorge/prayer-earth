@@ -43,6 +43,8 @@ export const useStore = create(
       localPrayerSeconds: 0,
       loopOn: true,
       voiceURI: null,
+      // per-prayer static voice choice (keys are prayer ids, values are voice ids)
+      prayerVoices: {},
       speechRate: 0.85,
       ambienceLevel: 0.7,
       volume: 0.5,
@@ -93,6 +95,8 @@ export const useStore = create(
       setPendingPlay: (pendingPlay) => set({ pendingPlay }),
       setLoopOn: (loopOn) => set({ loopOn }),
       setVoiceURI: (voiceURI) => set({ voiceURI }),
+      setPrayerVoice: (prayerId, voiceId) =>
+        set((s) => ({ prayerVoices: { ...s.prayerVoices, [prayerId]: voiceId } })),
       setSpeechRate: (speechRate) => set({ speechRate }),
       setAmbienceLevel: (ambienceLevel) => set({ ambienceLevel }),
       setVolume: (volume) => set({ volume }),
@@ -296,6 +300,7 @@ export const useStore = create(
         basePrayerSeconds: s.basePrayerSeconds,
         loopOn: s.loopOn,
         voiceURI: s.voiceURI,
+        prayerVoices: s.prayerVoices,
         speechRate: s.speechRate,
         ambienceLevel: s.ambienceLevel,
         volume: s.volume,

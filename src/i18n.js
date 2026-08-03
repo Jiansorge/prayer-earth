@@ -71,6 +71,7 @@ const en = {
   'prayer.tuneLabel': 'Tune',
   'prayer.volume': 'Volume',
   'prayer.speed': 'Speed',
+  'prayer.voice': 'Voice',
   'prayer.prayingNowRest': 'praying this prayer now',
   'prayer.across': '· {n} across {name}',
   'prayer.allTime': '✶ {n} all time',

@@ -37,6 +37,8 @@ export default function PrayerPage() {
   const setLoopOn = useStore((s) => s.setLoopOn)
   const speechRate = useStore((s) => s.speechRate)
   const setSpeechRate = useStore((s) => s.setSpeechRate)
+  const setPrayerVoice = useStore((s) => s.setPrayerVoice)
+  const chosenVoice = useStore((s) => (prayerId ? s.prayerVoices[prayerId] : null))
   const volume = useStore((s) => s.volume)
   const setVolume = useStore((s) => s.setVolume)
   const people = useStore((s) => s.peoplePraying)
@@ -45,6 +47,7 @@ export default function PrayerPage() {
 
   const spirit = SPIRITUALITY_BY_ID[spiritId]
   const [active, setActive] = useState(null)
+  const [prayerVoices, setPrayerVoices] = useState([])
   const [elapsed, setElapsed] = useState(0)
   const [finished, setFinished] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -118,6 +121,19 @@ export default function PrayerPage() {
     setTuning(false)
     stopJob()
   }, [prayerId])
+
+  // The static voice options for this prayer (from the pre-rendered audio).
+  useEffect(() => {
+    let on = true
+    speech.loadAudioManifest().then((m) => {
+      if (!on || !prayer) return
+      const p = m && m.prayers ? m.prayers[prayer.id] : null
+      setPrayerVoices(p && p.voices ? p.voices : [])
+    })
+    return () => {
+      on = false
+    }
+  }, [prayer?.id])
 
   const startJob = () => {
     localStart.current = Date.now()
@@ -314,6 +330,18 @@ export default function PrayerPage() {
     speech.setRate(r)
   }
 
+  const friendlyVoice = (v) =>
+    String(v).replace(/^[a-z]{2,3}-[A-Z]{2,3}-/i, '').replace(/Neural$/, '')
+
+  const pickVoice = (v) => {
+    setPrayerVoice(prayer.id, v)
+    if (playing) {
+      const wasPlaying = playing
+      stopJob()
+      if (wasPlaying) setTimeout(startJob, 120)
+    }
+  }
+
   const share = async () => {
     const url = `${window.location.origin}/#/pray/${spiritId}/${prayerId}`
     const text = `${prayer.title} · ${spirit.name}. Pray with the world: ${url}`
@@ -499,6 +527,27 @@ export default function PrayerPage() {
 
         {tuning && (
           <div className="prayer-tune fade-in" aria-label={t('prayer.tuneLabel')}>
+            {prayerVoices.length > 1 && (
+              <div className="pt-row pt-voices">
+                <label className="pt-label" id="pt-voice-label">{t('prayer.voice')}</label>
+                <div className="voice-chips" role="group" aria-labelledby="pt-voice-label">
+                  {prayerVoices.map((v) => {
+                    const active = (chosenVoice || prayerVoices[0]) === v
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        className={`voice-chip ${active ? 'on' : ''}`}
+                        onClick={() => pickVoice(v)}
+                        aria-pressed={active}
+                      >
+                        {friendlyVoice(v)}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
             <div className="pt-row">
               <label className="pt-label" htmlFor="pt-volume">{t('prayer.volume')}</label>
               <input

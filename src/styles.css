@@ -1113,6 +1113,36 @@ html[dir='rtl'] .chooser-arrow.right {
   gap: 12px;
 }
 
+.prayer-tune .pt-row.pt-voices {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.voice-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.voice-chip {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink-dim);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease), color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.voice-chip.on {
+  color: var(--ink);
+  border-color: var(--gold);
+  background: rgba(223, 176, 92, 0.16);
+}
+
 .prayer-tune .pt-label {
   font-size: 12px;
   letter-spacing: 0.08em;

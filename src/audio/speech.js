@@ -103,8 +103,9 @@ class SpeechEngine {
       const m = await this.loadAudioManifest()
       const p = m && m.prayers ? m.prayers[job.prayerId] : null
       if (!p || !p.voices || !p.voices.length) return null
-      const pref = useStore.getState().voiceURI
-      const voice = p.voices.indexOf(pref) >= 0 ? pref : p.voices[0]
+      const prefs = useStore.getState().prayerVoices || {}
+      const chosen = prefs[job.prayerId]
+      const voice = p.voices.indexOf(chosen) >= 0 ? chosen : p.voices[0]
       return `/audio/${job.prayerId}/${i}-${voice}.mp3`
     } catch {
       return null
