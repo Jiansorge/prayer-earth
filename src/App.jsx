@@ -13,6 +13,18 @@ import PrayerPicker from './components/PrayerPicker.jsx'
 import { getScene } from './components/Scenery.jsx'
 import NatureBackdrop from './components/NatureBackdrop.jsx'
 import MysticBackdrop from './components/MysticBackdrop.jsx'
+import SpaceBackdrop from './components/SpaceBackdrop.jsx'
+import TempleBackdrop from './components/TempleBackdrop.jsx'
+import OceanBackdrop from './components/OceanBackdrop.jsx'
+
+// The home backdrop each theme draws on.
+const THEME_BACKDROPS = {
+  mystic: MysticBackdrop,
+  nature: NatureBackdrop,
+  space: SpaceBackdrop,
+  temple: TempleBackdrop,
+  ocean: OceanBackdrop
+}
 import { useT, RTL_LOCALES } from './i18n.js'
 
 // The 3D Earth (three.js) is heavy — load it only when the Earth view opens.
@@ -71,6 +83,7 @@ class Boundary extends Component {
 export default function App() {
   const view = useStore((s) => s.view)
   const theme = useStore((s) => s.theme)
+  const Backdrop = THEME_BACKDROPS[theme] || MysticBackdrop
   const glowRef = useRef(0)
   const t = useT()
 
@@ -150,7 +163,7 @@ export default function App() {
   return (
     <div className="app" data-scene={view === 'home' && theme === 'nature' ? scene : undefined}>
       <div className="sky" />
-      {view === 'home' && (theme === 'nature' ? <NatureBackdrop /> : <MysticBackdrop />)}
+      {view === 'home' && <Backdrop />}
       <div className="glow-field" />
       <div className="fireflies" aria-hidden="true">
         {[...Array(10)].map((_, i) => (

@@ -181,24 +181,24 @@ export default function SettingsSheet() {
         <label className="field-label">{t('settings.theme')}</label>
         <div className="field-hint">{t('settings.themeHint')}</div>
         <div className="theme-pick">
-          <button
-            type="button"
-            className={`theme-opt ${theme === 'mystic' ? 'on' : ''}`}
-            onClick={() => setTheme('mystic')}
-            aria-pressed={theme === 'mystic'}
-          >
-            <span className="theme-emoji">🌌</span>
-            <span>{t('theme.mystic')}</span>
-          </button>
-          <button
-            type="button"
-            className={`theme-opt ${theme === 'nature' ? 'on' : ''}`}
-            onClick={() => setTheme('nature')}
-            aria-pressed={theme === 'nature'}
-          >
-            <span className="theme-emoji">🌲</span>
-            <span>{t('theme.nature')}</span>
-          </button>
+          {[
+            { id: 'mystic', emoji: '🌌', label: t('theme.mystic') },
+            { id: 'nature', emoji: '🌲', label: t('theme.nature') },
+            { id: 'space', emoji: '🚀', label: t('theme.space') },
+            { id: 'temple', emoji: '🏛️', label: t('theme.temple') },
+            { id: 'ocean', emoji: '🌊', label: t('theme.ocean') }
+          ].map((th) => (
+            <button
+              key={th.id}
+              type="button"
+              className={`theme-opt ${theme === th.id ? 'on' : ''}`}
+              onClick={() => setTheme(th.id)}
+              aria-pressed={theme === th.id}
+            >
+              <span className="theme-emoji">{th.emoji}</span>
+              <span>{th.label}</span>
+            </button>
+          ))}
         </div>
 
         <div className="field-divider" />

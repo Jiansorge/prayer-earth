@@ -50,6 +50,9 @@ const en = {
   'settings.themeHint': 'The world behind your home screen',
   'theme.mystic': 'Mystical',
   'theme.nature': 'Nature',
+  'theme.space': 'Space',
+  'theme.temple': 'Ancient Temple',
+  'theme.ocean': 'Ocean',
   'settings.automatic': 'Automatic',
   'settings.sharePrayerLabel': 'Share a prayer',
   'settings.sharePrayerHint':
