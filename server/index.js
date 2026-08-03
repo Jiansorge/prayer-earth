@@ -196,6 +196,56 @@ function saveTotals() {
   }, 500)
 }
 
+// ---- anonymous lifetime sync ----
+// Keeps personal prayer stats keyed by an opaque, random id so they can follow
+// a person between devices — no account, no name, nothing that reveals who
+// they are. Tests may point at a scratch file via PE_PEOPLE_FILE.
+const PEOPLE_FILE = process.env.PE_PEOPLE_FILE
+  ? new URL(process.env.PE_PEOPLE_FILE, import.meta.url)
+  : new URL('./people.json', import.meta.url)
+const peopleSync = {}
+try {
+  if (existsSync(PEOPLE_FILE)) {
+    Object.assign(peopleSync, JSON.parse(readFileSync(PEOPLE_FILE, 'utf8')))
+  }
+} catch {}
+let peopleSaveTimer = null
+function savePeople() {
+  clearTimeout(peopleSaveTimer)
+  peopleSaveTimer = setTimeout(() => {
+    try {
+      writeFileSync(PEOPLE_FILE, JSON.stringify(peopleSync))
+    } catch {}
+  }, 500)
+}
+
+// Fold one device's stats into the stored ones, taking the greater of every
+// counter so a prayer is never lost when devices meet.
+function mergeStats(base, incoming) {
+  const pick = (a, b) => Math.max(a || 0, b || 0)
+  const out = { ...(base || {}) }
+  const mergeDay = (local, inc) => {
+    const m = { ...(local || {}) }
+    for (const [d, map] of Object.entries(inc || {})) {
+      m[d] = { ...(m[d] || {}) }
+      for (const [k, v] of Object.entries(map)) m[d][k] = pick(m[d][k], v)
+    }
+    return m
+  }
+  out.prayerCompletions = { ...(base?.prayerCompletions || {}) }
+  for (const [k, v] of Object.entries(incoming.prayerCompletions || {})) {
+    out.prayerCompletions[k] = pick(out.prayerCompletions[k], v)
+  }
+  out.prayerDayCompletions = mergeDay(base?.prayerDayCompletions, incoming.prayerDayCompletions)
+  out.prayerDayStats = mergeDay(base?.prayerDayStats, incoming.prayerDayStats)
+  out.localPrayerSeconds = pick(base?.localPrayerSeconds, incoming.localPrayerSeconds)
+  out.streak = pick(base?.streak, incoming.streak)
+  out.bestStreak = pick(base?.bestStreak, incoming.bestStreak)
+  const ld = incoming.lastPrayedDay || base?.lastPrayedDay
+  if (ld) out.lastPrayedDay = ld > (base?.lastPrayedDay || '') ? ld : base.lastPrayedDay
+  return out
+}
+
 // Live "now praying" feed: who started praying recently.
 const MAX_FEED = 40
 const feed = []
@@ -325,6 +375,16 @@ wss.on('connection', (ws) => {
           for (const client of clients.keys()) {
             if (client.readyState === client.OPEN) client.send(payload)
           }
+        }
+      } else if (msg.type === 'sync') {
+        // Anonymous lifetime sync: merge this device's counters and reply with
+        // the merged result so every device converges on the same totals.
+        const id = typeof msg.anonId === 'string' ? msg.anonId.slice(0, 64) : ''
+        if (id) {
+          const merged = mergeStats(peopleSync[id], msg.stats || {})
+          peopleSync[id] = merged
+          savePeople()
+          ws.send(JSON.stringify({ type: 'sync', stats: merged }))
         }
       }
     } catch {}

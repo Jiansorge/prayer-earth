@@ -66,6 +66,10 @@ export const useStore = create(
       lastPrayedDay: null,
       celebrateStreak: 0,
 
+      // a random, anonymous id so your lifetime stats can follow you between
+      // devices — no account, no name, just an opaque token
+      anonId: '',
+
       // ---- navigation ----
       go: (view) =>
         set((s) => {
@@ -180,6 +184,72 @@ export const useStore = create(
       },
       clearCelebration: () => set({ celebrateStreak: 0 }),
 
+      // ---- anonymous sync ----
+
+      // Create (once) and remember an opaque id so stats can follow the person
+      // across devices without ever revealing who they are.
+      getAnonId: () => {
+        const s = get()
+        if (s.anonId) return s.anonId
+        let id = ''
+        try {
+          if (crypto && typeof crypto.randomUUID === 'function') id = crypto.randomUUID()
+        } catch {}
+        if (!id) {
+          id = 'anon-' + Math.random().toString(36).slice(2) + Date.now().toString(36)
+        }
+        set({ anonId: id })
+        return id
+      },
+
+      // The lifetime stats that are safe to sync: pure counters, nothing about
+      // who or where you are.
+      getSyncStats: () => {
+        const s = get()
+        return {
+          prayerCompletions: s.prayerCompletions,
+          prayerDayCompletions: s.prayerDayCompletions,
+          prayerDayStats: s.prayerDayStats,
+          localPrayerSeconds: s.localPrayerSeconds,
+          streak: s.streak,
+          bestStreak: s.bestStreak,
+          lastPrayedDay: s.lastPrayedDay
+        }
+      },
+
+      // Fold server-side stats back in, taking the greater of each counter so
+      // two devices can never lose a prayer.
+      mergeSyncStats: (stats) => {
+        if (!stats) return
+        const s = get()
+        const pick = (a, b) => Math.max(a || 0, b || 0)
+        const mergeDay = (local, incoming) => {
+          const out = { ...local }
+          for (const [d, map] of Object.entries(incoming || {})) {
+            out[d] = { ...(out[d] || {}) }
+            for (const [k, v] of Object.entries(map)) out[d][k] = pick(out[d][k], v)
+          }
+          return out
+        }
+        const prayerCompletions = { ...s.prayerCompletions }
+        for (const [k, v] of Object.entries(stats.prayerCompletions || {})) {
+          prayerCompletions[k] = pick(prayerCompletions[k], v)
+        }
+        let lastPrayedDay = s.lastPrayedDay
+        if (stats.lastPrayedDay && (!lastPrayedDay || stats.lastPrayedDay > lastPrayedDay)) {
+          lastPrayedDay = stats.lastPrayedDay
+        }
+        set({
+          prayerCompletions,
+          prayerDayCompletions: mergeDay(s.prayerDayCompletions, stats.prayerDayCompletions),
+          prayerDayStats: mergeDay(s.prayerDayStats, stats.prayerDayStats),
+          localPrayerSeconds: pick(s.localPrayerSeconds, stats.localPrayerSeconds),
+          streak: pick(s.streak, stats.streak),
+          bestStreak: pick(s.bestStreak, stats.bestStreak),
+          lastPrayedDay
+        })
+      },
+
       // ---- derived ----
       getGlow: () => {
         const s = get()
@@ -237,7 +307,8 @@ export const useStore = create(
         prayerDayStats: s.prayerDayStats,
         streak: s.streak,
         bestStreak: s.bestStreak,
-        lastPrayedDay: s.lastPrayedDay
+        lastPrayedDay: s.lastPrayedDay,
+        anonId: s.anonId
       })
     }
   )

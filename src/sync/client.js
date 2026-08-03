@@ -103,6 +103,11 @@ class SyncClient {
     }
     this.name = profileName()
     this.connect()
+    // when the tab comes back, sync anything prayed while it was away
+    this._vis = () => {
+      if (!document.hidden) this.pushSync()
+    }
+    document.addEventListener('visibilitychange', this._vis)
   }
 
   // Ask once for a coarse location so the world can show a light where you
@@ -145,6 +150,11 @@ class SyncClient {
   stop() {
     clearTimeout(this.retry)
     clearInterval(this.ping)
+    clearInterval(this.syncTimer)
+    if (this._vis) {
+      document.removeEventListener('visibilitychange', this._vis)
+      this._vis = null
+    }
     if (this.sock) {
       this.sock.onopen = null
       this.sock.onmessage = null
@@ -166,7 +176,10 @@ class SyncClient {
         this.mode = 'live'
         useStore.getState().setConnected(true)
         this.sendPresence()
+        this.pushSync()
         this.ping = setInterval(() => this.sendPresence(), PING_MS)
+        clearInterval(this.syncTimer)
+        this.syncTimer = setInterval(() => this.pushSync(), 30000)
       }
       ws.onmessage = (ev) => {
         try {
@@ -184,6 +197,8 @@ class SyncClient {
             }
           } else if (msg.type === 'feed') {
             useStore.getState().setFeed(msg.feed || [])
+          } else if (msg.type === 'sync' && msg.stats) {
+            useStore.getState().mergeSyncStats(msg.stats)
           }
         } catch {}
       }
@@ -244,6 +259,17 @@ class SyncClient {
 
   presenceNow() {
     this.sendPresence()
+  }
+
+  // Push the anonymous lifetime stats and adopt the server's merged totals.
+  pushSync() {
+    if (this.mode !== 'live' || !this.sock || this.sock.readyState !== WebSocket.OPEN) return
+    try {
+      const s = useStore.getState()
+      this.sock.send(
+        JSON.stringify({ type: 'sync', anonId: s.getAnonId(), stats: s.getSyncStats() })
+      )
+    } catch {}
   }
 
   // Simulated world for when we are offline: a gentle crowd praying nearby.
