@@ -2492,8 +2492,9 @@ textarea:focus-visible {
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 20px;
   animation: picker-fade 0.25s var(--ease);
 }
 
@@ -2505,10 +2506,9 @@ textarea:focus-visible {
   flex-direction: column;
   background: linear-gradient(180deg, rgba(13, 34, 21, 0.97), rgba(8, 24, 14, 0.99));
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-bottom: none;
-  border-radius: 26px 26px 0 0;
-  box-shadow: 0 -24px 70px rgba(0, 0, 0, 0.55);
-  animation: picker-up 0.35s var(--ease);
+  border-radius: 26px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  animation: picker-in 0.3s var(--ease);
   overflow: hidden;
 }
 
@@ -2645,13 +2645,13 @@ textarea:focus-visible {
   transform: translateX(3px);
 }
 
-@keyframes picker-up {
+@keyframes picker-in {
   from {
-    transform: translateY(40px);
+    transform: translateY(16px) scale(0.98);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
