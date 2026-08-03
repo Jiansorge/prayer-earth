@@ -574,6 +574,20 @@ export default function PrayerPage() {
               />
               <span className="pt-val">{speechRate.toFixed(2)}×</span>
             </div>
+            <div className="pt-row">
+              <label className="pt-label" htmlFor="pt-loop">{t('prayer.repeat')}</label>
+              <button
+                id="pt-loop"
+                type="button"
+                className={`switch ${loopOn ? 'on' : ''}`}
+                role="switch"
+                aria-checked={loopOn}
+                onClick={toggleLoop}
+              >
+                <span className="switch-knob" />
+              </button>
+              <span className="pt-val">{loopOn ? '∞' : t('prayer.once')}</span>
+            </div>
           </div>
         )}
 

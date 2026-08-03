@@ -1154,6 +1154,38 @@ html[dir='rtl'] .chooser-arrow.right {
   background: rgba(223, 176, 92, 0.16);
 }
 
+.prayer-tune .switch {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: background 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+
+.prayer-tune .switch.on {
+  background: rgba(223, 176, 92, 0.4);
+  border-color: var(--gold);
+}
+
+.prayer-tune .switch .switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #f5ead2;
+  transition: transform 0.25s var(--ease);
+}
+
+.prayer-tune .switch.on .switch-knob {
+  transform: translateX(20px);
+}
+
 .prayer-tune .pt-label {
   font-size: 12px;
   letter-spacing: 0.08em;

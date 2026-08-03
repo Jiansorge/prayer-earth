@@ -67,6 +67,7 @@ const en = {
   'settings.done': 'Done',
   'settings.gear': 'Settings',
   'prayer.repeat': 'Repeat continuously',
+  'prayer.once': 'Play once',
   'prayer.pray': 'Pray',
   'prayer.pause': 'Pause',
   'prayer.stop': 'Stop',
