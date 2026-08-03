@@ -50,13 +50,29 @@ const TTS_VOICES = {
 }
 
 // Synthesize a short phrase to MP3 via Google Cloud Text-to-Speech.
+// Only same-origin callers are allowed and each IP is rate-limited, so a
+// runaway client can never run up the TTS bill.
+const ttsHits = new Map()
+function ttsLimited(ip) {
+  const now = Date.now()
+  const arr = (ttsHits.get(ip) || []).filter((t) => now - t < 60000)
+  if (arr.length >= 20) return true
+  arr.push(now)
+  ttsHits.set(ip, arr)
+  return false
+}
+
 async function handleTTS(urlPath, req, res) {
   if (req.method !== 'GET') {
     res.writeHead(405)
     res.end()
     return
   }
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  if (ttsLimited(req.socket.remoteAddress || 'unknown')) {
+    res.writeHead(429)
+    res.end('too many requests')
+    return
+  }
   res.setHeader('Cache-Control', 'public, max-age=604800')
   if (!GOOGLE_TTS_KEY) {
     res.writeHead(503)
@@ -140,7 +156,11 @@ async function serveStatic(req, res) {
     const isAsset = /\/assets\//.test(urlPath)
     res.writeHead(200, {
       'Content-Type': MIME[extname(target)] || 'application/octet-stream',
-      'Cache-Control': isAsset ? 'public, max-age=31536000, immutable' : 'no-cache'
+      'Cache-Control': isAsset ? 'public, max-age=31536000, immutable' : 'no-cache',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Referrer-Policy': 'no-referrer',
+      'Permissions-Policy': 'geolocation=(self), microphone=()'
     })
     res.end(body)
   } catch {
@@ -348,12 +368,16 @@ wss.on('connection', (ws) => {
       if (msg.type === 'presence') {
         const prev = clients.get(ws)
         const name = typeof msg.name === 'string' && msg.name.trim() ? msg.name.slice(0, 24) : 'Someone'
+        const prayerId =
+          typeof msg.prayerId === 'string' ? msg.prayerId.slice(0, 60) : prev.prayerId
+        const spiritId =
+          typeof msg.spiritId === 'string' ? msg.spiritId.slice(0, 60) : prev.spiritId
         const lat = typeof msg.lat === 'number' && isFinite(msg.lat) ? msg.lat : prev.lat
         const lon = typeof msg.lon === 'number' && isFinite(msg.lon) ? msg.lon : prev.lon
         clients.set(ws, {
           praying: !!msg.praying,
-          prayerId: msg.praying ? msg.prayerId || prev.prayerId : null,
-          spiritId: msg.praying ? msg.spiritId || prev.spiritId : null,
+          prayerId: msg.praying ? prayerId : null,
+          spiritId: msg.praying ? spiritId : null,
           name,
           lat,
           lon
@@ -381,7 +405,15 @@ wss.on('connection', (ws) => {
         // the merged result so every device converges on the same totals.
         const id = typeof msg.anonId === 'string' ? msg.anonId.slice(0, 64) : ''
         if (id) {
-          const merged = mergeStats(peopleSync[id], msg.stats || {})
+          // Cap the incoming payload so an abusive client can't bloat memory
+          // or the people.json file with unbounded nested objects.
+          let stats = msg.stats || {}
+          try {
+            if (JSON.stringify(stats).length > 250000) stats = {}
+          } catch {
+            stats = {}
+          }
+          const merged = mergeStats(peopleSync[id], stats)
           peopleSync[id] = merged
           savePeople()
           ws.send(JSON.stringify({ type: 'sync', stats: merged }))
