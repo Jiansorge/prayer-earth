@@ -8,6 +8,8 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import { extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { gridKey } from '../src/shared/geo.js'
+import { mergeStats } from '../src/shared/stats.js'
 
 const PORT = process.env.PORT || 8787
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url))
@@ -188,15 +190,6 @@ const lights = {}
 // cell's glow by faith. Falls back to a generic gold when absent.
 const lightSpirits = {}
 
-// Rounds a coordinate onto the shared 2-degree light grid the app renders.
-// Praying users nearby land on the same cell and become one brighter light.
-function gridKey(lat, lon) {
-  const la = Math.max(-60, Math.min(72, Math.round(lat / 2) * 2))
-  let lo = Math.round(lon / 2) * 2
-  if (lo >= 180) lo = -180
-  return `${la},${lo}`
-}
-
 // All-time totals of prayers ever carried. Survives restarts via a small JSON
 // file so the numbers never reset when the server comes back up. Tests may
 // point at a scratch file via PE_DATA_FILE.
@@ -245,32 +238,7 @@ function savePeople() {
   }, 500)
 }
 
-// Fold one device's stats into the stored ones, taking the greater of every
-// counter so a prayer is never lost when devices meet.
-function mergeStats(base, incoming) {
-  const pick = (a, b) => Math.max(a || 0, b || 0)
-  const out = { ...(base || {}) }
-  const mergeDay = (local, inc) => {
-    const m = { ...(local || {}) }
-    for (const [d, map] of Object.entries(inc || {})) {
-      m[d] = { ...(m[d] || {}) }
-      for (const [k, v] of Object.entries(map)) m[d][k] = pick(m[d][k], v)
-    }
-    return m
-  }
-  out.prayerCompletions = { ...(base?.prayerCompletions || {}) }
-  for (const [k, v] of Object.entries(incoming.prayerCompletions || {})) {
-    out.prayerCompletions[k] = pick(out.prayerCompletions[k], v)
-  }
-  out.prayerDayCompletions = mergeDay(base?.prayerDayCompletions, incoming.prayerDayCompletions)
-  out.prayerDayStats = mergeDay(base?.prayerDayStats, incoming.prayerDayStats)
-  out.localPrayerSeconds = pick(base?.localPrayerSeconds, incoming.localPrayerSeconds)
-  out.streak = pick(base?.streak, incoming.streak)
-  out.bestStreak = pick(base?.bestStreak, incoming.bestStreak)
-  const ld = incoming.lastPrayedDay || base?.lastPrayedDay
-  if (ld) out.lastPrayedDay = ld > (base?.lastPrayedDay || '') ? ld : base.lastPrayedDay
-  return out
-}
+// (mergeStats lives in ../src/shared/stats.js so client and server agree.)
 
 // Live "now praying" feed: who started praying recently.
 const MAX_FEED = 40

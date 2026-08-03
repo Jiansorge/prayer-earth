@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { prayerBaseTotals, spiritBaseTotals } from './data/totals.js'
 import { SPIRITUALITY_BY_ID } from './data/prayers.js'
+import { mergeStats } from './shared/stats.js'
 
 const TOTAL_TO_FULL = 3600 // seconds of collective prayer to fully light the Earth
 
@@ -226,31 +227,15 @@ export const useStore = create(
       mergeSyncStats: (stats) => {
         if (!stats) return
         const s = get()
-        const pick = (a, b) => Math.max(a || 0, b || 0)
-        const mergeDay = (local, incoming) => {
-          const out = { ...local }
-          for (const [d, map] of Object.entries(incoming || {})) {
-            out[d] = { ...(out[d] || {}) }
-            for (const [k, v] of Object.entries(map)) out[d][k] = pick(out[d][k], v)
-          }
-          return out
-        }
-        const prayerCompletions = { ...s.prayerCompletions }
-        for (const [k, v] of Object.entries(stats.prayerCompletions || {})) {
-          prayerCompletions[k] = pick(prayerCompletions[k], v)
-        }
-        let lastPrayedDay = s.lastPrayedDay
-        if (stats.lastPrayedDay && (!lastPrayedDay || stats.lastPrayedDay > lastPrayedDay)) {
-          lastPrayedDay = stats.lastPrayedDay
-        }
+        const merged = mergeStats(s, stats)
         set({
-          prayerCompletions,
-          prayerDayCompletions: mergeDay(s.prayerDayCompletions, stats.prayerDayCompletions),
-          prayerDayStats: mergeDay(s.prayerDayStats, stats.prayerDayStats),
-          localPrayerSeconds: pick(s.localPrayerSeconds, stats.localPrayerSeconds),
-          streak: pick(s.streak, stats.streak),
-          bestStreak: pick(s.bestStreak, stats.bestStreak),
-          lastPrayedDay
+          prayerCompletions: merged.prayerCompletions,
+          prayerDayCompletions: merged.prayerDayCompletions,
+          prayerDayStats: merged.prayerDayStats,
+          localPrayerSeconds: merged.localPrayerSeconds,
+          streak: merged.streak,
+          bestStreak: merged.bestStreak,
+          lastPrayedDay: merged.lastPrayedDay
         })
       },
 

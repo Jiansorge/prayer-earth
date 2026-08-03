@@ -1,8 +1,9 @@
-// Connects to the shared Prayer Earth server so everyone around the world
+﻿// Connects to the shared Prayer Earth server so everyone around the world
 // prays together. If the server is not reachable, the app quietly continues
 // on its own with a gentle, believable world so the counts never look wrong.
 
 import { useStore } from '../store.js'
+import { gridKey } from '../shared/geo.js'
 
 const PING_MS = 5000
 const RETRY_MS = 10000
@@ -35,15 +36,6 @@ const FALLBACK_CITIES = [
   [-26.2, 28.0], [4.7, -74.1], [13.1, 80.3], [-1.3, 36.8], [59.9, 10.8],
   [36.8, 10.2], [41.0, 28.9], [3.1, 101.7], [33.9, -84.4], [38.9, -77.0]
 ]
-
-// Rounds onto the shared 2-degree light grid the server uses too, so a light
-// shows at exactly the same cell in offline (sim) and online modes.
-function lightKey(lat, lon) {
-  const la = Math.max(-60, Math.min(72, Math.round(lat / 2) * 2))
-  let lo = Math.round(lon / 2) * 2
-  if (lo >= 180) lo = -180
-  return `${la},${lo}`
-}
 
 // Same host that served the page. In development the socket lives on 8787
 // (a separate process); in production one process serves both the app and the
@@ -113,7 +105,7 @@ class SyncClient {
   // Ask once for a coarse location so the world can show a light where you
   // are. If it's not granted or available, fall back to a stable stand-in
   // city so your prayer still lands somewhere on the map. This is fully
-  // local — no location ever leaves the device.
+  // local â€” no location ever leaves the device.
   ensureLocation() {
     const publish = () => useStore.getState().setYouLoc(this.loc)
     try {
@@ -228,7 +220,7 @@ class SyncClient {
   sendPresence() {
     const s = useStore.getState()
     if (this.mode !== 'live' || !this.sock || this.sock.readyState !== WebSocket.OPEN) {
-      // Offline — keep the local world in sync with the user's own prayer.
+      // Offline â€” keep the local world in sync with the user's own prayer.
       if (this.mode === 'sim' && this.sim) this.simState()
       return
     }
@@ -289,7 +281,7 @@ class SyncClient {
         name: SIM_FEED_NAMES[i],
         spiritId: sp,
         prayerId: pr,
-        cell: lightKey(lat, lon)
+        cell: gridKey(lat, lon)
       })
     })
     this.simSeq = seed.length
@@ -305,7 +297,7 @@ class SyncClient {
     const lightSpirits = {}
     const addLight = (lat, lon, spId) => {
       if (typeof lat !== 'number' || typeof lon !== 'number') return
-      const k = lightKey(lat, lon)
+      const k = gridKey(lat, lon)
       lights[k] = (lights[k] || 0) + 1
       if (spId) lightSpirits[k] = spId
     }
@@ -338,7 +330,7 @@ class SyncClient {
         name: SIM_FEED_NAMES[Math.floor(Math.random() * SIM_FEED_NAMES.length)],
         spiritId: sp,
         prayerId: pr,
-        cell: lightKey(lat, lon)
+        cell: gridKey(lat, lon)
       })
     }
     if (s.praying && s.spiritId && s.prayerId && this.lastSimSelf !== now) {
@@ -349,7 +341,7 @@ class SyncClient {
         name: profileName(),
         spiritId: s.spiritId,
         prayerId: s.prayerId,
-        cell: this.loc ? lightKey(this.loc.lat, this.loc.lon) : undefined
+        cell: this.loc ? gridKey(this.loc.lat, this.loc.lon) : undefined
       })
     }
     if (this.simFeed.length > 40) this.simFeed.splice(0, this.simFeed.length - 40)
