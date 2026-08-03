@@ -28,6 +28,7 @@ export default function PrayerPage() {
   const setPlaying = useStore((s) => s.setPlaying)
   const paused = useStore((s) => s.paused)
   const setPaused = useStore((s) => s.setPaused)
+  const pendingPlay = useStore((s) => s.pendingPlay)
   const addLocalPrayer = useStore((s) => s.addLocalPrayer)
   const addPrayerSecond = useStore((s) => s.addPrayerSecond)
   const notePrayerComplete = useStore((s) => s.notePrayerComplete)
@@ -80,10 +81,12 @@ export default function PrayerPage() {
     return () => ch.close()
   }, [playing])
 
-  // The footer play button from home/earth lands here ready to play. Delayed a
-  // moment so React StrictMode's dev remount (mount → unmount → mount) settles,
-  // otherwise the first mount would consume pendingPlay and get torn down.
+  // The footer play button from home/earth lands here ready to play. Runs both
+  // when this page mounts AND when a play request arrives while already here
+  // (e.g. after picking a prayer). Delayed a moment so React StrictMode's dev
+  // remount (mount → unmount → mount) settles before starting.
   useEffect(() => {
+    if (!pendingPlay) return
     const t = setTimeout(() => {
       if (useStore.getState().pendingPlay) {
         useStore.getState().setPendingPlay(false)
@@ -92,7 +95,7 @@ export default function PrayerPage() {
     }, 60)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [pendingPlay])
 
   // If the tab is hidden, the user isn't really praying — pause quietly.
   useEffect(() => {

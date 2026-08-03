@@ -34,6 +34,8 @@ export const useStore = create(
       lights: {},
       lightSpirits: {},
       feed: [],
+      // where you are on the Earth, so the map can mark you
+      youLoc: null,
 
       // who you are on the Earth: a sacred name, a nature avatar, a light
       profile: { name: '', avatar: '🌿', color: '#7fc9a0' },
@@ -104,6 +106,7 @@ export const useStore = create(
       setPrayerTotals: (prayerTotals) => set({ prayerTotals }),
       setSpiritTotals: (spiritTotals) => set({ spiritTotals }),
       setFeed: (feed) => set({ feed }),
+      setYouLoc: (youLoc) => set({ youLoc }),
       setTotalPrayerSeconds: (totalPrayerSeconds) =>
         set((s) => ({
           totalPrayerSeconds,

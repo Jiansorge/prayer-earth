@@ -292,18 +292,27 @@ export class EarthScene {
 
     // sun light for the earth shader â€” toward the camera so the day side faces us
     this.sunDir = new THREE.Vector3(0.35, 0.28, 0.89).normalize()
-    this.rotVel = this.backdrop ? 0.0008 : 0.0016
+    // the prayer backdrop turns a little faster than the main map so the
+    // silhouette feels quietly alive behind the words
+    this.rotVel = this.backdrop ? 0.002 : 0.0016
 
     // start facing Europe/Africa so recognizable geography greets the viewer
     this.earthGroupRotation = 1.25
 
     const loader = new THREE.TextureLoader()
     this.maskTex = this.buildLandMaskCanvas()
-    const dayTex = loader.load(dayUrl, (tex) => this.processLandMask(tex.image))
+    const dayTex = loader.load(dayUrl, (tex) => {
+      this.processLandMask(tex.image)
+      tex.image = this.makeSeamless(tex.image)
+      tex.needsUpdate = true
+    })
     dayTex.colorSpace = THREE.SRGBColorSpace
     dayTex.wrapS = THREE.RepeatWrapping
     this.dayTex = dayTex
-    const nightTex = loader.load(nightUrl)
+    const nightTex = loader.load(nightUrl, (tex) => {
+      tex.image = this.makeSeamless(tex.image)
+      tex.needsUpdate = true
+    })
     nightTex.colorSpace = THREE.SRGBColorSpace
     nightTex.wrapS = THREE.RepeatWrapping
     this.nightTex = nightTex
@@ -321,6 +330,9 @@ export class EarthScene {
     // --- people lights (on the surface, at real locations) ---
     this.lights = this.buildLights()
     this.earthGroup.add(this.lights.group)
+    // a pulsing ring where the person here is praying from
+    this.youMarker = this.buildYouMarker()
+    this.earthGroup.add(this.youMarker)
     this.scene.add(this.earthGroup)
     if (import.meta.env?.DEV) window.__earthScene = this
 
@@ -531,6 +543,58 @@ export class EarthScene {
     return pts
   }
 
+  // A pulsing golden ring marking where the person here is praying from.
+  buildYouMarker() {
+    const S = 128
+    const c = document.createElement('canvas')
+    c.width = c.height = S
+    const g = c.getContext('2d')
+    g.clearRect(0, 0, S, S)
+    g.strokeStyle = 'rgba(255, 244, 200, 1)'
+    g.lineWidth = 7
+    g.beginPath()
+    g.arc(S / 2, S / 2, S / 2 - 8, 0, Math.PI * 2)
+    g.stroke()
+    g.fillStyle = 'rgba(255, 244, 200, 0.95)'
+    g.beginPath()
+    g.arc(S / 2, S / 2, 9, 0, Math.PI * 2)
+    g.fill()
+    const tex = new THREE.CanvasTexture(c)
+    const mat = new THREE.SpriteMaterial({
+      map: tex,
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+      blending: THREE.AdditiveBlending,
+      opacity: 0
+    })
+    const spr = new THREE.Sprite(mat)
+    spr.scale.set(0.42, 0.42, 0.42)
+    spr.visible = false
+    this.youMarker = spr
+    return spr
+  }
+
+  // Where the person here is praying from (or null to hide). The marker rides
+  // the globe's surface and pulses in the animate loop.
+  setYouLoc(loc) {
+    this.youLoc = loc
+    if (!this.youMarker) return
+    if (!loc) {
+      this.youMarker.visible = false
+      return
+    }
+    const lat = loc.lat * (Math.PI / 180)
+    const lon = loc.lon * (Math.PI / 180)
+    const r = 1.44
+    this.youMarker.position.set(
+      r * Math.cos(lat) * Math.cos(lon),
+      r * Math.sin(lat),
+      r * Math.cos(lat) * Math.sin(lon)
+    )
+    this.youMarker.visible = true
+  }
+
   // A soft radial glow texture shared by all prayer lights.
   buildLightGlowTexture() {
     const S = 64
@@ -548,6 +612,37 @@ export class EarthScene {
     const tex = new THREE.CanvasTexture(c)
     tex.colorSpace = THREE.SRGBColorSpace
     return tex
+  }
+
+  // Blend the left and right edges of an equirectangular image so it wraps
+  // around the sphere with no seam at the anti-meridian (Pacific).
+  makeSeamless(img, blendPx = 3) {
+    try {
+      const w = img.naturalWidth || img.width
+      const h = img.naturalHeight || img.height
+      const c = document.createElement('canvas')
+      c.width = w
+      c.height = h
+      const ctx = c.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      const d = ctx.getImageData(0, 0, w, h).data
+      const out = new Uint8ClampedArray(d)
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < blendPx; x++) {
+          const li = (y * w + x) * 4
+          const ri = (y * w + w - 1 - x) * 4
+          for (let k = 0; k < 4; k++) {
+            const v = (d[li + k] + d[ri + k]) >> 1
+            out[li + k] = v
+            out[ri + k] = v
+          }
+        }
+      }
+      ctx.putImageData(new ImageData(out, w, h), 0, 0)
+      return c
+    } catch {
+      return img
+    }
   }
 
   // A clean binary land/ocean mask, classified once in JS from the real map
@@ -966,6 +1061,13 @@ export class EarthScene {
         }
         this.sparkPos.needsUpdate = true
       }
+    }
+
+    // your own prayer light pulses on the surface so you can always find you
+    if (this.youMarker && this.youMarker.visible) {
+      const pulse = 0.5 + 0.5 * Math.sin(t * 2.4)
+      this.youMarker.scale.set(0.3 + 0.18 * pulse, 0.3 + 0.18 * pulse, 0.3)
+      this.youMarker.material.opacity = 0.5 + 0.5 * pulse
     }
     if (this.halo) this.halo.material.uniforms.uGlow.value = this.glow
     if (this.stars) this.stars.material.opacity = 0.72 + 0.2 * Math.sin(t * 0.7)

@@ -589,7 +589,7 @@ export const SPIRITUALITIES = [
           { t: 'Namah Aryavalokitesvaraya bodhisattvaya mahasattvaya mahakarunikaya', s: 'Namah Aryavalokitesvaraya bodhisattvaya mahasattvaya mahakarunikaya', e: 'Homage to Avalokitesvara, the great bodhisattva of great compassion.' },
           { t: 'Om tara tara tiri tiri turu turu iti svaha', s: 'Om tara tara tiri tiri turu turu iti svaha', e: 'Swift and swift again, the heart of the dhāraṇī: so be it.' }
         ],
-        translation: 'The opening of the Nīlakaṇṭha Dhāraṇī — the great compassion of Avalokitesvara, protector of all who call on it.'
+        translation: 'The short Nīlakaṇṭha Dhāraṇī — the great compassion of Avalokitesvara, protector of all who call on it.'
       },
       {
         id: 'heart-sutra',
@@ -637,22 +637,22 @@ export const SPIRITUALITIES = [
         langLabel: 'བོད་ཡིག · Tibetan · repeated',
         loop: true,
         phrases: [
-          { t: 'Om amogha siddhi svaha', s: 'Om amogha siddhi svaha', e: 'Homage to Amoghasiddhi, the Buddha of unfailing accomplishment.' },
-          { t: 'Om amogha siddhi svaha', s: 'Om amogha siddhi svaha', e: 'Homage to Amoghasiddhi, the Buddha of unfailing accomplishment.' },
-          { t: 'Om amogha siddhi svaha', s: 'Om amogha siddhi svaha', e: 'Homage to Amoghasiddhi, the Buddha of unfailing accomplishment.' }
+          { t: 'Om amoghasiddhi āḥ hūṃ', s: 'Om amoghasiddhi āḥ hūṃ', e: 'Homage to Amoghasiddhi, the Buddha of unfailing accomplishment.' },
+          { t: 'Om amoghasiddhi āḥ hūṃ', s: 'Om amoghasiddhi āḥ hūṃ', e: 'Homage to Amoghasiddhi, the Buddha of unfailing accomplishment.' },
+          { t: 'Om amoghasiddhi āḥ hūṃ', s: 'Om amoghasiddhi āḥ hūṃ', e: 'Homage to Amoghasiddhi, the Buddha of unfailing accomplishment.' }
         ],
         translation: 'The mantra of the northern Buddha Amoghasiddhi — the power to complete whatever is undertaken.'
       },
       {
         id: 'ksitigarbha',
         title: 'Kṣitigarbha Mantra',
-        lang: 'bo',
-        langLabel: 'བོད་ཡིག · Tibetan · repeated',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit · repeated',
         loop: true,
         phrases: [
-          { t: 'Om aha ksiti garbha svaha', s: 'Om aha ksiti garbha svaha', e: 'Homage to Ksitigarbha, whose vow is the earth itself.' },
-          { t: 'Om aha ksiti garbha svaha', s: 'Om aha ksiti garbha svaha', e: 'Homage to Ksitigarbha, whose vow is the earth itself.' },
-          { t: 'Om aha ksiti garbha svaha', s: 'Om aha ksiti garbha svaha', e: 'Homage to Ksitigarbha, whose vow is the earth itself.' }
+          { t: 'Om kṣitasagarbha kṣim svāhā', s: 'Om kṣitasagarbha kṣim svāhā', e: 'Homage to Ksitigarbha, the earth-womb bodhisattva of great vows.' },
+          { t: 'Om kṣitasagarbha kṣim svāhā', s: 'Om kṣitasagarbha kṣim svāhā', e: 'Homage to Ksitigarbha, the earth-womb bodhisattva of great vows.' },
+          { t: 'Om kṣitasagarbha kṣim svāhā', s: 'Om kṣitasagarbha kṣim svāhā', e: 'Homage to Ksitigarbha, the earth-womb bodhisattva of great vows.' }
         ],
         translation: 'The mantra of Ksitigarbha Bodhisattva, who vowed not to rest until every being is saved.'
       },

@@ -14,6 +14,7 @@ export default function EarthPage() {
   const connected = useStore((s) => s.connected)
   const lights = useStore((s) => s.lights)
   const lightSpirits = useStore((s) => s.lightSpirits)
+  const youLoc = useStore((s) => s.youLoc)
   const [, force] = useState(0)
   const t = useT()
 
@@ -44,7 +45,8 @@ export default function EarthPage() {
     scene.setGlow(useStore.getState().getGlow())
     scene.setLights(lights, lightSpirits)
     scene.setMood(people, totalSeconds)
-  }, [glowPct, lights, lightSpirits, people, totalSeconds])
+    scene.setYouLoc(youLoc)
+  }, [glowPct, lights, lightSpirits, people, totalSeconds, youLoc])
 
   if (webglFail) {
     const company = connected

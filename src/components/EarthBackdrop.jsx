@@ -14,6 +14,7 @@ export default function EarthBackdrop() {
   const lightSpirits = useStore((s) => s.lightSpirits)
   const people = useStore((s) => s.peoplePraying)
   const totalSeconds = useStore((s) => s.totalPrayerSeconds)
+  const youLoc = useStore((s) => s.youLoc)
 
   useEffect(() => {
     let scene = null
@@ -21,6 +22,7 @@ export default function EarthBackdrop() {
       scene = new EarthScene(mountRef.current, { backdrop: true })
       scene.setGlow(useStore.getState().getGlow())
       scene.setLights(useStore.getState().lights, useStore.getState().lightSpirits)
+      scene.setYouLoc(useStore.getState().youLoc)
     } catch {}
     sceneRef.current = scene
     return () => {
@@ -35,7 +37,8 @@ export default function EarthBackdrop() {
     scene.setGlow(glow)
     scene.setLights(lights, lightSpirits)
     scene.setMood(people, totalSeconds)
-  }, [glow, lights, lightSpirits, people, totalSeconds])
+    scene.setYouLoc(youLoc)
+  }, [glow, lights, lightSpirits, people, totalSeconds, youLoc])
 
   return (
     <div className="earth-backdrop" aria-hidden="true">
