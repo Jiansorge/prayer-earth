@@ -160,7 +160,11 @@ async function serveStatic(req, res) {
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'DENY',
       'Referrer-Policy': 'no-referrer',
-      'Permissions-Policy': 'geolocation=(self), microphone=()'
+      'Permissions-Policy': 'geolocation=(self), microphone=()',
+      'Content-Security-Policy':
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' ws: wss:; " +
+        "font-src 'self' data:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
     })
     res.end(body)
   } catch {
