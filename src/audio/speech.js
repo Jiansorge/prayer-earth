@@ -86,6 +86,31 @@ class SpeechEngine {
     return phrase.t || ''
   }
 
+  // Load the static audio manifest once; caches the promise so it's fetched a
+  // single time for the whole session.
+  loadAudioManifest() {
+    if (this._manifestPromise) return this._manifestPromise
+    this._manifestPromise = fetch('/audio/manifest.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+    return this._manifestPromise
+  }
+
+  // The pre-rendered MP3 for a phrase, or null when that prayer has no static
+  // audio (languages without a voice fall back to the live /api/tts proxy).
+  async staticAudioUrl(job, i) {
+    try {
+      const m = await this.loadAudioManifest()
+      const p = m && m.prayers ? m.prayers[job.prayerId] : null
+      if (!p || !p.voices || !p.voices.length) return null
+      const pref = useStore.getState().voiceURI
+      const voice = p.voices.indexOf(pref) >= 0 ? pref : p.voices[0]
+      return `/audio/${job.prayerId}/${i}-${voice}.mp3`
+    } catch {
+      return null
+    }
+  }
+
   async speakCloud(i) {
     const job = this.job
     if (!job || !job.active || job.mode !== 'tts') return false
@@ -96,15 +121,23 @@ class SpeechEngine {
     }
     try {
       const text = this.cloudText(phrase, job.lang)
-      const key = `${job.lang}:${job.rate}:${text}`
+      const staticUrl = await this.staticAudioUrl(job, i)
+      // Static pre-rendered audio is used when it exists; otherwise fall back
+      // to the live cloud proxy. The cache key is the URL itself so a prayer
+      // with static audio is shared across every playback rate.
+      const key = staticUrl || `${job.lang}:${job.rate}:${text}`
       let url = this.cloudCache.get(key)
       if (!url) {
-        const res = await fetch(
-          `/api/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(job.lang)}`
-        )
-        if (!res.ok) return false
-        const blob = await res.blob()
-        url = URL.createObjectURL(blob)
+        if (staticUrl) {
+          url = staticUrl
+        } else {
+          const res = await fetch(
+            `/api/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(job.lang)}`
+          )
+          if (!res.ok) return false
+          const blob = await res.blob()
+          url = URL.createObjectURL(blob)
+        }
         this.cloudCache.set(key, url)
         if (this.cloudCache.size > 128) {
           const oldest = this.cloudCache.keys().next().value
@@ -137,19 +170,24 @@ class SpeechEngine {
       const next = i + 1
       const np = job.phrases[next]
       if (next < job.phrases.length && np && np.t) {
-        const nk = `${job.lang}:${job.rate}:${np.t}`
+        const ns = await this.staticAudioUrl(job, next)
+        const nk = ns || `${job.lang}:${job.rate}:${np.t}`
         if (!this.cloudCache.has(nk)) {
-          fetch(
-            `/api/tts?text=${encodeURIComponent(np.t)}&lang=${encodeURIComponent(job.lang)}`
-          )
-            .then((r) => (r.ok ? r.blob() : null))
-            .then((b) => {
-              if (b) {
-                const nu = URL.createObjectURL(b)
-                this.cloudCache.set(nk, nu)
-              }
-            })
-            .catch(() => {})
+          if (ns) {
+            this.cloudCache.set(nk, ns)
+          } else {
+            fetch(
+              `/api/tts?text=${encodeURIComponent(np.t)}&lang=${encodeURIComponent(job.lang)}`
+            )
+              .then((r) => (r.ok ? r.blob() : null))
+              .then((b) => {
+                if (b) {
+                  const nu = URL.createObjectURL(b)
+                  this.cloudCache.set(nk, nu)
+                }
+              })
+              .catch(() => {})
+          }
         }
       }
       return true

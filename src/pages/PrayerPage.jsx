@@ -140,6 +140,7 @@ export default function PrayerPage() {
     const opts = {
       phrases,
       lang: prayer.lang,
+      prayerId: prayer.id,
       rate: speechRate,
       loop: loopOn,
       gapMs: prayer.loop ? 250 : 700,
