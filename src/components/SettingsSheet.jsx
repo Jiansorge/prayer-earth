@@ -39,6 +39,7 @@ export default function SettingsSheet() {
   const [previewing, setPreviewing] = useState(false)
   const [appCopied, setAppCopied] = useState(false)
   const previewTimer = useRef(null)
+  const sheetRef = useRef(null)
 
   const spirit = SPIRITUALITY_BY_ID[spiritId]
   const prayer = spirit?.prayers.find((p) => p.id === prayerId) || null
@@ -87,7 +88,12 @@ export default function SettingsSheet() {
       if (e.key === 'Escape') setOpen(false)
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    // Move focus into the dialog so keyboard/screen-reader users land inside it.
+    const t = setTimeout(() => sheetRef.current && sheetRef.current.focus(), 40)
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('keydown', onKey)
+    }
   }, [open])
 
   if (!open) return null
@@ -98,7 +104,7 @@ export default function SettingsSheet() {
 
   return (
     <div className="sheet-backdrop" onClick={() => setOpen(false)}>
-      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+      <div className="sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('settings.title')} tabIndex={-1} ref={sheetRef}>
         <div className="sheet-handle" />
         <h3 className="sheet-title">{t('settings.title')}</h3>
 

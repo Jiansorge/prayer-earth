@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
 import { useT } from '../i18n.js'
@@ -34,6 +34,7 @@ export default function PrayerPicker() {
   const spiritId = useStore((s) => s.prayerPickerSpiritId)
   const close = useStore((s) => s.closePrayerPicker)
   const openPrayer = useStore((s) => s.openPrayer)
+  const sheetRef = useRef(null)
   const t = useT()
 
   useEffect(() => {
@@ -42,7 +43,11 @@ export default function PrayerPicker() {
       if (e.key === 'Escape') close()
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    const t2 = setTimeout(() => sheetRef.current && sheetRef.current.focus(), 40)
+    return () => {
+      clearTimeout(t2)
+      window.removeEventListener('keydown', onKey)
+    }
   }, [spiritId, close])
 
   if (!spiritId) return null
@@ -51,7 +56,7 @@ export default function PrayerPicker() {
 
   return (
     <div className="picker-overlay" onClick={close} role="dialog" aria-modal="true">
-      <div className="picker-sheet" onClick={(e) => e.stopPropagation()}>
+      <div className="picker-sheet" onClick={(e) => e.stopPropagation()} tabIndex={-1} ref={sheetRef}>
         <div className="picker-head">
           <span className="picker-emoji">{spirit.emoji}</span>
           <div>
