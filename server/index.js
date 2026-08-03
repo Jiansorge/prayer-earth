@@ -201,8 +201,9 @@ const MAX_FEED = 40
 const feed = []
 let feedSeq = 0
 
-function pushFeed(name, spiritId, prayerId) {
+function pushFeed(name, spiritId, prayerId, lat, lon) {
   const entry = { id: ++feedSeq, t: Date.now(), name, spiritId, prayerId }
+  if (typeof lat === 'number' && typeof lon === 'number') entry.cell = gridKey(lat, lon)
   feed.push(entry)
   if (feed.length > MAX_FEED) feed.splice(0, feed.length - MAX_FEED)
   return entry
@@ -319,7 +320,7 @@ wss.on('connection', (ws) => {
         broadcast()
         // When a soul starts praying, share it with the world.
         if (msg.praying && !prev.praying && prev.prayerId === null) {
-          pushFeed(c.name, c.spiritId, c.prayerId)
+          pushFeed(c.name, c.spiritId, c.prayerId, c.lat, c.lon)
           const payload = feedPayload()
           for (const client of clients.keys()) {
             if (client.readyState === client.OPEN) client.send(payload)

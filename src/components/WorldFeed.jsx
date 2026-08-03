@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITIES } from '../data/prayers.js'
+import { nearestPlace } from '../data/places.js'
 import { useT } from '../i18n.js'
 
 const SPIRIT = Object.fromEntries(SPIRITUALITIES.map((s) => [s.id, s]))
@@ -40,14 +41,20 @@ export default function WorldFeed({ limit = 10, compact = false }) {
         <span className="feed-pulse" /> {t('feed.prayingNow')}
       </div>
       <div className="world-feed-scroll">
-        {items.map((e) => (
-          <span key={e.id} className="feed-pill">
-            <span className="feed-emoji">{SPIRIT[e.spiritId]?.emoji || '🕯️'}</span>
-            <b>{e.name}</b>
-            <span className="feed-prayer">{SHORT[e.prayerId] || 'a prayer'}</span>
-            <span className="feed-ago">{ago(e.t, t)}</span>
-          </span>
-        ))}
+        {items.map((e) => {
+          const place = e.cell
+            ? nearestPlace(...e.cell.split(',').map(Number))
+            : null
+          return (
+            <span key={e.id} className="feed-pill">
+              <span className="feed-emoji">{SPIRIT[e.spiritId]?.emoji || '🕯️'}</span>
+              <b>{e.name}</b>
+              <span className="feed-prayer">{SHORT[e.prayerId] || 'a prayer'}</span>
+              {place && <span className="feed-place">· {t('feed.near', { place })}</span>}
+              <span className="feed-ago">{ago(e.t, t)}</span>
+            </span>
+          )
+        })}
       </div>
     </div>
   )

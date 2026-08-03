@@ -217,6 +217,7 @@ class SyncClient {
       if (this.mode === 'sim' && this.sim) this.simState()
       return
     }
+      const grid = this.loc ? this.gridLoc(this.loc) : null
       this.sock.send(
         JSON.stringify({
           type: 'presence',
@@ -224,10 +225,21 @@ class SyncClient {
           prayerId: s.praying ? s.prayerId : null,
           spiritId: s.praying ? s.spiritId : null,
           name: profileName(),
-          lat: this.loc ? this.loc.lat : null,
-        lon: this.loc ? this.loc.lon : null
+          lat: grid ? grid.lat : null,
+        lon: grid ? grid.lon : null
       })
     )
+  }
+
+  // The server only ever needs region-level precision: round onto the shared
+  // 2-degree grid before sending, so it never holds a precise position.
+  gridLoc(loc) {
+    let lo = Math.round(loc.lon / 2) * 2
+    if (lo >= 180) lo = -180
+    return {
+      lat: Math.max(-60, Math.min(72, Math.round(loc.lat / 2) * 2)),
+      lon: lo
+    }
   }
 
   presenceNow() {
@@ -244,13 +256,14 @@ class SyncClient {
       ['christianity', 'psalm-23', 51.5, -0.1]
     ]
     const now = Date.now()
-    seed.forEach(([sp, pr], i) => {
+    seed.forEach(([sp, pr, lat, lon], i) => {
       this.simFeed.push({
         id: i + 1,
         t: now - (i + 2) * 60000,
         name: SIM_FEED_NAMES[i],
         spiritId: sp,
-        prayerId: pr
+        prayerId: pr,
+        cell: lightKey(lat, lon)
       })
     })
     this.simSeq = seed.length
@@ -292,13 +305,14 @@ class SyncClient {
     // A gentle trickle of "now praying" entries, including the person here.
     const now = Date.now()
     if (!s.praying && Math.random() < 0.35) {
-      const [sp, pr] = SIM_PEOPLE[Math.floor(Math.random() * SIM_PEOPLE.length)]
+      const [sp, pr, lat, lon] = SIM_PEOPLE[Math.floor(Math.random() * SIM_PEOPLE.length)]
       this.simFeed.push({
         id: ++this.simSeq,
         t: now,
         name: SIM_FEED_NAMES[Math.floor(Math.random() * SIM_FEED_NAMES.length)],
         spiritId: sp,
-        prayerId: pr
+        prayerId: pr,
+        cell: lightKey(lat, lon)
       })
     }
     if (s.praying && s.spiritId && s.prayerId && this.lastSimSelf !== now) {
@@ -308,7 +322,8 @@ class SyncClient {
         t: now,
         name: profileName(),
         spiritId: s.spiritId,
-        prayerId: s.prayerId
+        prayerId: s.prayerId,
+        cell: this.loc ? lightKey(this.loc.lat, this.loc.lon) : undefined
       })
     }
     if (this.simFeed.length > 40) this.simFeed.splice(0, this.simFeed.length - 40)

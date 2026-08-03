@@ -2244,6 +2244,12 @@ html[dir='rtl'] .chooser-arrow.right {
   color: var(--ink-dim);
 }
 
+.feed-place {
+  color: var(--ink-faint);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
 .feed-ago {
   color: var(--ink-faint);
   font-size: 11px;

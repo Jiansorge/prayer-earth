@@ -26,6 +26,7 @@ const en = {
   'meter.earthAlight': 'Earth alight',
   'meter.quietCompany': 'Quiet company — connecting to the wider world…',
   'feed.prayingNow': 'praying now',
+  'feed.near': 'near {place}',
   'feed.justNow': 'just now',
   'day.one': '{n} day',
   'day.other': '{n} days',
