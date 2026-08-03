@@ -355,7 +355,7 @@ ok(
 )
 ok(
   'picker lists every prayer of the tradition',
-  (await c.eval(`document.querySelectorAll('.picker-row').length`)) === 7,
+  (await c.eval(`document.querySelectorAll('.picker-row').length`)) === 6,
   `rows=${await c.eval(`document.querySelectorAll('.picker-row').length`)}`
 )
 ok(

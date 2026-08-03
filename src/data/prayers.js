@@ -66,7 +66,7 @@ export const SPIRITUALITIES = [
       },
       {
         id: 'peace-prayer',
-        title: 'The Peace Prayer of St. Francis',
+        title: 'The Peace Prayer',
         lang: 'en',
         langLabel: 'English',
         phrases: [
@@ -94,21 +94,6 @@ export const SPIRITUALITIES = [
           { t: 'nunc et in hora mortis nostrae. Amen.', e: 'now and at the hour of our death. Amen.' }
         ],
         translation: 'The great Marian prayer of the Church — a greeting of grace and a plea for intercession.'
-      },
-      {
-        id: 'serenity',
-        title: 'The Serenity Prayer',
-        lang: 'en',
-        langLabel: 'English',
-        phrases: [
-          { t: 'God, grant me the serenity to accept the things I cannot change,' },
-          { t: 'courage to change the things I can,' },
-          { t: 'and wisdom to know the difference.' },
-          { t: 'Living one day at a time,' },
-          { t: 'enjoying one moment at a time,' },
-          { t: 'accepting hardship as the pathway to peace.' }
-        ],
-        translation: 'A twentieth-century prayer adopted by every tradition of recovery — for acceptance, courage, and wisdom.'
       },
       {
         id: 'magnificat',
@@ -1053,80 +1038,6 @@ export const SPIRITUALITIES = [
           { t: 'Let me begin again, gently, with every being.' }
         ],
         translation: 'A reflection on pratikramana — the Jain practice of confession and turning back to the path of non-violence.'
-      }
-    ]
-  },
-  {
-    id: 'bahai',
-    name: 'Baháʼí Faith',
-    emoji: '✴️',
-    glow: 'rgba(220, 180, 120, 0.24)',
-    lightColor: '#ffc26b',
-    tagline: 'Oneness of God, oneness of religion, oneness of humankind.',
-    prayers: [
-      {
-        id: 'obligatory-short',
-        title: 'The Short Obligatory Prayer',
-        lang: 'en',
-        langLabel: 'English',
-        phrases: [
-          { t: 'I bear witness, O my God, that Thou hast created me to know Thee and to worship Thee.' },
-          { t: 'I testify, at this moment, to my powerlessness and to Thy might,' },
-          { t: 'to my poverty and to Thy wealth.' },
-          { t: 'There is none other God but Thee, the Help in Peril, the Self-Subsisting.' }
-        ],
-        translation: 'The daily obligatory prayer of the Baháʼí Faith — a witness of trust and surrender before God.'
-      },
-      {
-        id: 'son-of-spirit',
-        title: 'O Son of Spirit',
-        lang: 'en',
-        langLabel: 'English · from the Hidden Words',
-        phrases: [
-          { t: 'O Son of Spirit! My first counsel is this: possess a pure, kindly, and radiant heart,' },
-          { t: 'that thine may be a sovereignty ancient, imperishable, and everlasting.' },
-          { t: 'The best beloved of all things in My sight is Justice;' },
-          { t: 'turn not away therefrom if thou desirest Me, and neglect it not' },
-          { t: 'that I may confide in thee.' }
-        ],
-        translation: 'A passage from Baháʼuʼlláhʼs Hidden Words — the counsels that begin the spiritual life.'
-      },
-      {
-        id: 'unity',
-        title: 'O Thou Kind Lord',
-        lang: 'en',
-        langLabel: 'English',
-        phrases: [
-          { t: 'O Thou kind Lord! Unite all.' },
-          { t: 'Let the religions agree, and make us as brothers and sisters,' },
-          { t: 'that we may treat one another as we love ourselves.' },
-          { t: 'We are all the fruits of one tree, and the leaves of one branch.' }
-        ],
-        translation: 'A prayer for unity from the Baháʼí writings — one humanity, one tree.'
-      },
-      {
-        id: 'remover-difficulties',
-        title: 'Remover of Difficulties',
-        lang: 'en',
-        langLabel: 'English · repeated',
-        loop: true,
-        phrases: [
-          { t: 'Is there any Remover of difficulties save God?' },
-          { t: 'Say: Praised be God! He is God! All are His servants, and all abide by His bidding!' }
-        ],
-        translation: 'A short, beloved prayer of Baháʼuʼlláh recited in times of hardship and need.'
-      },
-      {
-        id: 'healing',
-        title: 'A Prayer for Healing',
-        lang: 'en',
-        langLabel: 'English',
-        phrases: [
-          { t: 'Thy name is my healing, O my God, and remembrance of Thee is my remedy.' },
-          { t: 'Nearness to Thee is my hope, and love for Thee is my companion.' },
-          { t: 'Thy mercy to me is my healing and my succor in both this world and the world to come.' }
-        ],
-        translation: 'A prayer of Baháʼuʼlláh for healing and nearness to God, offered in times of illness and need.'
       }
     ]
   },

@@ -1,885 +1,801 @@
-{
-  "generated": "2026-08-03T21:00:10.913Z",
-  "prayers": {
-    "lords-prayer": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 13
-    },
-    "jesus-prayer": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 2
-    },
-    "psalm-23": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 10
-    },
-    "peace-prayer": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 7
-    },
-    "serenity": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 6
-    },
-    "magnificat": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 7
-    },
-    "al-fatiha": {
-      "lang": "ar",
-      "voices": [
-        "ar-DZ-AminaNeural",
-        "ar-BH-AliNeural",
-        "ar-EG-SalmaNeural",
-        "ar-IQ-BasselNeural",
-        "ar-JO-SanaNeural",
-        "ar-KW-FahedNeural",
-        "ar-LB-LaylaNeural",
-        "ar-LY-OmarNeural"
-      ],
-      "phrases": 7
-    },
-    "ayat-al-kursi": {
-      "lang": "ar",
-      "voices": [
-        "ar-DZ-AminaNeural",
-        "ar-BH-AliNeural",
-        "ar-EG-SalmaNeural",
-        "ar-IQ-BasselNeural",
-        "ar-JO-SanaNeural",
-        "ar-KW-FahedNeural",
-        "ar-LB-LaylaNeural",
-        "ar-LY-OmarNeural"
-      ],
-      "phrases": 5
-    },
-    "durood": {
-      "lang": "ar",
-      "voices": [
-        "ar-DZ-AminaNeural",
-        "ar-BH-AliNeural",
-        "ar-EG-SalmaNeural",
-        "ar-IQ-BasselNeural",
-        "ar-JO-SanaNeural",
-        "ar-KW-FahedNeural",
-        "ar-LB-LaylaNeural",
-        "ar-LY-OmarNeural"
-      ],
-      "phrases": 3
-    },
-    "dua-yunus": {
-      "lang": "ar",
-      "voices": [
-        "ar-DZ-AminaNeural",
-        "ar-BH-AliNeural",
-        "ar-EG-SalmaNeural",
-        "ar-IQ-BasselNeural",
-        "ar-JO-SanaNeural",
-        "ar-KW-FahedNeural",
-        "ar-LB-LaylaNeural",
-        "ar-LY-OmarNeural"
-      ],
-      "phrases": 1
-    },
-    "al-ikhlas": {
-      "lang": "ar",
-      "voices": [
-        "ar-DZ-AminaNeural",
-        "ar-BH-AliNeural",
-        "ar-EG-SalmaNeural",
-        "ar-IQ-BasselNeural",
-        "ar-JO-SanaNeural",
-        "ar-KW-FahedNeural",
-        "ar-LB-LaylaNeural",
-        "ar-LY-OmarNeural"
-      ],
-      "phrases": 4
-    },
-    "istighfar": {
-      "lang": "ar",
-      "voices": [
-        "ar-DZ-AminaNeural",
-        "ar-BH-AliNeural",
-        "ar-EG-SalmaNeural",
-        "ar-IQ-BasselNeural",
-        "ar-JO-SanaNeural",
-        "ar-KW-FahedNeural",
-        "ar-LB-LaylaNeural",
-        "ar-LY-OmarNeural"
-      ],
-      "phrases": 2
-    },
-    "al-falaq": {
-      "lang": "ar",
-      "voices": [
-        "ar-DZ-AminaNeural",
-        "ar-BH-AliNeural",
-        "ar-EG-SalmaNeural",
-        "ar-IQ-BasselNeural",
-        "ar-JO-SanaNeural",
-        "ar-KW-FahedNeural",
-        "ar-LB-LaylaNeural",
-        "ar-LY-OmarNeural"
-      ],
-      "phrases": 5
-    },
-    "shema": {
-      "lang": "he",
-      "voices": [
-        "he-IL-HilaNeural",
-        "he-IL-HilaNeural"
-      ],
-      "phrases": 3
-    },
-    "modeh-ani": {
-      "lang": "he",
-      "voices": [
-        "he-IL-HilaNeural",
-        "he-IL-HilaNeural"
-      ],
-      "phrases": 3
-    },
-    "oseh-shalom": {
-      "lang": "he",
-      "voices": [
-        "he-IL-HilaNeural",
-        "he-IL-HilaNeural"
-      ],
-      "phrases": 4
-    },
-    "shalom-aleichem": {
-      "lang": "he",
-      "voices": [
-        "he-IL-HilaNeural",
-        "he-IL-HilaNeural"
-      ],
-      "phrases": 6
-    },
-    "ein-keloheinu": {
-      "lang": "he",
-      "voices": [
-        "he-IL-HilaNeural",
-        "he-IL-HilaNeural"
-      ],
-      "phrases": 6
-    },
-    "priestly-blessing": {
-      "lang": "he",
-      "voices": [
-        "he-IL-HilaNeural",
-        "he-IL-HilaNeural"
-      ],
-      "phrases": 3
-    },
-    "adon-olam": {
-      "lang": "he",
-      "voices": [
-        "he-IL-HilaNeural",
-        "he-IL-HilaNeural"
-      ],
-      "phrases": 6
-    },
-    "daimoku": {
-      "lang": "ja",
-      "voices": [
-        "ja-JP-NanamiNeural",
-        "ja-JP-NanamiNeural"
-      ],
-      "phrases": 3
-    },
-    "refuges": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 6
-    },
-    "nianfo": {
-      "lang": "zh",
-      "voices": [
-        "zh-HK-HiuGaaiNeural",
-        "zh-CN-YunjianNeural",
-        "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunxiaNeural",
-        "zh-CN-liaoning-XiaobeiNeural",
-        "zh-TW-YunJheNeural",
-        "zh-TW-HsiaoYuNeural",
-        "zh-CN-shaanxi-XiaoniNeural"
-      ],
-      "phrases": 3
-    },
-    "ksitigarbha-name": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 3
-    },
-    "bodhisattva-vow": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 4
-    },
-    "qingjing": {
-      "lang": "zh",
-      "voices": [
-        "zh-HK-HiuGaaiNeural",
-        "zh-CN-YunjianNeural",
-        "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunxiaNeural",
-        "zh-CN-liaoning-XiaobeiNeural",
-        "zh-TW-YunJheNeural",
-        "zh-TW-HsiaoYuNeural",
-        "zh-CN-shaanxi-XiaoniNeural"
-      ],
-      "phrases": 4
-    },
-    "dao-de-jing-opening": {
-      "lang": "zh",
-      "voices": [
-        "zh-HK-HiuGaaiNeural",
-        "zh-CN-YunjianNeural",
-        "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunxiaNeural",
-        "zh-CN-liaoning-XiaobeiNeural",
-        "zh-TW-YunJheNeural",
-        "zh-TW-HsiaoYuNeural",
-        "zh-CN-shaanxi-XiaoniNeural"
-      ],
-      "phrases": 4
-    },
-    "wu-wei": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 6
-    },
-    "ganying": {
-      "lang": "zh",
-      "voices": [
-        "zh-HK-HiuGaaiNeural",
-        "zh-CN-YunjianNeural",
-        "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunxiaNeural",
-        "zh-CN-liaoning-XiaobeiNeural",
-        "zh-TW-YunJheNeural",
-        "zh-TW-HsiaoYuNeural",
-        "zh-CN-shaanxi-XiaoniNeural"
-      ],
-      "phrases": 3
-    },
-    "three-treasures": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 6
-    },
-    "oharai": {
-      "lang": "ja",
-      "voices": [
-        "ja-JP-NanamiNeural",
-        "ja-JP-NanamiNeural"
-      ],
-      "phrases": 4
-    },
-    "amaterasu": {
-      "lang": "ja",
-      "voices": [
-        "ja-JP-NanamiNeural",
-        "ja-JP-NanamiNeural"
-      ],
-      "phrases": 4
-    },
-    "misono": {
-      "lang": "ja",
-      "voices": [
-        "ja-JP-NanamiNeural",
-        "ja-JP-NanamiNeural"
-      ],
-      "phrases": 3
-    },
-    "kami-presence": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 6
-    },
-    "kannagara": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 6
-    },
-    "mahavira-vow": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 5
-    },
-    "pratikraman": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 5
-    },
-    "obligatory-short": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 4
-    },
-    "son-of-spirit": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 5
-    },
-    "unity": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 4
-    },
-    "remover-difficulties": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 2
-    },
-    "healing": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 3
-    },
-    "seven-directions": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 6
-    },
-    "thanksgiving-land": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 5
-    },
-    "hoozho": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 5
-    },
-    "pachamama": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 5
-    },
-    "seven-teachings": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 5
-    },
-    "fire-blessing": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 5
-    },
-    "great-learning": {
-      "lang": "zh",
-      "voices": [
-        "zh-HK-HiuGaaiNeural",
-        "zh-CN-YunjianNeural",
-        "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunxiaNeural",
-        "zh-CN-liaoning-XiaobeiNeural",
-        "zh-TW-YunJheNeural",
-        "zh-TW-HsiaoYuNeural",
-        "zh-CN-shaanxi-XiaoniNeural"
-      ],
-      "phrases": 2
-    },
-    "golden-rule": {
-      "lang": "zh",
-      "voices": [
-        "zh-HK-HiuGaaiNeural",
-        "zh-CN-YunjianNeural",
-        "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunxiaNeural",
-        "zh-CN-liaoning-XiaobeiNeural",
-        "zh-TW-YunJheNeural",
-        "zh-TW-HsiaoYuNeural",
-        "zh-CN-shaanxi-XiaoniNeural"
-      ],
-      "phrases": 2
-    },
-    "learning-joy": {
-      "lang": "zh",
-      "voices": [
-        "zh-HK-HiuGaaiNeural",
-        "zh-CN-YunjianNeural",
-        "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunxiaNeural",
-        "zh-CN-liaoning-XiaobeiNeural",
-        "zh-TW-YunJheNeural",
-        "zh-TW-HsiaoYuNeural",
-        "zh-CN-shaanxi-XiaoniNeural"
-      ],
-      "phrases": 2
-    },
-    "ren": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 5
-    },
-    "jing-tian": {
-      "lang": "zh",
-      "voices": [
-        "zh-HK-HiuGaaiNeural",
-        "zh-CN-YunjianNeural",
-        "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunxiaNeural",
-        "zh-CN-liaoning-XiaobeiNeural",
-        "zh-TW-YunJheNeural",
-        "zh-TW-HsiaoYuNeural",
-        "zh-CN-shaanxi-XiaoniNeural"
-      ],
-      "phrases": 4
-    },
-    "ji-zu": {
-      "lang": "zh",
-      "voices": [
-        "zh-HK-HiuGaaiNeural",
-        "zh-CN-YunjianNeural",
-        "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunxiaNeural",
-        "zh-CN-liaoning-XiaobeiNeural",
-        "zh-TW-YunJheNeural",
-        "zh-TW-HsiaoYuNeural",
-        "zh-CN-shaanxi-XiaoniNeural"
-      ],
-      "phrases": 4
-    },
-    "guanyin": {
-      "lang": "zh",
-      "voices": [
-        "zh-HK-HiuGaaiNeural",
-        "zh-CN-YunjianNeural",
-        "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunxiaNeural",
-        "zh-CN-liaoning-XiaobeiNeural",
-        "zh-TW-YunJheNeural",
-        "zh-TW-HsiaoYuNeural",
-        "zh-CN-shaanxi-XiaoniNeural"
-      ],
-      "phrases": 4
-    },
-    "tudi-gong": {
-      "lang": "zh",
-      "voices": [
-        "zh-HK-HiuGaaiNeural",
-        "zh-CN-YunjianNeural",
-        "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunxiaNeural",
-        "zh-CN-liaoning-XiaobeiNeural",
-        "zh-TW-YunJheNeural",
-        "zh-TW-HsiaoYuNeural",
-        "zh-CN-shaanxi-XiaoniNeural"
-      ],
-      "phrases": 4
-    },
-    "zao-jun": {
-      "lang": "zh",
-      "voices": [
-        "zh-HK-HiuGaaiNeural",
-        "zh-CN-YunjianNeural",
-        "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunxiaNeural",
-        "zh-CN-liaoning-XiaobeiNeural",
-        "zh-TW-YunJheNeural",
-        "zh-TW-HsiaoYuNeural",
-        "zh-CN-shaanxi-XiaoniNeural"
-      ],
-      "phrases": 4
-    },
-    "mazu": {
-      "lang": "zh",
-      "voices": [
-        "zh-HK-HiuGaaiNeural",
-        "zh-CN-YunjianNeural",
-        "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunxiaNeural",
-        "zh-CN-liaoning-XiaobeiNeural",
-        "zh-TW-YunJheNeural",
-        "zh-TW-HsiaoYuNeural",
-        "zh-CN-shaanxi-XiaoniNeural"
-      ],
-      "phrases": 4
-    },
-    "home-altar": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 6
-    },
-    "umvelinqangi": {
-      "lang": "zu",
-      "voices": [
-        "zu-ZA-ThandoNeural",
-        "zu-ZA-ThembaNeural"
-      ],
-      "phrases": 3
-    },
-    "ancestors": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 6
-    },
-    "gratitude": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 5
-    },
-    "awe": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 4
-    },
-    "wish": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 5
-    },
-    "for-earth": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 6
-    },
-    "silent-minute": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 6
-    },
-    "for-skeptic": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 6
-    },
-    "ode-to-day": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IE-ConnorNeural",
-        "en-IE-EmilyNeural",
-        "en-NZ-MitchellNeural",
-        "en-NZ-MollyNeural",
-        "en-PH-JamesNeural"
-      ],
-      "phrases": 6
-    }
-  }
+﻿{
+    "generated":  "2026-08-03T21:00:10.913Z",
+    "prayers":  {
+                    "lords-prayer":  {
+                                         "lang":  "en",
+                                         "voices":  [
+                                                        "en-AU-NatashaNeural",
+                                                        "en-HK-SamNeural",
+                                                        "en-HK-YanNeural",
+                                                        "en-IE-ConnorNeural",
+                                                        "en-IE-EmilyNeural",
+                                                        "en-NZ-MitchellNeural",
+                                                        "en-NZ-MollyNeural",
+                                                        "en-PH-JamesNeural"
+                                                    ],
+                                         "phrases":  13
+                                     },
+                    "jesus-prayer":  {
+                                         "lang":  "en",
+                                         "voices":  [
+                                                        "en-AU-NatashaNeural",
+                                                        "en-HK-SamNeural",
+                                                        "en-HK-YanNeural",
+                                                        "en-IE-ConnorNeural",
+                                                        "en-IE-EmilyNeural",
+                                                        "en-NZ-MitchellNeural",
+                                                        "en-NZ-MollyNeural",
+                                                        "en-PH-JamesNeural"
+                                                    ],
+                                         "phrases":  2
+                                     },
+                    "psalm-23":  {
+                                     "lang":  "en",
+                                     "voices":  [
+                                                    "en-AU-NatashaNeural",
+                                                    "en-HK-SamNeural",
+                                                    "en-HK-YanNeural",
+                                                    "en-IE-ConnorNeural",
+                                                    "en-IE-EmilyNeural",
+                                                    "en-NZ-MitchellNeural",
+                                                    "en-NZ-MollyNeural",
+                                                    "en-PH-JamesNeural"
+                                                ],
+                                     "phrases":  10
+                                 },
+                    "peace-prayer":  {
+                                         "lang":  "en",
+                                         "voices":  [
+                                                        "en-AU-NatashaNeural",
+                                                        "en-HK-SamNeural",
+                                                        "en-HK-YanNeural",
+                                                        "en-IE-ConnorNeural",
+                                                        "en-IE-EmilyNeural",
+                                                        "en-NZ-MitchellNeural",
+                                                        "en-NZ-MollyNeural",
+                                                        "en-PH-JamesNeural"
+                                                    ],
+                                         "phrases":  7
+                                     },
+                    "magnificat":  {
+                                       "lang":  "en",
+                                       "voices":  [
+                                                      "en-AU-NatashaNeural",
+                                                      "en-HK-SamNeural",
+                                                      "en-HK-YanNeural",
+                                                      "en-IE-ConnorNeural",
+                                                      "en-IE-EmilyNeural",
+                                                      "en-NZ-MitchellNeural",
+                                                      "en-NZ-MollyNeural",
+                                                      "en-PH-JamesNeural"
+                                                  ],
+                                       "phrases":  7
+                                   },
+                    "al-fatiha":  {
+                                      "lang":  "ar",
+                                      "voices":  [
+                                                     "ar-DZ-AminaNeural",
+                                                     "ar-BH-AliNeural",
+                                                     "ar-EG-SalmaNeural",
+                                                     "ar-IQ-BasselNeural",
+                                                     "ar-JO-SanaNeural",
+                                                     "ar-KW-FahedNeural",
+                                                     "ar-LB-LaylaNeural",
+                                                     "ar-LY-OmarNeural"
+                                                 ],
+                                      "phrases":  7
+                                  },
+                    "ayat-al-kursi":  {
+                                          "lang":  "ar",
+                                          "voices":  [
+                                                         "ar-DZ-AminaNeural",
+                                                         "ar-BH-AliNeural",
+                                                         "ar-EG-SalmaNeural",
+                                                         "ar-IQ-BasselNeural",
+                                                         "ar-JO-SanaNeural",
+                                                         "ar-KW-FahedNeural",
+                                                         "ar-LB-LaylaNeural",
+                                                         "ar-LY-OmarNeural"
+                                                     ],
+                                          "phrases":  5
+                                      },
+                    "durood":  {
+                                   "lang":  "ar",
+                                   "voices":  [
+                                                  "ar-DZ-AminaNeural",
+                                                  "ar-BH-AliNeural",
+                                                  "ar-EG-SalmaNeural",
+                                                  "ar-IQ-BasselNeural",
+                                                  "ar-JO-SanaNeural",
+                                                  "ar-KW-FahedNeural",
+                                                  "ar-LB-LaylaNeural",
+                                                  "ar-LY-OmarNeural"
+                                              ],
+                                   "phrases":  3
+                               },
+                    "dua-yunus":  {
+                                      "lang":  "ar",
+                                      "voices":  [
+                                                     "ar-DZ-AminaNeural",
+                                                     "ar-BH-AliNeural",
+                                                     "ar-EG-SalmaNeural",
+                                                     "ar-IQ-BasselNeural",
+                                                     "ar-JO-SanaNeural",
+                                                     "ar-KW-FahedNeural",
+                                                     "ar-LB-LaylaNeural",
+                                                     "ar-LY-OmarNeural"
+                                                 ],
+                                      "phrases":  1
+                                  },
+                    "al-ikhlas":  {
+                                      "lang":  "ar",
+                                      "voices":  [
+                                                     "ar-DZ-AminaNeural",
+                                                     "ar-BH-AliNeural",
+                                                     "ar-EG-SalmaNeural",
+                                                     "ar-IQ-BasselNeural",
+                                                     "ar-JO-SanaNeural",
+                                                     "ar-KW-FahedNeural",
+                                                     "ar-LB-LaylaNeural",
+                                                     "ar-LY-OmarNeural"
+                                                 ],
+                                      "phrases":  4
+                                  },
+                    "istighfar":  {
+                                      "lang":  "ar",
+                                      "voices":  [
+                                                     "ar-DZ-AminaNeural",
+                                                     "ar-BH-AliNeural",
+                                                     "ar-EG-SalmaNeural",
+                                                     "ar-IQ-BasselNeural",
+                                                     "ar-JO-SanaNeural",
+                                                     "ar-KW-FahedNeural",
+                                                     "ar-LB-LaylaNeural",
+                                                     "ar-LY-OmarNeural"
+                                                 ],
+                                      "phrases":  2
+                                  },
+                    "al-falaq":  {
+                                     "lang":  "ar",
+                                     "voices":  [
+                                                    "ar-DZ-AminaNeural",
+                                                    "ar-BH-AliNeural",
+                                                    "ar-EG-SalmaNeural",
+                                                    "ar-IQ-BasselNeural",
+                                                    "ar-JO-SanaNeural",
+                                                    "ar-KW-FahedNeural",
+                                                    "ar-LB-LaylaNeural",
+                                                    "ar-LY-OmarNeural"
+                                                ],
+                                     "phrases":  5
+                                 },
+                    "shema":  {
+                                  "lang":  "he",
+                                  "voices":  [
+                                                 "he-IL-HilaNeural",
+                                                 "he-IL-HilaNeural"
+                                             ],
+                                  "phrases":  3
+                              },
+                    "modeh-ani":  {
+                                      "lang":  "he",
+                                      "voices":  [
+                                                     "he-IL-HilaNeural",
+                                                     "he-IL-HilaNeural"
+                                                 ],
+                                      "phrases":  3
+                                  },
+                    "oseh-shalom":  {
+                                        "lang":  "he",
+                                        "voices":  [
+                                                       "he-IL-HilaNeural",
+                                                       "he-IL-HilaNeural"
+                                                   ],
+                                        "phrases":  4
+                                    },
+                    "shalom-aleichem":  {
+                                            "lang":  "he",
+                                            "voices":  [
+                                                           "he-IL-HilaNeural",
+                                                           "he-IL-HilaNeural"
+                                                       ],
+                                            "phrases":  6
+                                        },
+                    "ein-keloheinu":  {
+                                          "lang":  "he",
+                                          "voices":  [
+                                                         "he-IL-HilaNeural",
+                                                         "he-IL-HilaNeural"
+                                                     ],
+                                          "phrases":  6
+                                      },
+                    "priestly-blessing":  {
+                                              "lang":  "he",
+                                              "voices":  [
+                                                             "he-IL-HilaNeural",
+                                                             "he-IL-HilaNeural"
+                                                         ],
+                                              "phrases":  3
+                                          },
+                    "adon-olam":  {
+                                      "lang":  "he",
+                                      "voices":  [
+                                                     "he-IL-HilaNeural",
+                                                     "he-IL-HilaNeural"
+                                                 ],
+                                      "phrases":  6
+                                  },
+                    "daimoku":  {
+                                    "lang":  "ja",
+                                    "voices":  [
+                                                   "ja-JP-NanamiNeural",
+                                                   "ja-JP-NanamiNeural"
+                                               ],
+                                    "phrases":  3
+                                },
+                    "refuges":  {
+                                    "lang":  "en",
+                                    "voices":  [
+                                                   "en-AU-NatashaNeural",
+                                                   "en-HK-SamNeural",
+                                                   "en-HK-YanNeural",
+                                                   "en-IE-ConnorNeural",
+                                                   "en-IE-EmilyNeural",
+                                                   "en-NZ-MitchellNeural",
+                                                   "en-NZ-MollyNeural",
+                                                   "en-PH-JamesNeural"
+                                               ],
+                                    "phrases":  6
+                                },
+                    "nianfo":  {
+                                   "lang":  "zh",
+                                   "voices":  [
+                                                  "zh-HK-HiuGaaiNeural",
+                                                  "zh-CN-YunjianNeural",
+                                                  "zh-CN-XiaoxiaoNeural",
+                                                  "zh-CN-YunxiaNeural",
+                                                  "zh-CN-liaoning-XiaobeiNeural",
+                                                  "zh-TW-YunJheNeural",
+                                                  "zh-TW-HsiaoYuNeural",
+                                                  "zh-CN-shaanxi-XiaoniNeural"
+                                              ],
+                                   "phrases":  3
+                               },
+                    "ksitigarbha-name":  {
+                                             "lang":  "en",
+                                             "voices":  [
+                                                            "en-AU-NatashaNeural",
+                                                            "en-HK-SamNeural",
+                                                            "en-HK-YanNeural",
+                                                            "en-IE-ConnorNeural",
+                                                            "en-IE-EmilyNeural",
+                                                            "en-NZ-MitchellNeural",
+                                                            "en-NZ-MollyNeural",
+                                                            "en-PH-JamesNeural"
+                                                        ],
+                                             "phrases":  3
+                                         },
+                    "bodhisattva-vow":  {
+                                            "lang":  "en",
+                                            "voices":  [
+                                                           "en-AU-NatashaNeural",
+                                                           "en-HK-SamNeural",
+                                                           "en-HK-YanNeural",
+                                                           "en-IE-ConnorNeural",
+                                                           "en-IE-EmilyNeural",
+                                                           "en-NZ-MitchellNeural",
+                                                           "en-NZ-MollyNeural",
+                                                           "en-PH-JamesNeural"
+                                                       ],
+                                            "phrases":  4
+                                        },
+                    "qingjing":  {
+                                     "lang":  "zh",
+                                     "voices":  [
+                                                    "zh-HK-HiuGaaiNeural",
+                                                    "zh-CN-YunjianNeural",
+                                                    "zh-CN-XiaoxiaoNeural",
+                                                    "zh-CN-YunxiaNeural",
+                                                    "zh-CN-liaoning-XiaobeiNeural",
+                                                    "zh-TW-YunJheNeural",
+                                                    "zh-TW-HsiaoYuNeural",
+                                                    "zh-CN-shaanxi-XiaoniNeural"
+                                                ],
+                                     "phrases":  4
+                                 },
+                    "dao-de-jing-opening":  {
+                                                "lang":  "zh",
+                                                "voices":  [
+                                                               "zh-HK-HiuGaaiNeural",
+                                                               "zh-CN-YunjianNeural",
+                                                               "zh-CN-XiaoxiaoNeural",
+                                                               "zh-CN-YunxiaNeural",
+                                                               "zh-CN-liaoning-XiaobeiNeural",
+                                                               "zh-TW-YunJheNeural",
+                                                               "zh-TW-HsiaoYuNeural",
+                                                               "zh-CN-shaanxi-XiaoniNeural"
+                                                           ],
+                                                "phrases":  4
+                                            },
+                    "wu-wei":  {
+                                   "lang":  "en",
+                                   "voices":  [
+                                                  "en-AU-NatashaNeural",
+                                                  "en-HK-SamNeural",
+                                                  "en-HK-YanNeural",
+                                                  "en-IE-ConnorNeural",
+                                                  "en-IE-EmilyNeural",
+                                                  "en-NZ-MitchellNeural",
+                                                  "en-NZ-MollyNeural",
+                                                  "en-PH-JamesNeural"
+                                              ],
+                                   "phrases":  6
+                               },
+                    "ganying":  {
+                                    "lang":  "zh",
+                                    "voices":  [
+                                                   "zh-HK-HiuGaaiNeural",
+                                                   "zh-CN-YunjianNeural",
+                                                   "zh-CN-XiaoxiaoNeural",
+                                                   "zh-CN-YunxiaNeural",
+                                                   "zh-CN-liaoning-XiaobeiNeural",
+                                                   "zh-TW-YunJheNeural",
+                                                   "zh-TW-HsiaoYuNeural",
+                                                   "zh-CN-shaanxi-XiaoniNeural"
+                                               ],
+                                    "phrases":  3
+                                },
+                    "three-treasures":  {
+                                            "lang":  "en",
+                                            "voices":  [
+                                                           "en-AU-NatashaNeural",
+                                                           "en-HK-SamNeural",
+                                                           "en-HK-YanNeural",
+                                                           "en-IE-ConnorNeural",
+                                                           "en-IE-EmilyNeural",
+                                                           "en-NZ-MitchellNeural",
+                                                           "en-NZ-MollyNeural",
+                                                           "en-PH-JamesNeural"
+                                                       ],
+                                            "phrases":  6
+                                        },
+                    "oharai":  {
+                                   "lang":  "ja",
+                                   "voices":  [
+                                                  "ja-JP-NanamiNeural",
+                                                  "ja-JP-NanamiNeural"
+                                              ],
+                                   "phrases":  4
+                               },
+                    "amaterasu":  {
+                                      "lang":  "ja",
+                                      "voices":  [
+                                                     "ja-JP-NanamiNeural",
+                                                     "ja-JP-NanamiNeural"
+                                                 ],
+                                      "phrases":  4
+                                  },
+                    "misono":  {
+                                   "lang":  "ja",
+                                   "voices":  [
+                                                  "ja-JP-NanamiNeural",
+                                                  "ja-JP-NanamiNeural"
+                                              ],
+                                   "phrases":  3
+                               },
+                    "kami-presence":  {
+                                          "lang":  "en",
+                                          "voices":  [
+                                                         "en-AU-NatashaNeural",
+                                                         "en-HK-SamNeural",
+                                                         "en-HK-YanNeural",
+                                                         "en-IE-ConnorNeural",
+                                                         "en-IE-EmilyNeural",
+                                                         "en-NZ-MitchellNeural",
+                                                         "en-NZ-MollyNeural",
+                                                         "en-PH-JamesNeural"
+                                                     ],
+                                          "phrases":  6
+                                      },
+                    "kannagara":  {
+                                      "lang":  "en",
+                                      "voices":  [
+                                                     "en-AU-NatashaNeural",
+                                                     "en-HK-SamNeural",
+                                                     "en-HK-YanNeural",
+                                                     "en-IE-ConnorNeural",
+                                                     "en-IE-EmilyNeural",
+                                                     "en-NZ-MitchellNeural",
+                                                     "en-NZ-MollyNeural",
+                                                     "en-PH-JamesNeural"
+                                                 ],
+                                      "phrases":  6
+                                  },
+                    "mahavira-vow":  {
+                                         "lang":  "en",
+                                         "voices":  [
+                                                        "en-AU-NatashaNeural",
+                                                        "en-HK-SamNeural",
+                                                        "en-HK-YanNeural",
+                                                        "en-IE-ConnorNeural",
+                                                        "en-IE-EmilyNeural",
+                                                        "en-NZ-MitchellNeural",
+                                                        "en-NZ-MollyNeural",
+                                                        "en-PH-JamesNeural"
+                                                    ],
+                                         "phrases":  5
+                                     },
+                    "pratikraman":  {
+                                        "lang":  "en",
+                                        "voices":  [
+                                                       "en-AU-NatashaNeural",
+                                                       "en-HK-SamNeural",
+                                                       "en-HK-YanNeural",
+                                                       "en-IE-ConnorNeural",
+                                                       "en-IE-EmilyNeural",
+                                                       "en-NZ-MitchellNeural",
+                                                       "en-NZ-MollyNeural",
+                                                       "en-PH-JamesNeural"
+                                                   ],
+                                        "phrases":  5
+                                    },
+                    "seven-directions":  {
+                                             "lang":  "en",
+                                             "voices":  [
+                                                            "en-AU-NatashaNeural",
+                                                            "en-HK-SamNeural",
+                                                            "en-HK-YanNeural",
+                                                            "en-IE-ConnorNeural",
+                                                            "en-IE-EmilyNeural",
+                                                            "en-NZ-MitchellNeural",
+                                                            "en-NZ-MollyNeural",
+                                                            "en-PH-JamesNeural"
+                                                        ],
+                                             "phrases":  6
+                                         },
+                    "thanksgiving-land":  {
+                                              "lang":  "en",
+                                              "voices":  [
+                                                             "en-AU-NatashaNeural",
+                                                             "en-HK-SamNeural",
+                                                             "en-HK-YanNeural",
+                                                             "en-IE-ConnorNeural",
+                                                             "en-IE-EmilyNeural",
+                                                             "en-NZ-MitchellNeural",
+                                                             "en-NZ-MollyNeural",
+                                                             "en-PH-JamesNeural"
+                                                         ],
+                                              "phrases":  5
+                                          },
+                    "hoozho":  {
+                                   "lang":  "en",
+                                   "voices":  [
+                                                  "en-AU-NatashaNeural",
+                                                  "en-HK-SamNeural",
+                                                  "en-HK-YanNeural",
+                                                  "en-IE-ConnorNeural",
+                                                  "en-IE-EmilyNeural",
+                                                  "en-NZ-MitchellNeural",
+                                                  "en-NZ-MollyNeural",
+                                                  "en-PH-JamesNeural"
+                                              ],
+                                   "phrases":  5
+                               },
+                    "pachamama":  {
+                                      "lang":  "en",
+                                      "voices":  [
+                                                     "en-AU-NatashaNeural",
+                                                     "en-HK-SamNeural",
+                                                     "en-HK-YanNeural",
+                                                     "en-IE-ConnorNeural",
+                                                     "en-IE-EmilyNeural",
+                                                     "en-NZ-MitchellNeural",
+                                                     "en-NZ-MollyNeural",
+                                                     "en-PH-JamesNeural"
+                                                 ],
+                                      "phrases":  5
+                                  },
+                    "seven-teachings":  {
+                                            "lang":  "en",
+                                            "voices":  [
+                                                           "en-AU-NatashaNeural",
+                                                           "en-HK-SamNeural",
+                                                           "en-HK-YanNeural",
+                                                           "en-IE-ConnorNeural",
+                                                           "en-IE-EmilyNeural",
+                                                           "en-NZ-MitchellNeural",
+                                                           "en-NZ-MollyNeural",
+                                                           "en-PH-JamesNeural"
+                                                       ],
+                                            "phrases":  5
+                                        },
+                    "fire-blessing":  {
+                                          "lang":  "en",
+                                          "voices":  [
+                                                         "en-AU-NatashaNeural",
+                                                         "en-HK-SamNeural",
+                                                         "en-HK-YanNeural",
+                                                         "en-IE-ConnorNeural",
+                                                         "en-IE-EmilyNeural",
+                                                         "en-NZ-MitchellNeural",
+                                                         "en-NZ-MollyNeural",
+                                                         "en-PH-JamesNeural"
+                                                     ],
+                                          "phrases":  5
+                                      },
+                    "great-learning":  {
+                                           "lang":  "zh",
+                                           "voices":  [
+                                                          "zh-HK-HiuGaaiNeural",
+                                                          "zh-CN-YunjianNeural",
+                                                          "zh-CN-XiaoxiaoNeural",
+                                                          "zh-CN-YunxiaNeural",
+                                                          "zh-CN-liaoning-XiaobeiNeural",
+                                                          "zh-TW-YunJheNeural",
+                                                          "zh-TW-HsiaoYuNeural",
+                                                          "zh-CN-shaanxi-XiaoniNeural"
+                                                      ],
+                                           "phrases":  2
+                                       },
+                    "golden-rule":  {
+                                        "lang":  "zh",
+                                        "voices":  [
+                                                       "zh-HK-HiuGaaiNeural",
+                                                       "zh-CN-YunjianNeural",
+                                                       "zh-CN-XiaoxiaoNeural",
+                                                       "zh-CN-YunxiaNeural",
+                                                       "zh-CN-liaoning-XiaobeiNeural",
+                                                       "zh-TW-YunJheNeural",
+                                                       "zh-TW-HsiaoYuNeural",
+                                                       "zh-CN-shaanxi-XiaoniNeural"
+                                                   ],
+                                        "phrases":  2
+                                    },
+                    "learning-joy":  {
+                                         "lang":  "zh",
+                                         "voices":  [
+                                                        "zh-HK-HiuGaaiNeural",
+                                                        "zh-CN-YunjianNeural",
+                                                        "zh-CN-XiaoxiaoNeural",
+                                                        "zh-CN-YunxiaNeural",
+                                                        "zh-CN-liaoning-XiaobeiNeural",
+                                                        "zh-TW-YunJheNeural",
+                                                        "zh-TW-HsiaoYuNeural",
+                                                        "zh-CN-shaanxi-XiaoniNeural"
+                                                    ],
+                                         "phrases":  2
+                                     },
+                    "ren":  {
+                                "lang":  "en",
+                                "voices":  [
+                                               "en-AU-NatashaNeural",
+                                               "en-HK-SamNeural",
+                                               "en-HK-YanNeural",
+                                               "en-IE-ConnorNeural",
+                                               "en-IE-EmilyNeural",
+                                               "en-NZ-MitchellNeural",
+                                               "en-NZ-MollyNeural",
+                                               "en-PH-JamesNeural"
+                                           ],
+                                "phrases":  5
+                            },
+                    "jing-tian":  {
+                                      "lang":  "zh",
+                                      "voices":  [
+                                                     "zh-HK-HiuGaaiNeural",
+                                                     "zh-CN-YunjianNeural",
+                                                     "zh-CN-XiaoxiaoNeural",
+                                                     "zh-CN-YunxiaNeural",
+                                                     "zh-CN-liaoning-XiaobeiNeural",
+                                                     "zh-TW-YunJheNeural",
+                                                     "zh-TW-HsiaoYuNeural",
+                                                     "zh-CN-shaanxi-XiaoniNeural"
+                                                 ],
+                                      "phrases":  4
+                                  },
+                    "ji-zu":  {
+                                  "lang":  "zh",
+                                  "voices":  [
+                                                 "zh-HK-HiuGaaiNeural",
+                                                 "zh-CN-YunjianNeural",
+                                                 "zh-CN-XiaoxiaoNeural",
+                                                 "zh-CN-YunxiaNeural",
+                                                 "zh-CN-liaoning-XiaobeiNeural",
+                                                 "zh-TW-YunJheNeural",
+                                                 "zh-TW-HsiaoYuNeural",
+                                                 "zh-CN-shaanxi-XiaoniNeural"
+                                             ],
+                                  "phrases":  4
+                              },
+                    "guanyin":  {
+                                    "lang":  "zh",
+                                    "voices":  [
+                                                   "zh-HK-HiuGaaiNeural",
+                                                   "zh-CN-YunjianNeural",
+                                                   "zh-CN-XiaoxiaoNeural",
+                                                   "zh-CN-YunxiaNeural",
+                                                   "zh-CN-liaoning-XiaobeiNeural",
+                                                   "zh-TW-YunJheNeural",
+                                                   "zh-TW-HsiaoYuNeural",
+                                                   "zh-CN-shaanxi-XiaoniNeural"
+                                               ],
+                                    "phrases":  4
+                                },
+                    "tudi-gong":  {
+                                      "lang":  "zh",
+                                      "voices":  [
+                                                     "zh-HK-HiuGaaiNeural",
+                                                     "zh-CN-YunjianNeural",
+                                                     "zh-CN-XiaoxiaoNeural",
+                                                     "zh-CN-YunxiaNeural",
+                                                     "zh-CN-liaoning-XiaobeiNeural",
+                                                     "zh-TW-YunJheNeural",
+                                                     "zh-TW-HsiaoYuNeural",
+                                                     "zh-CN-shaanxi-XiaoniNeural"
+                                                 ],
+                                      "phrases":  4
+                                  },
+                    "zao-jun":  {
+                                    "lang":  "zh",
+                                    "voices":  [
+                                                   "zh-HK-HiuGaaiNeural",
+                                                   "zh-CN-YunjianNeural",
+                                                   "zh-CN-XiaoxiaoNeural",
+                                                   "zh-CN-YunxiaNeural",
+                                                   "zh-CN-liaoning-XiaobeiNeural",
+                                                   "zh-TW-YunJheNeural",
+                                                   "zh-TW-HsiaoYuNeural",
+                                                   "zh-CN-shaanxi-XiaoniNeural"
+                                               ],
+                                    "phrases":  4
+                                },
+                    "mazu":  {
+                                 "lang":  "zh",
+                                 "voices":  [
+                                                "zh-HK-HiuGaaiNeural",
+                                                "zh-CN-YunjianNeural",
+                                                "zh-CN-XiaoxiaoNeural",
+                                                "zh-CN-YunxiaNeural",
+                                                "zh-CN-liaoning-XiaobeiNeural",
+                                                "zh-TW-YunJheNeural",
+                                                "zh-TW-HsiaoYuNeural",
+                                                "zh-CN-shaanxi-XiaoniNeural"
+                                            ],
+                                 "phrases":  4
+                             },
+                    "home-altar":  {
+                                       "lang":  "en",
+                                       "voices":  [
+                                                      "en-AU-NatashaNeural",
+                                                      "en-HK-SamNeural",
+                                                      "en-HK-YanNeural",
+                                                      "en-IE-ConnorNeural",
+                                                      "en-IE-EmilyNeural",
+                                                      "en-NZ-MitchellNeural",
+                                                      "en-NZ-MollyNeural",
+                                                      "en-PH-JamesNeural"
+                                                  ],
+                                       "phrases":  6
+                                   },
+                    "umvelinqangi":  {
+                                         "lang":  "zu",
+                                         "voices":  [
+                                                        "zu-ZA-ThandoNeural",
+                                                        "zu-ZA-ThembaNeural"
+                                                    ],
+                                         "phrases":  3
+                                     },
+                    "ancestors":  {
+                                      "lang":  "en",
+                                      "voices":  [
+                                                     "en-AU-NatashaNeural",
+                                                     "en-HK-SamNeural",
+                                                     "en-HK-YanNeural",
+                                                     "en-IE-ConnorNeural",
+                                                     "en-IE-EmilyNeural",
+                                                     "en-NZ-MitchellNeural",
+                                                     "en-NZ-MollyNeural",
+                                                     "en-PH-JamesNeural"
+                                                 ],
+                                      "phrases":  6
+                                  },
+                    "gratitude":  {
+                                      "lang":  "en",
+                                      "voices":  [
+                                                     "en-AU-NatashaNeural",
+                                                     "en-HK-SamNeural",
+                                                     "en-HK-YanNeural",
+                                                     "en-IE-ConnorNeural",
+                                                     "en-IE-EmilyNeural",
+                                                     "en-NZ-MitchellNeural",
+                                                     "en-NZ-MollyNeural",
+                                                     "en-PH-JamesNeural"
+                                                 ],
+                                      "phrases":  5
+                                  },
+                    "awe":  {
+                                "lang":  "en",
+                                "voices":  [
+                                               "en-AU-NatashaNeural",
+                                               "en-HK-SamNeural",
+                                               "en-HK-YanNeural",
+                                               "en-IE-ConnorNeural",
+                                               "en-IE-EmilyNeural",
+                                               "en-NZ-MitchellNeural",
+                                               "en-NZ-MollyNeural",
+                                               "en-PH-JamesNeural"
+                                           ],
+                                "phrases":  4
+                            },
+                    "wish":  {
+                                 "lang":  "en",
+                                 "voices":  [
+                                                "en-AU-NatashaNeural",
+                                                "en-HK-SamNeural",
+                                                "en-HK-YanNeural",
+                                                "en-IE-ConnorNeural",
+                                                "en-IE-EmilyNeural",
+                                                "en-NZ-MitchellNeural",
+                                                "en-NZ-MollyNeural",
+                                                "en-PH-JamesNeural"
+                                            ],
+                                 "phrases":  5
+                             },
+                    "for-earth":  {
+                                      "lang":  "en",
+                                      "voices":  [
+                                                     "en-AU-NatashaNeural",
+                                                     "en-HK-SamNeural",
+                                                     "en-HK-YanNeural",
+                                                     "en-IE-ConnorNeural",
+                                                     "en-IE-EmilyNeural",
+                                                     "en-NZ-MitchellNeural",
+                                                     "en-NZ-MollyNeural",
+                                                     "en-PH-JamesNeural"
+                                                 ],
+                                      "phrases":  6
+                                  },
+                    "silent-minute":  {
+                                          "lang":  "en",
+                                          "voices":  [
+                                                         "en-AU-NatashaNeural",
+                                                         "en-HK-SamNeural",
+                                                         "en-HK-YanNeural",
+                                                         "en-IE-ConnorNeural",
+                                                         "en-IE-EmilyNeural",
+                                                         "en-NZ-MitchellNeural",
+                                                         "en-NZ-MollyNeural",
+                                                         "en-PH-JamesNeural"
+                                                     ],
+                                          "phrases":  6
+                                      },
+                    "for-skeptic":  {
+                                        "lang":  "en",
+                                        "voices":  [
+                                                       "en-AU-NatashaNeural",
+                                                       "en-HK-SamNeural",
+                                                       "en-HK-YanNeural",
+                                                       "en-IE-ConnorNeural",
+                                                       "en-IE-EmilyNeural",
+                                                       "en-NZ-MitchellNeural",
+                                                       "en-NZ-MollyNeural",
+                                                       "en-PH-JamesNeural"
+                                                   ],
+                                        "phrases":  6
+                                    },
+                    "ode-to-day":  {
+                                       "lang":  "en",
+                                       "voices":  [
+                                                      "en-AU-NatashaNeural",
+                                                      "en-HK-SamNeural",
+                                                      "en-HK-YanNeural",
+                                                      "en-IE-ConnorNeural",
+                                                      "en-IE-EmilyNeural",
+                                                      "en-NZ-MitchellNeural",
+                                                      "en-NZ-MollyNeural",
+                                                      "en-PH-JamesNeural"
+                                                  ],
+                                       "phrases":  6
+                                   }
+                }
 }
