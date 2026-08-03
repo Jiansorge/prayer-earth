@@ -174,7 +174,9 @@ async function serveStatic(req, res) {
 }
 
 const httpServer = createServer(serveStatic)
-const wss = new WebSocketServer({ server: httpServer })
+// Cap incoming message size so a hostile client can't blow up memory with a
+// single giant frame; normal presence/sync messages are only a few KB.
+const wss = new WebSocketServer({ server: httpServer, maxPayload: 300 * 1024 })
 
 let people = 0
 let totalPrayerSeconds = 0

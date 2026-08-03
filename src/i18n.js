@@ -117,7 +117,7 @@ const en = {
   'install.dismiss': 'Dismiss',
   'onboard.s1': 'Pick a sacred path',
   'onboard.s1b':
-    'Choose a prayer from Christian, Muslim, Jewish, Hindu, Sikh, Buddhist, Taoist, Shinto, Jain, and Baháʼí traditions — or from the quiet wonder of being alive.',
+    'Choose a sacred path — from the world\u2019s great faiths, Chinese and indigenous traditions, Zoroastrian flame, Confucian harmony, or the quiet wonder of being alive.',
   'onboard.s2': 'Pray together, right now',
   'onboard.s2b':
     'Your prayer joins everyone else praying this moment. You\u2019ll see them as a gentle world feed.',
