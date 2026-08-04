@@ -181,6 +181,9 @@ const en = {
   'legal.priv3': 'When you pray, an anonymous name and a coarse region are shared with the Prayer Earth server so others see a light where people are praying — no real name or exact address is used.',
   'legal.priv4': 'If authentic voices are enabled, your prayer text is sent through our server to Google Cloud Text-to-Speech to create audio. You can switch it off in Settings.',
   'legal.priv5': 'We don\u2019t sell data or show ads.',
+  'legal.priv6': 'When you connect, the servers briefly see a network address and may process data in data centers outside your country. Our hosting and CDN providers (Render, Cloudflare) are GDPR-compliant.',
+  'legal.priv7': 'Prayer Earth collects no personal information from children and may be used by people of all ages.',
+  'legal.contactEmail': 'hello@yourdomain.com',
   'legal.termsTitle': 'Terms',
   'legal.termsBody': 'Prayer Earth is offered as-is, for personal reflection. Sacred texts are presented for contemplation and respect. Please treat others in the community with kindness. We may update the app and these notes over time.',
   'legal.pIntro': 'Prayer Earth is a quiet place to pray together with the world. This page explains, in plain language, what the app knows about you and how it is used.',
@@ -190,7 +193,8 @@ const en = {
   'legal.pRightsTitle': 'Your rights',
   'legal.pRightsBody': 'Because most of your data never leaves your device, you already control it: clearing your browser storage removes your prayer history and preferences. You may stop using the app at any time.',
   'legal.pContactTitle': 'Contact',
-  'legal.pContactBody': 'Questions? Reach out through the contact link on our site.',
+  'legal.pContactBody': 'Questions about privacy or these terms? Email us at ',
+  'legal.pContactBody2': '. We\u2019ll get back to you.',
   'legal.tIntro': 'By using Prayer Earth you agree to these terms.',
   'legal.tUseTitle': 'Personal use',
   'legal.tUseBody': 'Prayer Earth is offered for personal, non-commercial reflection. You agree not to misuse the service, spam others, or attempt to disrupt the shared world.',
@@ -367,6 +371,7 @@ const es = {
   'theme.ocean': 'Océano',
   'prayer.once': 'Reproducir una vez',
   'prayer.voice': 'Voz',
+  'legal.langNote': 'Estas políticas se ofrecen en inglés, que rige el uso de Prayer Earth.',
 }
 
 const fr = {
@@ -532,6 +537,7 @@ const fr = {
   'theme.ocean': 'Océan',
   'prayer.once': 'Jouer une fois',
   'prayer.voice': 'Voix',
+  'legal.langNote': 'Ces politiques sont fournies en anglais, qui régit l’utilisation de Prayer Earth.',
 }
 
 const de = {
@@ -697,6 +703,7 @@ const de = {
   'theme.ocean': 'Ozean',
   'prayer.once': 'Einmal abspielen',
   'prayer.voice': 'Stimme',
+  'legal.langNote': 'Diese Richtlinien werden auf Englisch bereitgestellt, das für die Nutzung von Prayer Earth maßgeblich ist.',
 }
 
 const hi = {
@@ -866,6 +873,7 @@ const hi = {
   'theme.ocean': 'महासागर',
   'prayer.once': 'एक बार चलाएँ',
   'prayer.voice': 'आवाज़',
+  'legal.langNote': 'ये नीतियाँ अंग्रेज़ी में दी गई हैं, जो Prayer Earth के उपयोग पर लागू होती हैं।',
 }
 
 const pt = {
@@ -974,6 +982,7 @@ const pt = {
   'theme.ocean': 'Oceano',
   'prayer.once': 'Reproduzir uma vez',
   'prayer.voice': 'Voz',
+  'legal.langNote': 'Estas políticas são fornecidas em inglês, que rege o uso do Prayer Earth.',
 }
 
 const it = {
@@ -1082,6 +1091,7 @@ const it = {
   'theme.ocean': 'Oceano',
   'prayer.once': 'Riproduci una volta',
   'prayer.voice': 'Voce',
+  'legal.langNote': 'Queste politiche sono fornite in inglese, che regola l’uso di Prayer Earth.',
 }
 
 const ru = {
@@ -1190,6 +1200,7 @@ const ru = {
   'theme.ocean': 'Океан',
   'prayer.once': 'Воспроизвести один раз',
   'prayer.voice': 'Голос',
+  'legal.langNote': 'Эти политики предоставляются на английском языке, который регулирует использование Prayer Earth.',
 }
 
 const zh = {
@@ -1298,6 +1309,7 @@ const zh = {
   'theme.ocean': '海洋',
   'prayer.once': '播放一次',
   'prayer.voice': '声音',
+  'legal.langNote': '这些政策以英文提供，英文为 Prayer Earth 的使用规则。',
 }
 
 const ar = {
@@ -1406,6 +1418,7 @@ const ar = {
   'theme.ocean': 'المحيط',
   'prayer.once': 'تشغيل مرة واحدة',
   'prayer.voice': 'صوت',
+  'legal.langNote': 'هذه السياسات متوفرة باللغة الإنجليزية، وهي التي تحكم استخدام Prayer Earth.',
 }
 
 const ja = {
@@ -1510,6 +1523,7 @@ const ja = {
   'theme.ocean': '海',
   'prayer.once': '一度だけ再生',
   'prayer.voice': '声',
+  'legal.langNote': 'これらの方針は英語で提供され、Prayer Earth の利用を規定します。',
 }
 
 const ko = {
@@ -1614,6 +1628,7 @@ const ko = {
   'theme.ocean': '바다',
   'prayer.once': '한 번 재생',
   'prayer.voice': '목소리',
+  'legal.langNote': '본 정책은 영어로 제공되며, Prayer Earth 사용을 규율합니다.',
 }
 
 const dict = { en, es, fr, de, hi, pt, it, ru, zh, ar, ja, ko }

@@ -1749,6 +1749,18 @@ html[dir='rtl'] .chooser-arrow.right {
   line-height: 1.6;
 }
 
+.legal-lang-note {
+  color: var(--ink-faint);
+  font-style: italic;
+  margin-bottom: 18px;
+}
+
+.legal-email {
+  color: var(--gold-soft);
+  text-decoration: underline;
+  word-break: break-all;
+}
+
 .legal-list {
   color: var(--ink-dim);
   font-size: 13px;

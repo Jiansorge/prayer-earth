@@ -6,6 +6,7 @@ import { useT } from '../i18n.js'
 export default function LegalPage() {
   const legalPage = useStore((s) => s.legalPage)
   const closeLegal = useStore((s) => s.closeLegal)
+  const locale = useStore((s) => s.locale)
   const t = useT()
 
   return (
@@ -24,6 +25,8 @@ export default function LegalPage() {
         </div>
       </div>
 
+      {locale !== 'en' && <p className="legal-p legal-lang-note">{t('legal.langNote')}</p>}
+
       {legalPage === 'privacy' ? (
         <>
           <section className="legal-page-section">
@@ -38,6 +41,8 @@ export default function LegalPage() {
               <li>{t('legal.priv3')}</li>
               <li>{t('legal.priv4')}</li>
               <li>{t('legal.priv5')}</li>
+              <li>{t('legal.priv6')}</li>
+              <li>{t('legal.priv7')}</li>
             </ul>
           </section>
           <section className="legal-page-section">
@@ -50,7 +55,13 @@ export default function LegalPage() {
           </section>
           <section className="legal-page-section">
             <h3>4. {t('legal.pContactTitle')}</h3>
-            <p className="legal-p">{t('legal.pContactBody')}</p>
+            <p className="legal-p">
+              {t('legal.pContactBody')}
+              <a className="legal-email" href={`mailto:${t('legal.contactEmail')}`}>
+                {t('legal.contactEmail')}
+              </a>
+              {t('legal.pContactBody2')}
+            </p>
           </section>
         </>
       ) : (
