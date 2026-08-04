@@ -4,8 +4,6 @@ import { prayerBaseTotals, spiritBaseTotals } from './data/totals.js'
 import { SPIRITUALITY_BY_ID } from './data/prayers.js'
 import { mergeStats } from './shared/stats.js'
 
-const TOTAL_TO_FULL = 3600 // seconds of collective prayer to fully light the Earth
-
 const dayKey = (t) =>
   `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(
     t.getDate()
@@ -35,6 +33,9 @@ export const useStore = create(
       lights: {},
       lightSpirits: {},
       feed: [],
+      // how many people prayed today / this week (drives the Earth's glow)
+      usersToday: 0,
+      usersWeek: 0,
       // where you are on the Earth, so the map can mark you
       youLoc: null,
 
@@ -116,6 +117,7 @@ export const useStore = create(
       setSpiritTotals: (spiritTotals) => set({ spiritTotals }),
       setFeed: (feed) => set({ feed }),
       setYouLoc: (youLoc) => set({ youLoc }),
+      setUsersActivity: (usersToday, usersWeek) => set({ usersToday, usersWeek }),
       setTotalPrayerSeconds: (totalPrayerSeconds) =>
         set((s) => ({
           totalPrayerSeconds,
@@ -240,10 +242,19 @@ export const useStore = create(
       },
 
       // ---- derived ----
+      // How alight the Earth is. Never fully dark; the permanent all-time base
+      // grows slowly with cumulative prayer, while the day/week community and
+      // the people praying right now lift it higher. 100% means a genuinely
+      // alive world: a year of cumulative prayer plus ~150 praying today,
+      // ~500 this week, and ~40 in this moment.
       getGlow: () => {
         const s = get()
         const total = Math.max(s.basePrayerSeconds, s.totalPrayerSeconds) + s.localPrayerSeconds
-        return Math.min(1, total / TOTAL_TO_FULL)
+        const permanent = Math.min(1, Math.log10(1 + total) / 3.56)
+        const today = Math.min(1, (s.usersToday || 0) / 150)
+        const week = Math.min(1, (s.usersWeek || 0) / 500)
+        const live = Math.min(1, (s.peoplePraying || 0) / 40)
+        return Math.min(1, 0.12 + 0.3 * permanent + 0.3 * today + 0.18 * week + 0.1 * live)
       },
       getGlowPercent: () => Math.round(get().getGlow() * 100),
       getEarthBrightness: () => {
@@ -303,8 +314,6 @@ export const useStore = create(
     }
   )
 )
-
-export const TOTAL_TO_FULL_EXPORT = TOTAL_TO_FULL
 
 // Dev-only handle so the test harness can probe live state.
 if (import.meta.env?.DEV) {

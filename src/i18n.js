@@ -24,6 +24,8 @@ const en = {
   'home.hint': 'One Earth. One breath. Prayers in any language count the same.',
   'meter.prayingNow': 'Praying right now',
   'meter.earthAlight': 'Earth alight',
+  'meter.prayedToday': 'prayed today',
+  'meter.prayedWeek': 'this week',
   'meter.quietCompany': 'Quiet company — connecting to the wider world…',
   'feed.prayingNow': 'praying now',
   'feed.near': 'near {place}',

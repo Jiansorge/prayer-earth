@@ -291,7 +291,35 @@ function recount() {
   }
 }
 
+// How many people have prayed today / in the last seven days, counted from the
+// anonymous sync data. Drives the Earth's glow along with the all-time totals.
+function countActiveUsers() {
+  let today = 0
+  let week = 0
+  const day = (t) =>
+    `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(
+      t.getDate()
+    ).padStart(2, '0')}`
+  const now = new Date()
+  const todayKey = day(now)
+  const weekAgo = new Date(now)
+  weekAgo.setDate(now.getDate() - 7)
+  const weekKey = day(weekAgo)
+  for (const p of Object.values(peopleSync)) {
+    const days = p.prayerDayCompletions || {}
+    if (p.lastPrayedDay === todayKey || days[todayKey]) today++
+    for (const d of Object.keys(days)) {
+      if (d >= weekKey) {
+        week++
+        break
+      }
+    }
+  }
+  return { today, week }
+}
+
 function broadcast() {
+  const { today, week } = countActiveUsers()
   const payload = JSON.stringify({
     type: 'state',
     people,
@@ -300,6 +328,8 @@ function broadcast() {
     spirits: spiritCounts,
     lights,
     lightSpirits,
+    usersToday: today,
+    usersWeek: week,
     totals: {
       prayers: prayerTotals,
       spirits: spiritTotals

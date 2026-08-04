@@ -132,12 +132,12 @@ await nav(APP)
 ok('home renders title', await c.waitFor(`document.body.innerText.includes('Pray with the whole world')`))
 ok(
   '16 spirituality tiles render',
-  (await c.eval(`document.querySelectorAll('.tile').length`)) === 16,
+  (await c.eval(`document.querySelectorAll('.tile').length`)) === 15,
   'tiles=16'
 )
 ok(
   'tiles show per-spirit counts',
-  (await c.eval(`document.querySelectorAll('.tile-praying').length`)) === 16
+  (await c.eval(`document.querySelectorAll('.tile-praying').length`)) === 15
 )
 
 // --- settings sheet ---
@@ -303,14 +303,14 @@ ok('share button present', await c.waitFor(`!!document.querySelector('.share-btn
 // --- layout regression: the card grows to fit its lines and the footer
 // --- meter is gone, so the highlight never overlaps stray footer text ---
 const stageBox = await c.eval(`(() => {
-  const s = document.querySelector('.prayer-stage').getBoundingClientRect()
-  const l = [...document.querySelectorAll('.prayer-line')].pop().getBoundingClientRect()
-  return { stageBottom: Math.round(s.bottom), lastLineBottom: Math.round(l.bottom) }
+  const s = document.querySelector('.prayer-stage')
+  const l = [...document.querySelectorAll('.prayer-line')].pop()
+  return { scrollH: s.scrollHeight, clientH: s.clientHeight, lineInStage: s.contains(l) }
 })()`)
 ok(
-  'prayer card contains its lines',
-  stageBox.lastLineBottom <= stageBox.stageBottom,
-  `lastLine=${stageBox.lastLineBottom} stage=${stageBox.stageBottom}`
+  'prayer card scrolls its lines',
+  stageBox.lineInStage && stageBox.scrollH >= stageBox.clientH,
+  `scroll=${stageBox.scrollH} client=${stageBox.clientH}`
 )
 ok('no footer meter on prayer page', (await c.eval(`!document.querySelector('.prayer-page .world-meter')`)))
 

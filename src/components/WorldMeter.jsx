@@ -5,6 +5,8 @@ import { useT } from '../i18n.js'
 export default function WorldMeter() {
   const people = useStore((s) => s.peoplePraying)
   const connected = useStore((s) => s.connected)
+  const usersToday = useStore((s) => s.usersToday)
+  const usersWeek = useStore((s) => s.usersWeek)
   const glowPct = useStore((s) => Math.round(s.getGlow() * 100))
   const [, force] = useState(0)
   const t = useT()
@@ -26,6 +28,14 @@ export default function WorldMeter() {
       <div className="wm-row" style={{ marginTop: 8, marginBottom: 0 }}>
         <span className="wm-label">{t('meter.earthAlight')}</span>
         <span className="wm-value">{glowPct}%</span>
+      </div>
+      <div className="wm-row" style={{ marginTop: 8, marginBottom: 0 }}>
+        <span className="wm-label">{t('meter.prayedToday')}</span>
+        <span className="wm-value">{usersToday}</span>
+        <span className="wm-label" style={{ marginInlineStart: 14 }}>
+          {t('meter.prayedWeek')}
+        </span>
+        <span className="wm-value">{usersWeek}</span>
       </div>
       {!connected && (
         <p className="hint" style={{ marginTop: 8 }}>

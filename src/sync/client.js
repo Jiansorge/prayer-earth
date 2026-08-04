@@ -181,6 +181,9 @@ class SyncClient {
             useStore.getState().setTotalPrayerSeconds(msg.totalPrayerSeconds || 0)
             useStore.getState().setPrayerCounts(msg.prayers || {})
             useStore.getState().setSpiritCounts(msg.spirits || {})
+            if (msg.usersToday != null && msg.usersWeek != null) {
+              useStore.getState().setUsersActivity(msg.usersToday, msg.usersWeek)
+            }
             if (msg.lights) useStore.getState().setLights(msg.lights)
             if (msg.lightSpirits) useStore.getState().setLightSpirits(msg.lightSpirits)
             if (msg.totals) {
@@ -316,6 +319,7 @@ class SyncClient {
     s.setPeoplePraying(total)
     s.setPrayerCounts(prayers)
     s.setSpiritCounts(spirits)
+    s.setUsersActivity(20 + total * 3, 120 + total * 12)
     s.setLights(lights)
     s.setLightSpirits(lightSpirits)
     s.setTotalPrayerSeconds(s.totalPrayerSeconds + 1.5)
