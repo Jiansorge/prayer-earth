@@ -21,7 +21,15 @@ import edgePkg from 'msedge-tts'
 const { MsEdgeTTS, OUTPUT_FORMAT } = edgePkg
 const OUT = join(process.cwd(), 'public', 'audio')
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
+// Never die silently on a stray rejection — log and keep going.
+process.on('unhandledRejection', (e) => console.log('UNHANDLED:', e?.message || e))
 const MAX_VOICES = process.env.MAX_VOICES ? parseInt(process.env.MAX_VOICES, 10) : 8
+
+// Languages Edge has no voice for are spoken by the closest major neighbour
+// (Hindi reads Devanagari, so it voices Sanskrit/Prakrit; English voices the
+// romanised Tibetan/Pāli/Māori). That way no prayer is left voiceless.
+const FALLBACK_LANG = { sa: 'hi', bo: 'en', pi: 'en', pra: 'hi', mi: 'en' }
 
 const LIMIT = process.env.AUDIO_LIMIT ? parseInt(process.env.AUDIO_LIMIT, 10) : 0
 const ONLY = process.env.AUDIO_PRAYERS
@@ -41,18 +49,25 @@ function escapeXml(s) {
 // Keep the best standard neural voices only (drop multilingual/expressive
 // variants), then cap per language so the library stays lean.
 function pickVoices(list, max) {
+  const seen = new Set()
   const good = list.filter((v) => {
     const n = v.ShortName || ''
+    if (seen.has(n)) return false
+    seen.add(n)
     return n.endsWith('Neural') && !/Multilingual|Expressive|Dragonfly/.test(n)
   })
+  // alternate male/female, falling back to any unused voice, never duplicating
   const male = good.filter((v) => v.Gender === 'Male')
   const female = good.filter((v) => v.Gender === 'Female')
+  const used = new Set()
   const merged = []
   const take = Math.min(max, good.length)
   for (let i = 0; i < take; i++) {
-    const a = i % 2 === 0 ? female.shift() : male.shift()
-    const b = i % 2 === 0 ? male.shift() : female.shift()
-    merged.push((a || b || good[i]).ShortName)
+    const pool = i % 2 === 0 ? female : male
+    const chosen = pool.find((v) => !used.has(v.ShortName)) || good.find((v) => !used.has(v.ShortName))
+    if (!chosen) break
+    used.add(chosen.ShortName)
+    merged.push(chosen.ShortName)
   }
   return merged
 }
@@ -71,7 +86,7 @@ tts.close()
 async function renderPrayerVoice(p, dir, voice) {
   const t = new MsEdgeTTS()
   try {
-    await t.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3, {})
+    await withTimeout(t.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3, {}), 20000, 'setMetadata')
   } catch (e) {
     t.close()
     throw new Error(`setMetadata ${voice}: ${e.message}`)
@@ -86,7 +101,7 @@ async function renderPrayerVoice(p, dir, voice) {
         count++
         continue
       }
-      const { audioFilePath } = await t.toFile(dir, escapeXml(text))
+      const { audioFilePath } = await withTimeout(t.toFile(dir, escapeXml(text)), 30000, `toFile ${p.id}/${i}-${voice}`)
       renameSync(audioFilePath, file)
       count++
       await sleep(200)
@@ -95,6 +110,14 @@ async function renderPrayerVoice(p, dir, voice) {
     t.close()
   }
   return count
+}
+
+// A promise that rejects instead of hanging forever on a stalled request.
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timed out`)), ms))
+  ])
 }
 
 const prayers = []
@@ -111,7 +134,7 @@ let failed = 0
 for (const [n, p] of targets.entries()) {
   if (LIMIT && n >= LIMIT) break
   const lang = p.lang || 'en'
-  const vs = pickVoices(byLang[lang] || [], MAX_VOICES)
+  const vs = pickVoices(byLang[lang] || byLang[FALLBACK_LANG[lang]] || [], MAX_VOICES)
   if (!vs.length) {
     console.log(`[${n + 1}/${targets.length}] ${p.id} (${lang}) — no Edge voice, skipped`)
     skipped++
@@ -120,14 +143,25 @@ for (const [n, p] of targets.entries()) {
   const dir = join(OUT, p.id)
   mkdirSync(dir, { recursive: true })
   for (const voice of vs) {
-    try {
-      generated += await renderPrayerVoice(p, dir, voice)
-    } catch (e) {
-      failed++
-      console.log(`  FAIL ${p.id} ${e.message}`)
+    let attempts = 0
+    while (attempts < 3) {
+      try {
+        generated += await renderPrayerVoice(p, dir, voice)
+        break
+      } catch (e) {
+        attempts++
+        failed++
+        if (attempts >= 3) console.log(`  FAIL ${p.id}/${voice}: ${e.message}`)
+        else {
+          console.log(`  RETRY ${p.id}/${voice} (${attempts})`)
+          await sleep(2000 * attempts)
+        }
+      }
     }
   }
-  manifest.prayers[p.id] = { lang, voices: vs, phrases: (p.phrases || []).length }
+  manifest.prayers[p.id] = { lang: FALLBACK_LANG[lang] || lang, voices: vs, phrases: (p.phrases || []).length }
+  // write progress after each prayer so an interrupted run keeps what it did
+  writeFileSync(join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2))
   console.log(`[${n + 1}/${targets.length}] ${p.id} (${lang}) — ${vs.length} voices`)
 }
 

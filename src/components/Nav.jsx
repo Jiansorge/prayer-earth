@@ -58,7 +58,7 @@ export default function Nav() {
                 onClick={requestPlayToggle}
                 aria-label={playing && !paused ? t('prayer.pause') : t('prayer.pray')}
               >
-                {playing && !paused ? '❚❚' : '▶'}
+                {playing && !paused ? '❚❚' : '▶\uFE0E'}
               </button>
             )}
           </React.Fragment>

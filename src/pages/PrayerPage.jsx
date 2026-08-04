@@ -511,14 +511,14 @@ export default function PrayerPage() {
           aria-label="Repeat"
           title={t('prayer.repeat')}
         >
-          ⟳
+          {'⟳\uFE0E'}
         </button>
         <button
           className="ctrl-btn play"
           onClick={togglePlay}
           aria-label={playing ? t('prayer.pause') : t('prayer.pray')}
         >
-          {playing && !paused ? '❚❚' : '▶'}
+          {playing && !paused ? '❚❚' : '▶\uFE0E'}
         </button>
         <button
           className="ctrl-btn stop"
