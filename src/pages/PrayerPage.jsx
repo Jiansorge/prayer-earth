@@ -492,135 +492,135 @@ export default function PrayerPage() {
           </div>
         )}
 
-        <div className="controls">
-          <button
-            className={`ctrl-btn repeat ${loopOn ? 'on' : ''}`}
-            onClick={toggleLoop}
-            aria-label="Repeat"
-            title={t('prayer.repeat')}
-          >
-            ⟳
-          </button>
-          <button
-            className="ctrl-btn play"
-            onClick={togglePlay}
-            aria-label={playing ? t('prayer.pause') : t('prayer.pray')}
-          >
-            {playing && !paused ? '❚❚' : '▶'}
-          </button>
-          <button
-            className="ctrl-btn stop"
-            onClick={stopJob}
-            aria-label={t('prayer.stop')}
-          >
-            ◼
-          </button>
-          <button
-            className={`ctrl-btn tune ${tuning ? 'on' : ''}`}
-            onClick={() => setTuning(!tuning)}
-            aria-label={t('prayer.tuneLabel')}
-            title={t('prayer.tune')}
-          >
-            ♪
-          </button>
-        </div>
-
-        {tuning && (
-          <div className="prayer-tune fade-in" aria-label={t('prayer.tuneLabel')}>
-            {prayerVoices.length > 1 && (
-              <div className="pt-row pt-voices">
-                <label className="pt-label" id="pt-voice-label">{t('prayer.voice')}</label>
-                <div className="voice-chips" role="group" aria-labelledby="pt-voice-label">
-                  {prayerVoices.map((v) => {
-                    const active = (chosenVoice || prayerVoices[0]) === v
-                    return (
-                      <button
-                        key={v}
-                        type="button"
-                        className={`voice-chip ${active ? 'on' : ''}`}
-                        onClick={() => pickVoice(v)}
-                        aria-pressed={active}
-                      >
-                        {friendlyVoice(v)}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-            <div className="pt-row">
-              <label className="pt-label" htmlFor="pt-volume">{t('prayer.volume')}</label>
-              <input
-                id="pt-volume"
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                value={volume}
-                onChange={(e) => setLiveVolume(parseFloat(e.target.value))}
-              />
-              <span className="pt-val">{Math.round(volume * 100)}%</span>
-            </div>
-            <div className="pt-row">
-              <label className="pt-label" htmlFor="pt-rate">{t('prayer.speed')}</label>
-              <input
-                id="pt-rate"
-                type="range"
-                min="0.6"
-                max="2.5"
-                step="0.05"
-                value={speechRate}
-                onChange={(e) => setLiveRate(parseFloat(e.target.value))}
-              />
-              <span className="pt-val">{speechRate.toFixed(2)}×</span>
-            </div>
-            <div className="pt-row">
-              <label className="pt-label" htmlFor="pt-loop">{t('prayer.repeat')}</label>
-              <button
-                id="pt-loop"
-                type="button"
-                className={`switch ${loopOn ? 'on' : ''}`}
-                role="switch"
-                aria-checked={loopOn}
-                onClick={toggleLoop}
-              >
-                <span className="switch-knob" />
-              </button>
-              <span className="pt-val">{loopOn ? '∞' : t('prayer.once')}</span>
-            </div>
-          </div>
-        )}
-
         {chantMode && (
           <div className="chant-pill">{t('prayer.softChant')}</div>
         )}
 
-        {celebration > 0 && (
-          <div className="streak-toast" role="status">
-            🔥 {celebration} {t(celebration === 1 ? 'day.one' : 'day.other', { n: celebration })}
-          </div>
-        )}
-
-        {voiceNote && (
-          <div className="voice-note">
-            <button
-              className="voice-note-x"
-              onClick={() => setVoiceNote(false)}
-              aria-label={t('prayer.close')}
-            >
-              🕯️
-            </button>
-            <div className="voice-note-title">
-              {chantMode ? t('prayer.softChant') : t('prayer.voiceUnavailable')}
-            </div>
-            <div className="voice-note-body">
-              {t('prayer.voiceNoteBody')}
-            </div>
-          </div>
-        )}
+        <PrayerStats prayerId={prayer.id} />
       </div>
 
-      <PrayerStats prayerId={prayer.id} />
+      <div className="controls">
+        <button
+          className={`ctrl-btn repeat ${loopOn ? 'on' : ''}`}
+          onClick={toggleLoop}
+          aria-label="Repeat"
+          title={t('prayer.repeat')}
+        >
+          ⟳
+        </button>
+        <button
+          className="ctrl-btn play"
+          onClick={togglePlay}
+          aria-label={playing ? t('prayer.pause') : t('prayer.pray')}
+        >
+          {playing && !paused ? '❚❚' : '▶'}
+        </button>
+        <button
+          className="ctrl-btn stop"
+          onClick={stopJob}
+          aria-label={t('prayer.stop')}
+        >
+          ◼
+        </button>
+        <button
+          className={`ctrl-btn tune ${tuning ? 'on' : ''}`}
+          onClick={() => setTuning(!tuning)}
+          aria-label={t('prayer.tuneLabel')}
+          title={t('prayer.tune')}
+        >
+          ♪
+        </button>
+      </div>
+
+      {tuning && (
+        <div className="prayer-tune fade-in" aria-label={t('prayer.tuneLabel')}>
+          {prayerVoices.length > 1 && (
+            <div className="pt-row pt-voices">
+              <label className="pt-label" id="pt-voice-label">{t('prayer.voice')}</label>
+              <div className="voice-chips" role="group" aria-labelledby="pt-voice-label">
+                {prayerVoices.map((v) => {
+                  const active = (chosenVoice || prayerVoices[0]) === v
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      className={`voice-chip ${active ? 'on' : ''}`}
+                      onClick={() => pickVoice(v)}
+                      aria-pressed={active}
+                    >
+                      {friendlyVoice(v)}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+          <div className="pt-row">
+            <label className="pt-label" htmlFor="pt-volume">{t('prayer.volume')}</label>
+            <input
+              id="pt-volume"
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={volume}
+              onChange={(e) => setLiveVolume(parseFloat(e.target.value))}
+            />
+            <span className="pt-val">{Math.round(volume * 100)}%</span>
+          </div>
+          <div className="pt-row">
+            <label className="pt-label" htmlFor="pt-rate">{t('prayer.speed')}</label>
+            <input
+              id="pt-rate"
+              type="range"
+              min="0.6"
+              max="2.5"
+              step="0.05"
+              value={speechRate}
+              onChange={(e) => setLiveRate(parseFloat(e.target.value))}
+            />
+            <span className="pt-val">{speechRate.toFixed(2)}×</span>
+          </div>
+          <div className="pt-row">
+            <label className="pt-label" htmlFor="pt-loop">{t('prayer.repeat')}</label>
+            <button
+              id="pt-loop"
+              type="button"
+              className={`switch ${loopOn ? 'on' : ''}`}
+              role="switch"
+              aria-checked={loopOn}
+              onClick={toggleLoop}
+            >
+              <span className="switch-knob" />
+            </button>
+            <span className="pt-val">{loopOn ? '∞' : t('prayer.once')}</span>
+          </div>
+        </div>
+      )}
+
+      {celebration > 0 && (
+        <div className="streak-toast" role="status">
+          🔥 {celebration} {t(celebration === 1 ? 'day.one' : 'day.other', { n: celebration })}
+        </div>
+      )}
+
+      {voiceNote && (
+        <div className="voice-note">
+          <button
+            className="voice-note-x"
+            onClick={() => setVoiceNote(false)}
+            aria-label={t('prayer.close')}
+          >
+            🕯️
+          </button>
+          <div className="voice-note-title">
+            {chantMode ? t('prayer.softChant') : t('prayer.voiceUnavailable')}
+          </div>
+          <div className="voice-note-body">
+            {t('prayer.voiceNoteBody')}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
