@@ -4,10 +4,10 @@
 
 import { WebSocketServer } from 'ws'
 import { createServer } from 'node:http'
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import { extname, join, normalize } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { gridKey } from '../src/shared/geo.js'
 import { mergeStats } from '../src/shared/stats.js'
 
@@ -190,12 +190,26 @@ const lights = {}
 // cell's glow by faith. Falls back to a generic gold when absent.
 const lightSpirits = {}
 
+// Resolve where a persistent JSON file lives. Render's default disk is
+// ephemeral, so the deploy config mounts a persistent disk and points
+// PE_DATA_DIR at it — that way all-time totals and the anonymous sync survive
+// redeploys and restarts. Tests may point at scratch files via PE_DATA_FILE /
+// PE_PEOPLE_FILE.
+function dataFile(name) {
+  if (process.env.PE_DATA_DIR) {
+    try {
+      mkdirSync(process.env.PE_DATA_DIR, { recursive: true })
+    } catch {}
+    return pathToFileURL(join(process.env.PE_DATA_DIR, name))
+  }
+  return new URL(`./${name}`, import.meta.url)
+}
+
 // All-time totals of prayers ever carried. Survives restarts via a small JSON
-// file so the numbers never reset when the server comes back up. Tests may
-// point at a scratch file via PE_DATA_FILE.
+// file so the numbers never reset when the server comes back up.
 const DATA_FILE = process.env.PE_DATA_FILE
-  ? new URL(process.env.PE_DATA_FILE, import.meta.url)
-  : new URL('./data.json', import.meta.url)
+  ? pathToFileURL(process.env.PE_DATA_FILE)
+  : dataFile('data.json')
 const prayerTotals = {}
 const spiritTotals = {}
 try {
@@ -218,10 +232,10 @@ function saveTotals() {
 // ---- anonymous lifetime sync ----
 // Keeps personal prayer stats keyed by an opaque, random id so they can follow
 // a person between devices — no account, no name, nothing that reveals who
-// they are. Tests may point at a scratch file via PE_PEOPLE_FILE.
+// they are.
 const PEOPLE_FILE = process.env.PE_PEOPLE_FILE
-  ? new URL(process.env.PE_PEOPLE_FILE, import.meta.url)
-  : new URL('./people.json', import.meta.url)
+  ? pathToFileURL(process.env.PE_PEOPLE_FILE)
+  : dataFile('people.json')
 const peopleSync = {}
 try {
   if (existsSync(PEOPLE_FILE)) {

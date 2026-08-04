@@ -4,12 +4,20 @@ services:
   - type: web
     name: prayer-earth
     runtime: node
-    plan: free
+    plan: starter # persistent disks aren't available on the free plan
     buildCommand: npm ci && npm run build
     startCommand: node server/index.js
     healthCheckPath: /
+    # Persistent disk so all-time prayer totals and the anonymous sync survive
+    # redeploys and restarts (Render's default disk is ephemeral).
+    disk:
+      name: prayer-data
+      mountPath: /data
+      sizeGB: 1
     envVars:
       - key: PORT
         value: 10000
+      - key: PE_DATA_DIR
+        value: /data
       - key: GOOGLE_TTS_KEY
         sync: false # set this in the Render dashboard for authentic neural prayer voices
