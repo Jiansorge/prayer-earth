@@ -92,8 +92,21 @@ class SpeechEngine {
     if (this._manifestPromise) return this._manifestPromise
     this._manifestPromise = fetch('/audio/manifest.json')
       .then((r) => (r.ok ? r.json() : null))
+      .then((m) => {
+        this._manifestData = m
+        return m
+      })
       .catch(() => null)
     return this._manifestPromise
+  }
+
+  // Whether this prayer has pre-rendered audio. While the manifest is still
+  // loading, assume it might, so speakCloud gets a chance to use it.
+  hasStaticFor(job) {
+    const m = this._manifestData
+    if (!m) return true
+    const p = m.prayers && m.prayers[job.prayerId]
+    return !!(p && p.voices && p.voices.length)
   }
 
   // The pre-rendered MP3 for a phrase, or null when that prayer has no static
@@ -199,7 +212,6 @@ class SpeechEngine {
       job.phraseHold = this.estimateMs(phrase)
       const token = ++job.token
       if (job.onPhrase) job.onPhrase(i, phrase)
-      await audio.play()
       const finish = () => {
         const j = this.job
         if (!j || !j.active || j !== job || j.mode !== 'tts') return
@@ -209,7 +221,10 @@ class SpeechEngine {
       }
       audio.onended = finish
       audio.onerror = finish
-      // Warm the next phrase so playback flows without a gap.
+      // Safety net set BEFORE play() so a stalled file or a muted environment
+      // can never hang a prayer — the phrase always advances.
+      job.advTimer = setTimeout(finish, job.phraseHold * 2 + 1200)
+      await audio.play()
       const next = i + 1
       const np = job.phrases[next]
       if (next < job.phrases.length && np && np.t) {
@@ -437,11 +452,13 @@ class SpeechEngine {
       this.finishJob()
       return
     }
-    if (this.cloud) {
+    // Prefer recorded audio — it needs no server or API key. The live Google
+    // proxy is a fallback inside speakCloud for prayers without a recording.
+    if (this.cloud || this.hasStaticFor(job)) {
       this.speakCloud(i).then((ok) => {
         const j = this.job
         if (!ok && j && j.active && j === job && j.mode === 'tts' && j.index === i) {
-          this.cloud = false // proxy unusable for this — use the browser voices
+          this.cloud = false // no recorded audio and the proxy is unusable — browser voices
           this.speakIndex(i)
         }
       })
