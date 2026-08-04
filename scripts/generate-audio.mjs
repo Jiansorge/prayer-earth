@@ -24,12 +24,27 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 // Never die silently on a stray rejection — log and keep going.
 process.on('unhandledRejection', (e) => console.log('UNHANDLED:', e?.message || e))
+process.on('uncaughtException', (e) => console.log('UNCAUGHT:', e?.message || e))
 const MAX_VOICES = process.env.MAX_VOICES ? parseInt(process.env.MAX_VOICES, 10) : 8
 
 // Languages Edge has no voice for are spoken by the closest major neighbour
 // (Hindi reads Devanagari, so it voices Sanskrit/Prakrit; English voices the
-// romanised Tibetan/Pāli/Māori). That way no prayer is left voiceless.
-const FALLBACK_LANG = { sa: 'hi', bo: 'en', pi: 'en', pra: 'hi', mi: 'en' }
+// romanised Tibetan/Pāli/Māori and Latin-script Avestan/Lakota/Hawaiian/
+// Yoruba/Akan). Gurmukhi (Punjabi) is left to device voices — no free engine
+// reads it.
+const FALLBACK_LANG = {
+  sa: 'hi',
+  bo: 'en',
+  pi: 'en',
+  pra: 'hi',
+  mi: 'en',
+  la: 'en',
+  ae: 'en',
+  lkt: 'en',
+  haw: 'en',
+  yo: 'en',
+  ak: 'en'
+}
 
 const LIMIT = process.env.AUDIO_LIMIT ? parseInt(process.env.AUDIO_LIMIT, 10) : 0
 const ONLY = process.env.AUDIO_PRAYERS
@@ -133,12 +148,22 @@ let failed = 0
 
 for (const [n, p] of targets.entries()) {
   if (LIMIT && n >= LIMIT) break
+  try {
+    await renderPrayer(p, n, targets.length)
+  } catch (e) {
+    console.log(`  PRAYER ERROR ${p.id}: ${e?.message || e}`)
+    skipped++
+  }
+}
+
+// One prayer: pick voices, render each, write progress.
+async function renderPrayer(p, n, total) {
   const lang = p.lang || 'en'
   const vs = pickVoices(byLang[lang] || byLang[FALLBACK_LANG[lang]] || [], MAX_VOICES)
   if (!vs.length) {
-    console.log(`[${n + 1}/${targets.length}] ${p.id} (${lang}) — no Edge voice, skipped`)
+    console.log(`[${n + 1}/${total}] ${p.id} (${lang}) — no Edge voice, skipped`)
     skipped++
-    continue
+    return
   }
   const dir = join(OUT, p.id)
   mkdirSync(dir, { recursive: true })
@@ -162,7 +187,7 @@ for (const [n, p] of targets.entries()) {
   manifest.prayers[p.id] = { lang: FALLBACK_LANG[lang] || lang, voices: vs, phrases: (p.phrases || []).length }
   // write progress after each prayer so an interrupted run keeps what it did
   writeFileSync(join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2))
-  console.log(`[${n + 1}/${targets.length}] ${p.id} (${lang}) — ${vs.length} voices`)
+  console.log(`[${n + 1}/${total}] ${p.id} (${lang}) — ${vs.length} voices`)
 }
 
 writeFileSync(join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2))
