@@ -6,7 +6,7 @@ import { WebSocketServer } from 'ws'
 import { createServer } from 'node:http'
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
-import { extname, join, normalize } from 'node:path'
+import { extname, join, normalize, dirname, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { gridKey } from '../src/shared/geo.js'
 import { mergeStats } from '../src/shared/stats.js'
@@ -207,8 +207,9 @@ function dataFile(name) {
 
 // All-time totals of prayers ever carried. Survives restarts via a small JSON
 // file so the numbers never reset when the server comes back up.
+const SERVER_DIR = dirname(fileURLToPath(import.meta.url))
 const DATA_FILE = process.env.PE_DATA_FILE
-  ? pathToFileURL(process.env.PE_DATA_FILE)
+  ? pathToFileURL(resolve(SERVER_DIR, process.env.PE_DATA_FILE))
   : dataFile('data.json')
 const prayerTotals = {}
 const spiritTotals = {}
@@ -234,7 +235,7 @@ function saveTotals() {
 // a person between devices — no account, no name, nothing that reveals who
 // they are.
 const PEOPLE_FILE = process.env.PE_PEOPLE_FILE
-  ? pathToFileURL(process.env.PE_PEOPLE_FILE)
+  ? pathToFileURL(resolve(SERVER_DIR, process.env.PE_PEOPLE_FILE))
   : dataFile('people.json')
 const peopleSync = {}
 try {

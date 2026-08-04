@@ -268,6 +268,8 @@ export class EarthScene {
     this.glow = 0.2
     this.surge = 0
     this.tier = 0
+    this._youWorldPos = new THREE.Vector3()
+    this._youCamPos = new THREE.Vector3()
     this.autoRotate = true
     this.disposed = false
     this.hidden = false
@@ -564,7 +566,10 @@ export class EarthScene {
       map: tex,
       transparent: true,
       depthWrite: false,
-      depthTest: false,
+      // depth-tested so the ring is hidden when your location is on the far
+      // side of the Earth (the world's prayer lights still show through, but
+      // your own marker should not)
+      depthTest: true,
       blending: THREE.AdditiveBlending,
       opacity: 0
     })
@@ -1063,11 +1068,18 @@ export class EarthScene {
       }
     }
 
-    // your own prayer light pulses on the surface so you can always find you
+    // your own prayer light pulses on the surface so you can always find you.
+    // It fades out as it goes around the far side of the Earth.
     if (this.youMarker && this.youMarker.visible) {
+      this.youMarker.updateWorldMatrix(true, false)
+      const wp = this._youWorldPos
+        .setFromMatrixPosition(this.youMarker.matrixWorld)
+        .normalize()
+      const facing = wp.dot(this._youCamPos.copy(this.camera.position).normalize())
+      const fade = Math.max(0, Math.min(1, (facing - 0.15) / 0.35))
       const pulse = 0.5 + 0.5 * Math.sin(t * 2.4)
       this.youMarker.scale.set(0.3 + 0.18 * pulse, 0.3 + 0.18 * pulse, 0.3)
-      this.youMarker.material.opacity = 0.5 + 0.5 * pulse
+      this.youMarker.material.opacity = fade * (0.5 + 0.5 * pulse)
     }
     if (this.halo) this.halo.material.uniforms.uGlow.value = this.glow
     if (this.stars) this.stars.material.opacity = 0.72 + 0.2 * Math.sin(t * 0.7)
@@ -1105,6 +1117,14 @@ export class EarthScene {
     if (this._resize) window.removeEventListener('resize', this._resize)
     if (this._vis) document.removeEventListener('visibilitychange', this._vis)
     this.renderer.dispose()
+    // Browsers cap the number of live WebGL contexts (~8-16); without forcing
+    // the context to be lost, repeated mounts (pray → home → pray, earth view)
+    // leak contexts until WebGL stops working and the earth "crashes".
+    try {
+      this.renderer.forceContextLoss()
+    } catch {}
+    this.renderer.domElement.width = 0
+    this.renderer.domElement.height = 0
     if (this.dayTex) this.dayTex.dispose()
     if (this.nightTex) this.nightTex.dispose()
     if (this.lights) {
