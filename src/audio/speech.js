@@ -98,6 +98,47 @@ class SpeechEngine {
 
   // The pre-rendered MP3 for a phrase, or null when that prayer has no static
   // audio (languages without a voice fall back to the live /api/tts proxy).
+  // A gentle hall reverb so the spoken prayer feels like it fills a quiet,
+  // sacred space. Uses the ambient engine's AudioContext (already resumed by
+  // the play gesture) and degrades silently — the voice always plays.
+  buildReverb(ctx) {
+    try {
+      const seconds = 1.4
+      const len = Math.floor(ctx.sampleRate * seconds)
+      const ir = ctx.createBuffer(2, len, ctx.sampleRate)
+      for (let ch = 0; ch < 2; ch++) {
+        const data = ir.getChannelData(ch)
+        for (let i = 0; i < len; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.8)
+        }
+      }
+      const convolver = ctx.createConvolver()
+      convolver.buffer = ir
+      const dry = ctx.createGain()
+      dry.gain.value = 0.95
+      const wet = ctx.createGain()
+      wet.gain.value = 0.22
+      this._revConvolver = convolver
+      this._revDry = dry
+      this._revWet = wet
+    } catch {}
+  }
+
+  applyReverb(audio) {
+    try {
+      const ctx = ambient.ctx
+      if (!ctx || ctx.state !== 'running') return
+      if (!this._revConvolver) this.buildReverb(ctx)
+      if (!this._revConvolver) return
+      const src = ctx.createMediaElementSource(audio)
+      src.connect(this._revDry)
+      this._revDry.connect(ctx.destination)
+      src.connect(this._revConvolver)
+      this._revConvolver.connect(this._revWet)
+      this._revWet.connect(ctx.destination)
+    } catch {}
+  }
+
   async staticAudioUrl(job, i) {
     try {
       const m = await this.loadAudioManifest()
@@ -149,6 +190,7 @@ class SpeechEngine {
       const audio = new Audio(url)
       audio.volume = Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75)
       audio.playbackRate = job.rate ?? 1
+      this.applyReverb(audio)
       this.cloudAudio = audio
       clearTimeout(job.guard)
       clearTimeout(job.advTimer)

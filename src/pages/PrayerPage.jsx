@@ -436,7 +436,12 @@ export default function PrayerPage() {
 
         <div className="prayer-title">{prayer.title}</div>
         <div className="prayer-sub">
-          {prayer.langLabel} · {prayer.loop ? t('prayer.repeated') : t('prayer.recited')}
+          <span className="prayer-lang-badge">
+            {String(prayer.langLabel || '').split(' · ').slice(0, 2).join(' · ')}
+          </span>
+          <span className="prayer-mode">
+            {prayer.loop ? t('prayer.repeated') : t('prayer.recited')}
+          </span>
         </div>
         <span className="sr-live" aria-live="polite">
           {playing && active != null && phrases[active] ? phrases[active].t : ''}
@@ -574,7 +579,7 @@ export default function PrayerPage() {
               id="pt-rate"
               type="range"
               min="0.6"
-              max="2.5"
+              max="2.0"
               step="0.05"
               value={speechRate}
               onChange={(e) => setLiveRate(parseFloat(e.target.value))}

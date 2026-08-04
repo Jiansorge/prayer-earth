@@ -111,6 +111,11 @@ export default function SettingsSheet() {
   return (
     <div className="sheet-backdrop" onClick={() => setOpen(false)}>
       <div className="sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('settings.title')} tabIndex={-1} ref={sheetRef}>
+        <div className="sheet-x-row">
+          <button className="sheet-x" onClick={() => setOpen(false)} aria-label={t('settings.done')} title={t('settings.done')}>
+            ✕
+          </button>
+        </div>
         <div className="sheet-handle" />
         <h3 className="sheet-title">{t('settings.title')}</h3>
 
@@ -149,7 +154,7 @@ export default function SettingsSheet() {
           type="range"
           className="field-range"
           min="0.6"
-          max="2.5"
+          max="2.0"
           step="0.05"
           value={speechRate}
           onChange={(e) => setSpeechRate(parseFloat(e.target.value))}

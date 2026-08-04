@@ -792,7 +792,9 @@ export class EarthScene {
         map: glow,
         transparent: true,
         depthWrite: false,
-        depthTest: false,
+        // depth-tested so lights on the far side of the Earth are hidden behind
+        // it instead of showing through
+        depthTest: true,
         blending: THREE.AdditiveBlending,
         opacity: 0
       })
@@ -904,6 +906,7 @@ export class EarthScene {
       vertexColors: true,
       transparent: true,
       opacity: 0.9,
+      depthTest: true,
       depthWrite: false
     })
     return new THREE.Points(g, m)

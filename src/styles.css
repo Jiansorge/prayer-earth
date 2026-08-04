@@ -945,12 +945,31 @@ html[dir='rtl'] .chooser-arrow.right {
 }
 
 .prayer-stage .prayer-sub {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.prayer-stage .prayer-lang-badge {
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--gold-soft);
+  background: rgba(232, 196, 122, 0.12);
+  border: 1px solid rgba(232, 196, 122, 0.3);
+  border-radius: 999px;
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+
+.prayer-stage .prayer-mode {
   color: var(--ink-faint);
-  font-size: 13px;
+  font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-bottom: 20px;
 }
 
 .prayer-lines {
@@ -1086,7 +1105,7 @@ html[dir='rtl'] .chooser-arrow.right {
 }
 
 .ctrl-btn.repeat.on {
-  color: #1a1206;
+  color: #000;
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
   border-color: transparent;
   box-shadow: 0 0 0 3px rgba(232, 196, 122, 0.35), 0 0 26px rgba(232, 196, 122, 0.75);
@@ -1215,7 +1234,7 @@ html[dir='rtl'] .chooser-arrow.right {
 
 .prayer-tune .pt-val {
   min-width: 78px;
-  text-align: end;
+  text-align: start;
   font-size: 11px;
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
@@ -1517,8 +1536,9 @@ html[dir='rtl'] .chooser-arrow.right {
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 20px;
   animation: fadeUp 0.3s var(--ease) both;
 }
 
@@ -1532,9 +1552,9 @@ html[dir='rtl'] .chooser-arrow.right {
     radial-gradient(120% 60% at 50% 0%, rgba(120, 150, 255, 0.12), transparent 60%),
     linear-gradient(180deg, rgba(22, 30, 70, 0.98), rgba(12, 17, 44, 0.98));
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px 24px 0 0;
+  border-radius: 24px;
   padding: 14px 22px calc(28px + env(safe-area-inset-bottom));
-  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
 }
 
 .sheet::-webkit-scrollbar {
@@ -1547,6 +1567,35 @@ html[dir='rtl'] .chooser-arrow.right {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.2);
   margin: 0 auto 18px;
+}
+
+/* A close button that stays put at the top-right even when the sheet scrolls. */
+.sheet-x-row {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 0 0;
+  margin-bottom: -8px;
+  background: transparent;
+}
+
+.sheet-x {
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.sheet-x:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--gold-soft);
 }
 
 .sheet-title {
