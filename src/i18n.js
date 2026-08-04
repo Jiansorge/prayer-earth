@@ -31,9 +31,9 @@ const en = {
   'day.one': '{n} day',
   'day.other': '{n} days',
   'settings.title': 'Quiet tuning',
-  'settings.voiceLabel': 'Prayer voice',
+  'settings.voiceLabel': 'Fallback voice',
   'settings.voiceHint':
-    'Pick a voice for spoken prayers. When a prayer\u2019s language has no voice on your device, the app speaks its translation aloud instead.',
+    'Most prayers already have 8 recorded neural voices — pick them in the prayer page\u2019s Tune (♪) panel. This fallback voice is only for the few prayers your device speaks itself.',
   'settings.noVoices': 'No device voices found yet — voices appear as they load.',
   'settings.softChant': 'Soft chant (no spoken voice)',
   'settings.hearSample': '🔊 Hear a sample',

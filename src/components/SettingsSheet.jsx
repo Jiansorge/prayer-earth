@@ -10,6 +10,12 @@ import LegalSheet from './LegalSheet.jsx'
 const isInstalled = () =>
   window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone
 
+// Prayer Earth is a mobile-first PWA — the install prompt is for phones and
+// tablets only, not desktop browsers.
+const isMobile = () =>
+  /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent) ||
+  (navigator.maxTouchPoints > 0 && window.innerWidth < 900)
+
 // Nature avatars and light colours for your presence on the Earth.
 const AVATARS = ['🌿', '🌙', '🌺', '🕊️', '🌊', '⛰️', '🌾', '🦋', '☀️', '🍃', '🐚', '🌟', '🌸', '🍁', '🪷', '🔥']
 const COLORS = ['#7fc9a0', '#dfb05c', '#7aa2ff', '#ff9e4f', '#ffd166', '#b09dff', '#e8b06f', '#7fd488']
@@ -274,24 +280,28 @@ export default function SettingsSheet() {
           {appCopied ? t('settings.copied') : t('settings.shareApp')}
         </button>
 
-        <div className="field-divider" />
+        {isMobile() && (
+          <>
+            <div className="field-divider" />
 
-        <label className="field-label">{t('install.text')}</label>
-        <div className="field-hint">{t('install.ios')} <span aria-hidden>↗</span> {t('install.ios2')}</div>
-        <button
-          className="field-btn"
-          onClick={() => {
-            const p = window.__installPrompt
-            if (p && p.prompt) {
-              p.prompt()
-              window.__installPrompt = null
-            } else if (isInstalled()) {
-              // already installed — nothing to do
-            }
-          }}
-        >
-          {t('install.button')}
-        </button>
+            <label className="field-label">{t('install.text')}</label>
+            <div className="field-hint">{t('install.ios')} <span aria-hidden>↗</span> {t('install.ios2')}</div>
+            <button
+              className="field-btn"
+              onClick={() => {
+                const p = window.__installPrompt
+                if (p && p.prompt) {
+                  p.prompt()
+                  window.__installPrompt = null
+                } else if (isInstalled()) {
+                  // already installed — nothing to do
+                }
+              }}
+            >
+              {t('install.button')}
+            </button>
+          </>
+        )}
 
         <div className="field-divider" />
         <button className="field-btn" onClick={() => setLegalOpen(true)}>

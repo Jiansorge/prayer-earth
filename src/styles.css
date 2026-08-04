@@ -1076,6 +1076,14 @@ html[dir='rtl'] .chooser-arrow.right {
   color: var(--ink-dim);
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: none;
+  transition: transform 0.3s var(--ease), background 0.25s var(--ease), box-shadow 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+.ctrl-btn.repeat.on {
+  color: #1a1206;
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  border-color: transparent;
+  box-shadow: 0 0 0 3px rgba(232, 196, 122, 0.35), 0 0 26px rgba(232, 196, 122, 0.75);
 }
 
 .ctrl-btn.repeat.on {
@@ -1200,11 +1208,12 @@ html[dir='rtl'] .chooser-arrow.right {
 }
 
 .prayer-tune .pt-val {
-  min-width: 44px;
+  min-width: 78px;
   text-align: end;
   font-size: 11px;
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* weekly per-prayer prayer chart below the stage */
