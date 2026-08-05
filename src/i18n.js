@@ -27,6 +27,7 @@ const en = {
   'meter.prayedToday': 'prayed today',
   'meter.prayedWeek': 'this week',
   'meter.quietCompany': 'Quiet company — connecting to the wider world…',
+  'sync.notice': 'The wider world is having a quiet moment — you keep praying here.',
   'feed.prayingNow': 'praying now',
   'feed.near': 'near {place}',
   'feed.justNow': 'just now',

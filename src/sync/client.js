@@ -177,6 +177,10 @@ class SyncClient {
             useStore.getState().setFeed(msg.feed || [])
           } else if (msg.type === 'sync' && msg.stats) {
             useStore.getState().mergeSyncStats(msg.stats)
+          } else if (msg.type === 'error') {
+            // The engine told us why it is closing (e.g. rate-limited). Surface
+            // it so the UI can show a gentle, non-alarming notice.
+            useStore.getState().setSyncNotice(msg.code || 'error')
           }
         } catch {}
       }
@@ -185,6 +189,7 @@ class SyncClient {
           this.stopSim()
           this.mode = 'live'
           useStore.getState().setConnected(true)
+          useStore.getState().setSyncNotice(null)
           this.sendPresence()
           this.pushSync()
           this.ping = setInterval(() => this.sendPresence(), PING_MS)
@@ -229,7 +234,8 @@ class SyncClient {
   }
 
   // The server only ever needs region-level precision: round onto the shared
-  // 1-degree grid before sending, so it never holds a precise position.
+  // 1-degree grid before sending (matches src/shared/geo.js gridKey), so it
+  // never holds a precise position.
   gridLoc(loc) {
     let lo = Math.round(loc.lon)
     if (lo >= 180) lo = -180

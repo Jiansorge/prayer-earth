@@ -25,6 +25,7 @@ export const useStore = create(
 
       // global sync
       connected: false,
+      syncNotice: null,
       peoplePraying: 0,
       totalPrayerSeconds: 0,
       basePrayerSeconds: 0,
@@ -107,6 +108,9 @@ export const useStore = create(
 
       // ---- sync ----
       setConnected: (connected) => set({ connected }),
+      // A transient, non-blocking notice when the engine tells us why it closed
+      // a connection (e.g. 'rate'). Null when all is well.
+      setSyncNotice: (syncNotice) => set({ syncNotice }),
       setPeoplePraying: (peoplePraying) => set({ peoplePraying }),
       setPrayerCounts: (prayerCounts) => set({ prayerCounts }),
       setSpiritCounts: (spiritCounts) => set({ spiritCounts }),

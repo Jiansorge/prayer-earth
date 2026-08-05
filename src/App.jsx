@@ -83,6 +83,7 @@ class Boundary extends Component {
 export default function App() {
   const view = useStore((s) => s.view)
   const theme = useStore((s) => s.theme)
+  const syncNotice = useStore((s) => s.syncNotice)
   const Backdrop = THEME_BACKDROPS[theme] || MysticBackdrop
   const glowRef = useRef(0)
   const t = useT()
@@ -164,6 +165,48 @@ export default function App() {
     <div className="app" data-scene={view === 'home' && theme === 'nature' ? scene : undefined}>
       <div className="sky" />
       {view === 'home' && <Backdrop />}
+      {syncNotice && (
+        <div
+          className="sync-notice"
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            top: 12,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 60,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            maxWidth: 'min(92vw, 480px)',
+            padding: '10px 16px',
+            borderRadius: 999,
+            background: 'rgba(11, 16, 38, 0.92)',
+            color: '#e8e6df',
+            fontFamily: 'var(--sans)',
+            fontSize: 13,
+            boxShadow: '0 6px 24px rgba(0,0,0,0.35)'
+          }}
+        >
+          <span>{t('sync.notice')}</span>
+          <button
+            onClick={() => useStore.setState({ syncNotice: null })}
+            aria-label="Dismiss"
+            style={{
+              border: 'none',
+              background: 'transparent',
+              color: 'inherit',
+              fontSize: 16,
+              lineHeight: 1,
+              cursor: 'pointer',
+              padding: 0
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
       <div className="glow-field" />
       <div className="fireflies" aria-hidden="true">
         {[...Array(10)].map((_, i) => (
