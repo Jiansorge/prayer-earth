@@ -1,5 +1,5 @@
 // A compact, fully-local list of major world places. Used only to label the
-// live feed with "near <place>" — it lives entirely on the device, so nothing
+// live feed with "near <place>", it lives entirely on the device, so nothing
 // is sent anywhere to name a location.
 
 export const PLACES = [
@@ -37,7 +37,7 @@ export const PLACES = [
   ['Suva', -18.1, 178.4]
 ]
 
-// The nearest bundled place to a coordinate — a rough "near <place>" label.
+// The nearest bundled place to a coordinate, a rough "near <place>" label.
 export function nearestPlace(lat, lon) {
   if (typeof lat !== 'number' || typeof lon !== 'number') return null
   const cos = Math.cos((lat * Math.PI) / 180)

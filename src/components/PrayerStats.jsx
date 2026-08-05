@@ -51,7 +51,7 @@ export default function PrayerStats({ prayerId }) {
         className="ps-chart"
         viewBox={`0 0 ${W} ${H}`}
         role="img"
-        aria-label={`${t('stats.thisWeek')} — ${values.map((v, i) => `${days[i].label}: ${fmtSecs(v)}`).join(', ')}`}
+        aria-label={`${t('stats.thisWeek')}, ${values.map((v, i) => `${days[i].label}: ${fmtSecs(v)}`).join(', ')}`}
       >
         {values.map((v, i) => {
           const h = Math.max(2, (v / max) * usable)

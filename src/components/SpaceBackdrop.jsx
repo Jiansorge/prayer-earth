@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { useBackdropCanvas } from './useBackdropCanvas.js'
 
-// A deep-space backdrop — a dark cosmos with twinkling stars, a drift of
+// A deep-space backdrop, a dark cosmos with twinkling stars, a drift of
 // nebula light, a faint Milky Way band, and a couple of distant planets.
 
 function mulberry(seed) {

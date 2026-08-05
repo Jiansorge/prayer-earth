@@ -1,4 +1,4 @@
-// prayer-earth — safely remove/replace recordings.
+// prayer-earth, safely remove/replace recordings.
 //
 //   node scripts/remove-audio.mjs <prayerId> [voiceId] [phraseIndex] [--yes]
 //
@@ -29,7 +29,7 @@ const prayerId = (pos[0] || '').trim().toLowerCase()
 const voiceId = (pos[1] || '').trim()
 const phraseIndex = pos[2]
 
-// Only sane ids — never a path.
+// Only sane ids, never a path.
 const SAFE = /^[a-z0-9][a-z0-9-]{0,63}$/
 if (!SAFE.test(prayerId)) {
   console.error(`usage: node scripts/remove-audio.mjs <prayerId> [voiceId] [phraseIndex] [--yes]`)
@@ -38,7 +38,7 @@ if (!SAFE.test(prayerId)) {
 }
 
 if (!existsSync(MANIFEST)) {
-  console.error('No manifest at public/audio/manifest.json — nothing to update.')
+  console.error('No manifest at public/audio/manifest.json, nothing to update.')
   process.exit(1)
 }
 
@@ -61,7 +61,7 @@ if (voiceId) {
   }
 }
 if (!targets.length) {
-  console.log(`Nothing matches — no files to remove for ${label}.`)
+  console.log(`Nothing matches, no files to remove for ${label}.`)
   process.exit(0)
 }
 
@@ -75,7 +75,7 @@ if (!yes && targets.length === files.length) {
 
 for (const f of targets) rmSync(join(dir, f))
 if (targets.length === files.length) {
-  // Folder is now empty — remove it entirely.
+  // Folder is now empty, remove it entirely.
   rmSync(dir, { recursive: true, force: true })
 }
 console.log(`Removed ${targets.length} file(s): ${targets.join(', ')}`)

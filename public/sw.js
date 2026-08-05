@@ -1,6 +1,6 @@
-// Joining Palms — offline-ready service worker.
+// Joining Palms, offline-ready service worker.
 //
-// NOTE — when you change the MP3 library or remove prayers, stale audio will
+// NOTE, when you change the MP3 library or remove prayers, stale audio will
 // keep being served from the cache-first SW (and the Cloudflare CDN). To ship
 // the new audio: bump the cache name below by one (v2 → v3 → …). The new SW
 // installs, deletes the old cache in `activate`, and re-caches fresh files. If

@@ -20,7 +20,7 @@ function start(name, cmd, args, cwd) {
   child.stderr.on('data', (d) => process.stdout.write(`[${name}] ${d}`))
   child.on('exit', (code) => {
     if (!exiting) {
-      console.log(`[${name}] exited (code ${code}) — restarting in 1s…`)
+      console.log(`[${name}] exited (code ${code}), restarting in 1s…`)
       setTimeout(() => start(name, cmd, args, cwd), 1000)
     }
   })

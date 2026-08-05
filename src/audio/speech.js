@@ -141,18 +141,18 @@ class SpeechEngine {
       lowpass.type = 'lowpass'
       lowpass.frequency.value = 2600
       lowpass.Q.value = 0.2
-      // Voice stays dry and forward; the hall just colors around it.
+      // Voice stays dry and forward; the room just colours around it.
       const dry = ctx.createGain()
-      dry.gain.value = 0.9
+      dry.gain.value = 0.92
       const wet = ctx.createGain()
-      wet.gain.value = 0.32
+      wet.gain.value = 0.1
       // A faint echo, more spacious than musical.
       const delay = ctx.createDelay(2)
       delay.delayTime.value = 0.26
       const feedback = ctx.createGain()
       feedback.gain.value = 0.2
       const echo = ctx.createGain()
-      echo.gain.value = 0.07
+      echo.gain.value = 0.03
       src.connect(dry)
       dry.connect(lowpass)
       src.connect(this._revConvolver)

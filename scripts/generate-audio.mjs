@@ -1,9 +1,9 @@
 // One-time render of the entire prayer library to static MP3s using free
-// neural voices (msedge-tts, Microsoft Edge's TTS service via Node — no card).
+// neural voices (msedge-tts, Microsoft Edge's TTS service via Node, no card).
 //
 // Output: public/audio/<prayerId>/<phraseIndex>-<voiceId>.mp3
 // plus public/audio/manifest.json describing which voices each prayer has.
-// Prayers whose language has no Edge voice are skipped — the app falls back
+// Prayers whose language has no Edge voice are skipped, the app falls back
 // to on-device browser voices for those.
 //
 // Env:
@@ -22,7 +22,7 @@ const { MsEdgeTTS, OUTPUT_FORMAT } = edgePkg
 const OUT = join(process.cwd(), 'public', 'audio')
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-// Never die silently on a stray rejection — log and keep going.
+// Never die silently on a stray rejection, log and keep going.
 process.on('unhandledRejection', (e) => console.log('UNHANDLED:', e?.message || e))
 process.on('uncaughtException', (e) => console.log('UNCAUGHT:', e?.message || e))
 const MAX_VOICES = process.env.MAX_VOICES ? parseInt(process.env.MAX_VOICES, 10) : 8
@@ -30,7 +30,7 @@ const MAX_VOICES = process.env.MAX_VOICES ? parseInt(process.env.MAX_VOICES, 10)
 // Languages Edge has no voice for are spoken by the closest major neighbour
 // (Hindi reads Devanagari, so it voices Sanskrit/Prakrit; English voices the
 // romanised Pāli/Māori and Latin-script Avestan/Lakota/Hawaiian/Yoruba/Akan).
-// Gurmukhi (Punjabi) is left to device voices — no free engine reads it.
+// Gurmukhi (Punjabi) is left to device voices, no free engine reads it.
 const FALLBACK_LANG = {
   sa: 'hi',
   pi: 'en',
@@ -159,7 +159,7 @@ async function renderPrayer(p, n, total) {
   const lang = p.lang || 'en'
   const vs = pickVoices(byLang[lang] || byLang[FALLBACK_LANG[lang]] || [], MAX_VOICES)
   if (!vs.length) {
-    console.log(`[${n + 1}/${total}] ${p.id} (${lang}) — no Edge voice, skipped`)
+    console.log(`[${n + 1}/${total}] ${p.id} (${lang}), no Edge voice, skipped`)
     skipped++
     return
   }
@@ -185,8 +185,8 @@ async function renderPrayer(p, n, total) {
   manifest.prayers[p.id] = { lang: FALLBACK_LANG[lang] || lang, voices: vs, phrases: (p.phrases || []).length }
   // write progress after each prayer so an interrupted run keeps what it did
   writeFileSync(join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2))
-  console.log(`[${n + 1}/${total}] ${p.id} (${lang}) — ${vs.length} voices`)
+  console.log(`[${n + 1}/${total}] ${p.id} (${lang}), ${vs.length} voices`)
 }
 
 writeFileSync(join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2))
-console.log(`DONE — ${generated} files, ${skipped} prayers skipped (no voice), ${failed} failed`)
+console.log(`DONE, ${generated} files, ${skipped} prayers skipped (no voice), ${failed} failed`)

@@ -43,7 +43,7 @@ const FALLBACK_CITIES = [
 // (a separate process); in production one process serves both the app and the
 // socket on the same port, so we connect to the page's own origin. Set
 // VITE_SYNC_URL (a ws:// or wss:// URL) to point the socket at the Cloudflare
-// Worker or a `wrangler dev` instance — that's the sync-engine cutover knob.
+// Worker or a `wrangler dev` instance, that's the sync-engine cutover knob.
 function defaultUrl() {
   const override = import.meta.env.VITE_SYNC_URL
   if (override) return override
@@ -113,9 +113,12 @@ class SyncClient {
   // Ask once for a coarse location so the world can show a light where you
   // are. If it's not granted or available, fall back to a stable stand-in
   // city so your prayer still lands somewhere on the map. This is fully
-  // local â€” no location ever leaves the device.
+  // local, no location ever leaves the device.
   ensureLocation() {
-    const publish = () => useStore.getState().setYouLoc(this.loc)
+    // The "you are here" ring is only ever shown for a REAL position. A
+    // fallback city is an anonymous guess for the world's light; we never
+    // pretend a guess is where the person actually is.
+    const publishReal = () => useStore.getState().setYouLoc(this.loc)
     try {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -124,11 +127,10 @@ class SyncClient {
               lat: +pos.coords.latitude.toFixed(1),
               lon: +pos.coords.longitude.toFixed(1)
             }
-            publish()
+            publishReal()
           },
           () => {
             this.fallbackLoc()
-            publish()
           },
           { timeout: 8000, maximumAge: 600000, enableHighAccuracy: false }
         )
@@ -136,7 +138,6 @@ class SyncClient {
       }
     } catch {}
     this.fallbackLoc()
-    publish()
   }
 
   fallbackLoc() {
@@ -222,7 +223,7 @@ class SyncClient {
   sendPresence() {
     const s = useStore.getState()
     if (this.mode !== 'live') {
-      // Offline — keep the local world in sync with the user's own prayer.
+      // Offline, keep the local world in sync with the user's own prayer.
       if (this.mode === 'sim' && this.sim) this.simState()
       return
     }

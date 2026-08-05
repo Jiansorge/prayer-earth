@@ -3,7 +3,7 @@ import { useT } from '../i18n.js'
 
 let prompted = false
 
-// A phone/tablet — desktop users can find Install in Settings instead.
+// A phone/tablet, desktop users can find Install in Settings instead.
 function isMobile() {
   return (
     /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent) ||

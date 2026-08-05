@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { getScene } from './Scenery.jsx'
 
-// A rich, painterly nature backdrop rendered to a canvas — layered skies,
+// A rich, painterly nature backdrop rendered to a canvas, layered skies,
 // glowing sun or moon, drifting clouds, mist, mountain ridges, and pines.
 // Self-contained (no external images), tuned per time of day.
 

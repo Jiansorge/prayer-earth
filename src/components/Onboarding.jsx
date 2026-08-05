@@ -4,7 +4,7 @@ import { useT } from '../i18n.js'
 
 const KEY = 'pe-onboarded'
 
-// A first taste of the nature avatars — the same set as in Settings.
+// A first taste of the nature avatars, the same set as in Settings.
 const AVATARS = ['🌿', '🌙', '🌺', '🕊️', '🌊', '⛰️', '🌾', '🦋', '☀️', '🍃', '🐚', '🌟', '🌸', '🍁', '🪷', '🔥']
 
 export default function Onboarding() {

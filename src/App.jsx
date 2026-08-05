@@ -27,7 +27,7 @@ const THEME_BACKDROPS = {
 }
 import { useT, RTL_LOCALES } from './i18n.js'
 
-// The 3D Earth (three.js) is heavy — load it only when the Earth view opens.
+// The 3D Earth (three.js) is heavy, load it only when the Earth view opens.
 const EarthPage = lazy(() => import('./pages/EarthPage.jsx'))
 // The quiet Earth that sits behind the prayer view shares that same chunk.
 const EarthBackdrop = lazy(() => import('./components/EarthBackdrop.jsx'))
@@ -41,7 +41,7 @@ class Boundary extends Component {
     return { err: true }
   }
   componentDidCatch() {
-    // no-op — keep the app alive
+    // no-op, keep the app alive
   }
   render() {
     if (this.state.err) {
@@ -128,7 +128,7 @@ export default function App() {
     return () => clearTimeout(t)
   }, [syncNotice])
 
-  // The notice says WHY the shared connection paused — being rate-limited is
+  // The notice says WHY the shared connection paused, being rate-limited is
   // not the same as being offline, and the message should match.
   const noticeText =
     syncNotice === 'rate' ? t('sync.noticeRate') : syncNotice ? t('sync.noticeError') : null
@@ -162,7 +162,7 @@ export default function App() {
   }, [])
 
   // Keep the address bar in sync so the browser back/forward buttons work.
-  // (Skip the very first render — route() owns the initial deep link.)
+  // (Skip the very first render, route() owns the initial deep link.)
   const spiritId = useStore((s) => s.spiritId)
   const prayerId = useStore((s) => s.prayerId)
   const legalPage = useStore((s) => s.legalPage)

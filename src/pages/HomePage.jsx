@@ -104,7 +104,7 @@ export default function HomePage() {
             background: connected ? 'var(--accent-1)' : 'var(--ink-faint)',
             boxShadow: connected ? '0 0 12px var(--accent-1)' : 'none'
           }}
-          title={connected ? 'Connected to the world' : 'Offline — in quiet company'}
+          title={connected ? 'Connected to the world' : 'Offline, in quiet company'}
         />
       </div>
 

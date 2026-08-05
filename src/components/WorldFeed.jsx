@@ -8,7 +8,7 @@ const SPIRIT = Object.fromEntries(SPIRITUALITIES.map((s) => [s.id, s]))
 const SHORT = {}
 for (const s of SPIRITUALITIES) {
   for (const p of s.prayers) {
-    SHORT[p.id] = p.title.split('—')[0].trim()
+    SHORT[p.id] = p.title.split(',')[0].trim()
   }
 }
 

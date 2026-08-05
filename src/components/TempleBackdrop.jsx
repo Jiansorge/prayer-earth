@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { useBackdropCanvas } from './useBackdropCanvas.js'
 
-// A quiet, non-denominational ancient temple — warm stone, a row of columns
+// A quiet, non-denominational ancient temple, warm stone, a row of columns
 // and a central arch, candlelight flickering, incense smoke drifting upward,
 // and dust motes in the light.
 

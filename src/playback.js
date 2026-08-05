@@ -9,7 +9,7 @@ export function requestPlayToggle() {
   const s = useStore.getState()
 
   if (s.playing && !s.paused) {
-    // Playing right now — pause.
+    // Playing right now, pause.
     speech.pause()
     useStore.setState({ paused: true, praying: false })
     syncClient.presenceNow()
@@ -17,7 +17,7 @@ export function requestPlayToggle() {
   }
 
   if (s.playing && s.paused) {
-    // Paused — resume if the job is still alive, otherwise restart the prayer.
+    // Paused, resume if the job is still alive, otherwise restart the prayer.
     if (!speech.resume()) {
       ambient.ensure() // prime audio inside the user gesture
       const spiritId = s.spiritId || 'christianity'
@@ -36,7 +36,7 @@ export function requestPlayToggle() {
     return
   }
 
-  // Nothing playing — go to the last prayer and start it.
+  // Nothing playing, go to the last prayer and start it.
   ambient.ensure() // prime audio inside the user gesture
   const spiritId = s.spiritId || 'christianity'
   const prayerId = s.prayerId || 'lords-prayer'

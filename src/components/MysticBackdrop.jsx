@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { useBackdropCanvas } from './useBackdropCanvas.js'
 
-// A mystical night backdrop — deep indigo space, drifting nebula glows,
+// A mystical night backdrop, deep indigo space, drifting nebula glows,
 // aurora veils, twinkling stars, a soft glowing orb, and rising motes of light.
 
 function mulberry(seed) {

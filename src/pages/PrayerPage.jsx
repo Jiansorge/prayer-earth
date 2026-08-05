@@ -13,7 +13,7 @@ const fmt = (s) => {
   return m > 0 ? `${m}m ${sec}s` : `${sec}s`
 }
 
-// Scripts that read right-to-left — their original text must flow RTL even
+// Scripts that read right-to-left, their original text must flow RTL even
 // though the transliteration and meaning below stay left-to-right.
 const RTL_LANGS = new Set(['ar', 'he', 'fa', 'ur', 'sd', 'dv'])
 
@@ -100,7 +100,7 @@ export default function PrayerPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingPlay])
 
-  // If the tab is hidden, the user isn't really praying — pause quietly.
+  // If the tab is hidden, the user isn't really praying, pause quietly.
   useEffect(() => {
     const onVis = () => {
       if (document.hidden && playing && !paused) togglePlay()

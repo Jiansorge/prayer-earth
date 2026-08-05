@@ -477,7 +477,7 @@ h3,
   filter: drop-shadow(0 0 6px rgba(190, 205, 255, 0.5));
 }
 
-/* Nav icons are color emoji, so CSS color can't recolor them — on the gold
+/* Nav icons are color emoji, so CSS color can't recolor them, on the gold
    active pill they wash out. Desaturate + darken into a clear silhouette. */
 .nav button.active .nav-icon {
   filter: grayscale(1) brightness(0.5) contrast(1.15);
@@ -1000,7 +1000,7 @@ html[dir='rtl'] .chooser-arrow.right {
 }
 
 /* Transliteration and meaning always read left-to-right, even beneath an
-   Arabic/Hebrew line — the original text alone flows right-to-left. */
+   Arabic/Hebrew line, the original text alone flows right-to-left. */
 .prayer-line .sub,
 .prayer-line .en {
   direction: ltr;
@@ -2820,7 +2820,7 @@ html[dir='rtl'] .qr-x {
 }
 
 html[dir='rtl'] .picker-row .picker-go {
-  transform: scaleX(-1); /* the "→" means "open" — flip it in RTL */
+  transform: scaleX(-1); /* the "→" means "open", flip it in RTL */
 }
 
 

@@ -5,7 +5,7 @@ import { SPIRITUALITY_BY_ID } from './data/prayers.js'
 import { mergeStats } from './shared/stats.js'
 
 // Storage that can never break the app. In private modes, sandboxed iframes,
-// or when a quota is exceeded, localStorage access throws — and prayer state
+// or when a quota is exceeded, localStorage access throws, and prayer state
 // (especially the per-second counters) writes constantly. Swallow those errors
 // and keep running in memory; persistence silently degrades.
 const safeStorage = {
@@ -96,7 +96,7 @@ export const useStore = create(
       celebrateStreak: 0,
 
       // a random, anonymous id so your lifetime stats can follow you between
-      // devices — no account, no name, just an opaque token
+      // devices, no account, no name, just an opaque token
       anonId: '',
 
       // ---- navigation ----
@@ -156,7 +156,7 @@ export const useStore = create(
           localPrayerSeconds: s.localPrayerSeconds + seconds
         })),
 
-      // One full cycle of a prayer finished — count it toward the all-time total.
+      // One full cycle of a prayer finished, count it toward the all-time total.
       notePrayerComplete: (prayerId) =>
         set((s) => {
           const key = dayKey(new Date())
@@ -270,19 +270,20 @@ export const useStore = create(
       },
 
       // ---- derived ----
-      // How alight the Earth is. Never fully dark; the permanent all-time base
-      // grows slowly with cumulative prayer, while the day/week community and
-      // the people praying right now lift it higher. 100% means a genuinely
-      // alive world: a year of cumulative prayer plus ~150 praying today,
-      // ~500 this week, and ~40 in this moment.
+      // How alight the Earth is. The curve is deliberately steep so the world
+      // reads as warmly adopted even at first: a lone person already sees a
+      // high glow, and modest real usage climbs quickly toward 100%. The floor
+      // keeps the world from ever looking dark; permanent all-time prayer,
+      // today/week community, and the people praying right now lift it.
       getGlow: () => {
         const s = get()
         const total = Math.max(s.basePrayerSeconds, s.totalPrayerSeconds) + s.localPrayerSeconds
-        const permanent = Math.min(1, Math.log10(1 + total) / 3.56)
-        const today = Math.min(1, (s.usersToday || 0) / 150)
-        const week = Math.min(1, (s.usersWeek || 0) / 500)
-        const live = Math.min(1, (s.peoplePraying || 0) / 40)
-        return Math.min(1, 0.12 + 0.3 * permanent + 0.3 * today + 0.18 * week + 0.1 * live)
+        const steep = (x) => Math.pow(Math.min(1, x), 0.45)
+        const permanent = steep(Math.log10(1 + total) / 4)
+        const today = steep((s.usersToday || 0) / 40)
+        const week = steep((s.usersWeek || 0) / 150)
+        const live = steep((s.peoplePraying || 0) / 12)
+        return Math.min(1, 0.5 + 0.18 * permanent + 0.16 * today + 0.1 * week + 0.08 * live)
       },
       getGlowPercent: () => Math.round(get().getGlow() * 100),
       getEarthBrightness: () => {

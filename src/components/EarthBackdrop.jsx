@@ -4,7 +4,7 @@ import { EarthScene } from '../three/EarthScene.js'
 
 // A quiet, translucent Earth behind the prayer view. Its coastlines glow a
 // little brighter as collective prayer accumulates, and soft lights appear at
-// the places around the world praying right now — your own light joins them
+// the places around the world praying right now, your own light joins them
 // the moment you pray.
 export default function EarthBackdrop() {
   const mountRef = useRef(null)

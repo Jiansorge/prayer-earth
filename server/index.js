@@ -1,4 +1,4 @@
-// Prayer Earth — tiny shared server.
+// Prayer Earth, tiny shared server.
 // Tracks how many people are praying right now and the running total of
 // collective prayer time, and broadcasts it to everyone.
 
@@ -244,7 +244,7 @@ const lightSpirits = {}
 
 // Resolve where a persistent JSON file lives. Render's default disk is
 // ephemeral, so the deploy config mounts a persistent disk and points
-// PE_DATA_DIR at it — that way all-time totals and the anonymous sync survive
+// PE_DATA_DIR at it, that way all-time totals and the anonymous sync survive
 // redeploys and restarts. Tests may point at scratch files via PE_DATA_FILE /
 // PE_PEOPLE_FILE.
 function dataFile(name) {
@@ -284,7 +284,7 @@ function saveTotals() {
 
 // ---- anonymous lifetime sync ----
 // Keeps personal prayer stats keyed by an opaque, random id so they can follow
-// a person between devices — no account, no name, nothing that reveals who
+// a person between devices, no account, no name, nothing that reveals who
 // they are.
 const PEOPLE_FILE = process.env.PE_PEOPLE_FILE
   ? pathToFileURL(resolve(SERVER_DIR, process.env.PE_PEOPLE_FILE))
@@ -492,7 +492,7 @@ wss.on('connection', (ws, req) => {
           lon
         })
         // Count a freshly-started prayer toward the all-time totals (once per
-        // prayer per person — the presence ping repeats every few seconds).
+        // prayer per person, the presence ping repeats every few seconds).
         const c = clients.get(ws)
         if (msg.praying && c.prayerId && c.prayerId !== prev.prayerId) {
           prayerTotals[c.prayerId] = (prayerTotals[c.prayerId] || 0) + 1

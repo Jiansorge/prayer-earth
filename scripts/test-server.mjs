@@ -137,7 +137,7 @@ ok('totalPrayerSeconds growing', state?.totalPrayerSeconds > 0, `total=${state?.
 others.forEach((c) => c.close())
 ws.close()
 srv.kill()
-// Wait for the child to actually terminate — on Windows the kill is async and
+// Wait for the child to actually terminate, on Windows the kill is async and
 // a still-running child could re-flush its debounced totals file.
 await new Promise((res) => {
   const done = () => res()

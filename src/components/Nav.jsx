@@ -23,7 +23,7 @@ export default function Nav() {
     if (id === 'prayer') {
       const s = useStore.getState()
       if (!s.spiritId) {
-        // Nothing chosen yet — open the first path so the view never crashes.
+        // Nothing chosen yet, open the first path so the view never crashes.
         openPrayer(SPIRITUALITIES[0].id, SPIRITUALITIES[0].prayers[0].id)
       } else {
         go('prayer')

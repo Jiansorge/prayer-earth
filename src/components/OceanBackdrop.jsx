@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { useBackdropCanvas } from './useBackdropCanvas.js'
 
-// A deep ocean backdrop — navy-to-teal water, shafts of light from above,
+// A deep ocean backdrop, navy-to-teal water, shafts of light from above,
 // gentle wave layers, drifting bioluminescent sparks, and rising bubbles.
 
 function mulberry(seed) {

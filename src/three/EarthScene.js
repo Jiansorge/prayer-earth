@@ -63,7 +63,7 @@ const FRAG = /* glsl */ `
     // shows cleanly with no underwater or speckled boundaries.
     float landMask = texture2D(uMaskTex, uv).r;
 
-    // the world's prayer accumulates forever — the ocean and land slowly
+    // the world's prayer accumulates forever, the ocean and land slowly
     // brighten with it, a permanent shift in the living map
     vec3 oceanC = vec3(0.006, 0.02, 0.05) + vec3(0.004, 0.012, 0.02) * uTier;
     vec3 landC = vec3(0.05, 0.056, 0.054) + vec3(0.012, 0.014, 0.013) * uTier;
@@ -75,7 +75,7 @@ const FRAG = /* glsl */ `
 
     float night = 1.0 - smoothstep(-0.25, 0.08, ndl);
 
-    // the Earth's own breathing glow — a gentle radiance that swells when many
+    // the Earth's own breathing glow, a gentle radiance that swells when many
     // people are praying at once
     vec3 radiance = vec3(0.18, 0.35, 0.24) * uGlow * uGlow * 0.18
       + vec3(0.34, 0.55, 0.42) * uGlow * uSurge * 0.28;
@@ -88,7 +88,7 @@ const FRAG = /* glsl */ `
     vec3 col = lit + radiance + aurora;
 
     // a luminous shoreline: a bright thin core softened by a gentle glow on both
-    // sides, so it reads as light tracing the continents — never a drawn line
+    // sides, so it reads as light tracing the continents, never a drawn line
     float a = texture2D(uMaskTex, vec2(fract(uv.x + 0.0005), uv.y)).r;
     float b = texture2D(uMaskTex, vec2(uv.x, fract(uv.y + 0.0008))).r;
     float c = texture2D(uMaskTex, vec2(fract(uv.x + 0.0011), uv.y)).r;
@@ -132,7 +132,7 @@ const SIL_FRAG = /* glsl */ `
     vec3 sp = normalize(vPos);
     vec2 uv = equirect(sp);
 
-    // texture is sRGB-decoded (linear) — the mask thresholds below are chosen
+    // texture is sRGB-decoded (linear), the mask thresholds below are chosen
     // for linear space: deep ocean ~0.02-0.06, land starts ~0.17.
     vec3 day = texture2D(uDayTex, uv).rgb;
     float lum = dot(day, vec3(0.299, 0.587, 0.114));
@@ -453,7 +453,7 @@ export class EarthScene {
   }
 
   // A soft, phase-accurate moon glowing in the sky. The lit sliver follows the
-  // real lunar cycle (roughly — we skip the exact limb position).
+  // real lunar cycle (roughly, we skip the exact limb position).
   buildMoon() {
     const S = 160
     const c = document.createElement('canvas')
@@ -690,7 +690,7 @@ export class EarthScene {
           const lum = 0.299 * r + 0.587 * g + 0.114 * b
           const gb = g - b
           // bright land (desert/ice) must not be blue; darker land (forest) must
-          // be dim and not turquoise — keeps shallow straits from bridging land
+          // be dim and not turquoise, keeps shallow straits from bridging land
           const brightLand = lum > 0.2 && gb > -0.01
           const darkLand = lum <= 0.2 && lum > 0.08 && gb > -0.08 && b < 0.28
           const land = y < arcticRow ? 0 : brightLand || darkLand ? 255 : 0

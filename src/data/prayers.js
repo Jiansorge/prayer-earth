@@ -31,7 +31,7 @@ export const SPIRITUALITIES = [
           { t: 'and the glory, for ever and ever.' },
           { t: 'Amen.' }
         ],
-        translation: 'A prayer taught by Jesus to his disciples — of daily bread, forgiveness, and trust in a loving God.'
+        translation: 'A prayer taught by Jesus to his disciples, of daily bread, forgiveness, and trust in a loving God.'
       },
       {
         id: 'ave-maria',
@@ -46,7 +46,7 @@ export const SPIRITUALITIES = [
           { t: 'Sancta Maria, Mater Dei, ora pro nobis peccatoribus,', e: 'Holy Mary, Mother of God, pray for us sinners,' },
           { t: 'nunc et in hora mortis nostrae. Amen.', e: 'now and at the hour of our death. Amen.' }
         ],
-        translation: 'The great Marian prayer of the Church — a greeting of grace and a plea for intercession.'
+        translation: 'The great Marian prayer of the Church, a greeting of grace and a plea for intercession.'
       },
       {
         id: 'psalm-23',
@@ -65,7 +65,7 @@ export const SPIRITUALITIES = [
           { t: 'all the days of my life.' },
           { t: 'Amen.' }
         ],
-        translation: 'A psalm of quiet trust — the shepherd who guides, provides, and stays near.'
+        translation: 'A psalm of quiet trust, the shepherd who guides, provides, and stays near.'
       },
       {
         id: 'jesus-prayer',
@@ -77,7 +77,7 @@ export const SPIRITUALITIES = [
           { t: 'Lord Jesus Christ, Son of God,' },
           { t: 'have mercy on me, a sinner.' }
         ],
-        translation: 'The ancient prayer of the heart of Eastern Christianity — one phrase on the in-breath, one on the out-breath.'
+        translation: 'The ancient prayer of the heart of Eastern Christianity, one phrase on the in-breath, one on the out-breath.'
       },
       {
         id: 'magnificat',
@@ -93,7 +93,7 @@ export const SPIRITUALITIES = [
           { t: 'and exalted those of humble estate.' },
           { t: 'He has filled the hungry with good things.' }
         ],
-        translation: "Mary's song of praise — a hymn of joy for the world turned right-side up."
+        translation: "Mary's song of praise, a hymn of joy for the world turned right-side up."
       },
       {
         id: 'peace-prayer',
@@ -123,7 +123,7 @@ export const SPIRITUALITIES = [
     prayers: [
       {
         id: 'al-fatiha',
-        title: 'Al-Fātiḥah — The Opening',
+        title: 'Al-Fātiḥah, The Opening',
         lang: 'ar',
         langLabel: 'العربية · Arabic',
         phrases: [
@@ -133,17 +133,17 @@ export const SPIRITUALITIES = [
           { t: 'مَالِكِ يَوْمِ الدِّينِ', s: 'Māliki yawmid-dīn', e: 'Master of the Day of Judgment.' },
           { t: 'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ', s: 'Iyyāka naʿbudu wa-iyyāka nastaʿīn', e: 'You alone we worship, and You alone we ask for help.' },
           { t: 'اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ', s: 'Ihdināṣ-ṣirāṭal-mustaqīm', e: 'Guide us along the straight path.' },
-          { t: 'صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ', s: 'Ṣirāṭal-laḏīna anʿamta ʿalayhim, ghayril-maghḍūbi ʿalayhim wa-laḍ-ḍāllīn', e: 'The path of those You have blessed — not those who earned anger, nor those astray.' }
+          { t: 'صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ', s: 'Ṣirāṭal-laḏīna anʿamta ʿalayhim, ghayril-maghḍūbi ʿalayhim wa-laḍ-ḍāllīn', e: 'The path of those You have blessed, not those who earned anger, nor those astray.' }
         ],
         translation: 'The opening chapter of the Qurʼan, recited in every prayer of the day.'
       },
       {
         id: 'ayat-al-kursi',
-        title: 'Āyat al-Kursī — The Throne Verse',
+        title: 'Āyat al-Kursī, The Throne Verse',
         lang: 'ar',
         langLabel: 'العربية · Arabic',
         phrases: [
-          { t: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ', s: 'Allāhu lā ilāha illā huwal-ḥayyul-qayyūm', e: 'God — there is no deity except Him, the Ever-Living, the Sustainer of all.' },
+          { t: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ', s: 'Allāhu lā ilāha illā huwal-ḥayyul-qayyūm', e: 'God, there is no deity except Him, the Ever-Living, the Sustainer of all.' },
           { t: 'لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ', s: 'Lā taʾkhuḏuhū sinatun wa-lā nawm', e: 'Neither drowsiness nor sleep overtakes Him.' },
           { t: 'لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ', s: 'Lahū mā fis-samāwāti wa-mā fil-arḍ', e: 'To Him belongs all that is in the heavens and all that is on the earth.' },
           { t: 'وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ', s: 'Wasiʿa kursiyyuhus-samāwāti wal-arḍ', e: 'His throne extends over the heavens and the earth.' },
@@ -153,18 +153,18 @@ export const SPIRITUALITIES = [
       },
       {
         id: 'dua-yunus',
-        title: "Du'a of Yūnus — The Prophet's Call",
+        title: "Du'a of Yūnus, The Prophet's Call",
         lang: 'ar',
         langLabel: 'العربية · Arabic · repeated',
         loop: true,
         phrases: [
-          { t: 'لَا إِلَٰهَ إِلَّا أَنتَ سُبْحَانَكَ إِنِّي كُنتُ مِنَ الظَّالِمِينَ', s: 'Lā ilāha illā anta subḥānaka innī kuntu minaẓ-ẓālimīn', e: 'There is no god but You. Glory be to You — indeed, I was among the wrongdoers.' }
+          { t: 'لَا إِلَٰهَ إِلَّا أَنتَ سُبْحَانَكَ إِنِّي كُنتُ مِنَ الظَّالِمِينَ', s: 'Lā ilāha illā anta subḥānaka innī kuntu minaẓ-ẓālimīn', e: 'There is no god but You. Glory be to You, indeed, I was among the wrongdoers.' }
         ],
-        translation: 'The cry of the Prophet Jonah from the depths, answered by mercy — a prayer of total turning back to God.'
+        translation: 'The cry of the Prophet Jonah from the depths, answered by mercy, a prayer of total turning back to God.'
       },
       {
         id: 'istighfar',
-        title: 'Istighfar — Seeking Forgiveness',
+        title: 'Istighfar, Seeking Forgiveness',
         lang: 'ar',
         langLabel: 'العربية · Arabic · repeated',
         loop: true,
@@ -172,11 +172,11 @@ export const SPIRITUALITIES = [
           { t: 'أَسْتَغْفِرُ اللَّهَ', s: 'Astaghfirullāh', e: 'I seek Godʼs forgiveness.' },
           { t: 'أَسْتَغْفِرُ اللَّهَ رَبِّي مِنْ كُلِّ ذَنْبٍ وَأَتُوبُ إِلَيْهِ', s: 'Astaghfirullāha rabbī min kulli dhambin wa-atūbu ilayh', e: 'I seek forgiveness from God, my Lord, for every sin, and I turn to Him.' }
         ],
-        translation: 'The simple, endless act of turning — seeking forgiveness, then turning again to God.'
+        translation: 'The simple, endless act of turning, seeking forgiveness, then turning again to God.'
       },
       {
         id: 'durood',
-        title: 'Salawāt — Blessings on the Prophet',
+        title: 'Salawāt, Blessings on the Prophet',
         lang: 'ar',
         langLabel: 'العربية · Arabic · repeated',
         loop: true,
@@ -189,7 +189,7 @@ export const SPIRITUALITIES = [
       },
       {
         id: 'al-falaq',
-        title: 'Sūrat al-Falaq — The Daybreak',
+        title: 'Sūrat al-Falaq, The Daybreak',
         lang: 'ar',
         langLabel: 'العربية · Arabic',
         phrases: [
@@ -199,11 +199,11 @@ export const SPIRITUALITIES = [
           { t: 'وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ', s: 'Wa-min sharrin-naffāthāti fil-ʿuqad', e: 'and from the evil of those who blow on knots,' },
           { t: 'وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ', s: 'Wa-min sharri ḥāsidin idhā ḥasad', e: 'and from the evil of the envier when he envies.' }
         ],
-        translation: 'A chapter of protection recited at dawn and dusk — shelter for the night, and for the fears within.'
+        translation: 'A chapter of protection recited at dawn and dusk, shelter for the night, and for the fears within.'
       },
       {
         id: 'al-ikhlas',
-        title: 'Sūrat al-Ikhlāṣ — Purity',
+        title: 'Sūrat al-Ikhlāṣ, Purity',
         lang: 'ar',
         langLabel: 'العربية · Arabic · repeated',
         loop: true,
@@ -213,7 +213,7 @@ export const SPIRITUALITIES = [
           { t: 'لَمْ يَلِدْ وَلَمْ يُولَدْ', s: 'Lam yalid wa-lam yūlad', e: 'He neither begets nor is born.' },
           { t: 'وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ', s: 'Wa-lam yakun lahū kufuwan aḥad', e: 'And there is none comparable to Him.' }
         ],
-        translation: 'The chapter of Divine Unity — called by the Prophet equal to a third of the Qurʼan.'
+        translation: 'The chapter of Divine Unity, called by the Prophet equal to a third of the Qurʼan.'
       }
     ]
   },
@@ -286,7 +286,7 @@ export const SPIRITUALITIES = [
           { t: 'मृत्योर्मा अमृतं गमय', s: 'Mṛtyor mā amṛtaṁ gamaya', e: 'Lead me from death to immortality.' },
           { t: 'ॐ शान्तिः शान्तिः शान्तिः', s: 'Om śāntiḥ śāntiḥ śāntiḥ', e: 'Om. Peace, peace, peace.' }
         ],
-        translation: 'The Upanishadic peace invocation — a journey from darkness toward light and stillness.'
+        translation: 'The Upanishadic peace invocation, a journey from darkness toward light and stillness.'
       },
       {
         id: 'ram-nam',
@@ -295,11 +295,11 @@ export const SPIRITUALITIES = [
         langLabel: 'संस्कृतम् · Sanskrit · repeated',
         loop: true,
         phrases: [
-          { t: 'श्री राम जय राम जय जय राम', s: 'Śrī Rām jay Rām jay jay Rām', e: 'Glory to Rama — the divine light within all things.' },
-          { t: 'श्री राम जय राम जय जय राम', s: 'Śrī Rām jay Rām jay jay Rām', e: 'Glory to Rama — the divine light within all things.' },
-          { t: 'श्री राम जय राम जय जय राम', s: 'Śrī Rām jay Rām jay jay Rām', e: 'Glory to Rama — the divine light within all things.' }
+          { t: 'श्री राम जय राम जय जय राम', s: 'Śrī Rām jay Rām jay jay Rām', e: 'Glory to Rama, the divine light within all things.' },
+          { t: 'श्री राम जय राम जय जय राम', s: 'Śrī Rām jay Rām jay jay Rām', e: 'Glory to Rama, the divine light within all things.' },
+          { t: 'श्री राम जय राम जय जय राम', s: 'Śrī Rām jay Rām jay jay Rām', e: 'Glory to Rama, the divine light within all things.' }
         ],
-        translation: 'The simple chanting of the divine Name — devotion made of nothing but love.'
+        translation: 'The simple chanting of the divine Name, devotion made of nothing but love.'
       },
       {
         id: 'hare-krishna',
@@ -313,7 +313,7 @@ export const SPIRITUALITIES = [
           { t: 'हरे राम हरे राम', s: 'Hare Rāma, Hare Rāma', e: 'Hare Rama, Hare Rama,' },
           { t: 'राम राम हरे हरे', s: 'Rāma, Rāma, Hare, Hare', e: 'Rama, Rama, Hare, Hare.' }
         ],
-        translation: 'The great mantra of the heart from the Vaishnava tradition — the divine names sung until the mind grows still.'
+        translation: 'The great mantra of the heart from the Vaishnava tradition, the divine names sung until the mind grows still.'
       }
     ]
   },
@@ -337,7 +337,7 @@ export const SPIRITUALITIES = [
           { t: 'ॐ मणि पद्मे हूँ', s: 'Om maṇi padme hūṃ', e: 'The jewel in the lotus.' },
           { t: 'ॐ मणि पद्मे हूँ', s: 'Om maṇi padme hūṃ', e: 'The jewel in the lotus.' }
         ],
-        translation: 'The beloved mantra of Tibetan Buddhism — compassion taking shape as sound.'
+        translation: 'The beloved mantra of Tibetan Buddhism, compassion taking shape as sound.'
       },
       {
         id: 'amitabha',
@@ -363,7 +363,7 @@ export const SPIRITUALITIES = [
           { t: 'ॐ अमोघसिद्धि आः हूं', s: 'Om amoghasiddhi āḥ hūṃ', e: 'Homage to Amoghasiddhi, the Buddha of unfailing accomplishment.' },
           { t: 'ॐ अमोघसिद्धि आः हूं', s: 'Om amoghasiddhi āḥ hūṃ', e: 'Homage to Amoghasiddhi, the Buddha of unfailing accomplishment.' }
         ],
-        translation: 'The mantra of the northern Buddha Amoghasiddhi — the power to complete whatever is undertaken.'
+        translation: 'The mantra of the northern Buddha Amoghasiddhi, the power to complete whatever is undertaken.'
       },
       {
         id: 'cundi',
@@ -372,9 +372,9 @@ export const SPIRITUALITIES = [
         langLabel: 'संस्कृतम् · Sanskrit · repeated',
         loop: true,
         phrases: [
-          { t: 'ॐ चले चुले चुन्दे स्वाहा', s: 'Om cale cule cunde svāhā', e: 'The Cundi mantra — the mother of all Buddhas, swift blessings.' },
-          { t: 'ॐ चले चुले चुन्दे स्वाहा', s: 'Om cale cule cunde svāhā', e: 'The Cundi mantra — the mother of all Buddhas, swift blessings.' },
-          { t: 'ॐ चले चुले चुन्दे स्वाहा', s: 'Om cale cule cunde svāhā', e: 'The Cundi mantra — the mother of all Buddhas, swift blessings.' }
+          { t: 'ॐ चले चुले चुन्दे स्वाहा', s: 'Om cale cule cunde svāhā', e: 'The Cundi mantra, the mother of all Buddhas, swift blessings.' },
+          { t: 'ॐ चले चुले चुन्दे स्वाहा', s: 'Om cale cule cunde svāhā', e: 'The Cundi mantra, the mother of all Buddhas, swift blessings.' },
+          { t: 'ॐ चले चुले चुन्दे स्वाहा', s: 'Om cale cule cunde svāhā', e: 'The Cundi mantra, the mother of all Buddhas, swift blessings.' }
         ],
         translation: 'The mantra of the Great Mother Cundi, recited for swift blessings and the removal of obstacles.'
       },
@@ -385,9 +385,9 @@ export const SPIRITUALITIES = [
         langLabel: 'संस्कृतम् · Sanskrit · repeated',
         loop: true,
         phrases: [
-          { t: 'ॐ आः हूं वज्र गुरु पद्म सिद्धि हूं', s: 'Om āḥ hūṃ vajra guru padma siddhi hūṃ', e: 'The prayer of Guru Rinpoche — the blessing of the lotus-born master.' },
-          { t: 'ॐ आः हूं वज्र गुरु पद्म सिद्धि हूं', s: 'Om āḥ hūṃ vajra guru padma siddhi hūṃ', e: 'The prayer of Guru Rinpoche — the blessing of the lotus-born master.' },
-          { t: 'ॐ आः हूं वज्र गुरु पद्म सिद्धि हूं', s: 'Om āḥ hūṃ vajra guru padma siddhi hūṃ', e: 'The prayer of Guru Rinpoche — the blessing of the lotus-born master.' }
+          { t: 'ॐ आः हूं वज्र गुरु पद्म सिद्धि हूं', s: 'Om āḥ hūṃ vajra guru padma siddhi hūṃ', e: 'The prayer of Guru Rinpoche, the blessing of the lotus-born master.' },
+          { t: 'ॐ आः हूं वज्र गुरु पद्म सिद्धि हूं', s: 'Om āḥ hūṃ vajra guru padma siddhi hūṃ', e: 'The prayer of Guru Rinpoche, the blessing of the lotus-born master.' },
+          { t: 'ॐ आः हूं वज्र गुरु पद्म सिद्धि हूं', s: 'Om āḥ hūṃ vajra guru padma siddhi hūṃ', e: 'The prayer of Guru Rinpoche, the blessing of the lotus-born master.' }
         ],
         translation: 'The Vajra Guru mantra of Padmasambhava, recited for blessings, protection, and the swift attainment of siddhi.'
       },
@@ -398,11 +398,11 @@ export const SPIRITUALITIES = [
         langLabel: 'संस्कृतम् · Sanskrit · repeated',
         loop: true,
         phrases: [
-          { t: 'गते गते पारगते पारसंगते बोधि स्वाहा', s: 'Gate gate pāragate pārasaṃgate bodhi svāhā', e: 'Gone, gone, gone beyond, gone utterly beyond — awakening, so be it.' },
-          { t: 'गते गते पारगते पारसंगते बोधि स्वाहा', s: 'Gate gate pāragate pārasaṃgate bodhi svāhā', e: 'Gone, gone, gone beyond, gone utterly beyond — awakening, so be it.' },
-          { t: 'गते गते पारगते पारसंगते बोधि स्वाहा', s: 'Gate gate pāragate pārasaṃgate bodhi svāhā', e: 'Gone, gone, gone beyond, gone utterly beyond — awakening, so be it.' }
+          { t: 'गते गते पारगते पारसंगते बोधि स्वाहा', s: 'Gate gate pāragate pārasaṃgate bodhi svāhā', e: 'Gone, gone, gone beyond, gone utterly beyond, awakening, so be it.' },
+          { t: 'गते गते पारगते पारसंगते बोधि स्वाहा', s: 'Gate gate pāragate pārasaṃgate bodhi svāhā', e: 'Gone, gone, gone beyond, gone utterly beyond, awakening, so be it.' },
+          { t: 'गते गते पारगते पारसंगते बोधि स्वाहा', s: 'Gate gate pāragate pārasaṃgate bodhi svāhā', e: 'Gone, gone, gone beyond, gone utterly beyond, awakening, so be it.' }
         ],
-        translation: 'The mantra of the Heart Sutra — the very heart of emptiness, recited as the crown of the Perfection of Wisdom.'
+        translation: 'The mantra of the Heart Sutra, the very heart of emptiness, recited as the crown of the Perfection of Wisdom.'
       },
       {
         id: 'ksitigarbha',
@@ -411,11 +411,11 @@ export const SPIRITUALITIES = [
         langLabel: 'संस्कृतम् · Sanskrit · repeated',
         loop: true,
         phrases: [
-          { t: 'ॐ प्रमर्दने स्वाहा', s: 'Oṃ pramardane svāhā', e: 'May fixed karma be dissolved — the Ksitigarbha dhāraṇī of liberation.' },
-          { t: 'ॐ प्रमर्दने स्वाहा', s: 'Oṃ pramardane svāhā', e: 'May fixed karma be dissolved — the Ksitigarbha dhāraṇī of liberation.' },
-          { t: 'ॐ प्रमर्दने स्वाहा', s: 'Oṃ pramardane svāhā', e: 'May fixed karma be dissolved — the Ksitigarbha dhāraṇī of liberation.' }
+          { t: 'ॐ प्रमर्दने स्वाहा', s: 'Oṃ pramardane svāhā', e: 'May fixed karma be dissolved, the Ksitigarbha dhāraṇī of liberation.' },
+          { t: 'ॐ प्रमर्दने स्वाहा', s: 'Oṃ pramardane svāhā', e: 'May fixed karma be dissolved, the Ksitigarbha dhāraṇī of liberation.' },
+          { t: 'ॐ प्रमर्दने स्वाहा', s: 'Oṃ pramardane svāhā', e: 'May fixed karma be dissolved, the Ksitigarbha dhāraṇī of liberation.' }
         ],
-        translation: 'The Ksitigarbha dhāraṇī of eliminating fixed karma — Ksitigarbha, the earth-womb bodhisattva who vowed not to rest until every being is saved.'
+        translation: 'The Ksitigarbha dhāraṇī of eliminating fixed karma, Ksitigarbha, the earth-womb bodhisattva who vowed not to rest until every being is saved.'
       },
       {
         id: 'manjushri',
@@ -438,10 +438,10 @@ export const SPIRITUALITIES = [
         loop: true,
         phrases: [
           { t: 'नमो भगवते भैषज्यगुरु वैडूर्यप्रभराजाय तथागताय अर्हते सम्यक्संबुद्धाय', s: 'Namo bhagavate bhaiṣajyaguru vaiḍūryaprabharājāya tathāgatāya arhate samyaksaṃbuddhāya', e: 'Homage to the Medicine Buddha, king of the lapis-lazuli light, the one who has awakened.' },
-          { t: 'तद्यथा ॐ भैषज्ये भैषज्ये महाभैषज्ये राज समुद्गते स्वाहा', s: 'Tadyathā: Oṃ bhaiṣajye bhaiṣajye mahābhaiṣajye rāja samudgate svāhā', e: 'Thus: Oṃ — heal, heal, great healing, king arisen from the depths — so be it.' },
-          { t: 'तद्यथा ॐ भैषज्ये भैषज्ये महाभैषज्ये राज समुद्गते स्वाहा', s: 'Tadyathā: Oṃ bhaiṣajye bhaiṣajye mahābhaiṣajye rāja samudgate svāhā', e: 'Thus: Oṃ — heal, heal, great healing, king arisen from the depths — so be it.' }
+          { t: 'तद्यथा ॐ भैषज्ये भैषज्ये महाभैषज्ये राज समुद्गते स्वाहा', s: 'Tadyathā: Oṃ bhaiṣajye bhaiṣajye mahābhaiṣajye rāja samudgate svāhā', e: 'Thus: Oṃ, heal, heal, great healing, king arisen from the depths, so be it.' },
+          { t: 'तद्यथा ॐ भैषज्ये भैषज्ये महाभैषज्ये राज समुद्गते स्वाहा', s: 'Tadyathā: Oṃ bhaiṣajye bhaiṣajye mahābhaiṣajye rāja samudgate svāhā', e: 'Thus: Oṃ, heal, heal, great healing, king arisen from the depths, so be it.' }
         ],
-        translation: 'The long Medicine Buddha mantra — the full homage to Bhaiṣajyaguru followed by the healing mantra, recited for the healing of all beings.'
+        translation: 'The long Medicine Buddha mantra, the full homage to Bhaiṣajyaguru followed by the healing mantra, recited for the healing of all beings.'
       },
       {
         id: 'medicine-buddha',
@@ -450,11 +450,11 @@ export const SPIRITUALITIES = [
         langLabel: 'संस्कृतम् · Sanskrit · repeated',
         loop: true,
         phrases: [
-          { t: 'तद्यथा ॐ भैषज्ये भैषज्ये महाभैषज्ये राज समुद्गते स्वाहा', s: 'Tadyathā: Oṃ bhaiṣajye bhaiṣajye mahābhaiṣajye rāja samudgate svāhā', e: 'Thus: may all beings be healed — the Medicine Buddha mantra of healing and liberation.' },
-          { t: 'तद्यथा ॐ भैषज्ये भैषज्ये महाभैषज्ये राज समुद्गते स्वाहा', s: 'Tadyathā: Oṃ bhaiṣajye bhaiṣajye mahābhaiṣajye rāja samudgate svāhā', e: 'Thus: may all beings be healed — the Medicine Buddha mantra of healing and liberation.' },
-          { t: 'तद्यथा ॐ भैषज्ये भैषज्ये महाभैषज्ये राज समुद्गते स्वाहा', s: 'Tadyathā: Oṃ bhaiṣajye bhaiṣajye mahābhaiṣajye rāja samudgate svāhā', e: 'Thus: may all beings be healed — the Medicine Buddha mantra of healing and liberation.' }
+          { t: 'तद्यथा ॐ भैषज्ये भैषज्ये महाभैषज्ये राज समुद्गते स्वाहा', s: 'Tadyathā: Oṃ bhaiṣajye bhaiṣajye mahābhaiṣajye rāja samudgate svāhā', e: 'Thus: may all beings be healed, the Medicine Buddha mantra of healing and liberation.' },
+          { t: 'तद्यथा ॐ भैषज्ये भैषज्ये महाभैषज्ये राज समुद्गते स्वाहा', s: 'Tadyathā: Oṃ bhaiṣajye bhaiṣajye mahābhaiṣajye rāja samudgate svāhā', e: 'Thus: may all beings be healed, the Medicine Buddha mantra of healing and liberation.' },
+          { t: 'तद्यथा ॐ भैषज्ये भैषज्ये महाभैषज्ये राज समुद्गते स्वाहा', s: 'Tadyathā: Oṃ bhaiṣajye bhaiṣajye mahābhaiṣajye rāja samudgate svāhā', e: 'Thus: may all beings be healed, the Medicine Buddha mantra of healing and liberation.' }
         ],
-        translation: 'The Sanskrit mantra of the Medicine Buddha (Bhaiṣajyaguru), recited to heal body, speech, and mind — for oneself and for all beings.'
+        translation: 'The Sanskrit mantra of the Medicine Buddha (Bhaiṣajyaguru), recited to heal body, speech, and mind, for oneself and for all beings.'
       },
       {
         id: 'daimoku',
@@ -489,9 +489,9 @@ export const SPIRITUALITIES = [
         langLabel: 'English · repeated',
         loop: true,
         phrases: [
-          { t: 'Namo Ksitigarbha Bodhisattva', s: 'Namo Ksitigarbha Bodhisattva', e: 'Homage to Ksitigarbha Bodhisattva — the one who vows to save all beings.' },
-          { t: 'Namo Ksitigarbha Bodhisattva', s: 'Namo Ksitigarbha Bodhisattva', e: 'Homage to Ksitigarbha Bodhisattva — the one who vows to save all beings.' },
-          { t: 'Namo Ksitigarbha Bodhisattva', s: 'Namo Ksitigarbha Bodhisattva', e: 'Homage to Ksitigarbha Bodhisattva — the one who vows to save all beings.' }
+          { t: 'Namo Ksitigarbha Bodhisattva', s: 'Namo Ksitigarbha Bodhisattva', e: 'Homage to Ksitigarbha Bodhisattva, the one who vows to save all beings.' },
+          { t: 'Namo Ksitigarbha Bodhisattva', s: 'Namo Ksitigarbha Bodhisattva', e: 'Homage to Ksitigarbha Bodhisattva, the one who vows to save all beings.' },
+          { t: 'Namo Ksitigarbha Bodhisattva', s: 'Namo Ksitigarbha Bodhisattva', e: 'Homage to Ksitigarbha Bodhisattva, the one who vows to save all beings.' }
         ],
         translation: 'The name-repetition of Ksitigarbha, the earth-vow bodhisattva, recited with single-pointed devotion.'
       },
@@ -532,7 +532,7 @@ export const SPIRITUALITIES = [
           { t: 'Dharma gates are boundless; I vow to enter them all.' },
           { t: 'The Buddha\u2019s way is unsurpassable; I vow to realize it.' }
         ],
-        translation: 'The four great vows of the bodhisattva — the promise to awaken together with every being.'
+        translation: 'The four great vows of the bodhisattva, the promise to awaken together with every being.'
       },
       {
         id: 'great-compassion',
@@ -543,9 +543,9 @@ export const SPIRITUALITIES = [
           { t: 'नमो रत्न त्रयाय', s: 'Namo ratna trayāya', e: 'Homage to the Three Jewels.' },
           { t: 'नमो आर्यावलोकितेश्वराय बोधिसत्त्वाय महासत्त्वाय महाकारुणिकाय', s: 'Namo āryāvalokiteśvarāya bodhisattvāya mahāsattvāya mahākāruṇikāya', e: 'Homage to Avalokitesvara, the great bodhisattva of great compassion.' },
           { t: 'तद्यथा ॐ तार तार तिरि तिरि तुरु तुरु', s: 'Tadyathā: Om tāra tāra tiri tiri turu turu', e: 'Thus: Om tara tara, tiri tiri, turu turu.' },
-          { t: 'सर सर सिरि सिरि सुरु सुरु बोधिय बोधय मैत्रिय नीलकण्ठ दर्शनेन प्रह्लादय मनः स्वाहा', s: 'Sara sara siri siri suru suru — bodhiya bodhaya maitriya Nīlakaṇṭha — darśanena prahlādaya manaḥ svāhā', e: 'Awaken, awaken — may the sight of the Blue-Necked One gladden the heart — so be it.' }
+          { t: 'सर सर सिरि सिरि सुरु सुरु बोधिय बोधय मैत्रिय नीलकण्ठ दर्शनेन प्रह्लादय मनः स्वाहा', s: 'Sara sara siri siri suru suru, bodhiya bodhaya maitriya Nīlakaṇṭha, darśanena prahlādaya manaḥ svāhā', e: 'Awaken, awaken, may the sight of the Blue-Necked One gladden the heart, so be it.' }
         ],
-        translation: 'The short Nīlakaṇṭha Dhāraṇī — the great compassion of Avalokitesvara, protector of all who call on it.'
+        translation: 'The short Nīlakaṇṭha Dhāraṇī, the great compassion of Avalokitesvara, protector of all who call on it.'
       },
       {
         id: 'refuges',
@@ -560,7 +560,7 @@ export const SPIRITUALITIES = [
           { t: 'I take refuge in the Sangha,' },
           { t: 'the community of all beings walking the way.' }
         ],
-        translation: 'The opening vow of Buddhist practice — returning home to awakening, truth, and companionship.'
+        translation: 'The opening vow of Buddhist practice, returning home to awakening, truth, and companionship.'
       },
       {
         id: 'sarana',
@@ -573,7 +573,7 @@ export const SPIRITUALITIES = [
           { t: 'धर्मं शरणं गच्छामि', s: 'Dharmaṃ śaraṇaṃ gacchāmi', e: 'I go for refuge to the Dharma.' },
           { t: 'संघं शरणं गच्छामि', s: 'Saṃghaṃ śaraṇaṃ gacchāmi', e: 'I go for refuge to the Sangha.' }
         ],
-        translation: 'The ancient triple refuge of the Buddha — returning home to awakening, truth, and fellowship.'
+        translation: 'The ancient triple refuge of the Buddha, returning home to awakening, truth, and fellowship.'
       },
       {
         id: 'metta',
@@ -588,7 +588,7 @@ export const SPIRITUALITIES = [
           { t: 'Sabbe sattā khemā hontu', s: 'Sabbe sattā khemā hontu', e: 'May all beings be safe from harm.' },
           { t: 'Sabbe sattā bhadrāni passantu', s: 'Sabbe sattā bhadrāni passantu', e: 'May all beings see what is good and auspicious.' }
         ],
-        translation: 'The Buddhaʼs teaching on loving-kindness — a wish repeated for every being, without exception.'
+        translation: 'The Buddhaʼs teaching on loving-kindness, a wish repeated for every being, without exception.'
       },
       {
         id: 'usnisa-vijaya',
@@ -597,7 +597,7 @@ export const SPIRITUALITIES = [
         langLabel: 'संस्कृतम् · Sanskrit',
         phrases: [
           { t: 'ॐ अमृतायुर्दडे स्वाहा', s: 'Om amṛtāyurdaḍe svāhā', e: 'May we be blessed with long, radiant life.' },
-          { t: 'ॐ ध्रूं स्वाहा ॐ अमृतायुर्दडे स्वाहा', s: 'Om dhrūṃ svāhā — Om amṛtāyurdaḍe svāhā', e: 'The dharani of the Victorious One, dispeller of obstacles.' }
+          { t: 'ॐ ध्रूं स्वाहा ॐ अमृतायुर्दडे स्वाहा', s: 'Om dhrūṃ svāhā, Om amṛtāyurdaḍe svāhā', e: 'The dharani of the Victorious One, dispeller of obstacles.' }
         ],
         translation: 'The Uṣṇīṣa Vijayā dhāraṇī of Namgyalma, recited to purify and lengthen life and to open the path beyond death.'
       },
@@ -608,26 +608,26 @@ export const SPIRITUALITIES = [
         langLabel: 'संस्कृतम् · Sanskrit',
         phrases: [
           { t: 'नमो भगवते त्रैलोक्य प्रतिविशिष्टाय बुद्धाय भगवते', s: 'Namo bhagavate trailokya prativiśiṣṭāya buddhāya bhagavate', e: 'Homage to the Blessed Buddha, exalted above the three worlds.' },
-          { t: 'तद्यथा ॐ विशोधय विशोधय समसम समन्त अवभास स्फरण', s: 'Tadyathā: Oṃ viśodhaya viśodhaya samasama samanta avabhāsa spharaṇa', e: 'Thus: Oṃ — purify, purify; radiant and all-pervading.' },
-          { t: 'गति गहन स्वभाव विशुद्धे अभिषिञ्चतु मां', s: 'Gati gahana svabhāva viśuddhe abhiṣiñcatu māṃ', e: 'Pure in the nature of every path — consecrate me.' },
+          { t: 'तद्यथा ॐ विशोधय विशोधय समसम समन्त अवभास स्फरण', s: 'Tadyathā: Oṃ viśodhaya viśodhaya samasama samanta avabhāsa spharaṇa', e: 'Thus: Oṃ, purify, purify; radiant and all-pervading.' },
+          { t: 'गति गहन स्वभाव विशुद्धे अभिषिञ्चतु मां', s: 'Gati gahana svabhāva viśuddhe abhiṣiñcatu māṃ', e: 'Pure in the nature of every path, consecrate me.' },
           { t: 'सुगत वर वचन अमृत अभिषेके महामन्त्र पाने', s: 'Sugata vara vacana amṛta abhiṣeke mahāmantra pāne', e: 'With the Sugata\u2019s supreme word, the ambrosia of consecration, O great-mantra bearer.' },
-          { t: 'आहर आहर आयुः सन्धारणि शोधय शोधय गगन विशुद्धे', s: 'Āhara āhara āyuḥ sandhāraṇi śodhaya śodhaya gagana viśuddhe', e: 'Bring, bring, sustainer of life; purify, purify — pure as the sky.' },
+          { t: 'आहर आहर आयुः सन्धारणि शोधय शोधय गगन विशुद्धे', s: 'Āhara āhara āyuḥ sandhāraṇi śodhaya śodhaya gagana viśuddhe', e: 'Bring, bring, sustainer of life; purify, purify, pure as the sky.' },
           { t: 'उष्णीष विजय विशुद्धे सहस्ररश्मि सञ्चोदिते', s: 'Uṣṇīṣa vijaya viśuddhe sahasraraśmi sañcodite', e: 'Pure in the victorious crown, impelled by a thousand rays.' },
           { t: 'सर्व तथागत अवलोकन षट्पारमिता परिपूरणि', s: 'Sarva tathāgata avalokana ṣaṭpāramitā paripūraṇi', e: 'The seeing of all Tathāgatas, fulfiller of the six perfections.' },
           { t: 'सर्व तथागत मति दशभूमि प्रतिष्ठिते', s: 'Sarva tathāgata mati daśabhūmi pratiṣṭhite', e: 'The wisdom of all Tathāgatas, established in the ten stages.' },
           { t: 'सर्व तथागत हृदय अधिष्ठान अधिष्ठित महामुद्रे', s: 'Sarva tathāgata hṛdaya adhiṣṭhāna adhiṣṭhita mahāmudre', e: 'O great seal blessed by the heart-blessing of all Tathāgatas.' },
           { t: 'वज्रकाय सहरण विशुद्धे सर्व आवरण अपाय दुर्गति परिविशुद्धे', s: 'Vajrakāya saharaṇa viśuddhe sarva āvaraṇa apāya durgati pariviśuddhe', e: 'Pure vajra-body, purifier of all obstructions, miseries, and evil rebirths.' },
-          { t: 'प्रतिनिर्वर्तय आयुः शुद्धे समय अधिष्ठिते', s: 'Pratinirvartaya āyuḥ śuddhe samaya adhiṣṭhite', e: 'Turn back the end of life — pure one, blessed in the pledge.' },
-          { t: 'मणि मणि महामणि तथाता भूत कोटि परिशुद्धे', s: 'Maṇi maṇi mahāmaṇi tathātā bhūta koṭi pariśuddhe', e: 'Jewel, jewel, great jewel — pure as the boundlessness of reality.' },
-          { t: 'विस्फुट बुद्धि शुद्धे जय जय विजय विजय स्मर स्मर', s: 'Visphuṭa buddhi śuddhe jaya jaya vijaya vijaya smara smara', e: 'Radiant pure wisdom — victory, victory; triumph, triumph; remember, remember.' },
-          { t: 'सर्व बुद्ध अधिष्ठित शुद्धे वज्रे वज्र गर्भे', s: 'Sarva buddha adhiṣṭhita śuddhe vajre vajra garbhe', e: 'Blessed by all Buddhas, pure one — O vajra, O vajra womb.' },
-          { t: 'वज्रं भवतु मम शरीरं सर्व सत्त्वानां च काय परिविशुद्धे', s: 'Vajraṃ bhavatu mama śarīraṁ sarva sattvānāṁ ca kāya pariviśuddhe', e: 'May my body become vajra — purifier of the bodies of all beings.' },
-          { t: 'सर्व गति परिशुद्धे सर्व तथागताश्च मे सम आश्वासयन्तु', s: 'Sarva gati pariśuddhe sarva tathāgatāśca me sama āśvāsayantu', e: 'Purifier of all realms — may all Tathāgatas gladden me together.' },
-          { t: 'सर्व तथागत सम आश्वास अधिष्ठिते बुध्य बुध्य विबुध्य विबुध्य', s: 'Sarva tathāgata sama āśvāsa adhiṣṭhite budhya budhya vibudhya vibudhya', e: 'Blessed by the Tathāgatas\u2019 common gladdening — awaken, awaken; awaken fully, awaken fully.' },
-          { t: 'बोधय बोधय विबोधय विबोधय समन्त परिशुद्धे', s: 'Bodhaya bodhaya vibodhaya vibodhaya samanta pariśuddhe', e: 'Awaken others, awaken others; awaken them fully — all-purifying one.' },
-          { t: 'सर्व तथागत हृदय अधिष्ठान अधिष्ठित महामुद्रे स्वाहा', s: 'Sarva tathāgata hṛdaya adhiṣṭhāna adhiṣṭhita mahāmudre svāhā', e: 'O great seal blessed by the heart-blessing of all Tathāgatas — so be it.' }
+          { t: 'प्रतिनिर्वर्तय आयुः शुद्धे समय अधिष्ठिते', s: 'Pratinirvartaya āyuḥ śuddhe samaya adhiṣṭhite', e: 'Turn back the end of life, pure one, blessed in the pledge.' },
+          { t: 'मणि मणि महामणि तथाता भूत कोटि परिशुद्धे', s: 'Maṇi maṇi mahāmaṇi tathātā bhūta koṭi pariśuddhe', e: 'Jewel, jewel, great jewel, pure as the boundlessness of reality.' },
+          { t: 'विस्फुट बुद्धि शुद्धे जय जय विजय विजय स्मर स्मर', s: 'Visphuṭa buddhi śuddhe jaya jaya vijaya vijaya smara smara', e: 'Radiant pure wisdom, victory, victory; triumph, triumph; remember, remember.' },
+          { t: 'सर्व बुद्ध अधिष्ठित शुद्धे वज्रे वज्र गर्भे', s: 'Sarva buddha adhiṣṭhita śuddhe vajre vajra garbhe', e: 'Blessed by all Buddhas, pure one, O vajra, O vajra womb.' },
+          { t: 'वज्रं भवतु मम शरीरं सर्व सत्त्वानां च काय परिविशुद्धे', s: 'Vajraṃ bhavatu mama śarīraṁ sarva sattvānāṁ ca kāya pariviśuddhe', e: 'May my body become vajra, purifier of the bodies of all beings.' },
+          { t: 'सर्व गति परिशुद्धे सर्व तथागताश्च मे सम आश्वासयन्तु', s: 'Sarva gati pariśuddhe sarva tathāgatāśca me sama āśvāsayantu', e: 'Purifier of all realms, may all Tathāgatas gladden me together.' },
+          { t: 'सर्व तथागत सम आश्वास अधिष्ठिते बुध्य बुध्य विबुध्य विबुध्य', s: 'Sarva tathāgata sama āśvāsa adhiṣṭhite budhya budhya vibudhya vibudhya', e: 'Blessed by the Tathāgatas\u2019 common gladdening, awaken, awaken; awaken fully, awaken fully.' },
+          { t: 'बोधय बोधय विबोधय विबोधय समन्त परिशुद्धे', s: 'Bodhaya bodhaya vibodhaya vibodhaya samanta pariśuddhe', e: 'Awaken others, awaken others; awaken them fully, all-purifying one.' },
+          { t: 'सर्व तथागत हृदय अधिष्ठान अधिष्ठित महामुद्रे स्वाहा', s: 'Sarva tathāgata hṛdaya adhiṣṭhāna adhiṣṭhita mahāmudre svāhā', e: 'O great seal blessed by the heart-blessing of all Tathāgatas, so be it.' }
         ],
-        translation: 'The full Uṣṇīṣa Vijayā dhāraṇī, the crown of long-life dhāraṇīs — chanted to purify, protect, and turn the tide of life toward awakening.'
+        translation: 'The full Uṣṇīṣa Vijayā dhāraṇī, the crown of long-life dhāraṇīs, chanted to purify, protect, and turn the tide of life toward awakening.'
       },
       {
         id: 'vajrasattva',
@@ -636,9 +636,9 @@ export const SPIRITUALITIES = [
         langLabel: 'संस्कृतम् · Sanskrit · repeated',
         loop: true,
         phrases: [
-          { t: 'ॐ वज्रसत्त्व हूं', s: 'Om vajrasattva hūṃ', e: 'The essence of Vajrasattva — purification and confession.' },
-          { t: 'ॐ वज्रसत्त्व हूं', s: 'Om vajrasattva hūṃ', e: 'The essence of Vajrasattva — purification and confession.' },
-          { t: 'ॐ वज्रसत्त्व हूं', s: 'Om vajrasattva hūṃ', e: 'The essence of Vajrasattva — purification and confession.' }
+          { t: 'ॐ वज्रसत्त्व हूं', s: 'Om vajrasattva hūṃ', e: 'The essence of Vajrasattva, purification and confession.' },
+          { t: 'ॐ वज्रसत्त्व हूं', s: 'Om vajrasattva hūṃ', e: 'The essence of Vajrasattva, purification and confession.' },
+          { t: 'ॐ वज्रसत्त्व हूं', s: 'Om vajrasattva hūṃ', e: 'The essence of Vajrasattva, purification and confession.' }
         ],
         translation: 'The short Vajrasattva mantra, the heart of the hundred-syllable purification practice.'
       }
@@ -664,7 +664,7 @@ export const SPIRITUALITIES = [
           { t: 'May we spend our time being kind.' },
           { t: 'We carry no judgment but our own.' }
         ],
-        translation: 'A secular prayer of thanks — to people, chance, and the plain good luck of being alive.'
+        translation: 'A secular prayer of thanks, to people, chance, and the plain good luck of being alive.'
       },
       {
         id: 'awe',
@@ -678,7 +678,7 @@ export const SPIRITUALITIES = [
           { t: 'We are small, and the universe is immense,' },
           { t: 'and here, together, we are not alone.' }
         ],
-        translation: 'A meditation on wonder — a quiet moment under the same stars everyone has always looked up to.'
+        translation: 'A meditation on wonder, a quiet moment under the same stars everyone has always looked up to.'
       },
       {
         id: 'for-earth',
@@ -708,7 +708,7 @@ export const SPIRITUALITIES = [
           { t: 'May their night be gentle,' },
           { t: 'and their morning kind.' }
         ],
-        translation: 'A secular prayer of presence — one minute held for everyone we cannot reach.'
+        translation: 'A secular prayer of presence, one minute held for everyone we cannot reach.'
       },
       {
         id: 'wish',
@@ -722,7 +722,7 @@ export const SPIRITUALITIES = [
           { t: 'This is the only prayer we need:' },
           { t: 'let us be good to one another.' }
         ],
-        translation: 'A shared intention from the humanist heart — the good we owe each other without any god required.'
+        translation: 'A shared intention from the humanist heart, the good we owe each other without any god required.'
       },
       {
         id: 'for-skeptic',
@@ -737,7 +737,7 @@ export const SPIRITUALITIES = [
           { t: 'If this is all there is,' },
           { t: 'let it be enough, and good.' }
         ],
-        translation: 'A prayer for honest doubt — wonder without certainty, and goodness without a witness.'
+        translation: 'A prayer for honest doubt, wonder without certainty, and goodness without a witness.'
       },
       {
         id: 'ode-to-day',
@@ -753,7 +753,7 @@ export const SPIRITUALITIES = [
           { t: 'Tonight we will rest,' },
           { t: 'and the Earth will turn for us all.' }
         ],
-        translation: 'A secular dawn meditation — walking into the day with open hands.'
+        translation: 'A secular dawn meditation, walking into the day with open hands.'
       }
     ]
   },
@@ -767,7 +767,7 @@ export const SPIRITUALITIES = [
     prayers: [
       {
         id: 'jing-tian',
-        title: 'Jìng Tiān — Reverence for Heaven',
+        title: 'Jìng Tiān, Reverence for Heaven',
         lang: 'zh',
         langLabel: '中文 · Chinese',
         phrases: [
@@ -776,7 +776,7 @@ export const SPIRITUALITIES = [
           { t: '風調雨順，五穀豐登', s: 'Fēng tiáo yǔ shùn, wǔgǔ fēngdēng', e: 'may winds and rains come in season and the harvest ripen,' },
           { t: '國泰民安', s: 'Guó tài mín ān', e: 'may the nation be at peace and its people safe.' }
         ],
-        translation: 'The oldest prayer of Chinese life — honouring Heaven, the source of all that is good.'
+        translation: 'The oldest prayer of Chinese life, honouring Heaven, the source of all that is good.'
       },
       {
         id: 'home-altar',
@@ -791,11 +791,11 @@ export const SPIRITUALITIES = [
           { t: 'let my gratitude rise like incense,' },
           { t: 'and my kindness reach like a blessing.' }
         ],
-        translation: 'A reflection on the family altar — incense, memory, and the everyday sacredness of home.'
+        translation: 'A reflection on the family altar, incense, memory, and the everyday sacredness of home.'
       },
       {
         id: 'ji-zu',
-        title: 'Jì Zǔ — Remembering the Ancestors',
+        title: 'Jì Zǔ, Remembering the Ancestors',
         lang: 'zh',
         langLabel: '中文 · Chinese',
         phrases: [
@@ -804,11 +804,11 @@ export const SPIRITUALITIES = [
           { t: '飲水思源', s: 'Yǐn shuǐ sī yuán', e: 'when we drink water, we remember its source,' },
           { t: '福澤綿延', s: 'Fúzé miányán', e: 'may your blessings flow down to us still.' }
         ],
-        translation: 'The ancestral rite of home — gratitude to those who came before, honoured at the family altar.'
+        translation: 'The ancestral rite of home, gratitude to those who came before, honoured at the family altar.'
       },
       {
         id: 'mazu',
-        title: 'Māzǔ — Guardian of the Seas',
+        title: 'Māzǔ, Guardian of the Seas',
         lang: 'zh',
         langLabel: '中文 · Chinese',
         phrases: [
@@ -817,7 +817,7 @@ export const SPIRITUALITIES = [
           { t: '風平浪靜', s: 'Fēng píng làng jìng', e: 'calm the winds and still the waves,' },
           { t: '平安歸來', s: 'Píng\u2019ān guīlái', e: 'and bring all who sail safely home.' }
         ],
-        translation: 'A prayer to Mazu, the beloved goddess of the sea — protector of every fisherman and every voyage.'
+        translation: 'A prayer to Mazu, the beloved goddess of the sea, protector of every fisherman and every voyage.'
       },
       {
         id: 'guanyin',
@@ -835,7 +835,7 @@ export const SPIRITUALITIES = [
       },
       {
         id: 'tudi-gong',
-        title: 'Tǔdì Gōng — The Earth God',
+        title: 'Tǔdì Gōng, The Earth God',
         lang: 'zh',
         langLabel: '中文 · Chinese',
         phrases: [
@@ -844,11 +844,11 @@ export const SPIRITUALITIES = [
           { t: '保佑平安', s: 'Bǎoyòu píng\u2019ān', e: 'keep our home and our people safe,' },
           { t: '感恩在心', s: 'Gǎn\u2019ēn zài xīn', e: 'our gratitude lives in our hearts.' }
         ],
-        translation: 'A prayer to Tudi Gong, the kindly Earth God of each village and home — protector of the land that feeds us.'
+        translation: 'A prayer to Tudi Gong, the kindly Earth God of each village and home, protector of the land that feeds us.'
       },
       {
         id: 'zao-jun',
-        title: 'Zào Jūn — The Kitchen God',
+        title: 'Zào Jūn, The Kitchen God',
         lang: 'zh',
         langLabel: '中文 · Chinese',
         phrases: [
@@ -890,7 +890,7 @@ export const SPIRITUALITIES = [
           { t: 'ਨਾਨਕ ਨਾਮ ਚੜ੍ਹਦੀ ਕਲਾ', s: 'Nānak nām chaṛhdī kalā', e: 'By the Name of Nanak, may we ever rise higher.' },
           { t: 'ਤੇਰੇ ਭਾਣੇ ਸਰਬੱਤ ਦਾ ਭਲਾ', s: 'Tere bhāṇe sarbatt dā bhalā', e: 'By Your will, may the good of all be done.' }
         ],
-        translation: 'The Sikh declaration of hope — an ever-rising spirit, and the good of all under Godʼs will.'
+        translation: 'The Sikh declaration of hope, an ever-rising spirit, and the good of all under Godʼs will.'
       },
       {
         id: 'deh-shiva',
@@ -898,12 +898,12 @@ export const SPIRITUALITIES = [
         lang: 'pa',
         langLabel: 'ਪੰਜਾਬੀ · Gurmukhi',
         phrases: [
-          { t: 'ਦੇਹ ਸਿਵਾ ਬਰ ਮੋਹਿ ਇਹੈ ਸ਼ੁਭ ਕਰਮਨ ਤੇ ਕਬਹੂੰ ਨ ਟਰੋਂ', s: 'Deh śivā bar mohi ehai, śubh karman te kabahū̃ na ṭarō̃', e: 'Grant me this boon, O Lord — that I never turn from good deeds.' },
+          { t: 'ਦੇਹ ਸਿਵਾ ਬਰ ਮੋਹਿ ਇਹੈ ਸ਼ੁਭ ਕਰਮਨ ਤੇ ਕਬਹੂੰ ਨ ਟਰੋਂ', s: 'Deh śivā bar mohi ehai, śubh karman te kabahū̃ na ṭarō̃', e: 'Grant me this boon, O Lord, that I never turn from good deeds.' },
           { t: 'ਨ ਡਰੋਂ ਅਰਿ ਸੋ ਜਬ ਜਾਇ ਤਰੋਂ', s: 'Na ḍarō̃ ari so jab jāi tarō̃', e: 'That I never fear the enemy when I go into battle.' },
           { t: 'ਨਿਸਚੈ ਕਰਿ ਅਪਨੀ ਜੀਤ ਕਰੋਂ', s: 'Niścai kari apnī jīt karō̃', e: 'And with firm resolve, I claim the victory.' },
           { t: 'ਆਰਜ ਕੀਰਤਿ ਲੈ ਮੈਂ ਗਹਾ ਸੁਧਰਮ ਕਹਾ ਹੈ ਭਜਨ ਅਰ ਖਟਾ', s: 'Āraj kīrati lai maiṁ gahā, sudharam kahā hai bhajan ar khaṭā', e: 'Let me live long to sing Your praises, and earn my keep through honest work.' }
         ],
-        translation: 'A soldier-prayer of the Khalsa — courage, righteousness, and remembrance of the Name.'
+        translation: 'A soldier-prayer of the Khalsa, courage, righteousness, and remembrance of the Name.'
       },
       {
         id: 'gur-mantar',
@@ -915,7 +915,7 @@ export const SPIRITUALITIES = [
           { t: 'ਵਾਹਿਗੁਰੂ ਜੀ ਕਾ ਖਾਲਸਾ', s: 'Vāhegurū jī kā Khālsā', e: 'The Khalsa belongs to the Wonderful Lord,' },
           { t: 'ਵਾਹਿਗੁਰੂ ਜੀ ਕੀ ਫਤਹਿ', s: 'Vāhegurū jī kī Fateh', e: 'and victory belongs to the Wonderful Lord.' }
         ],
-        translation: 'The Sikh greeting of the Khalsa — remembrance and victory belonging to the One, repeated with every breath.'
+        translation: 'The Sikh greeting of the Khalsa, remembrance and victory belonging to the One, repeated with every breath.'
       },
       {
         id: 'sat-sri-akal',
@@ -928,11 +928,11 @@ export const SPIRITUALITIES = [
           { t: 'ਅਕਾਲ ਸਹਾਇ', s: 'Akāl sahāi', e: 'May the Eternal One be your help.' },
           { t: 'ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ', s: 'Sat Srī Akāl', e: 'Truth is the Eternal One.' }
         ],
-        translation: 'The greeting and battle-cry of the Khalsa — courage born of the Eternal Truth.'
+        translation: 'The greeting and battle-cry of the Khalsa, courage born of the Eternal Truth.'
       },
       {
         id: 'anand',
-        title: 'Tera Kiya — From Anand Sahib',
+        title: 'Tera Kiya, From Anand Sahib',
         lang: 'pa',
         langLabel: 'ਪੰਜਾਬੀ · Gurmukhi',
         phrases: [
@@ -941,7 +941,7 @@ export const SPIRITUALITIES = [
           { t: 'ਤੇਰਾ ਮੀਤਾ ਸਭੁ ਕੋ', s: 'Tērā mītā sabhu ko', e: 'Everyone is Your friend.' },
           { t: 'ਸਭਨਾ ਦਾ ਸਾਹਿਬੁ ਸਭੁ ਕੋ', s: 'Sabhanā dā sāhib sabhu ko', e: 'And You are the Master of all.' }
         ],
-        translation: 'A hymn of humble gratitude — for gifts we can never repay, given by a love without limit.'
+        translation: 'A hymn of humble gratitude, for gifts we can never repay, given by a love without limit.'
       },
       {
         id: 'waheguru',
@@ -950,12 +950,12 @@ export const SPIRITUALITIES = [
         langLabel: 'ਪੰਜਾਬੀ · Gurmukhi · repeated',
         loop: true,
         phrases: [
-          { t: 'ਵਾਹਿਗੁਰੂ', s: 'Waheguru', e: 'Wonderful Lord — the divine light beyond all knowing.' },
-          { t: 'ਵਾਹਿਗੁਰੂ', s: 'Waheguru', e: 'Wonderful Lord — the divine light beyond all knowing.' },
-          { t: 'ਵਾਹਿਗੁਰੂ', s: 'Waheguru', e: 'Wonderful Lord — the divine light beyond all knowing.' },
-          { t: 'ਵਾਹਿਗੁਰੂ', s: 'Waheguru', e: 'Wonderful Lord — the divine light beyond all knowing.' }
+          { t: 'ਵਾਹਿਗੁਰੂ', s: 'Waheguru', e: 'Wonderful Lord, the divine light beyond all knowing.' },
+          { t: 'ਵਾਹਿਗੁਰੂ', s: 'Waheguru', e: 'Wonderful Lord, the divine light beyond all knowing.' },
+          { t: 'ਵਾਹਿਗੁਰੂ', s: 'Waheguru', e: 'Wonderful Lord, the divine light beyond all knowing.' },
+          { t: 'ਵਾਹਿਗੁਰੂ', s: 'Waheguru', e: 'Wonderful Lord, the divine light beyond all knowing.' }
         ],
-        translation: 'The meditative repetition of the Name — remembrance of the One through every breath.'
+        translation: 'The meditative repetition of the Name, remembrance of the One through every breath.'
       }
     ]
   },
@@ -993,7 +993,7 @@ export const SPIRITUALITIES = [
           { t: 'בְּיָדוֹ אַפְקִיד רוּחִי', s: 'Beyado afkid ruchi', e: 'In His hand I entrust my spirit,' },
           { t: 'בְּעֵת אִישָׁן וְאָעִירָה', s: 'Beʼet ishan veʼarirah', e: 'when I sleep and when I wake.' }
         ],
-        translation: 'The majestic closing hymn of the liturgy — God beyond time, and my soul held safe in His hand.'
+        translation: 'The majestic closing hymn of the liturgy, God beyond time, and my soul held safe in His hand.'
       },
       {
         id: 'ein-keloheinu',
@@ -1008,7 +1008,7 @@ export const SPIRITUALITIES = [
           { t: 'בָּרוּךְ אֱלֹהֵינוּ, בָּרוּךְ אֲדוֹנֵנוּ', s: 'Baruch Eloheinu, baruch Adoneinu', e: 'Blessed is our God, blessed is our Lord.' },
           { t: 'אַתָּה הוּא אֱלֹהֵינוּ', s: 'Atah hu Eloheinu', e: 'You are our God.' }
         ],
-        translation: 'A joyful closing hymn of the liturgy — praise turned into a call-and-response of gratitude.'
+        translation: 'A joyful closing hymn of the liturgy, praise turned into a call-and-response of gratitude.'
       },
       {
         id: 'modeh-ani',
@@ -1021,7 +1021,7 @@ export const SPIRITUALITIES = [
           { t: 'שֶׁהֶחֱזַרְתָּ בִּי נִשְׁמָתִי בְּחֶמְלָה', s: 'Shehechezarta bi nishmati bʼchemlah', e: 'For You have returned my soul to me with compassion.' },
           { t: 'רַבָּה אֱמוּנָתֶךָ', s: 'Rabbah emunatecha', e: 'Great is Your faithfulness.' }
         ],
-        translation: 'The first words a Jew speaks on waking — gratitude before anything else.'
+        translation: 'The first words a Jew speaks on waking, gratitude before anything else.'
       },
       {
         id: 'oseh-shalom',
@@ -1034,7 +1034,7 @@ export const SPIRITUALITIES = [
           { t: 'וְעַל כָּל־יִשְׂרָאֵל', s: 'Vʼal kol Yisrael', e: 'and for all the world,' },
           { t: 'וְאִמְרוּ אָמֵן', s: 'Vʼimru amen', e: 'and let us say: Amen.' }
         ],
-        translation: 'A closing prayer for peace — for us, for everyone, and for all who pray it.'
+        translation: 'A closing prayer for peace, for us, for everyone, and for all who pray it.'
       },
       {
         id: 'shalom-aleichem',
@@ -1049,7 +1049,7 @@ export const SPIRITUALITIES = [
           { t: 'בּוֹאֲכֶם לְשָׁלוֹם מַלְאֲכֵי הַשָּׁלוֹם', s: 'Boachem leshalom malachei hashalom', e: 'May your coming be for peace, angels of peace,' },
           { t: 'מַלְאֲכֵי עֶלְיוֹן', s: 'Malachei Elyon', e: 'angels of the Most High.' }
         ],
-        translation: 'A traditional Sabbath greeting sung to the angels who accompany a person home — a prayer of welcome and peace.'
+        translation: 'A traditional Sabbath greeting sung to the angels who accompany a person home, a prayer of welcome and peace.'
       },
       {
         id: 'priestly-blessing',
@@ -1061,7 +1061,7 @@ export const SPIRITUALITIES = [
           { t: 'יָאֵר יְהוָה פָּנָיו אֵלֶיךָ וִיחֻנֶּךָּ', s: 'Yaʼer Adonai panav eilecha vichuneka', e: 'May the Lord make His face shine upon you and be gracious to you.' },
           { t: 'יִשָּׂא יְהוָה פָּנָיו אֵלֶיךָ וְיָשֵׂם לְךָ שָׁלוֹם', s: 'Yissa Adonai panav eilecha veyasem lecha shalom', e: 'May the Lord lift up His face to you and give you peace.' }
         ],
-        translation: 'The ancient blessing God gave the priests, spoken over the people — among the oldest words of peace.'
+        translation: 'The ancient blessing God gave the priests, spoken over the people, among the oldest words of peace.'
       }
     ]
   },
@@ -1099,7 +1099,7 @@ export const SPIRITUALITIES = [
           { t: 'In letting go, may I be filled;' },
           { t: 'in stillness, may I be moved.' }
         ],
-        translation: 'A meditation on wu wei — effortless action in harmony with the Dao.'
+        translation: 'A meditation on wu wei, effortless action in harmony with the Dao.'
       },
       {
         id: 'ganying',
@@ -1111,7 +1111,7 @@ export const SPIRITUALITIES = [
           { t: '善惡之報，如影隨形。', s: 'Shàn è zhī bào, rú yǐng suí xíng.', e: 'The reward of good and evil follows like a shadow.' },
           { t: '是道則進，非道則退。', s: 'Shì dào zé jìn, fēi dào zé tuì.', e: 'Walk the way of goodness; step back from what is not the way.' }
         ],
-        translation: 'A famous Taoist teaching on moral living — the quiet law by which good deeds find their way home.'
+        translation: 'A famous Taoist teaching on moral living, the quiet law by which good deeds find their way home.'
       },
       {
         id: 'dao-de-jing-opening',
@@ -1124,7 +1124,7 @@ export const SPIRITUALITIES = [
           { t: '無名，天地之始；', s: 'Wúmíng, tiāndì zhī shǐ;', e: 'The nameless is the beginning of heaven and earth.' },
           { t: '有名，萬物之母。', s: 'Yǒumíng, wànwù zhī mǔ.', e: 'The named is the mother of the ten thousand things.' }
         ],
-        translation: 'The opening of the Dao De Jing — the mystery beyond words from which all things arise.'
+        translation: 'The opening of the Dao De Jing, the mystery beyond words from which all things arise.'
       },
       {
         id: 'three-treasures',
@@ -1139,7 +1139,7 @@ export const SPIRITUALITIES = [
           { t: 'and those who do not lead are able to lead all.' },
           { t: 'Dare to be gentle. That is to accord with heaven.' }
         ],
-        translation: 'The three treasures of the Dao De Jing — the quiet strengths that keep a life in harmony.'
+        translation: 'The three treasures of the Dao De Jing, the quiet strengths that keep a life in harmony.'
       }
     ]
   },
@@ -1153,7 +1153,7 @@ export const SPIRITUALITIES = [
     prayers: [
       {
         id: 'great-learning',
-        title: 'The Great Learning — 大學',
+        title: 'The Great Learning, 大學',
         lang: 'zh',
         langLabel: '中文 · Chinese',
         phrases: [
@@ -1164,7 +1164,7 @@ export const SPIRITUALITIES = [
       },
       {
         id: 'ren',
-        title: 'A Meditation on Ren — 仁',
+        title: 'A Meditation on Ren, 仁',
         lang: 'en',
         langLabel: 'English',
         phrases: [
@@ -1174,29 +1174,29 @@ export const SPIRITUALITIES = [
           { t: 'Ritual without love is empty;' },
           { t: 'let my courtesy come from a full heart.' }
         ],
-        translation: 'A reflection on ren — Confucian human-heartedness expressed through empathy, ritual, and care.'
+        translation: 'A reflection on ren, Confucian human-heartedness expressed through empathy, ritual, and care.'
       },
       {
         id: 'learning-joy',
-        title: 'Learning Is a Joy — 學而時習之',
+        title: 'Learning Is a Joy, 學而時習之',
         lang: 'zh',
         langLabel: '中文 · Chinese',
         phrases: [
-          { t: '學而時習之，不亦說乎？', s: 'Xué ér shí xí zhī, bù yì yuè hū?', e: 'To learn and practise it often — is that not a joy?' },
-          { t: '有朋自遠方來，不亦樂乎？', s: 'Yǒu péng zì yuǎnfāng lái, bù yì lè hū?', e: 'To have friends come from afar — is that not a pleasure?' }
+          { t: '學而時習之，不亦說乎？', s: 'Xué ér shí xí zhī, bù yì yuè hū?', e: 'To learn and practise it often, is that not a joy?' },
+          { t: '有朋自遠方來，不亦樂乎？', s: 'Yǒu péng zì yuǎnfāng lái, bù yì lè hū?', e: 'To have friends come from afar, is that not a pleasure?' }
         ],
-        translation: 'The opening of the Analects — learning, practice, and friendship as quiet joys of the good life.'
+        translation: 'The opening of the Analects, learning, practice, and friendship as quiet joys of the good life.'
       },
       {
         id: 'golden-rule',
-        title: 'The Golden Rule — 己所不欲',
+        title: 'The Golden Rule, 己所不欲',
         lang: 'zh',
         langLabel: '中文 · Chinese',
         phrases: [
           { t: '己所不欲，勿施於人。', s: 'Jǐ suǒ bù yù, wù shī yú rén.', e: 'Do not do to others what you would not have done to you.' },
           { t: '夫仁者，己欲立而立人，己欲達而達人。', s: 'Fū rén zhě, jǐ yù lì ér lì rén, jǐ yù dá ér dá rén.', e: 'The human-hearted: wishing to stand, they help others stand; wishing to succeed, they help others succeed.' }
         ],
-        translation: 'The Confucian Golden Rule from the Analects — empathy as the very heart of ren.'
+        translation: 'The Confucian Golden Rule from the Analects, empathy as the very heart of ren.'
       }
     ]
   },
@@ -1210,7 +1210,7 @@ export const SPIRITUALITIES = [
     prayers: [
       {
         id: 'oharai',
-        title: 'Ōharae — The Great Purification',
+        title: 'Ōharae, The Great Purification',
         lang: 'ja',
         langLabel: '日本語 · Japanese',
         phrases: [
@@ -1219,7 +1219,7 @@ export const SPIRITUALITIES = [
           { t: '諸々の禍事・罪・穢れを', s: 'Moromoro no magagoto, tsumi, kegare o', e: 'take away every misfortune, fault, and defilement,' },
           { t: '祓へ給ひ清め給ふことを', s: 'Harae-tamai kiyome-tamau koto o', e: 'and purify them away.' }
         ],
-        translation: 'The ancient rite of purification spoken at shrines — an offering of cleansing before the kami.'
+        translation: 'The ancient rite of purification spoken at shrines, an offering of cleansing before the kami.'
       },
       {
         id: 'misono',
@@ -1231,7 +1231,7 @@ export const SPIRITUALITIES = [
           { t: '言挙げせぬ道を行き', s: 'Kotoage senu michi o iki', e: 'I walk the path of quiet sincerity,' },
           { t: '神の恵みに感謝します。', s: 'Kami no megumi ni kansha shimasu.', e: 'and give thanks for the blessings of the kami.' }
         ],
-        translation: 'A short norito of sincerity — a clean heart offered before the divine presence in all things.'
+        translation: 'A short norito of sincerity, a clean heart offered before the divine presence in all things.'
       },
       {
         id: 'amaterasu',
@@ -1244,7 +1244,7 @@ export const SPIRITUALITIES = [
           { t: '心を静かに清め', s: 'Kokoro o shizuka ni kiyome', e: 'quiet my heart and make it pure,' },
           { t: '今日を誠実に生きん。', s: 'Kyō o seijitsu ni ikin.', e: 'that I may live this day in honesty and truth.' }
         ],
-        translation: 'A simple morning offering of gratitude to the Sun Goddess — the source of light and life.'
+        translation: 'A simple morning offering of gratitude to the Sun Goddess, the source of light and life.'
       },
       {
         id: 'kami-presence',
@@ -1259,11 +1259,11 @@ export const SPIRITUALITIES = [
           { t: 'and my steps disturb nothing.' },
           { t: 'This day is a gift. I receive it with both hands.' }
         ],
-        translation: 'A reflection on the Shinto sense of the sacred — the kami present in all of nature.'
+        translation: 'A reflection on the Shinto sense of the sacred, the kami present in all of nature.'
       },
       {
         id: 'kannagara',
-        title: 'Kannagara — With the Kami',
+        title: 'Kannagara, With the Kami',
         lang: 'en',
         langLabel: 'English',
         phrases: [
@@ -1274,7 +1274,7 @@ export const SPIRITUALITIES = [
           { t: 'May my life be a quiet bow' },
           { t: 'to the sacred woven through all things.' }
         ],
-        translation: 'A reflection on kannagara — the Shinto way of living in harmony with the divine that pervades the world.'
+        translation: 'A reflection on kannagara, the Shinto way of living in harmony with the divine that pervades the world.'
       }
     ]
   },
@@ -1298,7 +1298,7 @@ export const SPIRITUALITIES = [
           { t: 'णमो उवज्झायाणं', s: 'Namo uvajjhāyāṇaṁ', e: 'I bow to the preceptors.' },
           { t: 'णमो लोए सव्व साहूणं', s: 'Namo loe savva sāhūṇaṁ', e: 'I bow to all the saints in the world.' }
         ],
-        translation: 'The supreme Jain mantra of veneration — bowing to those who have freed themselves, and to all seekers on the path.'
+        translation: 'The supreme Jain mantra of veneration, bowing to those who have freed themselves, and to all seekers on the path.'
       },
       {
         id: 'ahimsa',
@@ -1311,11 +1311,11 @@ export const SPIRITUALITIES = [
           { t: 'अहिंसा परमं सत्यं', s: 'Ahimsā paramaṁ satyam', e: 'Non-violence is the highest truth,' },
           { t: 'अहिंसा परमं ज्ञानम्', s: 'Ahimsā paramaṁ jñānam', e: 'and non-violence the highest knowledge.' }
         ],
-        translation: 'The great Jain declaration — harmlessness toward every living being as the root of all virtue.'
+        translation: 'The great Jain declaration, harmlessness toward every living being as the root of all virtue.'
       },
       {
         id: 'khamavani',
-        title: 'Khamāvaṇī — The Forgiveness Prayer',
+        title: 'Khamāvaṇī, The Forgiveness Prayer',
         lang: 'pra',
         langLabel: 'प्राकृत · Prakrit',
         phrases: [
@@ -1324,11 +1324,11 @@ export const SPIRITUALITIES = [
           { t: 'मित्ति मे सव्व भूएसु', s: 'Mitti me savva bhūesu', e: 'I am a friend to all beings.' },
           { t: 'वेरं मझं न केणइ', s: 'Veraṁ majjhaṁ na keṇai', e: 'I hold enmity with no one.' }
         ],
-        translation: 'The Jain prayer of reconciliation, spoken at the close of the holy days — forgiveness given and received.'
+        translation: 'The Jain prayer of reconciliation, spoken at the close of the holy days, forgiveness given and received.'
       },
       {
         id: 'pratikraman',
-        title: 'Pratikramaṇa — Returning to the Path',
+        title: 'Pratikramaṇa, Returning to the Path',
         lang: 'en',
         langLabel: 'English',
         phrases: [
@@ -1338,7 +1338,7 @@ export const SPIRITUALITIES = [
           { t: 'And I forgive all who have wronged me.' },
           { t: 'Let me begin again, gently, with every being.' }
         ],
-        translation: 'A reflection on pratikramana — the Jain practice of confession and turning back to the path of non-violence.'
+        translation: 'A reflection on pratikramana, the Jain practice of confession and turning back to the path of non-violence.'
       },
       {
         id: 'mahavira-vow',
@@ -1352,7 +1352,7 @@ export const SPIRITUALITIES = [
           { t: 'Let me be content with little, and generous with all.' },
           { t: 'In this vast web of life, I take my place gently.' }
         ],
-        translation: 'A reflection on the five great vows of Mahavira — non-violence, truth, non-stealing, chastity, and non-attachment.'
+        translation: 'A reflection on the five great vows of Mahavira, non-violence, truth, non-stealing, chastity, and non-attachment.'
       }
     ]
   },
@@ -1366,7 +1366,7 @@ export const SPIRITUALITIES = [
     prayers: [
       {
         id: 'ase',
-        title: 'Àṣẹ — So Be It',
+        title: 'Àṣẹ, So Be It',
         lang: 'yo',
         langLabel: 'Yorùbá · repeated',
         loop: true,
@@ -1376,7 +1376,7 @@ export const SPIRITUALITIES = [
           { t: 'Àṣẹ.', s: 'Àṣẹ.', e: 'So be it.' },
           { t: 'Àṣẹ.', s: 'Àṣẹ.', e: 'So be it.' }
         ],
-        translation: 'The Yoruba affirmation of the power of spoken prayer — each word spoken with the force of Àṣẹ, "so be it."'
+        translation: 'The Yoruba affirmation of the power of spoken prayer, each word spoken with the force of Àṣẹ, "so be it."'
       },
       {
         id: 'ancestors',
@@ -1391,11 +1391,11 @@ export const SPIRITUALITIES = [
           { t: 'May we remember where we come from,' },
           { t: 'and carry that memory forward, kindly. Àṣẹ.' }
         ],
-        translation: 'A prayer of remembrance for the ancestors, honoured across African traditions — the living carried by the living.'
+        translation: 'A prayer of remembrance for the ancestors, honoured across African traditions, the living carried by the living.'
       },
       {
         id: 'odomankoma',
-        title: 'Odomankoma — The Creator',
+        title: 'Odomankoma, The Creator',
         lang: 'ak',
         langLabel: 'Akan · Twi',
         phrases: [
@@ -1403,11 +1403,11 @@ export const SPIRITUALITIES = [
           { t: 'Nyame', s: 'Nyame', e: 'God, who is above.' },
           { t: 'Yɛda wo ase', s: 'Yɛda wo ase', e: 'We give You thanks.' }
         ],
-        translation: 'An Akan prayer of thanksgiving to Odomankoma, the Creator — gratitude spoken before all else.'
+        translation: 'An Akan prayer of thanksgiving to Odomankoma, the Creator, gratitude spoken before all else.'
       },
       {
         id: 'umvelinqangi',
-        title: 'Umvelinqangi — The Great Spirit',
+        title: 'Umvelinqangi, The Great Spirit',
         lang: 'zu',
         langLabel: 'isiZulu · repeated',
         loop: true,
@@ -1426,20 +1426,20 @@ export const SPIRITUALITIES = [
     emoji: '🌿',
     glow: 'rgba(120, 200, 140, 0.24)',
     lightColor: '#7fd488',
-    tagline: 'All my relations — gratitude to the living world.',
+    tagline: 'All my relations, gratitude to the living world.',
     prayers: [
       {
         id: 'mitakuye-oyasin',
-        title: 'Mitákuye Oyásʼiŋ — All My Relations',
+        title: 'Mitákuye Oyásʼiŋ, All My Relations',
         lang: 'lkt',
         langLabel: 'Lakȟótiyapi · Lakota · repeated',
         loop: true,
         phrases: [
-          { t: 'Mitákuye Oyásʼiŋ', s: 'Mitákuye Oyásʼiŋ', e: 'All my relations — we are all connected.' },
-          { t: 'Mitákuye Oyásʼiŋ', s: 'Mitákuye Oyásʼiŋ', e: 'All my relations — we are all connected.' },
-          { t: 'Mitákuye Oyásʼiŋ', s: 'Mitákuye Oyásʼiŋ', e: 'All my relations — we are all connected.' }
+          { t: 'Mitákuye Oyásʼiŋ', s: 'Mitákuye Oyásʼiŋ', e: 'All my relations, we are all connected.' },
+          { t: 'Mitákuye Oyásʼiŋ', s: 'Mitákuye Oyásʼiŋ', e: 'All my relations, we are all connected.' },
+          { t: 'Mitákuye Oyásʼiŋ', s: 'Mitákuye Oyásʼiŋ', e: 'All my relations, we are all connected.' }
         ],
-        translation: 'A Lakota prayer of kinship — "all my relations" — repeated as a meditation on our connection to every living thing.'
+        translation: 'A Lakota prayer of kinship, "all my relations", repeated as a meditation on our connection to every living thing.'
       },
       {
         id: 'seven-directions',
@@ -1452,13 +1452,13 @@ export const SPIRITUALITIES = [
           { t: 'To the West, where the day rests, we give thanks for what is fulfilled.' },
           { t: 'To the North, where wisdom lives, we give thanks for endurance.' },
           { t: 'To the sky above and the earth below,' },
-          { t: 'and to the center where we stand — all my relations. Aho.' }
+          { t: 'and to the center where we stand, all my relations. Aho.' }
         ],
-        translation: 'A widely shared honoring of the directions — a prayer of gratitude to the world that holds us.'
+        translation: 'A widely shared honoring of the directions, a prayer of gratitude to the world that holds us.'
       },
       {
         id: 'hoozho',
-        title: 'Hózhó — The Beauty Way',
+        title: 'Hózhó, The Beauty Way',
         lang: 'en',
         langLabel: 'English · from the Navajo tradition',
         phrases: [
@@ -1468,7 +1468,7 @@ export const SPIRITUALITIES = [
           { t: 'beauty all around me.' },
           { t: 'It is finished in beauty. Hózhó náhásdlíí.' }
         ],
-        translation: 'The Beauty Way of the Navajo — walking in harmony with all that is, begun in beauty and finished in beauty.'
+        translation: 'The Beauty Way of the Navajo, walking in harmony with all that is, begun in beauty and finished in beauty.'
       },
       {
         id: 'hooponopono',
@@ -1481,11 +1481,11 @@ export const SPIRITUALITIES = [
           { t: 'Mahalo iā ʻoe', s: 'Mahalo iā ʻoe', e: 'Thank you.' },
           { t: 'Aloha wau iā ʻoe', s: 'Aloha wau iā ʻoe', e: 'I love you.' }
         ],
-        translation: 'The Hawaiian practice of reconciliation and healing — forgiveness, gratitude, and love offered to set things right.'
+        translation: 'The Hawaiian practice of reconciliation and healing, forgiveness, gratitude, and love offered to set things right.'
       },
       {
         id: 'karakia',
-        title: 'Karakia Whakamutunga — A Blessing of Peace',
+        title: 'Karakia Whakamutunga, A Blessing of Peace',
         lang: 'mi',
         langLabel: 'Te Reo Māori · Māori',
         phrases: [
@@ -1494,11 +1494,11 @@ export const SPIRITUALITIES = [
           { t: 'Kia tere te kārohirohi i mua i tōu huarahi', e: 'May the shimmer of light dance across your path.' },
           { t: 'Kia tau te aroha', e: 'May love settle upon you.' }
         ],
-        translation: 'A karakia of peace and blessing from Aotearoa — calm waters, dancing light, and love.'
+        translation: 'A karakia of peace and blessing from Aotearoa, calm waters, dancing light, and love.'
       },
       {
         id: 'pachamama',
-        title: 'Pachamama — Mother Earth',
+        title: 'Pachamama, Mother Earth',
         lang: 'en',
         langLabel: 'English · from the Andean tradition',
         phrases: [
@@ -1508,7 +1508,7 @@ export const SPIRITUALITIES = [
           { t: 'We return to you what we take,' },
           { t: 'and walk softly upon your body.' }
         ],
-        translation: 'A reflection in the Andean tradition — gratitude and reciprocity with Pachamama, Mother Earth.'
+        translation: 'A reflection in the Andean tradition, gratitude and reciprocity with Pachamama, Mother Earth.'
       },
       {
         id: 'thanksgiving-land',
@@ -1522,7 +1522,7 @@ export const SPIRITUALITIES = [
           { t: 'May we remember that we borrow this Earth from our children.' },
           { t: 'With every harvest, let us give back more than we take.' }
         ],
-        translation: 'A prayer of thanksgiving for the living land — gratitude that keeps us humble and generous.'
+        translation: 'A prayer of thanksgiving for the living land, gratitude that keeps us humble and generous.'
       },
       {
         id: 'seven-teachings',
@@ -1536,7 +1536,7 @@ export const SPIRITUALITIES = [
           { t: 'May I honour each one today' },
           { t: 'in the way I speak and the way I live.' }
         ],
-        translation: 'A reflection on the Seven Grandfather Teachings of the Anishinaabe — the virtues that make a good life.'
+        translation: 'A reflection on the Seven Grandfather Teachings of the Anishinaabe, the virtues that make a good life.'
       }
     ]
   },
@@ -1546,7 +1546,7 @@ export const SPIRITUALITIES = [
     emoji: '🕯️',
     glow: 'rgba(255, 190, 90, 0.26)',
     lightColor: '#ffc46b',
-    tagline: 'Good thoughts, good words, good deeds — the flame of truth.',
+    tagline: 'Good thoughts, good words, good deeds, the flame of truth.',
     prayers: [
       {
         id: 'ashem-vohu',
@@ -1555,11 +1555,11 @@ export const SPIRITUALITIES = [
         langLabel: 'Avestan · repeated',
         loop: true,
         phrases: [
-          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', s: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness — happiness to the one who is righteous for the sake of the highest righteousness.' },
-          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', s: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness — happiness to the one who is righteous for the sake of the highest righteousness.' },
-          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', s: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness — happiness to the one who is righteous for the sake of the highest righteousness.' }
+          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', s: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness, happiness to the one who is righteous for the sake of the highest righteousness.' },
+          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', s: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness, happiness to the one who is righteous for the sake of the highest righteousness.' },
+          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', s: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness, happiness to the one who is righteous for the sake of the highest righteousness.' }
         ],
-        translation: 'One of the most sacred prayers of Zoroastrianism — the vow of a life aligned with truth and righteousness.'
+        translation: 'One of the most sacred prayers of Zoroastrianism, the vow of a life aligned with truth and righteousness.'
       },
       {
         id: 'ahuna-vairya',
@@ -1569,9 +1569,9 @@ export const SPIRITUALITIES = [
         phrases: [
           { t: 'Yatā ahū vairyō, aθā ratuš ašāt̰cīt̰ hacā', s: 'Yatā ahū vairyō, athā ratush ashatchit hachā', e: 'As the heavenly Lord is to be chosen, so is the earthly judge, in accord with truth.' },
           { t: 'vaŋhə̄uš dazdā manaŋhō, šyaoθananąm aŋhə̄uš mazdāi', s: 'Vanghēush dazdā mananghō, shyaothananām anghēush mazdāi', e: 'By the good mind, may deeds be done for Mazda.' },
-          { t: 'xšaθrəmcā ahurāi, ā yim drigubyō dadat̰ vāstārəm.', s: 'Khshathremchā ahurāi, ā yim drigubyō dadat vāstārem.', e: 'And the Kingdom of Ahura — for those who give the poor a shepherd.' }
+          { t: 'xšaθrəmcā ahurāi, ā yim drigubyō dadat̰ vāstārəm.', s: 'Khshathremchā ahurāi, ā yim drigubyō dadat vāstārem.', e: 'And the Kingdom of Ahura, for those who give the poor a shepherd.' }
         ],
-        translation: 'The Ahuna Vairya, the most sacred formula of the Zoroastrian faith — the seal of truth and care for the vulnerable.'
+        translation: 'The Ahuna Vairya, the most sacred formula of the Zoroastrian faith, the seal of truth and care for the vulnerable.'
       },
       {
         id: 'fire-blessing',
@@ -1585,7 +1585,7 @@ export const SPIRITUALITIES = [
           { t: 'This day, I will tend the flame within me,' },
           { t: 'and by it, be a little light to the world.' }
         ],
-        translation: 'A reflection on the sacred fire — a reminder that each person carries a flame of truth to tend and share.'
+        translation: 'A reflection on the sacred fire, a reminder that each person carries a flame of truth to tend and share.'
       },
       {
         id: 'humata',
@@ -1598,7 +1598,7 @@ export const SPIRITUALITIES = [
           { t: 'Humata, hukhta, huvarshta.', s: 'Humata, hukhta, huvarshta.', e: 'Good thoughts, good words, good deeds.' },
           { t: 'Humata, hukhta, huvarshta.', s: 'Humata, hukhta, huvarshta.', e: 'Good thoughts, good words, good deeds.' }
         ],
-        translation: 'The threefold path at the heart of Zoroastrian faith — thought, speech, and action kept pure.'
+        translation: 'The threefold path at the heart of Zoroastrian faith, thought, speech, and action kept pure.'
       }
     ]
   }
