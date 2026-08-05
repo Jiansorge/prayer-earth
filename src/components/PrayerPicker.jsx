@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
 import { useT } from '../i18n.js'
+import { stopPlayback } from '../playback.js'
 
 // A quiet sheet that lists every prayer of a chosen tradition, so a person
 // can see and choose any of them instead of always landing on the first one.
@@ -12,6 +13,11 @@ function PickerRow({ p, i, spirit, openPrayer, close, t }) {
     <button
       className="picker-row"
       onClick={() => {
+        const cur = useStore.getState()
+        if (cur.playingPrayerId && cur.playingPrayerId !== p.id) {
+          // Choosing a different prayer stops the one playing in the background.
+          stopPlayback()
+        }
         openPrayer(spirit.id, p.id)
         close()
       }}

@@ -6,6 +6,7 @@ import { ambient } from '../audio/ambience.js'
 import { syncClient } from '../sync/client.js'
 import { useT } from '../i18n.js'
 import PrayerStats from '../components/PrayerStats.jsx'
+import { stopPlayback } from '../playback.js'
 
 const fmt = (s) => {
   const m = Math.floor(s / 60)
@@ -411,7 +412,11 @@ export default function PrayerPage() {
             <button
               key={p.id}
               className={`chip ${p.id === prayerId ? 'on' : ''}`}
-              onClick={() => openPrayer(spiritId, p.id)}
+              onClick={() => {
+                const cur = useStore.getState()
+                if (cur.playingPrayerId && cur.playingPrayerId !== p.id) stopPlayback()
+                openPrayer(spiritId, p.id)
+              }}
             >
               {p.title}
               <span className={`chip-count ${p.id === prayerId ? 'on' : ''}`}>

@@ -631,7 +631,7 @@ export class EarthScene {
     const spr = new THREE.Sprite(mat)
     spr.scale.set(3.2, 3.2, 1)
     spr.visible = false
-    this.corona = spr
+    this.coronaSpr = spr
     this.scene.add(spr)
   }
 
@@ -1222,12 +1222,12 @@ export class EarthScene {
     }
 
     // the halo blooms around the whole world at high ladder rungs
-    if (this.corona) {
-      this.corona.visible = this.corona > 0.012
-      if (this.corona.visible) {
-        this.corona.material.opacity = this.corona * (0.45 + 0.3 * Math.sin(t * 0.9))
-        this.corona.scale.setScalar(3.2 + this.corona * 2.6 + 0.12 * Math.sin(t * 0.6))
-        this.corona.material.rotation += 0.0005
+    if (this.coronaSpr) {
+      this.coronaSpr.visible = this.corona > 0.012
+      if (this.coronaSpr.visible) {
+        this.coronaSpr.material.opacity = this.corona * (0.45 + 0.3 * Math.sin(t * 0.9))
+        this.coronaSpr.scale.setScalar(3.2 + this.corona * 2.6 + 0.12 * Math.sin(t * 0.6))
+        this.coronaSpr.material.rotation += 0.0005
       }
     }
 
@@ -1308,9 +1308,9 @@ export class EarthScene {
     if (this.dayTex) this.dayTex.dispose()
     if (this.nightTex) this.nightTex.dispose()
     if (this._readyTimer) clearTimeout(this._readyTimer)
-    if (this.corona) {
-      if (this.corona.material?.map) this.corona.material.map.dispose()
-      this.corona.material.dispose()
+    if (this.coronaSpr) {
+      if (this.coronaSpr.material?.map) this.coronaSpr.material.map.dispose()
+      this.coronaSpr.material.dispose()
     }
     if (this.wispPts) {
       this.wispPts.geometry.dispose()
