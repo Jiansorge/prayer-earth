@@ -156,6 +156,11 @@ async function serveStatic(req, res) {
   try {
     urlPath = decodeURIComponent(new URL(req.url, 'http://x').pathname)
   } catch {}
+  if (urlPath === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ ok: true, type: 'joining-palms' }))
+    return
+  }
   if (urlPath === '/api/tts') {
     await handleTTS(urlPath, req, res)
     return
