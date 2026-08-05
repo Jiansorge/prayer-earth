@@ -73,7 +73,8 @@
           document.head.appendChild(m)
         }
         for (const prop of ['og:image', 'twitter:image']) {
-          const existing = document.querySelector(`meta[property="${prop}"]`)
+          // og:image uses property=, twitter:image uses name= — match either.
+          const existing = document.querySelector(`meta[property="${prop}"], meta[name="${prop}"]`)
           if (existing) existing.setAttribute('content', origin + '/icons/og-card.png')
         }
       } catch {}
