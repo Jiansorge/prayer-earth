@@ -1,10 +1,17 @@
 // Joining Palms — offline-ready service worker.
+//
+// NOTE — when you change the MP3 library or remove prayers, stale audio will
+// keep being served from the cache-first SW (and the Cloudflare CDN). To ship
+// the new audio: bump the cache name below by one (v2 → v3 → …). The new SW
+// installs, deletes the old cache in `activate`, and re-caches fresh files. If
+// the app is served through Cloudflare, also purge the CDN cache for /audio/*
+// so the edge stops handing out the old files.
 const CACHE = 'prayer-earth-v2'
 const CORE = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/icon.svg',
+  '/icons/icon.svg',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/apple-touch-icon-180.png'
