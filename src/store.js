@@ -270,20 +270,18 @@ export const useStore = create(
       },
 
       // ---- derived ----
-      // How alight the Earth is. The curve is deliberately steep so the world
-      // reads as warmly adopted even at first: a lone person already sees a
-      // high glow, and modest real usage climbs quickly toward 100%. The floor
-      // keeps the world from ever looking dark; permanent all-time prayer,
-      // today/week community, and the people praying right now lift it.
+      // How alight the Earth is, shown as a percentage of a million prayers
+      // prayed together. It is driven ONLY by cumulative all-time prayers
+      // (server totals + this person's completions), which never decrease, so
+      // the number and the Earth's glow can only ever climb. The curve is
+      // gentle: it reads small at first and rises slowly, reaching 100% at the
+      // million-prayer mark.
       getGlow: () => {
         const s = get()
-        const total = Math.max(s.basePrayerSeconds, s.totalPrayerSeconds) + s.localPrayerSeconds
-        const steep = (x) => Math.pow(Math.min(1, x), 0.45)
-        const permanent = steep(Math.log10(1 + total) / 4)
-        const today = steep((s.usersToday || 0) / 40)
-        const week = steep((s.usersWeek || 0) / 150)
-        const live = steep((s.peoplePraying || 0) / 12)
-        return Math.min(1, 0.5 + 0.18 * permanent + 0.16 * today + 0.1 * week + 0.08 * live)
+        const prayers =
+          Object.values(s.prayerTotals).reduce((a, b) => a + (b || 0), 0) +
+          Object.values(s.prayerCompletions).reduce((a, b) => a + (b || 0), 0)
+        return Math.min(1, Math.pow(prayers / 1_000_000, 0.4))
       },
       getGlowPercent: () => Math.round(get().getGlow() * 100),
       getEarthBrightness: () => {

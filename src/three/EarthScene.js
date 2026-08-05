@@ -1003,7 +1003,10 @@ export class EarthScene {
   }
 
   setGlow(v) {
-    this.glow = Math.max(0, Math.min(1, v))
+    // The glow metric is the honest % of a million prayers (small at first),
+    // but the map itself should still feel alive: lift + soften the curve so
+    // the Earth is never near-black and only ever brightens as prayers grow.
+    this.glow = 0.2 + 0.8 * Math.pow(Math.max(0, Math.min(1, v)), 0.5)
   }
 
   // How many souls are praying right now (surge) and how much prayer the world

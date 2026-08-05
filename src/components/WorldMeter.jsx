@@ -26,7 +26,7 @@ export default function WorldMeter() {
         <div className="wm-bar-fill" style={{ width: `${Math.max(2, glowPct)}%` }} />
       </div>
       <div className="wm-row" style={{ marginTop: 8, marginBottom: 0 }}>
-        <span className="wm-label">{t('meter.earthAlight')}</span>
+        <span className="wm-label">{t('meter.toMillion')}</span>
         <span className="wm-value">{glowPct}%</span>
       </div>
       <div className="wm-row" style={{ marginTop: 8, marginBottom: 0 }}>

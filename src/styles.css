@@ -1474,6 +1474,15 @@ html[dir='rtl'] .chooser-arrow.right {
   text-shadow: 0 0 40px rgba(232, 196, 122, 0.6);
 }
 
+.earth-hud .eh-bottom .eh-glow-label {
+  color: var(--ink-faint);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-top: 2px;
+  text-shadow: 0 1px 6px rgba(4, 7, 20, 0.9);
+}
+
 .earth-hud .eh-bottom .eh-caption {
   color: var(--ink-faint);
   font-size: 12px;

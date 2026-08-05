@@ -78,6 +78,7 @@ export default function EarthPage() {
         </div>
         <div className="eh-bottom fade-in">
           <div className="eh-glow-pct">{glowPct}%</div>
+          <div className="eh-glow-label">{t('meter.toMillion')}</div>
           <div className="eh-caption">
             {connected ? t('earth.soulsNow', { n: people }) : t('earth.quietCompany')}          </div>
         </div>

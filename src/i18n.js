@@ -27,6 +27,7 @@ const en = {
   'meter.prayedToday': 'prayed today',
   'meter.prayedWeek': 'this week',
   'meter.quietCompany': 'Quiet company, connecting to the wider world…',
+  'meter.toMillion': 'of a million prayers together',
   'sync.notice': 'The wider world is having a quiet moment, you keep praying here.',
   'sync.noticeRate': 'You\u2019re moving a little fast, we slowed the shared connection for a moment.',
   'sync.noticeError': 'The shared connection hiccuped, we are reconnecting.',
