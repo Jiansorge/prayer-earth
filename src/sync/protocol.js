@@ -3,18 +3,18 @@
 // Keep this file byte-identical in sync-engine and in every app that consumes it
 // (Prayer Earth copies it as src/sync/protocol.js).
 
-export const PROTOCOL_VERSION = 1
+export const PROTOCOL_VERSION = 2
 
 // Client → Engine
 export const C_PRESENCE = 'presence' // { type, praying, prayerId?, spiritId?, name, cell? }
 export const C_SYNC = 'sync' // { type, anonId, stats }
-export const C_PONG = 'pong' // { type }
+export const C_PING = 'ping' // { type } — client keepalive probe
 
 // Engine → Client
-export const E_STATE = 'state' // { type, people, lights, lightSpirits, prayerCounts, spiritCounts, totals, usersToday, usersWeek }
+export const E_STATE = 'state' // { type, people, lights, lightSpirits, prayers, spirits, totals, usersToday, usersWeek, totalPrayerSeconds }
 export const E_FEED = 'feed' // { type, feed: FeedEntry[] }
 export const E_SYNC = 'sync' // { type, stats }
-export const E_PING = 'ping' // { type }
+export const E_PONG = 'pong' // { type } — engine's liveness ack to a C_PING
 
 // A coarse 2-degree grid cell ("lat,lon") — the most precise location ever
 // shared, so privacy is built into the wire format.

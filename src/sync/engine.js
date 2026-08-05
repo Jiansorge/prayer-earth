@@ -4,14 +4,21 @@
 //   1. WsEngine   — talks to a plain WebSocket server (Prayer Earth's Node
 //                   server today, and the reference implementation).
 //   2. CfEngine   — talks to the Cloudflare Workers + Durable Objects engine
-//                   (in progress; the wire protocol is identical).
+//                   (same wire protocol; adds its own keepalive).
 // Swapping the engine never changes app code.
+
+import { C_PING, E_PONG } from './protocol.js'
+
+// CfEngine keepalive + liveness policy.
+const PING_EVERY_MS = 20000
+const STALE_AFTER_MS = 60000
 
 export class SyncEngine {
   constructor() {
     this.sock = null
     this.onMessage = null
     this.onStatus = null
+    this._lastPong = 0
   }
 
   connect(url) {
@@ -22,10 +29,16 @@ export class SyncEngine {
       this.sock.onmessage = (ev) => {
         try {
           const msg = JSON.parse(ev.data)
+          // Engine-level liveness: consume pongs here, never forward them.
+          if (msg.type === E_PONG) {
+            this._lastPong = Date.now()
+            return
+          }
           if (this.onMessage) this.onMessage(msg)
         } catch {}
       }
       this.sock.onopen = () => {
+        this._lastPong = Date.now()
         if (this.onStatus) this.onStatus(true)
       }
       this.sock.onclose = () => {
@@ -65,15 +78,26 @@ export class SyncEngine {
 }
 
 // The Cloudflare engine talks the same protocol — only the URL scheme and the
-// keepalive differ. Apps never import this directly.
+// keepalive differ. It probes with C_PING and treats a missing E_PONG as a
+// dead socket, so a hung connection gets detected and re-established instead
+// of silently sitting open. Apps never import this directly.
 export class CfEngine extends SyncEngine {
   connect(url) {
     super.connect(url)
-    clearInterval(this._ping)
-    this._ping = setInterval(() => this.send({ type: 'ping' }), 15000)
+    clearInterval(this._keep)
+    this._lastPong = Date.now()
+    this._keep = setInterval(() => {
+      if (!this.sock) return
+      if (Date.now() - this._lastPong > STALE_AFTER_MS) {
+        this.disconnect()
+        if (this.onStatus) this.onStatus(false)
+        return
+      }
+      this.send({ type: C_PING })
+    }, PING_EVERY_MS)
   }
   disconnect() {
-    clearInterval(this._ping)
+    clearInterval(this._keep)
     super.disconnect()
   }
 }
