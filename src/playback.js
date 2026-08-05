@@ -42,3 +42,12 @@ export function requestPlayToggle() {
   const prayerId = s.prayerId || 'lords-prayer'
   useStore.setState({ view: 'prayer', spiritId, prayerId, pendingPlay: true })
 }
+
+// Stop playback from anywhere (footer stop button). The current prayer stops
+// and the world stops counting it; the last prayer is remembered for later.
+export function stopPlayback() {
+  speech.stop()
+  useStore.setState({ playing: false, paused: false, praying: false, playingPrayerId: null })
+  syncClient.presenceNow()
+  ambient.setLevel(0.35)
+}

@@ -219,6 +219,14 @@ const en = {
 }
 
 const es = {
+  'meter.prayedToday': 'orado hoy',
+  'meter.prayedWeek': 'esta semana',
+  'meter.toMillion': 'de un millón de oraciones juntas',
+  'sync.notice': 'El mundo tiene un momento de calma, sigue orando aquí.',
+  'sync.noticeRate': 'Vas un poco rápido, suavizamos la conexión por un momento.',
+  'sync.noticeError': 'La conexión tuvo un contratiempo, estamos reconectando.',
+  'picker.search': 'Buscar oraciones',
+  'picker.none': 'Ninguna oración coincide, prueba una búsqueda más corta.',
   'nav.home': 'Inicio',
   'nav.pray': 'Rezar',
   'nav.earth': 'Tierra',
@@ -385,6 +393,14 @@ const es = {
 }
 
 const fr = {
+  'meter.prayedToday': 'prié aujourd’hui',
+  'meter.prayedWeek': 'cette semaine',
+  'meter.toMillion': 'd’un million de prières ensemble',
+  'sync.notice': 'Le monde vit un moment de calme, continuez à prier ici.',
+  'sync.noticeRate': 'Vous allez un peu vite, nous avons adouci la connexion un instant.',
+  'sync.noticeError': 'La connexion a eu un hoquet, nous reconnectons.',
+  'picker.search': 'Rechercher des prières',
+  'picker.none': 'Aucune prière ne correspond, essayez une recherche plus courte.',
   'nav.home': 'Accueil',
   'nav.pray': 'Prier',
   'nav.earth': 'Terre',
@@ -551,6 +567,14 @@ const fr = {
 }
 
 const de = {
+  'meter.prayedToday': 'heute gebetet',
+  'meter.prayedWeek': 'diese Woche',
+  'meter.toMillion': 'von einer Million gemeinsamer Gebete',
+  'sync.notice': 'Die Welt hat einen stillen Moment, bete hier weiter.',
+  'sync.noticeRate': 'Du bist etwas schnell, wir haben die Verbindung kurz gedrosselt.',
+  'sync.noticeError': 'Die Verbindung hat kurz gehakt, wir verbinden neu.',
+  'picker.search': 'Gebete suchen',
+  'picker.none': 'Keine Gebete gefunden, versuche eine kürzere Suche.',
   'nav.home': 'Start',
   'nav.pray': 'Beten',
   'nav.earth': 'Erde',
@@ -717,6 +741,14 @@ const de = {
 }
 
 const hi = {
+  'meter.prayedToday': 'आज प्रार्थना की',
+  'meter.prayedWeek': 'इस सप्ताह',
+  'meter.toMillion': 'दस लाख प्रार्थनाओं में से',
+  'sync.notice': 'दुनिया शांत है, आप यहीं प्रार्थना करते रहें।',
+  'sync.noticeRate': 'आप थोड़ी तेज़ी से चल रहे हैं, हमने कनेक्शन थोड़ा धीमा किया।',
+  'sync.noticeError': 'कनेक्शन में थोड़ी रुकावट आई, हम फिर से जुड़ रहे हैं।',
+  'picker.search': 'प्रार्थनाएँ खोजें',
+  'picker.none': 'कोई प्रार्थना नहीं मिली, छोटा खोजें।',
   'nav.home': 'होम',
   'nav.pray': 'प्रार्थना',
   'nav.earth': 'पृथ्वी',
@@ -887,6 +919,14 @@ const hi = {
 }
 
 const pt = {
+  'meter.prayedToday': 'rezado hoje',
+  'meter.prayedWeek': 'esta semana',
+  'meter.toMillion': 'de um milhão de orações juntas',
+  'sync.notice': 'O mundo está num momento de calma, continue orando aqui.',
+  'sync.noticeRate': 'Você está um pouco rápido, suavizamos a conexão por um momento.',
+  'sync.noticeError': 'A conexão falhou um pouco, estamos reconectando.',
+  'picker.search': 'Buscar orações',
+  'picker.none': 'Nenhuma oração corresponde, tente uma busca mais curta.',
   'nav.home': 'Início', 'nav.pray': 'Rezar', 'nav.earth': 'Terra',
   'home.title': 'Reze com o mundo inteiro.',
   'home.sub': 'Escolha um caminho abaixo. Ao entrar, sua oração se junta a cada oração que acontece agora, e a Terra brilha um pouco mais.',
@@ -996,6 +1036,14 @@ const pt = {
 }
 
 const it = {
+  'meter.prayedToday': 'pregato oggi',
+  'meter.prayedWeek': 'questa settimana',
+  'meter.toMillion': 'di un milione di preghiere insieme',
+  'sync.notice': 'Il mondo ha un momento di quiete, continua a pregare qui.',
+  'sync.noticeRate': 'Stai andando un po’ veloce, abbiamo rallentato la connessione per un attimo.',
+  'sync.noticeError': 'La connessione ha avuto un intoppo, stiamo riconnettendo.',
+  'picker.search': 'Cerca preghiere',
+  'picker.none': 'Nessuna preghiera corrisponde, prova una ricerca più corta.',
   'nav.home': 'Home', 'nav.pray': 'Prega', 'nav.earth': 'Terra',
   'home.title': 'Prega con tutto il mondo.',
   'home.sub': 'Scegli un percorso qui sotto. Quando ti unisci, la tua preghiera si unisce a ogni altra preghiera che accade ora, e la Terra brilla un po\u2019 di più.',
@@ -1105,6 +1153,14 @@ const it = {
 }
 
 const ru = {
+  'meter.prayedToday': 'молился сегодня',
+  'meter.prayedWeek': 'на этой неделе',
+  'meter.toMillion': 'из миллиона совместных молитв',
+  'sync.notice': 'Мир в тихом моменте, продолжайте молиться здесь.',
+  'sync.noticeRate': 'Вы немного торопитесь, мы на мгновение замедлили соединение.',
+  'sync.noticeError': 'Соединение дало сбой, переподключаемся.',
+  'picker.search': 'Искать молитвы',
+  'picker.none': 'Молитвы не найдены, попробуйте более короткий запрос.',
   'nav.home': 'Главная', 'nav.pray': 'Молиться', 'nav.earth': 'Земля',
   'home.title': 'Молитесь со всем миром.',
   'home.sub': 'Выберите путь ниже. Присоединяясь, ваша молитва соединяется с каждой молитвой, звучащей сейчас,, и Земля светлеет чуть сильнее.',
@@ -1214,6 +1270,14 @@ const ru = {
 }
 
 const zh = {
+  'meter.prayedToday': '今日已祈祷',
+  'meter.prayedWeek': '本周',
+  'meter.toMillion': '一百万人共同祈祷',
+  'sync.notice': '世界此刻安静，请在这里继续祈祷。',
+  'sync.noticeRate': '你稍微有点快，我们暂时放缓了连接。',
+  'sync.noticeError': '连接出现了一点问题，我们正在重新连接。',
+  'picker.search': '搜索祈祷',
+  'picker.none': '没有匹配的祈祷，试试更短的搜索。',
   'nav.home': '首页', 'nav.pray': '祈祷', 'nav.earth': '地球',
   'home.title': '与整个世界一起祈祷。',
   'home.sub': '在下方选择一条道路。加入时，你的祈祷将与此刻所有祈祷相连，地球会更亮一点。',
@@ -1323,6 +1387,14 @@ const zh = {
 }
 
 const ar = {
+  'meter.prayedToday': 'صليت اليوم',
+  'meter.prayedWeek': 'هذا الأسبوع',
+  'meter.toMillion': 'من مليون صلاة معًا',
+  'sync.notice': 'العالم في لحظة هادئة، استمر بالصلاة هنا.',
+  'sync.noticeRate': 'أنت أسرع قليلًا، خففنا الاتصال للحظة.',
+  'sync.noticeError': 'حصل عطل بسيط في الاتصال، نعيد الاتصال.',
+  'picker.search': 'ابحث عن الصلوات',
+  'picker.none': 'لا توجد صلوات مطابقة، جرب بحثًا أقصر.',
   'nav.home': 'الرئيسية', 'nav.pray': 'صَلِّ', 'nav.earth': 'الأرض',
   'home.title': 'صَلِّ مع العالم كلّه.',
   'home.sub': 'اختر طريقًا بالأسفل. عندما تنضمّ، تلتقي صلاتك بكل صلاة تحدث الآن, وتضيء الأرض أكثر قليلًا.',
@@ -1432,6 +1504,14 @@ const ar = {
 }
 
 const ja = {
+  'meter.prayedToday': '今日の祈り',
+  'meter.prayedWeek': '今週',
+  'meter.toMillion': '百万人の祈りの中で',
+  'sync.notice': '世界は静かなひととき、ここで祈り続けてください。',
+  'sync.noticeRate': '少し速いようです、一時的に接続を緩めました。',
+  'sync.noticeError': '接続に少し問題があり、再接続しています。',
+  'picker.search': '祈りを検索',
+  'picker.none': '一致する祈りがありません。もっと短く検索してください。',
   'nav.home': 'ホーム', 'nav.pray': '祈る', 'nav.earth': '地球',
   'home.title': '世界とともに祈りましょう。',
   'home.sub': '下の道を選んでください。参加すると、あなたの祈りはいま行われているすべての祈りとつながり、地球はもう少し明るくなります。',
@@ -1537,6 +1617,14 @@ const ja = {
 }
 
 const ko = {
+  'meter.prayedToday': '오늘 기도함',
+  'meter.prayedWeek': '이번 주',
+  'meter.toMillion': '백만 번의 함께한 기도 중',
+  'sync.notice': '세상이 조용한 순간입니다, 여기서 계속 기도하세요.',
+  'sync.noticeRate': '조금 빠르게 진행 중이에요, 잠시 연결을 부드럽게 했습니다.',
+  'sync.noticeError': '연결에 문제가 생겨 다시 연결 중입니다.',
+  'picker.search': '기도 검색',
+  'picker.none': '일치하는 기도가 없습니다, 더 짧게 검색해 보세요.',
   'nav.home': '홈', 'nav.pray': '기도', 'nav.earth': '지구',
   'home.title': '온 세상과 함께 기도하세요.',
   'home.sub': '아래에서 길을 고르세요. 참여하면 당신의 기도는 지금 일어나는 모든 기도와 이어지고, 지구는 조금 더 밝아집니다.',

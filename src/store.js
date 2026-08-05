@@ -44,6 +44,9 @@ export const useStore = create(
       playing: false,
       paused: false,
       pendingPlay: false,
+      // which prayer is actually producing audio right now (so the footer and
+      // other pages know what's playing even when viewing a different prayer)
+      playingPrayerId: null,
       settingsOpen: false,
       prayerPickerSpiritId: null,
 
@@ -126,6 +129,7 @@ export const useStore = create(
       setPlaying: (playing) => set({ playing }),
       setPaused: (paused) => set({ paused }),
       setPendingPlay: (pendingPlay) => set({ pendingPlay }),
+      setPlayingPrayerId: (playingPrayerId) => set({ playingPrayerId }),
       setLoopOn: (loopOn) => set({ loopOn }),
       setVoiceURI: (voiceURI) => set({ voiceURI }),
       setPrayerVoice: (prayerId, voiceId) =>

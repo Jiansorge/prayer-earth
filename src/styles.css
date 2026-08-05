@@ -514,6 +514,27 @@ h3,
   box-shadow: 0 0 20px rgba(223, 176, 92, 0.55);
 }
 
+.nav .nav-stop {
+  border: none;
+  border-radius: 999px;
+  width: 26px;
+  height: 26px;
+  margin-inline-start: 4px;
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink-faint);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease);
+}
+.nav .nav-stop:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--ink);
+}
+
 .nav .nav-play:active {
   transform: scale(0.92);
 }
@@ -2904,5 +2925,68 @@ html {
   }
   html {
     scroll-behavior: auto;
+  }
+}
+
+
+/* ==== polish: magic sparkles, gradients, modal breathing room ==== */
+
+/* gentle twinkling stars floating over the whole app */
+.sparkles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 26;
+}
+.sp {
+  position: absolute;
+  left: var(--sx);
+  top: var(--sy);
+  width: var(--ss);
+  height: var(--ss);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px 1px rgba(205, 225, 255, 0.9), 0 0 14px 3px rgba(150, 190, 255, 0.4);
+  opacity: 0;
+  animation: twinkle var(--sd) ease-in-out infinite;
+  animation-delay: var(--sdl);
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 0.85; transform: scale(1.2); }
+}
+
+/* richer depth: soft gradients on cards and key surfaces */
+.card {
+  background: linear-gradient(160deg, rgba(40, 51, 98, 0.6), rgba(12, 18, 44, 0.85));
+}
+.settings-sheet,
+.picker-sheet,
+.legal-sheet,
+.onboard-card {
+  background: linear-gradient(170deg, rgba(26, 36, 74, 0.97), rgba(9, 14, 36, 0.98));
+}
+
+/* gradient headline text for the home title */
+.home-hero h1,
+.page-title {
+  background: linear-gradient(120deg, #e8c47a, #f6e3b0 45%, #a8c4ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* a little more breathing room at the bottom of modals */
+.picker-sheet,
+.settings-sheet,
+.legal-sheet,
+.onboard-card {
+  padding-bottom: calc(26px + env(safe-area-inset-bottom));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp {
+    animation: none;
+    opacity: 0.45;
   }
 }

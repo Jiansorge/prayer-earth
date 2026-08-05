@@ -251,6 +251,22 @@ export default function App() {
         ))}
       </div>
 
+      <div className="sparkles" aria-hidden="true">
+        {[...Array(16)].map((_, i) => (
+          <span
+            key={i}
+            className="sp"
+            style={{
+              '--sx': `${(i * 7 + 3) % 100}%`,
+              '--sy': `${(i * 13 + 6) % 100}%`,
+              '--sd': `${4 + ((i * 5) % 8)}s`,
+              '--sdl': `${(i * 2.3) % 9}s`,
+              '--ss': `${1 + (i % 3)}px`
+            }}
+          />
+        ))}
+      </div>
+
       <Boundary>
         {view === 'prayer' && (
           <Suspense fallback={null}>

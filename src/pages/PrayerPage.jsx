@@ -110,16 +110,15 @@ export default function PrayerPage() {
   }, [playing, paused])
 
   useEffect(() => {
+    // Reset only this page's view state when a different prayer is shown; a
+    // prayer already playing in the background keeps playing (see togglePlay).
     setActive(null)
-    setPlaying(false)
-    setPaused(false)
     setElapsed(0)
     setFinished(false)
     setChantMode(false)
     setChantReason(null)
     setVoiceNote(false)
     setTuning(false)
-    stopJob()
   }, [prayerId])
 
   // The static voice options for this prayer (from the pre-rendered audio).
@@ -141,6 +140,7 @@ export default function PrayerPage() {
     setActive(fromIndex)
     setPaused(false)
     setPlaying(true)
+    setPlayingPrayerId(prayer.id)
     setFinished(false)
     setVoiceNote(false)
     setPraying(true)
@@ -162,7 +162,8 @@ export default function PrayerPage() {
       loop: loopOn,
       gapMs: prayer.loop ? 250 : 700,
       onPhrase: (i) => {
-        setActive(i)
+        // Only highlight lines when this prayer is the one actually on screen.
+        if (useStore.getState().prayerId === prayer.id) setActive(i)
         // A repeated mantra is one prayer per recitation, not per cycle.
         if (prayer.loop) notePrayerComplete(prayer.id)
       },
@@ -287,6 +288,13 @@ export default function PrayerPage() {
 
   const togglePlay = () => {
     if (!playing) {
+      startJob()
+      return
+    }
+    const cur = useStore.getState()
+    if (cur.prayerId !== cur.playingPrayerId) {
+      // A different prayer is playing in the background; starting this view
+      // switches to it.
       startJob()
       return
     }

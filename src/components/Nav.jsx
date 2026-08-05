@@ -2,7 +2,7 @@ import React from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITIES } from '../data/prayers.js'
 import { useT } from '../i18n.js'
-import { requestPlayToggle } from '../playback.js'
+import { requestPlayToggle, stopPlayback } from '../playback.js'
 
 const ITEMS = [
   { id: 'home', icon: '🌙', labelKey: 'nav.home' },
@@ -59,6 +59,16 @@ export default function Nav() {
                 aria-label={playing && !paused ? t('prayer.pause') : t('prayer.pray')}
               >
                 {playing && !paused ? '❚❚' : '▶\uFE0E'}
+              </button>
+            )}
+            {item.id === 'prayer' && (playing || praying) && (
+              <button
+                className="nav-stop"
+                onClick={stopPlayback}
+                aria-label={t('prayer.stop')}
+                title={t('prayer.stop')}
+              >
+                ◼
               </button>
             )}
           </React.Fragment>
