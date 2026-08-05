@@ -14,13 +14,13 @@
       content="Pray together with the whole world. Choose a sacred prayer from fifteen faiths and traditions, in twelve languages, and watch the Earth glow as the world prays."
     />
     <meta name="robots" content="index, follow" />
-    <title>Joining Palms, Pray With the World</title>
+    <title>Joining Palms | Pray With the World</title>
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Joining Palms" />
     <meta property="og:locale" content="en" />
-    <meta property="og:title" content="Joining Palms, Pray With the World" />
+    <meta property="og:title" content="Joining Palms | Pray With the World" />
     <meta
       property="og:description"
       content="Choose a sacred prayer from fifteen traditions and pray together with the world. Watch the Earth glow as prayer spreads."
@@ -32,7 +32,7 @@
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Joining Palms, Pray With the World" />
+    <meta name="twitter:title" content="Joining Palms | Pray With the World" />
     <meta
       name="twitter:description"
       content="Choose a sacred prayer from fifteen traditions and pray together with the world."
@@ -57,7 +57,9 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <script>
-      // Fill in the canonical/OG URLs once the deployed origin is known.
+      // Fill in the canonical/OG URLs once the deployed origin is known. Social
+      // scrapers need ABSOLUTE image URLs, so og:image/twitter:image get the
+      // origin prefix here too (the static markup keeps them relative for dev).
       try {
         const origin = window.location.origin
         const link = document.createElement('link')
@@ -69,6 +71,10 @@
           m.setAttribute('property', prop)
           m.setAttribute('content', origin + '/')
           document.head.appendChild(m)
+        }
+        for (const prop of ['og:image', 'twitter:image']) {
+          const existing = document.querySelector(`meta[property="${prop}"]`)
+          if (existing) existing.setAttribute('content', origin + '/icons/og-card.png')
         }
       } catch {}
     </script>

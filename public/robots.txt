@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
 
-# Sitemap (uncomment + fill in your domain once deployed)
-# Sitemap: https://your-domain.example/sitemap.xml
+Sitemap: https://joining-palms.app/sitemap.xml
