@@ -391,8 +391,20 @@ wss.on('connection', (ws) => {
           typeof msg.prayerId === 'string' ? msg.prayerId.slice(0, 60) : prev.prayerId
         const spiritId =
           typeof msg.spiritId === 'string' ? msg.spiritId.slice(0, 60) : prev.spiritId
-        const lat = typeof msg.lat === 'number' && isFinite(msg.lat) ? msg.lat : prev.lat
-        const lon = typeof msg.lon === 'number' && isFinite(msg.lon) ? msg.lon : prev.lon
+        // The engine protocol sends a coarse "lat,lon" cell (never a precise
+        // position); older clients send lat/lon directly.
+        let lat = null
+        let lon = null
+        if (typeof msg.cell === 'string') {
+          const [la, lo] = msg.cell.split(',').map(Number)
+          if (isFinite(la) && isFinite(lo)) {
+            lat = la
+            lon = lo
+          }
+        } else {
+          lat = typeof msg.lat === 'number' && isFinite(msg.lat) ? msg.lat : prev.lat
+          lon = typeof msg.lon === 'number' && isFinite(msg.lon) ? msg.lon : prev.lon
+        }
         clients.set(ws, {
           praying: !!msg.praying,
           prayerId: msg.praying ? prayerId : null,

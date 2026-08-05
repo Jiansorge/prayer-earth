@@ -4,6 +4,8 @@
 
 import { useStore } from '../store.js'
 import { gridKey } from '../shared/geo.js'
+import { SyncEngine, CfEngine } from './engine.js'
+import { C_PRESENCE, C_SYNC } from './protocol.js'
 
 const PING_MS = 5000
 const RETRY_MS = 10000
@@ -77,7 +79,9 @@ const SIM_FEED_NAMES = ['Lotus', 'Noor', 'River', 'Kavi', 'Amara', 'Rumi', 'Mei'
 
 class SyncClient {
   constructor() {
-    this.sock = null
+    // The transport is swappable: WsEngine (Node server) or CfEngine
+    // (Cloudflare Workers). App code only talks to the engine interface.
+    this.engine = import.meta.env.VITE_SYNC_ENGINE === 'cf' ? new CfEngine() : new SyncEngine()
     this.retry = null
     this.ping = null
     this.mode = 'sim'
@@ -147,35 +151,14 @@ class SyncClient {
       document.removeEventListener('visibilitychange', this._vis)
       this._vis = null
     }
-    if (this.sock) {
-      this.sock.onopen = null
-      this.sock.onmessage = null
-      this.sock.onclose = null
-      try {
-        this.sock.close()
-      } catch {}
-      this.sock = null
-    }
+    this.engine.disconnect()
     this.stopSim()
   }
 
   connect() {
     try {
-      const ws = new WebSocket(DEFAULT_URL)
-      this.sock = ws
-      ws.onopen = () => {
-        this.stopSim()
-        this.mode = 'live'
-        useStore.getState().setConnected(true)
-        this.sendPresence()
-        this.pushSync()
-        this.ping = setInterval(() => this.sendPresence(), PING_MS)
-        clearInterval(this.syncTimer)
-        this.syncTimer = setInterval(() => this.pushSync(), 30000)
-      }
-      ws.onmessage = (ev) => {
+      this.engine.onMessage = (msg) => {
         try {
-          const msg = JSON.parse(ev.data)
           if (msg.type === 'state') {
             useStore.getState().setPeoplePraying(msg.people || 0)
             useStore.getState().setTotalPrayerSeconds(msg.totalPrayerSeconds || 0)
@@ -197,17 +180,24 @@ class SyncClient {
           }
         } catch {}
       }
-      ws.onclose = () => {
-        this.mode = 'sim'
-        useStore.getState().setConnected(false)
-        this.startSim()
-        this.scheduleRetry()
+      this.engine.onStatus = (connected) => {
+        if (connected) {
+          this.stopSim()
+          this.mode = 'live'
+          useStore.getState().setConnected(true)
+          this.sendPresence()
+          this.pushSync()
+          this.ping = setInterval(() => this.sendPresence(), PING_MS)
+          clearInterval(this.syncTimer)
+          this.syncTimer = setInterval(() => this.pushSync(), 30000)
+        } else {
+          this.mode = 'sim'
+          useStore.getState().setConnected(false)
+          this.startSim()
+          this.scheduleRetry()
+        }
       }
-      ws.onerror = () => {
-        try {
-          ws.close()
-        } catch {}
-      }
+      this.engine.connect(DEFAULT_URL)
     } catch {
       this.mode = 'sim'
       this.startSim()
@@ -222,23 +212,20 @@ class SyncClient {
 
   sendPresence() {
     const s = useStore.getState()
-    if (this.mode !== 'live' || !this.sock || this.sock.readyState !== WebSocket.OPEN) {
-      // Offline â€” keep the local world in sync with the user's own prayer.
+    if (this.mode !== 'live') {
+      // Offline — keep the local world in sync with the user's own prayer.
       if (this.mode === 'sim' && this.sim) this.simState()
       return
     }
-      const grid = this.loc ? this.gridLoc(this.loc) : null
-      this.sock.send(
-        JSON.stringify({
-          type: 'presence',
-          praying: s.praying,
-          prayerId: s.praying ? s.prayerId : null,
-          spiritId: s.praying ? s.spiritId : null,
-          name: profileName(),
-          lat: grid ? grid.lat : null,
-        lon: grid ? grid.lon : null
-      })
-    )
+    const grid = this.loc ? this.gridLoc(this.loc) : null
+    this.engine.send({
+      type: C_PRESENCE,
+      praying: s.praying,
+      prayerId: s.praying ? s.prayerId : null,
+      spiritId: s.praying ? s.spiritId : null,
+      name: profileName(),
+      cell: grid ? `${grid.lat},${grid.lon}` : null
+    })
   }
 
   // The server only ever needs region-level precision: round onto the shared
@@ -258,12 +245,10 @@ class SyncClient {
 
   // Push the anonymous lifetime stats and adopt the server's merged totals.
   pushSync() {
-    if (this.mode !== 'live' || !this.sock || this.sock.readyState !== WebSocket.OPEN) return
+    if (this.mode !== 'live') return
     try {
       const s = useStore.getState()
-      this.sock.send(
-        JSON.stringify({ type: 'sync', anonId: s.getAnonId(), stats: s.getSyncStats() })
-      )
+      this.engine.send({ type: C_SYNC, anonId: s.getAnonId(), stats: s.getSyncStats() })
     } catch {}
   }
 
