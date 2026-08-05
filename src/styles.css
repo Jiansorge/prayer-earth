@@ -2822,3 +2822,68 @@ html[dir='rtl'] .qr-x {
 html[dir='rtl'] .picker-row .picker-go {
   transform: scaleX(-1); /* the "→" means "open" — flip it in RTL */
 }
+
+
+/* ==== polish pass: smoother, more alive ==== */
+
+/* An inviting ripple that softly calls to the play button */
+.ctrl-btn.play {
+  position: relative;
+}
+.ctrl-btn.play::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(232, 196, 122, 0.4);
+  animation: playRipple 3.4s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+  pointer-events: none;
+}
+@keyframes playRipple {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  70%,
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Cards lift gently under the hand */
+.card {
+  transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease), border-color 0.4s var(--ease);
+}
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+}
+
+/* No harsh tap-flash on mobile */
+button,
+.tile,
+.chip,
+.voice-chip,
+.picker-row,
+.nav button,
+.ctrl-btn {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctrl-btn.play::before {
+    animation: none;
+  }
+  .card:hover {
+    transform: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

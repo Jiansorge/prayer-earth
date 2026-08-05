@@ -53,7 +53,7 @@
       }
     </script>
 
-    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <script>
@@ -72,8 +72,57 @@
         }
       } catch {}
     </script>
+    <style>
+      /* Boot splash: shown the instant the page paints, faded out by React. */
+      #boot {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(120% 120% at 50% 30%, #0e1836, #05070f 72%);
+        transition: opacity 0.6s ease, visibility 0.6s;
+      }
+      #boot.done {
+        opacity: 0;
+        visibility: hidden;
+      }
+      .boot-inner {
+        display: grid;
+        place-items: center;
+        gap: 16px;
+      }
+      .boot-icon {
+        width: 88px;
+        height: 88px;
+        border-radius: 24px;
+        animation: bootGlow 2.4s ease-in-out infinite;
+      }
+      @keyframes bootGlow {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(111, 163, 255, 0.4), 0 0 80px rgba(111, 163, 255, 0.16); }
+        50% { transform: scale(1.05); box-shadow: 0 0 48px rgba(111, 163, 255, 0.65), 0 0 110px rgba(111, 163, 255, 0.32); }
+      }
+      .boot-name {
+        color: #dfe9ff;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        opacity: 0.9;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-icon { animation: none; }
+      }
+    </style>
   </head>
   <body>
+    <div id="boot" aria-hidden="true">
+      <div class="boot-inner">
+        <img class="boot-icon" src="/icons/icon-192.png" alt="" />
+        <div class="boot-name">Joining Palms</div>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

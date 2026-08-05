@@ -112,6 +112,15 @@ export default function App() {
     }
   }, [])
 
+  // Hand off from the boot splash to the app with a gentle fade.
+  useEffect(() => {
+    const b = document.getElementById('boot')
+    if (!b) return
+    b.classList.add('done')
+    const t = setTimeout(() => b.remove(), 700)
+    return () => clearTimeout(t)
+  }, [])
+
   // A sync notice clears itself after a few seconds so it never lingers stale.
   useEffect(() => {
     if (!syncNotice) return

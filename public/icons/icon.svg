@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Joining Palms">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="78%">
+      <stop offset="0%" stop-color="#16234f"/>
+      <stop offset="55%" stop-color="#0a1030"/>
+      <stop offset="100%" stop-color="#05070f"/>
+    </radialGradient>
+    <radialGradient id="core" cx="50%" cy="34%" r="46%">
+      <stop offset="0%" stop-color="#c3e0ff" stop-opacity="0.95"/>
+      <stop offset="45%" stop-color="#5f9df0" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#5f9df0" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="11"/>
+    </filter>
+    <filter id="spark" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="256" cy="296" r="180" fill="url(#core)"/>
+
+  <!-- praying hands silhouette -->
+  <g id="hands" fill="#0a0d1f">
+    <path d="M 256 436
+      C 232 438, 204 434, 182 420
+      C 150 402, 128 372, 122 340
+      C 118 316, 126 288, 140 266
+      C 148 252, 156 240, 158 228
+      C 158 214, 170 204, 182 206
+      C 190 190, 204 182, 216 184
+      C 224 168, 238 162, 250 162
+      C 252 160, 254 160, 256 160
+      C 258 160, 260 160, 262 162
+      C 274 162, 288 168, 296 184
+      C 308 182, 322 190, 330 206
+      C 342 204, 354 214, 354 228
+      C 356 240, 364 252, 372 266
+      C 386 288, 394 316, 390 340
+      C 384 372, 362 402, 330 420
+      C 308 434, 280 438, 256 436
+      Z"/>
+  </g>
+
+  <!-- light-blue rim glow behind the hands -->
+  <use href="#hands" fill="#7fb2ff" filter="url(#soft)" opacity="0.85" transform="translate(0 3)"/>
+
+  <!-- subtle center seam where the palms meet -->
+  <path d="M 256 164 C 254 196, 254 232, 256 268" stroke="#3a4a7a" stroke-width="3" fill="none" opacity="0.8"/>
+
+  <!-- magic: rising glowing motes -->
+  <g fill="#cfe6ff">
+    <circle cx="196" cy="120" r="4.5"/><circle cx="250" cy="86" r="5.5"/>
+    <circle cx="316" cy="112" r="4"/><circle cx="228" cy="150" r="3"/>
+    <circle cx="290" cy="138" r="3.5"/><circle cx="178" cy="180" r="2.5"/>
+    <circle cx="336" cy="172" r="3"/><circle cx="270" cy="108" r="2"/>
+    <circle cx="342" cy="240" r="2.5"/><circle cx="170" cy="240" r="2.5"/>
+    <circle cx="214" cy="200" r="2"/><circle cx="300" cy="196" r="2"/>
+  </g>
+
+  <!-- sparkles bursting from the hands -->
+  <g fill="#eaf4ff" filter="url(#spark)">
+    <path d="M 256 96 l 4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4 Z"/>
+    <path d="M 208 150 l 2.6 6.5 6.5 2.6 -6.5 2.6 -2.6 6.5 -2.6 -6.5 -6.5 -2.6 6.5 -2.6 Z"/>
+    <path d="M 304 146 l 2.6 6.5 6.5 2.6 -6.5 2.6 -2.6 6.5 -2.6 -6.5 -6.5 -2.6 6.5 -2.6 Z"/>
+    <circle cx="236" cy="122" r="2.2" opacity="0.9"/>
+    <circle cx="282" cy="126" r="2" opacity="0.8"/>
+  </g>
+</svg>
