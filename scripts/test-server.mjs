@@ -57,7 +57,7 @@ if (!ws) {
 // Two of the islam clients share a location cell so their light aggregates.
 const spec = [
   { praying: true, prayerId: 'al-fatiha', spiritId: 'islam', lat: 21.4, lon: 39.2 },
-  { praying: true, prayerId: 'al-fatiha', spiritId: 'islam', lat: 21.6, lon: 39.0 },
+  { praying: true, prayerId: 'al-fatiha', spiritId: 'islam', lat: 21.2, lon: 39.4 },
   { praying: true, prayerId: 'al-fatiha', spiritId: 'islam', lat: 30.0, lon: 31.2 },
   { praying: true, prayerId: 'mani', spiritId: 'buddhism', lat: 28.6, lon: 77.2 },
   { praying: true, prayerId: 'mani', spiritId: 'buddhism', lat: 19.1, lon: 72.9 },
@@ -96,12 +96,12 @@ ok('mani = 2', state?.prayers?.['mani'] === 2, `count=${state?.prayers?.['mani']
 ok('islam = 3', state?.spirits?.['islam'] === 3, `count=${state?.spirits?.['islam']}`)
 ok('buddhism = 2', state?.spirits?.['buddhism'] === 2, `count=${state?.spirits?.['buddhism']}`)
 
-// lights: praying users land on the shared 2-degree grid, same cell merges
-ok('lights merge nearby praying users', state?.lights?.['22,40'] === 2, `22,40=${state?.lights?.['22,40']}`)
+// lights: praying users land on the shared 1-degree grid, same cell merges
+ok('lights merge nearby praying users', state?.lights?.['21,39'] === 2, `21,39=${state?.lights?.['21,39']}`)
 ok('lights spread across distinct cells', Object.keys(state?.lights || {}).length === 4, `cells=${Object.keys(state?.lights || {}).length}`)
-ok('idle user contributes no light', !state?.lights?.['40,-74'], `idle=${state?.lights?.['40,-74']}`)
-ok('lightSpirits carry faith per cell', state?.lightSpirits?.['22,40'] === 'islam' && state?.lightSpirits?.['28,78'] === 'buddhism', `22,40=${state?.lightSpirits?.['22,40']} 28,78=${state?.lightSpirits?.['28,78']}`)
-ok('idle user adds no spirit', !state?.lightSpirits?.['40,-74'], `idleSp=${state?.lightSpirits?.['40,-74']}`)
+ok('idle user contributes no light', !state?.lights?.['41,-74'], `idle=${state?.lights?.['41,-74']}`)
+ok('lightSpirits carry faith per cell', state?.lightSpirits?.['21,39'] === 'islam' && state?.lightSpirits?.['29,77'] === 'buddhism', `21,39=${state?.lightSpirits?.['21,39']} 29,77=${state?.lightSpirits?.['29,77']}`)
+ok('idle user adds no spirit', !state?.lightSpirits?.['41,-74'], `idleSp=${state?.lightSpirits?.['41,-74']}`)
 
 // all-time totals ride along in every state broadcast
 ok('state carries totals', !!(state?.totals?.prayers && state?.totals?.spirits))
@@ -123,7 +123,7 @@ ok('people = 4 after leave', state?.people === 4, `people=${state?.people}`)
 ok('al-fatiha = 3 after leave+switch', state?.prayers?.['al-fatiha'] === 3, `count=${state?.prayers?.['al-fatiha']}`)
 ok('mani = 1 after switch', state?.prayers?.['mani'] === 1, `count=${state?.prayers?.['mani']}`)
 ok('feed unchanged on switch/leave (still 5)', feed?.length === 5, `feed=${feed?.length}`)
-ok('lights follow leaves and switches', state?.lights?.['22,40'] === 1 && state?.lights?.['28,78'] === 1, `22,40=${state?.lights?.['22,40']} 28,78=${state?.lights?.['28,78']}`)
+ok('lights follow leaves and switches', state?.lights?.['21,39'] === 1 && state?.lights?.['29,77'] === 1, `21,39=${state?.lights?.['21,39']} 29,77=${state?.lights?.['29,77']}`)
 
 // disconnect one praying client
 others[1].close()

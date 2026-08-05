@@ -115,10 +115,10 @@ if (!last) last = seen[seen.length - 1]
 
 ok('server reports 2 praying users', last?.people === 2, `people=${last?.people}`)
 ok('London light present (52,0)', !!last?.lights?.['52,0'], `count=${last?.lights?.['52,0']}`)
-ok('Delhi light present (28,78)', !!last?.lights?.['28,78'], `count=${last?.lights?.['28,78']}`)
+ok('Delhi light present (29,77)', !!last?.lights?.['29,77'], `count=${last?.lights?.['29,77']}`)
 ok('no stray light cells', Object.keys(last?.lights || {}).length === 2, `cells=${Object.keys(last?.lights || {}).length}`)
 ok('London light tagged buddhism', last?.lightSpirits?.['52,0'] === 'buddhism', `sp=${last?.lightSpirits?.['52,0']}`)
-ok('Delhi light tagged islam', last?.lightSpirits?.['28,78'] === 'islam', `sp=${last?.lightSpirits?.['28,78']}`)
+ok('Delhi light tagged islam', last?.lightSpirits?.['29,77'] === 'islam', `sp=${last?.lightSpirits?.['29,77']}`)
 
 // One user leaves → their light disappears
 A.edge.kill()
@@ -132,7 +132,7 @@ while (Date.now() - t1 < 12000) {
 if (!left) left = seen[seen.length - 1]
 ok('people drops to 1 after leave', left?.people === 1, `people=${left?.people}`)
 ok('London light gone after leave', !left?.lights?.['52,0'], JSON.stringify(left?.lights))
-ok('Delhi light remains', !!left?.lights?.['28,78'], `count=${left?.lights?.['28,78']}`)
+ok('Delhi light remains', !!left?.lights?.['29,77'], `count=${left?.lights?.['29,77']}`)
 
 probe.close()
 B.edge.kill()

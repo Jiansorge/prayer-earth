@@ -240,7 +240,7 @@ const ETHEREAL_FRAG = /* glsl */ `
 // every praying user's location onto the same grid, so a light appears exactly
 // where people are praying.
 function buildLightKeys() {
-  const step = 2
+  const step = 1
   const keys = []
   for (let la = -60; la <= 72; la += step) {
     for (let lo = -180; lo < 180; lo += step) {
@@ -253,10 +253,10 @@ function buildLightKeys() {
 const LAT_MIN = -60
 const LAT_MAX = 72
 
-// Rounds a coordinate onto the shared 2-degree light grid (matches the server).
+// Rounds a coordinate onto the shared 1-degree light grid (matches the server).
 export function lightGridKey(lat, lon) {
-  const la = Math.max(LAT_MIN, Math.min(LAT_MAX, Math.round(lat / 2) * 2))
-  let lo = Math.round(lon / 2) * 2
+  const la = Math.max(LAT_MIN, Math.min(LAT_MAX, Math.round(lat)))
+  let lo = Math.round(lon)
   if (lo >= 180) lo = -180
   return `${la},${lo}`
 }

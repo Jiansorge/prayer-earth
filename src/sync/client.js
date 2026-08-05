@@ -229,12 +229,12 @@ class SyncClient {
   }
 
   // The server only ever needs region-level precision: round onto the shared
-  // 2-degree grid before sending, so it never holds a precise position.
+  // 1-degree grid before sending, so it never holds a precise position.
   gridLoc(loc) {
-    let lo = Math.round(loc.lon / 2) * 2
+    let lo = Math.round(loc.lon)
     if (lo >= 180) lo = -180
     return {
-      lat: Math.max(-60, Math.min(72, Math.round(loc.lat / 2) * 2)),
+      lat: Math.max(-60, Math.min(72, Math.round(loc.lat))),
       lon: lo
     }
   }

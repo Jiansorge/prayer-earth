@@ -16,11 +16,11 @@ export const E_FEED = 'feed' // { type, feed: FeedEntry[] }
 export const E_SYNC = 'sync' // { type, stats }
 export const E_PONG = 'pong' // { type } — engine's liveness ack to a C_PING
 
-// A coarse 2-degree grid cell ("lat,lon") — the most precise location ever
-// shared, so privacy is built into the wire format.
+// A coarse 1-degree grid cell ("lat,lon") — the most precise location ever
+// shared, so privacy is built into the wire format (~110km resolution).
 export function gridKey(lat, lon) {
-  const la = Math.max(-60, Math.min(72, Math.round(lat / 2) * 2))
-  let lo = Math.round(lon / 2) * 2
+  const la = Math.max(-60, Math.min(72, Math.round(lat)))
+  let lo = Math.round(lon)
   if (lo >= 180) lo = -180
   return `${la},${lo}`
 }
