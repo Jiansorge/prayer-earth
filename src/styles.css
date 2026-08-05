@@ -477,6 +477,12 @@ h3,
   filter: drop-shadow(0 0 6px rgba(190, 205, 255, 0.5));
 }
 
+/* Nav icons are color emoji, so CSS color can't recolor them — on the gold
+   active pill they wash out. Desaturate + darken into a clear silhouette. */
+.nav button.active .nav-icon {
+  filter: grayscale(1) brightness(0.5) contrast(1.15);
+}
+
 .nav button.active {
   color: #0d2214;
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
@@ -1105,16 +1111,12 @@ html[dir='rtl'] .chooser-arrow.right {
 }
 
 .ctrl-btn.repeat.on {
-  color: #000;
+  color: #0d2214;
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
   border-color: transparent;
-  box-shadow: 0 0 0 3px rgba(232, 196, 122, 0.35), 0 0 26px rgba(232, 196, 122, 0.75);
-}
-
-.ctrl-btn.repeat.on {
-  color: var(--gold-soft);
-  border-color: rgba(232, 196, 122, 0.5);
-  box-shadow: 0 0 18px rgba(232, 196, 122, 0.35);
+  box-shadow:
+    0 0 0 3px rgba(232, 196, 122, 0.45),
+    0 0 30px rgba(232, 196, 122, 0.85);
 }
 
 .ctrl-btn.tune {

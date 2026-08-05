@@ -109,31 +109,23 @@ class SpeechEngine {
     return !!(p && p.voices && p.voices.length)
   }
 
-  // The pre-rendered MP3 for a phrase, or null when that prayer has no static
-  // audio (languages without a voice fall back to the live /api/tts proxy).
-  // A gentle hall reverb so the spoken prayer feels like it fills a quiet,
-  // sacred space. Uses the ambient engine's AudioContext (already resumed by
-  // the play gesture) and degrades silently — the voice always plays.
+  // A gentle, warm space for the spoken prayer — a soft hall tail with a
+  // slight warmth curve and a whisper of echo. Subtle by design: the voice
+  // stays clear and front, the room just softens the edges.
   buildReverb(ctx) {
     try {
-      const seconds = 1.4
+      const seconds = 1.5
       const len = Math.floor(ctx.sampleRate * seconds)
       const ir = ctx.createBuffer(2, len, ctx.sampleRate)
       for (let ch = 0; ch < 2; ch++) {
         const data = ir.getChannelData(ch)
         for (let i = 0; i < len; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.8)
+          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5)
         }
       }
       const convolver = ctx.createConvolver()
       convolver.buffer = ir
-      const dry = ctx.createGain()
-      dry.gain.value = 0.95
-      const wet = ctx.createGain()
-      wet.gain.value = 0.22
       this._revConvolver = convolver
-      this._revDry = dry
-      this._revWet = wet
     } catch {}
   }
 
@@ -144,11 +136,34 @@ class SpeechEngine {
       if (!this._revConvolver) this.buildReverb(ctx)
       if (!this._revConvolver) return
       const src = ctx.createMediaElementSource(audio)
-      src.connect(this._revDry)
-      this._revDry.connect(ctx.destination)
+      // A very gentle warmth curve — darkens just the top, keeps the voice clear.
+      const lowpass = ctx.createBiquadFilter()
+      lowpass.type = 'lowpass'
+      lowpass.frequency.value = 2600
+      lowpass.Q.value = 0.2
+      // Voice stays dry and forward; the hall just colors around it.
+      const dry = ctx.createGain()
+      dry.gain.value = 0.9
+      const wet = ctx.createGain()
+      wet.gain.value = 0.32
+      // A faint echo, more spacious than musical.
+      const delay = ctx.createDelay(2)
+      delay.delayTime.value = 0.26
+      const feedback = ctx.createGain()
+      feedback.gain.value = 0.2
+      const echo = ctx.createGain()
+      echo.gain.value = 0.07
+      src.connect(dry)
+      dry.connect(lowpass)
       src.connect(this._revConvolver)
-      this._revConvolver.connect(this._revWet)
-      this._revWet.connect(ctx.destination)
+      this._revConvolver.connect(wet)
+      wet.connect(lowpass)
+      src.connect(delay)
+      delay.connect(feedback)
+      feedback.connect(delay)
+      delay.connect(echo)
+      echo.connect(lowpass)
+      lowpass.connect(ctx.destination)
     } catch {}
   }
 
