@@ -41,8 +41,12 @@ const FALLBACK_CITIES = [
 
 // Same host that served the page. In development the socket lives on 8787
 // (a separate process); in production one process serves both the app and the
-// socket on the same port, so we connect to the page's own origin.
+// socket on the same port, so we connect to the page's own origin. Set
+// VITE_SYNC_URL (a ws:// or wss:// URL) to point the socket at the Cloudflare
+// Worker or a `wrangler dev` instance — that's the sync-engine cutover knob.
 function defaultUrl() {
+  const override = import.meta.env.VITE_SYNC_URL
+  if (override) return override
   const host = window.location.hostname || 'localhost'
   const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
   if (import.meta.env.PROD) {
