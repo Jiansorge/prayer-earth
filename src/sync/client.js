@@ -1,4 +1,4 @@
-﻿// Connects to the shared Prayer Earth server so everyone around the world
+﻿// Connects to the shared Joining Palms server so everyone around the world
 // prays together. If the server is not reachable, the app quietly continues
 // on its own with a gentle, believable world so the counts never look wrong.
 

@@ -1,4 +1,4 @@
-// Prayer Earth — offline-ready service worker.
+// Joining Palms — offline-ready service worker.
 const CACHE = 'prayer-earth-v2'
 const CORE = [
   '/',

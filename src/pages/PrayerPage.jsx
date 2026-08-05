@@ -347,7 +347,7 @@ export default function PrayerPage() {
     const text = `${prayer.title} · ${spirit.name}. Pray with the world: ${url}`
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'Prayer Earth', text, url })
+        await navigator.share({ title: 'Joining Palms', text, url })
         return
       }
     } catch {}

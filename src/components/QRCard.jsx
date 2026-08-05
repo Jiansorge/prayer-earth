@@ -59,7 +59,7 @@ export default function QRCard({ spirit, prayer, onClose }) {
             <canvas ref={canvasRef} className="qr-canvas" />
           )}
         </div>
-        <div className="qr-brand">Prayer Earth · {t('qr.prayWithWorld')}</div>
+        <div className="qr-brand">Joining Palms · {t('qr.prayWithWorld')}</div>
         <div className="qr-url">{url}</div>
         <div className="qr-actions">
           <button className="qr-btn" onClick={download}>

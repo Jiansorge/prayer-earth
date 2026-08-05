@@ -10,7 +10,7 @@ import LegalSheet from './LegalSheet.jsx'
 const isInstalled = () =>
   window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone
 
-// Prayer Earth is a mobile-first PWA — the install prompt is for phones and
+// Joining Palms is a mobile-first PWA — the install prompt is for phones and
 // tablets only, not desktop browsers.
 const isMobile = () =>
   /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent) ||
@@ -59,10 +59,10 @@ export default function SettingsSheet() {
 
   const shareApp = async () => {
     const url = window.location.origin
-    const text = `Prayer Earth — pray with the whole world, in every tradition. Join me: ${url}`
+    const text = `Joining Palms — pray with the whole world, in every tradition. Join me: ${url}`
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'Prayer Earth', text, url })
+        await navigator.share({ title: 'Joining Palms', text, url })
         return
       }
     } catch {}

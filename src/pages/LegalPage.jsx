@@ -20,7 +20,7 @@ export default function LegalPage() {
             {legalPage === 'privacy' ? t('legal.privacyTitle') : t('legal.termsTitle')}
           </div>
           <div className="subtitle" style={{ fontSize: 13, marginTop: 2 }}>
-            Prayer Earth
+            Joining Palms
           </div>
         </div>
       </div>
