@@ -50,6 +50,12 @@ export const useStore = create(
       // global sync
       connected: false,
       syncNotice: null,
+      // when the shared world was first launched (ms epoch), so the glow can
+      // show a gentle floor on day one and be fully honest afterwards
+      startedAt: null,
+      // this device's first run (ms epoch), the fallback birthday when the
+      // engine doesn't report a server startedAt
+      firstSeen: 0,
       peoplePraying: 0,
       totalPrayerSeconds: 0,
       basePrayerSeconds: 0,
@@ -146,6 +152,8 @@ export const useStore = create(
       setFeed: (feed) => set({ feed }),
       setYouLoc: (youLoc) => set({ youLoc }),
       setUsersActivity: (usersToday, usersWeek) => set({ usersToday, usersWeek }),
+      setStartedAt: (startedAt) => set({ startedAt }),
+      setFirstSeen: (firstSeen) => set({ firstSeen }),
       setTotalPrayerSeconds: (totalPrayerSeconds) =>
         set((s) => ({
           totalPrayerSeconds,
@@ -281,7 +289,15 @@ export const useStore = create(
         const prayers =
           Object.values(s.prayerTotals).reduce((a, b) => a + (b || 0), 0) +
           Object.values(s.prayerCompletions).reduce((a, b) => a + (b || 0), 0)
-        return Math.min(1, Math.pow(prayers / 1_000_000, 0.4))
+        const honest = Math.pow(prayers / 1_000_000, 0.4)
+        // On the shared world's very first day, hold a small floor so a
+        // brand-new launch doesn't read as dead; after that it is fully honest.
+        // Prefer the server's birthday; fall back to this device's first run
+        // when the engine doesn't report one (e.g. Cloudflare, or offline).
+        const now = Date.now()
+        const birth = s.startedAt || s.firstSeen || now
+        const floor = now - birth < 86400000 ? 0.04 : 0
+        return Math.min(1, Math.max(honest, floor))
       },
       getGlowPercent: () => Math.round(get().getGlow() * 100),
       getEarthBrightness: () => {
@@ -337,7 +353,8 @@ export const useStore = create(
         streak: s.streak,
         bestStreak: s.bestStreak,
         lastPrayedDay: s.lastPrayedDay,
-        anonId: s.anonId
+        anonId: s.anonId,
+        firstSeen: s.firstSeen
       })
     }
   )

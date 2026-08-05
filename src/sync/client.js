@@ -172,6 +172,9 @@ class SyncClient {
             if (msg.usersToday != null && msg.usersWeek != null) {
               useStore.getState().setUsersActivity(msg.usersToday, msg.usersWeek)
             }
+            if (msg.startedAt != null) {
+              useStore.getState().setStartedAt(msg.startedAt)
+            }
             if (msg.lights) useStore.getState().setLights(msg.lights)
             if (msg.lightSpirits) useStore.getState().setLightSpirits(msg.lightSpirits)
             if (msg.totals) {

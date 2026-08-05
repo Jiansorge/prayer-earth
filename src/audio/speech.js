@@ -589,7 +589,7 @@ class SpeechEngine {
   // engine can never make the highlight blaze through the prayer.
   advance(i) {
     const job = this.job
-    if (!job || !job.active) return
+    if (!job || !job.active || job.paused) return
     const since = Date.now() - (job.phraseStart || 0)
     const hold = job.phraseHold || 0
     if (since < hold) {
@@ -670,6 +670,14 @@ class SpeechEngine {
     const j = this.job
     this.job = null
     clearInterval(this.kicker)
+    // The last phrase's audio element can still be playing when the job ends
+    // via the safety timer, so silence it here (stop() already does this).
+    if (this.cloudAudio) {
+      try {
+        this.cloudAudio.pause()
+        this.cloudAudio = null
+      } catch {}
+    }
     if (j) {
       clearTimeout(j.guard)
       clearTimeout(j.advTimer)

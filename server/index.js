@@ -265,11 +265,14 @@ const DATA_FILE = process.env.PE_DATA_FILE
   : dataFile('data.json')
 const prayerTotals = {}
 const spiritTotals = {}
+let startedAt = Date.now()
 try {
   if (existsSync(DATA_FILE)) {
     const d = JSON.parse(readFileSync(DATA_FILE, 'utf8'))
     if (d.prayers) Object.assign(prayerTotals, d.prayers)
     if (d.spirits) Object.assign(spiritTotals, d.spirits)
+    if (typeof d.startedAt === 'number') startedAt = d.startedAt
+    else saveTotals()
   }
 } catch {}
 let saveTimer = null
@@ -277,7 +280,7 @@ function saveTotals() {
   clearTimeout(saveTimer)
   saveTimer = setTimeout(() => {
     try {
-      writeFileSync(DATA_FILE, JSON.stringify({ prayers: prayerTotals, spirits: spiritTotals }))
+      writeFileSync(DATA_FILE, JSON.stringify({ prayers: prayerTotals, spirits: spiritTotals, startedAt }))
     } catch {}
   }, 500)
 }
@@ -380,14 +383,15 @@ function broadcast() {
     spirits: spiritCounts,
     lights,
     lightSpirits,
-    usersToday: today,
-    usersWeek: week,
-    totals: {
-      prayers: prayerTotals,
-      spirits: spiritTotals
-    }
-  })
-  for (const ws of clients.keys()) {
+       usersToday: today,
+       usersWeek: week,
+       startedAt,
+       totals: {
+         prayers: prayerTotals,
+         spirits: spiritTotals
+       }
+     })
+     for (const ws of clients.keys()) {
     if (ws.readyState === ws.OPEN) ws.send(payload)
   }
 }
@@ -540,6 +544,7 @@ wss.on('connection', (ws, req) => {
       spirits: spiritCounts,
       lights,
       lightSpirits,
+      startedAt,
       totals: {
         prayers: prayerTotals,
         spirits: spiritTotals

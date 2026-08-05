@@ -121,6 +121,13 @@ export default function App() {
     return () => clearTimeout(t)
   }, [])
 
+  // Remember this device's first run, so the day-one glow floor can expire.
+  useEffect(() => {
+    if (!useStore.getState().firstSeen) {
+      useStore.getState().setFirstSeen(Date.now())
+    }
+  }, [])
+
   // A sync notice clears itself after a few seconds so it never lingers stale.
   useEffect(() => {
     if (!syncNotice) return
