@@ -1,8 +1,32 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { prayerBaseTotals, spiritBaseTotals } from './data/totals.js'
 import { SPIRITUALITY_BY_ID } from './data/prayers.js'
 import { mergeStats } from './shared/stats.js'
+
+// Storage that can never break the app. In private modes, sandboxed iframes,
+// or when a quota is exceeded, localStorage access throws — and prayer state
+// (especially the per-second counters) writes constantly. Swallow those errors
+// and keep running in memory; persistence silently degrades.
+const safeStorage = {
+  getItem: (name) => {
+    try {
+      return window.localStorage.getItem(name)
+    } catch {
+      return null
+    }
+  },
+  setItem: (name, value) => {
+    try {
+      window.localStorage.setItem(name, value)
+    } catch {}
+  },
+  removeItem: (name) => {
+    try {
+      window.localStorage.removeItem(name)
+    } catch {}
+  }
+}
 
 const dayKey = (t) =>
   `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(
@@ -293,6 +317,7 @@ export const useStore = create(
     }),
     {
       name: 'prayer-earth-v1',
+      storage: createJSONStorage(() => safeStorage),
       partialize: (s) => ({
         spiritId: s.spiritId,
         prayerId: s.prayerId,

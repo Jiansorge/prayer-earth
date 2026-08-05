@@ -2672,6 +2672,34 @@ textarea:focus-visible {
   gap: 8px;
 }
 
+/* quick filter above a long prayer list */
+.picker-search {
+  padding: 0 14px 10px;
+}
+.picker-search input {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  outline: none;
+}
+.picker-search input:focus {
+  border-color: rgba(232, 196, 122, 0.55);
+}
+.picker-search input::placeholder {
+  color: var(--ink-dim);
+}
+.picker-empty {
+  padding: 26px 18px;
+  text-align: center;
+  color: var(--ink-dim);
+  font-size: 13px;
+}
+
 .picker-row {
   display: flex;
   align-items: center;

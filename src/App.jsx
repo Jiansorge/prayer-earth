@@ -112,6 +112,18 @@ export default function App() {
     }
   }, [])
 
+  // A sync notice clears itself after a few seconds so it never lingers stale.
+  useEffect(() => {
+    if (!syncNotice) return
+    const t = setTimeout(() => useStore.setState({ syncNotice: null }), 7000)
+    return () => clearTimeout(t)
+  }, [syncNotice])
+
+  // The notice says WHY the shared connection paused — being rate-limited is
+  // not the same as being offline, and the message should match.
+  const noticeText =
+    syncNotice === 'rate' ? t('sync.noticeRate') : syncNotice ? t('sync.noticeError') : null
+
   // Follow the pointer with the light so the UI feels alive.
   useEffect(() => {
     const move = (e) => {
@@ -189,7 +201,7 @@ export default function App() {
             boxShadow: '0 6px 24px rgba(0,0,0,0.35)'
           }}
         >
-          <span>{t('sync.notice')}</span>
+          <span>{noticeText}</span>
           <button
             onClick={() => useStore.setState({ syncNotice: null })}
             aria-label="Dismiss"

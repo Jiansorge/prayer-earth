@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
 import { useT } from '../i18n.js'
@@ -36,9 +36,12 @@ export default function PrayerPicker() {
   const openPrayer = useStore((s) => s.openPrayer)
   const sheetRef = useRef(null)
   const t = useT()
+  const [query, setQuery] = useState('')
 
   useEffect(() => {
     if (!spiritId) return
+    // Start each tradition with an empty search.
+    setQuery('')
     const onKey = (e) => {
       if (e.key === 'Escape') close()
     }
@@ -54,6 +57,15 @@ export default function PrayerPicker() {
   const spirit = SPIRITUALITY_BY_ID[spiritId]
   if (!spirit) return null
 
+  const q = query.trim().toLowerCase()
+  const shown = q
+    ? spirit.prayers.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          (p.langLabel || '').toLowerCase().includes(q)
+      )
+    : spirit.prayers
+
   return (
     <div className="picker-overlay" onClick={close} role="dialog" aria-modal="true">
       <div className="picker-sheet" onClick={(e) => e.stopPropagation()} tabIndex={-1} ref={sheetRef}>
@@ -67,8 +79,22 @@ export default function PrayerPicker() {
             ✕
           </button>
         </div>
+        {spirit.prayers.length > 8 && (
+          <div className="picker-search">
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('picker.search')}
+              aria-label={t('picker.search')}
+            />
+          </div>
+        )}
         <div className="picker-list">
-          {spirit.prayers.map((p, i) => (
+          {shown.length === 0 && (
+            <div className="picker-empty">{t('picker.none')}</div>
+          )}
+          {shown.map((p, i) => (
             <PickerRow key={p.id} p={p} i={i} spirit={spirit} openPrayer={openPrayer} close={close} t={t} />
           ))}
         </div>
