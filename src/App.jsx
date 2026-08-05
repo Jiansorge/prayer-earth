@@ -7,7 +7,6 @@ import PrayerPage from './pages/PrayerPage.jsx'
 import LegalPage from './pages/LegalPage.jsx'
 import Nav from './components/Nav.jsx'
 import SettingsSheet from './components/SettingsSheet.jsx'
-import InstallHint from './components/InstallHint.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import PrayerPicker from './components/PrayerPicker.jsx'
 import { getScene } from './components/Scenery.jsx'
@@ -279,7 +278,6 @@ export default function App() {
 
       <Nav />
       <SettingsSheet />
-      <InstallHint />
       <Onboarding />
       <PrayerPicker />
     </div>

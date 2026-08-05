@@ -336,23 +336,46 @@ export class EarthScene {
 
     const loader = new THREE.TextureLoader()
     this.maskTex = this.buildLandMaskCanvas()
-    const dayTex = loader.load(dayUrl, (tex) => {
-      this.processLandMask(tex.image)
-      tex.image = this.makeSeamless(tex.image)
-      tex.needsUpdate = true
-      this._dayLoaded = true
-    })
+    const dayTex = loader.load(
+      dayUrl,
+      (tex) => {
+        this.processLandMask(tex.image)
+        tex.image = this.makeSeamless(tex.image)
+        tex.needsUpdate = true
+        this._dayLoaded = true
+      },
+      undefined,
+      () => {
+        this._dayLoaded = true
+      }
+    )
     dayTex.colorSpace = THREE.SRGBColorSpace
     dayTex.wrapS = THREE.RepeatWrapping
     this.dayTex = dayTex
-    const nightTex = loader.load(nightUrl, (tex) => {
-      tex.image = this.makeSeamless(tex.image)
-      tex.needsUpdate = true
-      this._nightLoaded = true
-    })
+    const nightTex = loader.load(
+      nightUrl,
+      (tex) => {
+        tex.image = this.makeSeamless(tex.image)
+        tex.needsUpdate = true
+        this._nightLoaded = true
+      },
+      undefined,
+      () => {
+        this._nightLoaded = true
+      }
+    )
     nightTex.colorSpace = THREE.SRGBColorSpace
     nightTex.wrapS = THREE.RepeatWrapping
     this.nightTex = nightTex
+
+    // Never let the loading overlay hang: even if a texture is slow or fails on
+    // a low-end phone, show the Earth (slightly untextured) after a short wait.
+    this._readyTimer = setTimeout(() => {
+      if (!this._ready) {
+        this._ready = true
+        if (this.onReady) this.onReady()
+      }
+    }, 6000)
 
     this.earthGroup = new THREE.Group()
     this.earthGroup.rotation.y = this.earthGroupRotation
@@ -1284,6 +1307,7 @@ export class EarthScene {
     this.renderer.domElement.height = 0
     if (this.dayTex) this.dayTex.dispose()
     if (this.nightTex) this.nightTex.dispose()
+    if (this._readyTimer) clearTimeout(this._readyTimer)
     if (this.corona) {
       if (this.corona.material?.map) this.corona.material.map.dispose()
       this.corona.material.dispose()

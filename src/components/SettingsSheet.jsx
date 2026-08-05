@@ -285,29 +285,6 @@ export default function SettingsSheet() {
           {appCopied ? t('settings.copied') : t('settings.shareApp')}
         </button>
 
-        {isMobile() && (
-          <>
-            <div className="field-divider" />
-
-            <label className="field-label">{t('install.text')}</label>
-            <div className="field-hint">{t('install.ios')} <span aria-hidden>↗</span> {t('install.ios2')}</div>
-            <button
-              className="field-btn"
-              onClick={() => {
-                const p = window.__installPrompt
-                if (p && p.prompt) {
-                  p.prompt()
-                  window.__installPrompt = null
-                } else if (isInstalled()) {
-                  // already installed, nothing to do
-                }
-              }}
-            >
-              {t('install.button')}
-            </button>
-          </>
-        )}
-
         <div className="field-divider" />
         <button className="field-btn" onClick={() => setLegalOpen(true)}>
           {t('settings.legal')}
