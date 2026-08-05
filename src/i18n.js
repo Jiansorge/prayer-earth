@@ -185,6 +185,8 @@ const en = {
   'legal.priv5': 'We don\u2019t sell data or show ads.',
   'legal.priv6': 'When you connect, the servers briefly see a network address and may process data in data centers outside your country. Our hosting and CDN providers (Render, Cloudflare) are GDPR-compliant.',
   'legal.priv7': 'Prayer Earth collects no personal information from children and may be used by people of all ages.',
+  'legal.priv8': 'Anonymous prayer totals are kept on the server for four months after your last prayer, then removed. They contain no name, email, or precise location.',
+  'legal.priv9': 'The display name you choose in Settings is shown to others while you pray, exactly like a username — use any name, never a real one.',
   'legal.contactEmail': 'hello@yourdomain.com',
   'legal.termsTitle': 'Terms',
   'legal.termsBody': 'Prayer Earth is offered as-is, for personal reflection. Sacred texts are presented for contemplation and respect. Please treat others in the community with kindness. We may update the app and these notes over time.',

@@ -43,6 +43,8 @@ export default function LegalPage() {
               <li>{t('legal.priv5')}</li>
               <li>{t('legal.priv6')}</li>
               <li>{t('legal.priv7')}</li>
+              <li>{t('legal.priv8')}</li>
+              <li>{t('legal.priv9')}</li>
             </ul>
           </section>
           <section className="legal-page-section">

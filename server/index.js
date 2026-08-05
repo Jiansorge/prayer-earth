@@ -33,6 +33,20 @@ const MIME = {
   '.xml': 'text/xml'
 }
 
+// Hardened headers applied to every HTTP response. HSTS is safe to send always
+// (browsers ignore it over plain http) and matters once behind TLS.
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'no-referrer',
+  'Permissions-Policy': 'geolocation=(self), microphone=()',
+  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+  'Content-Security-Policy':
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' ws: wss:; " +
+    "font-src 'self' data:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+}
+
 // ---- authentic neural voices via Google Cloud TTS, proxied through this
 // server so the API key never reaches the browser. Set GOOGLE_TTS_KEY env var.
 const GOOGLE_TTS_KEY = process.env.GOOGLE_TTS_KEY || ''
@@ -70,6 +84,7 @@ function ttsLimited(ip) {
 }
 
 async function handleTTS(urlPath, req, res) {
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v)
   if (req.method !== 'GET') {
     res.writeHead(405)
     res.end()
@@ -164,14 +179,7 @@ async function serveStatic(req, res) {
     res.writeHead(200, {
       'Content-Type': MIME[extname(target)] || 'application/octet-stream',
       'Cache-Control': isAsset ? 'public, max-age=31536000, immutable' : 'no-cache',
-      'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': 'DENY',
-      'Referrer-Policy': 'no-referrer',
-      'Permissions-Policy': 'geolocation=(self), microphone=()',
-      'Content-Security-Policy':
-        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
-        "img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' ws: wss:; " +
-        "font-src 'self' data:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+      ...SECURITY_HEADERS
     })
     res.end(body)
   } catch {
@@ -184,6 +192,45 @@ const httpServer = createServer(serveStatic)
 // Cap incoming message size so a hostile client can't blow up memory with a
 // single giant frame; normal presence/sync messages are only a few KB.
 const wss = new WebSocketServer({ server: httpServer, maxPayload: 300 * 1024 })
+
+// A simple per-connection message budget so one abusive client can't flood the
+// shared world with presence/sync spam (each message triggers a recount +
+// broadcast to everyone). Excess messages in a second are silently dropped.
+const MSG_BUDGET = 20
+const MSG_WINDOW_MS = 1000
+function msgLimited(ws) {
+  const now = Date.now()
+  const arr = (ws._msgTimes || []).filter((t) => now - t < MSG_WINDOW_MS)
+  arr.push(now)
+  ws._msgTimes = arr
+  return arr.length > MSG_BUDGET
+}
+
+// Cross-site WebSocket protection: browsers always send an Origin header, so a
+// third-party page can't drive this server's sockets unless we say so. Same-
+// origin (the request's own Host) and an explicit allow-list (ALLOW_ORIGINS
+// env, comma-separated) pass; scripted clients without an Origin header are
+// fine. Everything else is rejected before it can send a byte.
+const ALLOWED_ORIGINS = new Set(
+  (process.env.ALLOW_ORIGINS || '')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+)
+function originAllowed(req) {
+  const origin = (req.headers.origin || '').trim().toLowerCase()
+  if (!origin) return true
+  try {
+    const oHost = new URL(origin).host
+    if (oHost === (req.headers.host || '').toLowerCase()) return true
+    // Dev runs the page (5173) and the socket (8787) on different ports, so
+    // the origins differ. Browsers only ever send a localhost Origin when the
+    // page itself is on localhost, so this is safe to permit everywhere.
+    const hostname = new URL(origin).hostname
+    if (hostname === 'localhost' || hostname === '127.0.0.1') return true
+  } catch {}
+  return ALLOWED_ORIGINS.has(origin)
+}
 
 let people = 0
 let totalPrayerSeconds = 0
@@ -379,7 +426,32 @@ setInterval(() => {
   }
 }, 15000)
 
-wss.on('connection', (ws) => {
+// Data retention: keep anonymous sync data only while it's useful. A person
+// who hasn't prayed in four months is pruned, which bounds people.json growth
+// and honors the "kept only as long as needed" promise in the privacy policy.
+setInterval(() => {
+  const c = new Date()
+  c.setDate(c.getDate() - 120)
+  const cutoff = `${c.getFullYear()}-${String(c.getMonth() + 1).padStart(2, '0')}-${String(
+    c.getDate()
+  ).padStart(2, '0')}`
+  let changed = false
+  for (const [id, p] of Object.entries(peopleSync)) {
+    const days = Object.keys(p.prayerDayCompletions || {})
+    const newest = days.sort().at(-1) || p.lastPrayedDay || ''
+    if (!newest || newest < cutoff) {
+      delete peopleSync[id]
+      changed = true
+    }
+  }
+  if (changed) savePeople()
+}, 3600000)
+
+wss.on('connection', (ws, req) => {
+  if (!originAllowed(req)) {
+    ws.close(1008, 'Origin not allowed')
+    return
+  }
   ws.isAlive = true
   ws.on('pong', () => {
     ws.isAlive = true
@@ -387,6 +459,7 @@ wss.on('connection', (ws) => {
   clients.set(ws, { praying: false, prayerId: null, spiritId: null, lat: null, lon: null })
 
   ws.on('message', (raw) => {
+    if (msgLimited(ws)) return
     try {
       const msg = JSON.parse(raw.toString())
       if (msg.type === 'presence') {

@@ -5,6 +5,11 @@ server/data-test.json
 server/people.json
 server/people-test.json
 
+# local secrets / config
+.env
+.env.*
+!.env.example
+
 # Godot import artifacts (accidentally copied in from the healing game)
 *.import
 
