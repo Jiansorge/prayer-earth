@@ -47,6 +47,9 @@ export const useStore = create(
       // which prayer is actually producing audio right now (so the footer and
       // other pages know what's playing even when viewing a different prayer)
       playingPrayerId: null,
+      // seconds of the current playback, kept in the store so it keeps ticking
+      // while the prayer page is not on screen
+      elapsed: 0,
       settingsOpen: false,
       prayerPickerSpiritId: null,
 
@@ -130,6 +133,7 @@ export const useStore = create(
       setPaused: (paused) => set({ paused }),
       setPendingPlay: (pendingPlay) => set({ pendingPlay }),
       setPlayingPrayerId: (playingPrayerId) => set({ playingPrayerId }),
+      setElapsed: (elapsed) => set({ elapsed }),
       setLoopOn: (loopOn) => set({ loopOn }),
       setVoiceURI: (voiceURI) => set({ voiceURI }),
       setPrayerVoice: (prayerId, voiceId) =>
@@ -375,4 +379,15 @@ export const useStore = create(
 if (import.meta.env?.DEV) {
   window.__store = useStore
 }
+
+// The prayer clock lives here (not on the prayer page) so a prayer keeps being
+// counted toward the world totals even while you browse Home or the Earth with
+// it playing in the background. No-ops whenever nothing is playing.
+setInterval(() => {
+  const s = useStore.getState()
+  if (!s.playing || s.paused) return
+  s.addLocalPrayer(1)
+  s.addPrayerSecond(s.playingPrayerId)
+  s.setElapsed(s.elapsed + 1)
+}, 1000)
 

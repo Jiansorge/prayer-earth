@@ -10,7 +10,6 @@ import SettingsSheet from './components/SettingsSheet.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import PrayerPicker from './components/PrayerPicker.jsx'
 import { getScene } from './components/Scenery.jsx'
-import { stopPlayback } from './playback.js'
 import NatureBackdrop from './components/NatureBackdrop.jsx'
 import MysticBackdrop from './components/MysticBackdrop.jsx'
 import SpaceBackdrop from './components/SpaceBackdrop.jsx'
@@ -161,11 +160,8 @@ export default function App() {
       const [, view, sp, pr] = m
       if (view === 'earth') useStore.getState().go('earth')
       else if (view === 'privacy' || view === 'terms') useStore.getState().openLegal(view)
-      else if (view === 'pray' && sp && pr) {
-        const cur = useStore.getState()
-        if (cur.playingPrayerId && cur.playingPrayerId !== pr) stopPlayback()
-        useStore.getState().openPrayer(sp, pr)
-      }
+      else if (view === 'pray' && sp && pr) useStore.getState().openPrayer(sp, pr)
+      else useStore.getState().go('home')
     }
     route()
     window.addEventListener('hashchange', route)

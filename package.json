@@ -15,6 +15,8 @@
     "audio:remove": "node scripts/remove-audio.mjs",
     "serve": "npm run build && node server/index.js",
     "test": "node scripts/test-server.mjs && node scripts/test-usage.mjs",
+    "test:proof": "node scripts/test-proof.mjs",
+    "test:proof2": "node scripts/test-proof-multi.mjs",
     "test:prod": "node scripts/test-prod.mjs",
     "test:live": "node scripts/test-live.mjs"
   },

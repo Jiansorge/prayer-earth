@@ -29,9 +29,8 @@ export default function PrayerPage() {
   const setPlaying = useStore((s) => s.setPlaying)
   const paused = useStore((s) => s.paused)
   const setPaused = useStore((s) => s.setPaused)
+  const setPlayingPrayerId = useStore((s) => s.setPlayingPrayerId)
   const pendingPlay = useStore((s) => s.pendingPlay)
-  const addLocalPrayer = useStore((s) => s.addLocalPrayer)
-  const addPrayerSecond = useStore((s) => s.addPrayerSecond)
   const notePrayerComplete = useStore((s) => s.notePrayerComplete)
   const getPrayerTotal = useStore((s) => s.getPrayerTotal)
   const loopOn = useStore((s) => s.loopOn)
@@ -49,7 +48,6 @@ export default function PrayerPage() {
   const spirit = SPIRITUALITY_BY_ID[spiritId]
   const [active, setActive] = useState(null)
   const [prayerVoices, setPrayerVoices] = useState([])
-  const [elapsed, setElapsed] = useState(0)
   const [finished, setFinished] = useState(false)
   const [copied, setCopied] = useState(false)
   const [chantMode, setChantMode] = useState(false)
@@ -67,8 +65,12 @@ export default function PrayerPage() {
   useEffect(() => {
     if (!spirit) {
       useStore.getState().go('home')
+    } else if (!prayer) {
+      // Unknown prayer id in a valid tradition: fall back to its first prayer
+      // instead of rendering with an undefined prayer.
+      useStore.getState().openPrayer(spirit.id, spirit.prayers[0].id)
     }
-  }, [spirit])
+  }, [spirit, prayer])
 
   // One prayer at a time per browser: another tab starting playback pauses us.
   // BroadcastChannel also delivers to this same tab, so ignore our own starts.
@@ -114,7 +116,7 @@ export default function PrayerPage() {
     // Reset only this page's view state when a different prayer is shown; a
     // prayer already playing in the background keeps playing (see togglePlay).
     setActive(null)
-    setElapsed(0)
+    useStore.getState().setElapsed(0)
     setFinished(false)
     setChantMode(false)
     setChantReason(null)
@@ -149,7 +151,7 @@ export default function PrayerPage() {
     ambient.start()
     ambient.setLevel(0.9)
     ambient.ring(0.6)
-    if (fromIndex === 0) setElapsed(0)
+    if (fromIndex === 0) useStore.getState().setElapsed(0)
     try {
       new BroadcastChannel('prayer-earth').postMessage('play')
     } catch {}
@@ -184,6 +186,7 @@ export default function PrayerPage() {
         celebrateStreak()
         setPlaying(false)
         setPraying(false)
+        useStore.getState().setPlayingPrayerId(null)
         setFinished(true)
         setActive(null)
         setChantMode(false)
@@ -257,6 +260,7 @@ export default function PrayerPage() {
     setPlaying(false)
     setPaused(false)
     setPraying(false)
+    useStore.getState().setPlayingPrayerId(null)
     syncClient.presenceNow()
     setActive(null)
     setChantMode(false)
@@ -264,28 +268,9 @@ export default function PrayerPage() {
     ambient.setLevel(0.35)
   }
 
-  // Count prayer seconds while playing
-  useEffect(() => {
-    if (!playing || !prayer) return
-    const t = setInterval(() => {
-      addLocalPrayer(1)
-      addPrayerSecond(prayer.id)
-      setElapsed((e) => e + 1)
-    }, 1000)
-    return () => clearInterval(t)
-  }, [playing, prayer, addLocalPrayer, addPrayerSecond])
-
-  // Leaving the prayer tab: pause gracefully so the footer can resume the same
-  // prayer later, and always drop our presence from the world.
-  useEffect(() => {
-    return () => {
-      const s = useStore.getState()
-      if (s.playing && !s.paused) s.setPaused(true)
-      speech.stop()
-      setPraying(false)
-      syncClient.presenceNow()
-    }
-  }, [setPraying])
+  // Count prayer seconds while playing, through the shared store clock so the
+  // count keeps running even when this page isn't on screen.
+  const elapsed = useStore((s) => s.elapsed)
 
   const togglePlay = () => {
     if (!playing) {
@@ -366,6 +351,11 @@ export default function PrayerPage() {
       setTimeout(() => setCopied(false), 2000)
     } catch {}
   }
+
+  // Never render with an unresolved prayer: the guard effect above redirects,
+  // but this avoids one crashing frame (e.g. a bad deep link with a valid
+  // spirit but unknown prayer id).
+  if (!prayer) return null
 
   return (
     <div className="view prayer-page">
