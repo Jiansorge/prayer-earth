@@ -19,38 +19,28 @@
   </defs>
 
   <rect width="512" height="512" fill="url(#bg)"/>
-
-  <!-- bright halo where the magic gathers -->
   <ellipse cx="256" cy="300" rx="180" ry="150" fill="#8db8ff" opacity="0.22" filter="url(#soft)"/>
 
-  <!-- praying-hands silhouette, glowing light blue -->
-  <g id="hands" fill="url(#hand)">
-    <path d="M 256 452
-      C 228 454, 198 448, 174 432
-      C 142 412, 118 384, 112 350
-      C 107 320, 118 290, 136 268
-      C 144 256, 150 244, 152 232
-      C 152 212, 168 198, 184 200
-      C 192 182, 208 170, 222 174
-      C 232 154, 250 144, 264 144
-      C 270 144, 274 148, 274 154
-      C 282 152, 288 160, 288 174
-      C 300 170, 314 182, 322 198
-      C 336 196, 350 210, 350 226
-      C 352 240, 360 252, 370 264
-      C 386 288, 394 316, 390 348
-      C 384 380, 362 410, 330 430
-      C 306 446, 278 452, 256 452
-      Z"/>
+  <!-- left hand (palm + 4 separated fingers + thumb); mirrored for the right -->
+  <g id="handL" fill="url(#hand)">
+    <!-- palm -->
+    <path d="M 156 300 C 156 268, 172 254, 200 254 C 228 254, 244 268, 246 300 C 248 336, 246 382, 244 420 C 243 434, 232 440, 200 440 C 168 440, 157 434, 156 420 C 155 380, 156 336, 156 300 Z"/>
+    <!-- little finger -->
+    <path d="M 152 300 C 152 252, 156 218, 165 208 C 171 203, 181 206, 184 214 C 185 226, 185 240, 184 300 Z"/>
+    <!-- ring finger -->
+    <path d="M 179 300 C 179 244, 185 204, 194 192 C 200 186, 210 190, 213 199 C 214 214, 214 230, 213 300 Z"/>
+    <!-- middle finger -->
+    <path d="M 204 300 C 204 240, 211 194, 220 180 C 227 173, 237 177, 240 187 C 241 204, 241 222, 240 300 Z"/>
+    <!-- index finger (innermost) -->
+    <path d="M 226 300 C 226 244, 232 196, 240 182 C 247 175, 256 177, 259 186 C 260 202, 260 220, 259 300 Z"/>
+    <!-- thumb rising toward the centre -->
+    <path d="M 206 448 C 200 448, 196 440, 198 424 C 202 392, 214 368, 232 360 C 244 355, 252 360, 254 372 C 255 386, 252 410, 250 432 C 249 442, 244 448, 236 448 Z"/>
   </g>
+  <use href="#handL" transform="translate(512 0) scale(-1 1)"/>
 
-  <!-- soft outer glow around the hands -->
-  <use href="#hands" filter="url(#soft)" opacity="0.9"/>
-
-  <!-- seam where the two palms meet -->
-  <path d="M 256 148 C 254 178, 254 208, 258 240" stroke="#1e3a7d" stroke-width="4" fill="none" opacity="0.85"/>
-  <!-- thumb notch at the bottom -->
-  <path d="M 248 452 C 252 442, 260 442, 264 452" stroke="#1e3a7d" stroke-width="4" fill="none" opacity="0.8"/>
+  <!-- soft outer glow around both hands -->
+  <use href="#handL" filter="url(#soft)" opacity="0.9"/>
+  <use href="#handL" filter="url(#soft)" opacity="0.9" transform="translate(512 0) scale(-1 1)"/>
 
   <!-- magic: rising motes -->
   <g fill="#eaf4ff">
