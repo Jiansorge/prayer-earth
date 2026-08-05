@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "A quiet place where the whole world prays together.",
+  "license": "AGPL-3.0-or-later",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
