@@ -135,7 +135,12 @@ class SpeechEngine {
       if (!ctx || ctx.state !== 'running') return
       if (!this._revConvolver) this.buildReverb(ctx)
       if (!this._revConvolver) return
+      // Tear down the previous phrase's connection first so its audio can't
+      // keep ringing into the shared reverb and stack up on every repeat.
+      this.teardownReverb()
       const src = ctx.createMediaElementSource(audio)
+      this._revSource = src
+      this._revAudio = audio
       // A very gentle warmth curve — darkens just the top, keeps the voice clear.
       const lowpass = ctx.createBiquadFilter()
       lowpass.type = 'lowpass'
@@ -165,6 +170,23 @@ class SpeechEngine {
       echo.connect(lowpass)
       lowpass.connect(ctx.destination)
     } catch {}
+  }
+
+  // Fully release the current phrase's audio from the graph and pause it, so
+  // nothing keeps playing after advance, stop, or finish.
+  teardownReverb() {
+    if (this._revSource) {
+      try {
+        this._revSource.disconnect()
+      } catch {}
+      this._revSource = null
+    }
+    if (this._revAudio) {
+      try {
+        this._revAudio.pause()
+      } catch {}
+      this._revAudio = null
+    }
   }
 
   async staticAudioUrl(job, i) {
@@ -413,7 +435,14 @@ class SpeechEngine {
         .then((b) => {
           if (!b) return
           const url = URL.createObjectURL(b)
-          const audio = new Audio(url)
+      // Stop the previous phrase's element too, so a safety-timer advance can
+      // never leave the old audio overlapping the new phrase.
+      if (this.cloudAudio) {
+        try {
+          this.cloudAudio.pause()
+        } catch {}
+      }
+      const audio = new Audio(url)
           audio.volume = Math.min(0.5, (useStore.getState().volume ?? 0.8) * 0.6)
           audio.play()
         })
@@ -670,14 +699,7 @@ class SpeechEngine {
     const j = this.job
     this.job = null
     clearInterval(this.kicker)
-    // The last phrase's audio element can still be playing when the job ends
-    // via the safety timer, so silence it here (stop() already does this).
-    if (this.cloudAudio) {
-      try {
-        this.cloudAudio.pause()
-        this.cloudAudio = null
-      } catch {}
-    }
+    this.teardownReverb()
     if (j) {
       clearTimeout(j.guard)
       clearTimeout(j.advTimer)
@@ -723,6 +745,7 @@ class SpeechEngine {
     this.job = null
     clearInterval(this.kicker)
     clearTimeout(this.timer)
+    this.teardownReverb()
     if (this.cloudAudio) {
       try {
         this.cloudAudio.pause()
