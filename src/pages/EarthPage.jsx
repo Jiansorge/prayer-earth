@@ -8,6 +8,7 @@ export default function EarthPage() {
   const mountRef = useRef(null)
   const sceneRef = useRef(null)
   const [webglFail, setWebglFail] = useState(false)
+  const [ready, setReady] = useState(false)
   const glowPct = useStore((s) => Math.round(s.getGlow() * 100))
   const people = useStore((s) => s.peoplePraying)
   const totalSeconds = useStore((s) => s.totalPrayerSeconds)
@@ -21,12 +22,13 @@ export default function EarthPage() {
   useEffect(() => {
     let scene = null
     try {
-      scene = new EarthScene(mountRef.current)
+      scene = new EarthScene(mountRef.current, { onReady: () => setReady(true) })
       sceneRef.current = scene
       scene.setGlow(useStore.getState().getGlow())
       scene.setLights(useStore.getState().lights, useStore.getState().lightSpirits)
     } catch {
       setWebglFail(true)
+      setReady(true)
     }
     return () => {
       if (scene) scene.dispose()
@@ -44,7 +46,7 @@ export default function EarthPage() {
     if (!scene) return
     scene.setGlow(useStore.getState().getGlow())
     scene.setLights(lights, lightSpirits)
-    scene.setMood(people, totalSeconds)
+    scene.setMood(people, totalSeconds, useStore.getState().getPrayerCount())
     scene.setYouLoc(youLoc)
   }, [glowPct, lights, lightSpirits, people, totalSeconds, youLoc])
 
@@ -70,6 +72,14 @@ export default function EarthPage() {
   return (
     <div className="view earth-view">
       <div ref={mountRef} className="earth-canvas" role="img" aria-label={t('earth.title')} />
+      {!ready && (
+        <div className="earth-loading-overlay">
+          <div className="earth-loading-inner">
+            <div className="earth-loading-dot" />
+            <p className="subtitle">{t('earth.loading')}</p>
+          </div>
+        </div>
+      )}
       <div className="earth-vignette" />
       <div className="earth-hud">
         <div className="eh-top fade-in">

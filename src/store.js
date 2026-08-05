@@ -278,6 +278,15 @@ export const useStore = create(
       },
 
       // ---- derived ----
+      // Cumulative all-time prayers (server totals + this person's own). Only
+      // ever grows, so anything derived from it can only climb.
+      getPrayerCount: () => {
+        const s = get()
+        return (
+          Object.values(s.prayerTotals).reduce((a, b) => a + (b || 0), 0) +
+          Object.values(s.prayerCompletions).reduce((a, b) => a + (b || 0), 0)
+        )
+      },
       // How alight the Earth is, shown as a percentage of a million prayers
       // prayed together. It is driven ONLY by cumulative all-time prayers
       // (server totals + this person's completions), which never decrease, so
@@ -286,9 +295,7 @@ export const useStore = create(
       // million-prayer mark.
       getGlow: () => {
         const s = get()
-        const prayers =
-          Object.values(s.prayerTotals).reduce((a, b) => a + (b || 0), 0) +
-          Object.values(s.prayerCompletions).reduce((a, b) => a + (b || 0), 0)
+        const prayers = s.getPrayerCount()
         const honest = Math.pow(prayers / 1_000_000, 0.4)
         // On the shared world's very first day, hold a small floor so a
         // brand-new launch doesn't read as dead; after that it is fully honest.

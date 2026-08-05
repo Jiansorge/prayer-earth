@@ -36,7 +36,7 @@ export default function EarthBackdrop() {
     if (!scene) return
     scene.setGlow(glow)
     scene.setLights(lights, lightSpirits)
-    scene.setMood(people, totalSeconds)
+    scene.setMood(people, totalSeconds, useStore.getState().getPrayerCount())
     scene.setYouLoc(youLoc)
   }, [glow, lights, lightSpirits, people, totalSeconds, youLoc])
 

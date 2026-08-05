@@ -261,13 +261,46 @@ export function lightGridKey(lat, lon) {
   return `${la},${lo}`
 }
 
+// Evolving effect ladder: cumulative prayers unlock the world's surge and new
+// effects at logarithmic milestones (10 → 100 → 1k → 20k → … → 100M). Each
+// rung scales the existing glow higher, and rarer rungs add new effects.
+const SURGE_LEVELS = [
+  10, 100, 1000, 20000, 30000, 40000, 50000, 100000,
+  333000, 500000, 1000000, 2000000, 5000000, 10000000, 20000000, 50000000, 100000000
+]
+const clamp01 = (v) => Math.max(0, Math.min(1, v))
+// Returns { level, t (0..1 inside the rung), progress (0..1 across the whole
+// ladder) } so effects can scale smoothly and new ones can fade in per rung.
+function ladderState(prayers) {
+  const p = Math.max(0, prayers || 0)
+  if (p < SURGE_LEVELS[0]) {
+    return { level: 0, t: p / SURGE_LEVELS[0], progress: (p / SURGE_LEVELS[0]) / SURGE_LEVELS.length }
+  }
+  let level = 0
+  for (let i = 0; i < SURGE_LEVELS.length; i++) if (p >= SURGE_LEVELS[i]) level = i
+  const lo = level === 0 ? 0 : SURGE_LEVELS[level - 1]
+  const hi = SURGE_LEVELS[level]
+  const t = (p - lo) / (hi - lo)
+  return { level, t, progress: (level + t) / SURGE_LEVELS.length }
+}
+
 export class EarthScene {
   constructor(container, options = {}) {
     this.container = container
     this.backdrop = !!options.backdrop
+    this.onReady = options.onReady || null
     this.glow = 0.2
     this.surge = 0
     this.tier = 0
+    this.corona = 0
+    this.wisps = 0
+    this.surgeT = 0
+    this.tierT = 0
+    this.coronaT = 0
+    this.wispsT = 0
+    this._dayLoaded = false
+    this._nightLoaded = false
+    this._ready = false
     this._youWorldPos = new THREE.Vector3()
     this._youCamPos = new THREE.Vector3()
     this.autoRotate = true
@@ -307,6 +340,7 @@ export class EarthScene {
       this.processLandMask(tex.image)
       tex.image = this.makeSeamless(tex.image)
       tex.needsUpdate = true
+      this._dayLoaded = true
     })
     dayTex.colorSpace = THREE.SRGBColorSpace
     dayTex.wrapS = THREE.RepeatWrapping
@@ -314,6 +348,7 @@ export class EarthScene {
     const nightTex = loader.load(nightUrl, (tex) => {
       tex.image = this.makeSeamless(tex.image)
       tex.needsUpdate = true
+      this._nightLoaded = true
     })
     nightTex.colorSpace = THREE.SRGBColorSpace
     nightTex.wrapS = THREE.RepeatWrapping
@@ -336,6 +371,9 @@ export class EarthScene {
     this.youMarker = this.buildYouMarker()
     this.earthGroup.add(this.youMarker)
     this.scene.add(this.earthGroup)
+    // evolving halo + motes that unfold as the world climbs the ladder
+    this.buildCorona()
+    this.buildWisps()
     if (import.meta.env?.DEV) window.__earthScene = this
 
     if (!this.backdrop) {
@@ -543,6 +581,75 @@ export class EarthScene {
     this.sparkPos = pos
     this.sparkMat = m
     return pts
+  }
+
+  // A soft golden halo that blooms around the whole Earth at high ladder rungs.
+  buildCorona() {
+    const S = 256
+    const c = document.createElement('canvas')
+    c.width = c.height = S
+    const g = c.getContext('2d')
+    const gr = g.createRadialGradient(S / 2, S / 2, 18, S / 2, S / 2, S / 2)
+    gr.addColorStop(0, 'rgba(255, 244, 210, 0)')
+    gr.addColorStop(0.34, 'rgba(255, 226, 168, 0.26)')
+    gr.addColorStop(0.68, 'rgba(196, 182, 255, 0.14)')
+    gr.addColorStop(1, 'rgba(120, 168, 255, 0)')
+    g.fillStyle = gr
+    g.fillRect(0, 0, S, S)
+    const tex = new THREE.CanvasTexture(c)
+    const mat = new THREE.SpriteMaterial({
+      map: tex,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      depthTest: false
+    })
+    const spr = new THREE.Sprite(mat)
+    spr.scale.set(3.2, 3.2, 1)
+    spr.visible = false
+    this.corona = spr
+    this.scene.add(spr)
+  }
+
+  // Gentle golden motes that drift around the Earth at the highest rungs, a
+  // soft "healing" shimmer over the whole scene.
+  buildWisps() {
+    const N = 150
+    const pos = new Float32Array(N * 3)
+    this.wispDir = new Float32Array(N * 3)
+    this.wispPhase = new Float32Array(N)
+    for (let i = 0; i < N; i++) {
+      const th = Math.random() * Math.PI * 2
+      const ph = Math.acos(2 * Math.random() - 1)
+      const x = Math.sin(ph) * Math.cos(th)
+      const y = Math.cos(ph)
+      const z = Math.sin(ph) * Math.sin(th)
+      this.wispDir[i * 3] = x
+      this.wispDir[i * 3 + 1] = y
+      this.wispDir[i * 3 + 2] = z
+      this.wispPhase[i] = Math.random() * Math.PI * 2
+      const r = 1.7 + Math.random() * 1.2
+      pos[i * 3] = x * r
+      pos[i * 3 + 1] = y * r
+      pos[i * 3 + 2] = z * r
+    }
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
+    const mat = new THREE.PointsMaterial({
+      size: 0.04,
+      color: new THREE.Color(1, 0.94, 0.8),
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      depthTest: false
+    })
+    const pts = new THREE.Points(geo, mat)
+    this.wispPts = pts
+    this.wispPos = pos
+    this.wispMat = mat
+    this.scene.add(pts)
   }
 
   // A pulsing golden ring marking where the person here is praying from.
@@ -1009,14 +1116,17 @@ export class EarthScene {
     this.glow = 0.2 + 0.8 * Math.pow(Math.max(0, Math.min(1, v)), 0.5)
   }
 
-  // How many souls are praying right now (surge) and how much prayer the world
-  // has ever carried (tier). Surge drives sparks + aura waves; tier permanently
-  // brightens the map as the world's prayer accumulates.
-  setMood(people, totalSeconds) {
-    const surge = Math.min(1, (people || 0) / 30)
-    const tier = Math.min(1, Math.log10(1 + (totalSeconds || 0)) / 6.3)
-    this.surge = surge
-    this.tier = tier
+  // How alive the world is: cumulative prayers climb a logarithmic ladder that
+  // scales the surge (sparks + aura waves) and the permanent tier (brightness),
+  // with new effects (halo, drifting motes) unfolding on higher rungs. A small
+  // live "people praying now" flicker keeps the moment-to-moment pulse.
+  setMood(people, totalSeconds, prayers) {
+    const { progress } = ladderState(prayers)
+    const live = Math.min(1, (people || 0) / 30) * 0.12
+    this.surgeT = Math.min(1, 0.12 + 0.88 * Math.pow(progress, 0.7) + live)
+    this.tierT = Math.min(1, 0.25 + 0.75 * Math.pow(progress, 0.5))
+    this.coronaT = clamp01((progress - 0.47) / 0.22) // unfolds around 100k
+    this.wispsT = clamp01((progress - 0.72) / 0.2) // drifts in around 5M
   }
 
   animate = () => {
@@ -1027,6 +1137,19 @@ export class EarthScene {
     if (this.frameMs && now - this.lastFrame < this.frameMs) return
     this.lastFrame = now
     const t = now / 1000
+
+    // Smoothly ease the mood toward its targets so ladder rungs never pop.
+    this.surge += (this.surgeT - this.surge) * 0.06
+    this.tier += (this.tierT - this.tier) * 0.06
+    this.corona += (this.coronaT - this.corona) * 0.05
+    this.wisps += (this.wispsT - this.wisps) * 0.05
+
+    // Surface the Earth only once its textures have loaded and a frame has
+    // rendered, so the page never flashes a half-formed globe.
+    if (!this._ready && this._dayLoaded && this._nightLoaded) {
+      this._ready = true
+      if (this.onReady) this.onReady()
+    }
 
     // auto-rotation glides: ease back toward the calm base speed after a drag
     if (this.autoRotate) {
@@ -1062,6 +1185,7 @@ export class EarthScene {
     if (this.sparkPts) {
       const s = this.surge || 0
       this.sparkMat.opacity = Math.min(0.9, s * 1.4)
+      this.sparkMat.size = 0.02 + 0.012 * this.corona
       if (s > 0.02) {
         const N = this.sparkPhase.length
         for (let i = 0; i < N; i++) {
@@ -1071,6 +1195,33 @@ export class EarthScene {
           this.sparkPos[i * 3 + 2] = this.sparkDir[i * 3 + 2] * rad
         }
         this.sparkPos.needsUpdate = true
+      }
+    }
+
+    // the halo blooms around the whole world at high ladder rungs
+    if (this.corona) {
+      this.corona.visible = this.corona > 0.012
+      if (this.corona.visible) {
+        this.corona.material.opacity = this.corona * (0.45 + 0.3 * Math.sin(t * 0.9))
+        this.corona.scale.setScalar(3.2 + this.corona * 2.6 + 0.12 * Math.sin(t * 0.6))
+        this.corona.material.rotation += 0.0005
+      }
+    }
+
+    // gentle healing motes drift at the highest rungs
+    if (this.wispPts) {
+      this.wispMat.opacity = this.wisps * 0.5
+      if (this.wisps > 0.02) {
+        const N = this.wispPhase.length
+        for (let i = 0; i < N; i++) {
+          const wob = Math.sin(t * 0.5 + this.wispPhase[i]) * 0.16
+          const r = 1.75 + this.wisps * 1.1 + Math.sin(t * 0.35 + this.wispPhase[i] * 1.3) * 0.18
+          const d = this.wispDir
+          this.wispPos[i * 3] = d[i * 3] * r
+          this.wispPos[i * 3 + 1] = d[i * 3 + 1] * r + wob
+          this.wispPos[i * 3 + 2] = d[i * 3 + 2] * r
+        }
+        this.wispPos.needsUpdate = true
       }
     }
 
@@ -1133,6 +1284,14 @@ export class EarthScene {
     this.renderer.domElement.height = 0
     if (this.dayTex) this.dayTex.dispose()
     if (this.nightTex) this.nightTex.dispose()
+    if (this.corona) {
+      if (this.corona.material?.map) this.corona.material.map.dispose()
+      this.corona.material.dispose()
+    }
+    if (this.wispPts) {
+      this.wispPts.geometry.dispose()
+      this.wispMat.dispose()
+    }
     if (this.lights) {
       const mat = this.lights.pool[0]?.material
       if (mat?.map) mat.map.dispose()

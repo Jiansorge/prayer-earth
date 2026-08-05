@@ -1492,6 +1492,16 @@ html[dir='rtl'] .chooser-arrow.right {
   text-shadow: 0 1px 6px rgba(4, 7, 20, 0.9);
 }
 
+/* cover the canvas until the Earth has fully loaded */
+.earth-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 5;
+  background: radial-gradient(120% 120% at 50% 30%, #0e1836, #05070f 72%);
+}
+
 .hint {
   font-size: 12px;
   color: var(--ink-faint);
