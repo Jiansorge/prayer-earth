@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-04T07:54:09.087Z",
+  "generated": "2026-08-05T02:38:07.020Z",
   "prayers": {
     "lords-prayer": {
       "lang": "en",
@@ -370,46 +370,36 @@
       "phrases": 3
     },
     "medicine-buddha": {
-      "lang": "en",
+      "lang": "hi",
       "voices": [
-        "en-AU-NatashaNeural",
-        "en-CA-LiamNeural",
-        "en-CA-ClaraNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IN-PrabhatNeural",
-        "en-IN-NeerjaNeural",
-        "en-IE-ConnorNeural"
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
       ],
       "phrases": 3
     },
     "guru-rinpoche": {
-      "lang": "en",
+      "lang": "hi",
       "voices": [
-        "en-AU-NatashaNeural",
-        "en-CA-LiamNeural",
-        "en-CA-ClaraNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IN-PrabhatNeural",
-        "en-IN-NeerjaNeural",
-        "en-IE-ConnorNeural"
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
       ],
       "phrases": 3
     },
     "usnisa-vijaya": {
-      "lang": "en",
+      "lang": "hi",
       "voices": [
-        "en-AU-NatashaNeural",
-        "en-CA-LiamNeural",
-        "en-CA-ClaraNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IN-PrabhatNeural",
-        "en-IN-NeerjaNeural",
-        "en-IE-ConnorNeural"
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
       ],
       "phrases": 2
+    },
+    "usnisa-vijaya-long": {
+      "lang": "hi",
+      "voices": [
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
+      ],
+      "phrases": 19
     },
     "great-compassion": {
       "lang": "hi",
@@ -428,44 +418,26 @@
       "phrases": 3
     },
     "amitabha": {
-      "lang": "en",
+      "lang": "hi",
       "voices": [
-        "en-AU-NatashaNeural",
-        "en-CA-LiamNeural",
-        "en-CA-ClaraNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IN-PrabhatNeural",
-        "en-IN-NeerjaNeural",
-        "en-IE-ConnorNeural"
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
       ],
       "phrases": 3
     },
     "shakyamuni": {
-      "lang": "en",
+      "lang": "hi",
       "voices": [
-        "en-AU-NatashaNeural",
-        "en-CA-LiamNeural",
-        "en-CA-ClaraNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IN-PrabhatNeural",
-        "en-IN-NeerjaNeural",
-        "en-IE-ConnorNeural"
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
       ],
       "phrases": 3
     },
     "amoghasiddhi": {
-      "lang": "en",
+      "lang": "hi",
       "voices": [
-        "en-AU-NatashaNeural",
-        "en-CA-LiamNeural",
-        "en-CA-ClaraNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IN-PrabhatNeural",
-        "en-IN-NeerjaNeural",
-        "en-IE-ConnorNeural"
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
       ],
       "phrases": 3
     },
@@ -500,16 +472,10 @@
       "phrases": 3
     },
     "vajrasattva": {
-      "lang": "en",
+      "lang": "hi",
       "voices": [
-        "en-AU-NatashaNeural",
-        "en-CA-LiamNeural",
-        "en-CA-ClaraNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IN-PrabhatNeural",
-        "en-IN-NeerjaNeural",
-        "en-IE-ConnorNeural"
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
       ],
       "phrases": 3
     },

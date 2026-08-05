@@ -29,12 +29,10 @@ const MAX_VOICES = process.env.MAX_VOICES ? parseInt(process.env.MAX_VOICES, 10)
 
 // Languages Edge has no voice for are spoken by the closest major neighbour
 // (Hindi reads Devanagari, so it voices Sanskrit/Prakrit; English voices the
-// romanised Tibetan/Pāli/Māori and Latin-script Avestan/Lakota/Hawaiian/
-// Yoruba/Akan). Gurmukhi (Punjabi) is left to device voices — no free engine
-// reads it.
+// romanised Pāli/Māori and Latin-script Avestan/Lakota/Hawaiian/Yoruba/Akan).
+// Gurmukhi (Punjabi) is left to device voices — no free engine reads it.
 const FALLBACK_LANG = {
   sa: 'hi',
-  bo: 'en',
   pi: 'en',
   pra: 'hi',
   mi: 'en',
