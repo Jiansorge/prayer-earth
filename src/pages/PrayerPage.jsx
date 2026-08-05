@@ -135,10 +135,10 @@ export default function PrayerPage() {
     }
   }, [prayer?.id])
 
-  const startJob = () => {
+  const startJob = (fromIndex = 0) => {
     localStart.current = Date.now()
     stopJob()
-    setActive(0)
+    setActive(fromIndex)
     setPaused(false)
     setPlaying(true)
     setFinished(false)
@@ -148,13 +148,14 @@ export default function PrayerPage() {
     ambient.start()
     ambient.setLevel(0.9)
     ambient.ring(0.6)
-    setElapsed(0)
+    if (fromIndex === 0) setElapsed(0)
     try {
       new BroadcastChannel('prayer-earth').postMessage('play')
     } catch {}
 
     const opts = {
       phrases,
+      index: fromIndex,
       lang: prayer.lang,
       prayerId: prayer.id,
       rate: speechRate,
@@ -336,9 +337,8 @@ export default function PrayerPage() {
   const pickVoice = (v) => {
     setPrayerVoice(prayer.id, v)
     if (playing) {
-      const wasPlaying = playing
-      stopJob()
-      if (wasPlaying) setTimeout(startJob, 120)
+      // Continue from the current phrase instead of restarting the prayer.
+      startJob(speech.currentIndex())
     }
   }
 

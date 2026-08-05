@@ -345,12 +345,14 @@ class SpeechEngine {
     } catch {}
   }
 
-  // Starts a job. opts: { phrases, lang, rate, loop, gapMs, onPhrase, onCycle, onEnd }
+  // Starts a job. opts: { phrases, lang, rate, loop, gapMs, index, onPhrase,
+  // onCycle, onEnd }. `index` lets a resumed job start at the current phrase
+  // instead of the top (e.g. after switching voices mid-prayer).
   async start(opts) {
     this.stop()
     this.job = {
       ...opts,
-      index: 0,
+      index: opts.index || 0,
       active: true,
       warm: false,
       mode: 'tts',
@@ -705,6 +707,11 @@ class SpeechEngine {
       clearTimeout(j.advTimer)
       if (j.onEnd) j.onEnd()
     }
+  }
+
+  // Which phrase the active job is on, so a caller can resume from here.
+  currentIndex() {
+    return this.job ? this.job.index || 0 : 0
   }
 
   // Gracefully pause mid-utterance. The job survives so it can be resumed.
