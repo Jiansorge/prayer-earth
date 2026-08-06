@@ -14,6 +14,8 @@
     "audio": "node scripts/generate-audio.mjs",
     "audio:remove": "node scripts/remove-audio.mjs",
     "serve": "npm run build && node server/index.js",
+    "deploy": "node ../sync-engine/scripts/deploy-app.mjs",
+    "deploy:dry": "node ../sync-engine/scripts/deploy-app.mjs --dry-run",
     "test": "node scripts/test-server.mjs && node scripts/test-usage.mjs",
     "test:proof": "node scripts/test-proof.mjs",
     "test:proof2": "node scripts/test-proof-multi.mjs",
