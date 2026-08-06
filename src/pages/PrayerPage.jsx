@@ -40,6 +40,8 @@ export default function PrayerPage() {
   const setSpeechRate = useStore((s) => s.setSpeechRate)
   const setPrayerVoice = useStore((s) => s.setPrayerVoice)
   const chosenVoice = useStore((s) => (prayerId ? s.prayerVoices[prayerId] : null))
+  const favorite = useStore((s) => (prayerId ? s.favorites.includes(prayerId) : false))
+  const toggleFavorite = useStore((s) => s.toggleFavorite)
   const volume = useStore((s) => s.volume)
   const setVolume = useStore((s) => s.setVolume)
   const people = useStore((s) => s.peoplePraying)
@@ -381,13 +383,21 @@ export default function PrayerPage() {
           <div style={{ fontSize: 14, color: 'var(--ink-dim)' }}>
             {spirit.emoji} {t(`trad.${spirit.id}.name`)}
           </div>
-          <div className="subtitle" style={{ fontSize: 13, marginTop: 2 }}>
+          <div className="subtitle" style={{ fontSize: 13, marginTop: 2, color: 'rgba(226, 236, 255, 0.9)' }}>
             {t(`trad.${spirit.id}.tagline`)}
           </div>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span className="pulse-dot" />
           <span style={{ fontSize: 13, color: 'var(--ink-dim)' }}>{t('prayer.peoplePraying', { n: people })}</span>
+          <button
+            className={`fave-btn ${favorite ? 'on' : ''}`}
+            onClick={() => toggleFavorite(prayer.id)}
+            aria-label={t('prayer.favorite')}
+            title={t('prayer.favorite')}
+          >
+            {favorite ? '★' : '☆'}
+          </button>
           <button className="share-btn" onClick={share} aria-label={t('prayer.share')} title={t('prayer.share')}>
             ⇪
           </button>
@@ -466,14 +476,26 @@ export default function PrayerPage() {
 
         <div className={`praying-now ${prayerCounts[prayer.id] ? 'together' : ''}`} title={t('prayer.prayingNowTitle')}>
           <span className="pulse-dot" />
-          <b>{prayerCounts[prayer.id] || 0}</b>{' '}
+          <b
+            style={{
+              textShadow: `0 0 ${6 + Math.min(1, Math.log10((prayerCounts[prayer.id] || 0) + 2) / 4) * 16}px rgba(232,196,122,${0.3 + Math.min(1, Math.log10((prayerCounts[prayer.id] || 0) + 2) / 4) * 0.7})`
+            }}
+          >
+            {prayerCounts[prayer.id] || 0}
+          </b>{' '}
           <span className="praying-now-rest">
             {t('prayer.prayingNowRest')}
             <span className="praying-now-sub">
               {t('prayer.across', { n: spiritCounts[spiritId] || 0, name: spirit.name })}
             </span>
           </span>
-          <span className="praying-now-total" title={t('prayer.today')}>
+          <span
+            className="praying-now-total"
+            title={t('prayer.today')}
+            style={{
+              textShadow: `0 0 ${5 + Math.min(1, Math.log10(prayerToday + 2) / 5) * 12}px rgba(232,196,122,${0.25 + Math.min(1, Math.log10(prayerToday + 2) / 5) * 0.6})`
+            }}
+          >
             {t('prayer.today', { n: prayerToday.toLocaleString() })}
           </span>
         </div>

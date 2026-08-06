@@ -1604,17 +1604,31 @@ html[dir='rtl'] .chooser-arrow.right {
   width: 100%;
   max-width: 520px;
   max-height: 80dvh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   scrollbar-width: none;
   background:
     radial-gradient(120% 60% at 50% 0%, rgba(120, 150, 255, 0.12), transparent 60%),
     linear-gradient(180deg, rgba(22, 30, 70, 0.98), rgba(12, 17, 44, 0.98));
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
-  padding: 14px 22px calc(28px + env(safe-area-inset-bottom));
+  padding: 0;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
 }
 
+/* a fixed header (close + title) and a scrollable body */
+.sheet-head {
+  flex: 0 0 auto;
+  padding: 14px 22px 0;
+}
+.sheet-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 4px 22px calc(28px + env(safe-area-inset-bottom));
+}
+.sheet-body::-webkit-scrollbar,
 .sheet::-webkit-scrollbar {
   display: none;
 }
@@ -3236,4 +3250,100 @@ html {
 .praying-now.together b {
   color: var(--gold);
   text-shadow: 0 0 12px rgba(232, 196, 122, 0.5);
+}
+
+/* favourite star on the prayer page */
+.fave-btn {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink-dim);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease), text-shadow 0.2s var(--ease), transform 0.25s var(--ease);
+}
+.fave-btn:hover { color: var(--gold-soft); transform: scale(1.12); }
+.fave-btn.on {
+  color: var(--gold);
+  border-color: rgba(232, 196, 122, 0.5);
+  text-shadow: 0 0 10px rgba(232, 196, 122, 0.7);
+}
+
+/* favourites section inside the picker */
+.picker-favs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 20px 10px;
+}
+.picker-favs + .picker-list {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 8px;
+}
+.picker-fav-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 196, 122, 0.4);
+  background: rgba(232, 196, 122, 0.1);
+  color: var(--gold-soft);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.picker-fav-chip:hover { background: rgba(232, 196, 122, 0.2); transform: translateY(-1px); }
+
+/* a quiet celebration: three gold sparkles pop + a soft page glow, no text */
+.celebrate-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+}
+.celebrate-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 45% at 50% 22%, rgba(255, 214, 130, 0.16), transparent 70%);
+  animation: celebrateGlow 1.7s ease-out both;
+}
+.celebrate-sparkle {
+  color: #ffe6a8;
+  font-size: 26px;
+  text-shadow: 0 0 16px rgba(255, 214, 130, 0.9), 0 0 40px rgba(255, 214, 130, 0.5);
+  animation: sparklePop 1.4s ease-out both;
+}
+.celebrate-sparkle.s2 { font-size: 20px; margin-top: 14px; margin-left: 30px; animation-delay: 0.08s; }
+.celebrate-sparkle.s3 { font-size: 22px; margin-top: 6px; margin-left: -34px; animation-delay: 0.15s; }
+@keyframes sparklePop {
+  0% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  25% { opacity: 1; transform: scale(1.15) rotate(20deg); }
+  100% { opacity: 0; transform: scale(1.5) rotate(-20deg) translateY(-14px); }
+}
+@keyframes celebrateGlow {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .celebrate-sparkle, .celebrate-wrap::before { animation: none; opacity: 0; }
+}
+
+.app[data-theme='dawn'] .gear-btn {
+  color: rgba(40, 50, 84, 0.95);
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(60, 70, 110, 0.25);
+}
+.app[data-theme='dawn'] .feed-pill {
+  background: rgba(20, 30, 60, 0.42);
+  border-color: rgba(255, 255, 255, 0.32);
 }

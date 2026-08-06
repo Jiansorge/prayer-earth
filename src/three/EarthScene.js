@@ -60,20 +60,20 @@ const FRAG = /* glsl */ `
 
     vec2 uv = equirect(sp);
 
-    // The living Earth: deep, quiet ocean and land that read clearly from the
-    // first frame without ever shouting, lit by the sun terminator. The world's
-    // prayer gradually brightens the surface forever.
+    // The living Earth: deep, quiet ocean and land at first, lit by the sun
+    // terminator. As the world prays together, the surface gradually sheds its
+    // darkness — ocean and land brighten toward a luminous, lit world.
     float landMask = texture2D(uMaskTex, uv).r;
 
     // uGlow rises with every prayer ever made (toward a million), uTier with
-    // the lifetime seconds of shared prayer, so the planet itself lights up
-    // as the world prays together.
+    // the lifetime seconds of shared prayer, so the dark areas of the planet
+    // visibly fade out as the world prays together.
     vec3 oceanC = vec3(0.016, 0.05, 0.115)
-      + vec3(0.012, 0.028, 0.05) * uTier
-      + vec3(0.016, 0.038, 0.062) * uGlow;
+      + vec3(0.06, 0.12, 0.18) * uTier
+      + vec3(0.08, 0.15, 0.22) * uGlow;
     vec3 landC = vec3(0.085, 0.095, 0.085)
-      + vec3(0.038, 0.042, 0.034) * uTier
-      + vec3(0.05, 0.052, 0.04) * uGlow;
+      + vec3(0.18, 0.2, 0.16) * uTier
+      + vec3(0.24, 0.26, 0.2) * uGlow;
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -827,9 +827,9 @@ export class EarthScene {
     c.height = S
     const ctx = c.getContext('2d')
     const g = ctx.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2)
-    g.addColorStop(0, 'rgba(255, 255, 255, 0.8)')
-    g.addColorStop(0.25, 'rgba(255, 255, 255, 0.7)')
-    g.addColorStop(0.6, 'rgba(255, 255, 255, 0.25)')
+    g.addColorStop(0, 'rgba(255, 255, 255, 1)')
+    g.addColorStop(0.22, 'rgba(255, 255, 255, 0.85)')
+    g.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)')
     g.addColorStop(1, 'rgba(255, 255, 255, 0)')
     ctx.fillStyle = g
     ctx.fillRect(0, 0, S, S)
@@ -1053,8 +1053,8 @@ export class EarthScene {
         r * Math.sin(lat),
         r * Math.cos(lat) * Math.sin(lon)
       )
-      spr.userData.baseOpacity = Math.min(0.45, 0.18 + n * 0.05)
-      const s = 0.13 + Math.min(n, 8) * 0.018
+      spr.userData.baseOpacity = Math.min(0.6, 0.3 + n * 0.06)
+      const s = 0.2 + Math.min(n, 8) * 0.03
       spr.scale.set(s, s, s)
       const color = TRAD_LIGHT[spirits?.[k]] || GOLD_LIGHT
       spr.material.color.set(color)

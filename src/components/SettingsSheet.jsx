@@ -111,13 +111,16 @@ export default function SettingsSheet() {
   return (
     <div className="sheet-backdrop" onClick={() => setOpen(false)}>
       <div className="sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('settings.title')} tabIndex={-1} ref={sheetRef}>
-        <div className="sheet-x-row">
-          <button className="sheet-x" onClick={() => setOpen(false)} aria-label={t('settings.done')} title={t('settings.done')}>
-            ✕
-          </button>
+        <div className="sheet-head">
+          <div className="sheet-x-row">
+            <button className="sheet-x" onClick={() => setOpen(false)} aria-label={t('settings.done')} title={t('settings.done')}>
+              ✕
+            </button>
+          </div>
+          <div className="sheet-handle" />
+          <h3 className="sheet-title">{t('settings.title')}</h3>
         </div>
-        <div className="sheet-handle" />
-        <h3 className="sheet-title">{t('settings.title')}</h3>
+        <div className="sheet-body">
 
         <label className="field-label" htmlFor="voice-picker">{t('settings.voiceLabel')}</label>
         <div className="field-hint">
@@ -294,6 +297,7 @@ export default function SettingsSheet() {
         <button className="sheet-close" onClick={() => setOpen(false)}>
           {t('settings.done')}
         </button>
+        </div>
       </div>
 
       {legalOpen && <LegalSheet onClose={() => setLegalOpen(false)} />}

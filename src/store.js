@@ -106,6 +106,8 @@ export const useStore = create(
 
       // per-prayer seconds, bucketed by local day: { 'YYYY-MM-DD': { prayerId: secs } }
       prayerDayStats: {},
+      // ids of prayers the person wants close to hand
+      favorites: [],
 
       // daily streak
       streak: 0,
@@ -146,6 +148,13 @@ export const useStore = create(
       setVoiceURI: (voiceURI) => set({ voiceURI }),
       setPrayerVoice: (prayerId, voiceId) =>
         set((s) => ({ prayerVoices: { ...s.prayerVoices, [prayerId]: voiceId } })),
+      toggleFavorite: (prayerId) =>
+        set((s) => ({
+          favorites: s.favorites.includes(prayerId)
+            ? s.favorites.filter((id) => id !== prayerId)
+            : [...s.favorites, prayerId]
+        })),
+      isFavorite: (prayerId) => get().favorites.includes(prayerId),
       setSpeechRate: (speechRate) => set({ speechRate }),
       setAmbienceLevel: (ambienceLevel) => set({ ambienceLevel }),
       setVolume: (volume) => set({ volume }),
@@ -356,6 +365,7 @@ export const useStore = create(
         loopOn: s.loopOn,
         voiceURI: s.voiceURI,
         prayerVoices: s.prayerVoices,
+        favorites: s.favorites,
         speechRate: s.speechRate,
         ambienceLevel: s.ambienceLevel,
         volume: s.volume,

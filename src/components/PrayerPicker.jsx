@@ -41,6 +41,7 @@ export default function PrayerPicker() {
   const spiritId = useStore((s) => s.prayerPickerSpiritId)
   const close = useStore((s) => s.closePrayerPicker)
   const openPrayer = useStore((s) => s.openPrayer)
+  const favorites = useStore((s) => s.favorites)
   const sheetRef = useRef(null)
   const t = useT()
   const [query, setQuery] = useState('')
@@ -64,12 +65,21 @@ export default function PrayerPicker() {
   const spirit = SPIRITUALITY_BY_ID[spiritId]
   if (!spirit) return null
 
-  const q = query.trim().toLowerCase()
+  // Fold away diacritics so searching "gayatri" finds "Gāyatrī", "s" finds
+  // "ṣ", etc. (NFD decomposes the accent, then we strip combining marks).
+  const norm = (s) =>
+    String(s || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+
+  const q = norm(query)
   const shown = q
     ? spirit.prayers.filter(
         (p) =>
-          p.title.toLowerCase().includes(q) ||
-          (p.langLabel || '').toLowerCase().includes(q)
+          norm(p.title).includes(q) ||
+          norm(p.langLabel || '').includes(q) ||
+          norm(p.translation || '').includes(q)
       )
     : spirit.prayers
 
@@ -98,10 +108,29 @@ export default function PrayerPicker() {
             />
           </div>
         )}
+        {!q && spirit.prayers.some((p) => favorites.includes(p.id)) && (
+          <div className="picker-favs">
+            {spirit.prayers
+              .filter((p) => favorites.includes(p.id))
+              .map((p) => (
+                <button
+                  key={p.id}
+                  className="picker-fav-chip"
+                  onClick={() => {
+                    const cur = useStore.getState()
+                    if (cur.playingPrayerId && cur.playingPrayerId !== p.id) stopPlayback()
+                    openPrayer(spirit.id, p.id)
+                    close()
+                  }}
+                >
+                  ★ {p.title.split(',')[0]}
+                </button>
+              ))}
+          </div>
+        )}
         <div className="picker-list">
           {shown.length === 0 && (
-            <div className="picker-empty">{t('picker.none')}</div>
-          )}
+            <div className="picker-empty">{t('picker.none')}</div>          )}
           {shown.map((p, i) => (
             <PickerRow key={p.id} p={p} i={i} spirit={spirit} openPrayer={openPrayer} close={close} t={t} />
           ))}
