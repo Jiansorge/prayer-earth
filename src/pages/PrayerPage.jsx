@@ -5,6 +5,7 @@ import { speech } from '../audio/speech.js'
 import { ambient } from '../audio/ambience.js'
 import { syncClient } from '../sync/client.js'
 import { useT } from '../i18n.js'
+import { tPrayer } from '../i18n/prayerL10n.js'
 import PrayerStats from '../components/PrayerStats.jsx'
 import Sparkles from '../components/Sparkles.jsx'
 import { stopPlayback } from '../playback.js'
@@ -64,6 +65,7 @@ export default function PrayerPage() {
   const prayer = spirit ? spirit.prayers.find((p) => p.id === prayerId) : null
   const rtl = RTL_LANGS.has(prayer?.lang)
   const phrases = prayer ? prayer.phrases : []
+  const locale = useStore((s) => s.locale)
   const prayerToday = useStore((s) => (prayer ? s.getPrayerToday(prayer.id) : 0))
   const t = useT()
 
@@ -588,7 +590,7 @@ export default function PrayerPage() {
           ))}
         </div>
 
-        <div className="prayer-translation">{prayer.translation}</div>
+          <div className="prayer-translation">{tPrayer(prayer, locale)}</div>
 
         {finished && !playing && (
           <div className="done-card fade-in">
