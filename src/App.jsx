@@ -18,6 +18,7 @@ import TempleBackdrop from './components/TempleBackdrop.jsx'
 import OceanBackdrop from './components/OceanBackdrop.jsx'
 import DawnBackdrop from './components/DawnBackdrop.jsx'
 import CelebrateToast from './components/CelebrateToast.jsx'
+import KeyboardHelp from './components/KeyboardHelp.jsx'
 
 // The home backdrop each theme draws on.
 const THEME_BACKDROPS = {
@@ -171,6 +172,27 @@ export default function App() {
     return () => document.removeEventListener('visibilitychange', onVis)
   }, [])
 
+  // Keyboard navigation between the main tabs: 1 = Home, 2 = Pray, 3 = Earth,
+  // and ? opens the keyboard-help sheet.
+  useEffect(() => {
+    const onKey = (e) => {
+      const tag = e.target && e.target.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+      const s = useStore.getState()
+      if (e.key === '1') s.go('home')
+      else if (e.key === '2') {
+        if (!s.spiritId) s.openPrayer('christianity', 'lords-prayer')
+        else s.go('prayer')
+      } else if (e.key === '3') s.go('earth')
+      else if (e.key === '?' || (e.shiftKey && e.code === 'Slash')) {
+        e.preventDefault()
+        useStore.getState().setKeyboardHelpOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   // Deep links: #/earth  or  #/pray/<spirit>/<prayer>
   useEffect(() => {
     const route = () => {
@@ -216,6 +238,7 @@ export default function App() {
       <div className="sky" />
       {view === 'home' && <Backdrop />}
       <CelebrateToast />
+      <KeyboardHelp />
       {syncNotice && (
         <div
           className="sync-notice"

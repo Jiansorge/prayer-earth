@@ -57,6 +57,8 @@ export const useStore = create(
       // while the prayer page is not on screen
       elapsed: 0,
       settingsOpen: false,
+      keyboardHelpOpen: false,
+      setKeyboardHelpOpen: (keyboardHelpOpen) => set({ keyboardHelpOpen }),
       prayerPickerSpiritId: null,
 
       // global sync
