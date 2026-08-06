@@ -323,11 +323,11 @@ export default function PrayerPage() {
     const next = !loopOn
     setLoopOn(next)
     if (playing) {
-      const wasPlaying = playing
+      // Toggling repeat must not restart the prayer — resume from the phrase
+      // we're on, just with the new loop setting.
+      const fromIndex = speech.currentIndex()
       stopJob()
-      if (wasPlaying) {
-        setTimeout(startJob, 120)
-      }
+      setTimeout(() => startJob(fromIndex), 120)
     }
   }
 

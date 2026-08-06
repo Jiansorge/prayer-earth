@@ -641,9 +641,12 @@ export class EarthScene {
       col[i * 3] = warm > 0.5 ? 1 : 0.9
       col[i * 3 + 1] = warm > 0.5 ? 0.92 : 0.86
       col[i * 3 + 2] = 0.62
-      pos[i * 3] = x * 1.47
-      pos[i * 3 + 1] = y * 1.47
-      pos[i * 3 + 2] = z * 1.47
+      // float clearly above the surface so the aura reads as a halo ring around
+      // the globe, never as dots speckling its face
+      const r = 1.75 + Math.random() * 0.22
+      pos[i * 3] = x * r
+      pos[i * 3 + 1] = y * r
+      pos[i * 3 + 2] = z * r
     }
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
