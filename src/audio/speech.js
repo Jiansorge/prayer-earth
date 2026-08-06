@@ -421,6 +421,18 @@ class SpeechEngine {
     if (this.job) this.job.rate = rate
   }
 
+  // Re-tune loudness immediately, even mid-phrase. The cloud voice is an Audio
+  // element, so its volume can change live; speechSynthesis has no live control
+  // (the next utterance picks it up).
+  setVolume(volume) {
+    const vol = Math.max(0, Math.min(1, volume ?? 0.8))
+    if (this.cloudAudio) {
+      try {
+        this.cloudAudio.volume = Math.min(0.85, vol * 0.75)
+      } catch {}
+    }
+  }
+
   // Plays a short spoken sample of the currently-chosen voice so the user can
   // hear it before committing. Falls back to a soft chime for the chant option
   // or when the platform has no voices (e.g. Fingerprinting Protection).

@@ -333,6 +333,7 @@ export default function PrayerPage() {
 
   const setLiveVolume = (v) => {
     setVolume(v)
+    speech.setVolume(v)
     ambient.setVolume(v)
   }
 
