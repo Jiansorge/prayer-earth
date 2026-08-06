@@ -82,9 +82,10 @@ function scenePalette(scene) {
   return p[scene]
 }
 
-function drawScene(ctx, w, h, scene) {
+function drawScene(ctx, w, h, scene, t = 0) {
   const P = scenePalette(scene)
   const rnd = mulberry(scene === 'day' ? 7 : scene === 'night' ? 99 : 42)
+  const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
 
   // sky
   const g = ctx.createLinearGradient(0, 0, 0, h)
@@ -244,7 +245,7 @@ export default function NatureBackdrop() {
       canvas.style.width = w + 'px'
       canvas.style.height = h + 'px'
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      drawScene(ctx, w, h, getScene())
+      drawScene(ctx, w, h, getScene(), Date.now() / 1000)
       raf = 0
     }
     const onResize = () => {
