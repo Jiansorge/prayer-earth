@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react'
-import QRCode from 'qrcode'
 import { useT } from '../i18n.js'
 
 export default function QRCard({ spirit, prayer, onClose }) {
@@ -13,20 +12,27 @@ export default function QRCard({ spirit, prayer, onClose }) {
   useEffect(() => {
     let alive = true
     const c = canvasRef.current
-    QRCode.toCanvas(
-      c,
-      url,
-      {
-        margin: 2,
-        width: 184,
-        errorCorrectionLevel: 'M',
-        color: { dark: '#0b1026', light: '#ffffff' }
-      },
-      (e) => {
+    // qrcode is only needed here, so load it lazily to keep the main bundle lean
+    import('qrcode')
+      .then(({ default: QRCode }) => {
         if (!alive) return
-        if (e) setErr(true)
-      }
-    )
+        QRCode.toCanvas(
+          c,
+          url,
+          {
+            margin: 2,
+            width: 184,
+            errorCorrectionLevel: 'M',
+            color: { dark: '#0b1026', light: '#ffffff' }
+          },
+          (e) => {
+            if (alive && e) setErr(true)
+          }
+        )
+      })
+      .catch(() => {
+        if (alive) setErr(true)
+      })
     return () => {
       alive = false
     }

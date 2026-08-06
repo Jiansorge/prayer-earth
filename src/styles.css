@@ -3349,3 +3349,80 @@ html {
   transition: background 0.2s var(--ease), transform 0.2s var(--ease);
 }
 .pt-close:hover { background: rgba(232, 196, 122, 0.18); transform: translateY(1px); }
+/* favourite star on each picker row */
+.picker-fav {
+  flex: 0 0 auto;
+  border: none;
+  background: none;
+  color: var(--ink-faint);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s var(--ease), text-shadow 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.picker-fav:hover { transform: scale(1.15); }
+.picker-fav.on {
+  color: var(--gold);
+  text-shadow: 0 0 8px rgba(232, 196, 122, 0.7);
+}
+/* dawn: the world meter is a soft translucent card, not a dark rectangle */
+.app[data-theme='dawn'] .world-meter.card {
+  background: linear-gradient(160deg, rgba(255, 252, 240, 0.55), rgba(240, 245, 252, 0.35));
+  border-color: rgba(60, 70, 110, 0.18);
+  box-shadow: 0 8px 28px rgba(60, 70, 110, 0.12);
+}
+.app[data-theme='dawn'] .world-meter .wm-label,
+.app[data-theme='dawn'] .world-meter .wm-value {
+  color: #24346a;
+  text-shadow: 0 1px 8px rgba(255, 255, 255, 0.6);
+}
+
+/* The nature theme cycles through bright day scenes: dark text + translucent
+   cards so the home page stays readable over the bright sky. */
+.app[data-scene='day'] .page-title,
+.app[data-scene='day'] .home-hero h1,
+.app[data-scene='golden'] .page-title,
+.app[data-scene='golden'] .home-hero h1,
+.app[data-scene='dawn'] .page-title,
+.app[data-scene='dawn'] .home-hero h1 {
+  background: none;
+  color: #123a6b;
+  -webkit-text-fill-color: #123a6b;
+  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.7), 0 2px 5px rgba(30, 60, 100, 0.3);
+}
+.app[data-scene='day'] .subtitle,
+.app[data-scene='day'] .row h2,
+.app[data-scene='day'] .hint,
+.app[data-scene='golden'] .subtitle,
+.app[data-scene='golden'] .row h2,
+.app[data-scene='golden'] .hint,
+.app[data-scene='dawn'] .subtitle,
+.app[data-scene='dawn'] .row h2,
+.app[data-scene='dawn'] .hint {
+  color: rgba(20, 45, 80, 0.9);
+}
+.app[data-scene='day'] .card,
+.app[data-scene='day'] .life-card,
+.app[data-scene='golden'] .card,
+.app[data-scene='golden'] .life-card,
+.app[data-scene='dawn'] .card,
+.app[data-scene='dawn'] .life-card {
+  background: rgba(10, 20, 45, 0.82);
+}
+.app[data-scene='day'] .feed-pill,
+.app[data-scene='golden'] .feed-pill,
+.app[data-scene='dawn'] .feed-pill {
+  background: rgba(20, 40, 80, 0.5);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.app[data-scene='day'] .gear-btn,
+.app[data-scene='golden'] .gear-btn,
+.app[data-scene='dawn'] .gear-btn,
+.app[data-scene='day'] .settings-label-btn,
+.app[data-scene='golden'] .settings-label-btn,
+.app[data-scene='dawn'] .settings-label-btn {
+  color: rgba(20, 45, 80, 0.95);
+  background: rgba(255, 255, 255, 0.45);
+  border-color: rgba(30, 60, 110, 0.3);
+}

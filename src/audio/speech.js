@@ -746,8 +746,16 @@ class SpeechEngine {
     j.paused = false
     if (this.cloudAudio) {
       try {
-        this.cloudAudio.play()
-      } catch {}
+        const p = this.cloudAudio.play()
+        // If the tab switch interrupted the element (mobile browsers suspend
+        // audio), play() rejects — re-speak the current phrase so a fresh
+        // element starts under this user gesture.
+        if (p && p.catch) p.catch(() => this.speakIndex(j.index))
+      } catch {
+        try {
+          this.speakIndex(j.index)
+        } catch {}
+      }
     }
     try {
       this.synth.resume()

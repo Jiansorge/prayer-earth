@@ -52,9 +52,14 @@ export default function HomePage() {
             {t('home.sub')}
           </p>
         </div>
-        <button className="gear-btn" onClick={() => setSettingsOpen(true)} aria-label={t('settings.gear')} title={t('settings.gear')}>
-          <span className="nav-icon">⚙︎</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button className="settings-label-btn" onClick={() => setSettingsOpen(true)}>
+            {t('settings.title')}
+          </button>
+          <button className="gear-btn" onClick={() => setSettingsOpen(true)} aria-label={t('settings.gear')} title={t('settings.gear')}>
+            <span className="nav-icon">⚙︎</span>
+          </button>
+        </div>
       </div>
 
       <div className="world-meter">

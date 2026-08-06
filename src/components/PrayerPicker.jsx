@@ -10,17 +10,28 @@ import Sparkles from './Sparkles.jsx'
 function PickerRow({ p, i, spirit, openPrayer, close, t }) {
   const today = useStore((s) => s.getPrayerToday(p.id))
   const now = useStore((s) => s.prayerCounts[p.id] || 0)
+  const fav = useStore((s) => s.favorites.includes(p.id))
+  const toggleFavorite = useStore((s) => s.toggleFavorite)
+  const open = () => {
+    const cur = useStore.getState()
+    if (cur.playingPrayerId && cur.playingPrayerId !== p.id) {
+      // Choosing a different prayer stops the one playing in the background.
+      stopPlayback()
+    }
+    openPrayer(spirit.id, p.id)
+    close()
+  }
   return (
-    <button
+    <div
       className="picker-row"
-      onClick={() => {
-        const cur = useStore.getState()
-        if (cur.playingPrayerId && cur.playingPrayerId !== p.id) {
-          // Choosing a different prayer stops the one playing in the background.
-          stopPlayback()
+      role="button"
+      tabIndex={0}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          open()
         }
-        openPrayer(spirit.id, p.id)
-        close()
       }}
     >
       <span className="picker-num">{i + 1}</span>
@@ -32,8 +43,19 @@ function PickerRow({ p, i, spirit, openPrayer, close, t }) {
         <span className="picker-total">{t('prayer.today', { n: today.toLocaleString() })}</span>
         <span className="picker-now">{t('prayer.peoplePraying', { n: now })}</span>
       </span>
+      <button
+        className={`picker-fav ${fav ? 'on' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation()
+          toggleFavorite(p.id)
+        }}
+        aria-label={t('prayer.favorite')}
+        title={t('prayer.favorite')}
+      >
+        {fav ? '★' : '☆'}
+      </button>
       <span className="picker-go">→</span>
-    </button>
+    </div>
   )
 }
 

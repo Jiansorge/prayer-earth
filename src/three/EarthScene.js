@@ -1,6 +1,5 @@
 ﻿import * as THREE from 'three'
 import dayUrl from '../assets/textures/earth_atmos.jpg'
-import nightUrl from '../assets/textures/earth_lights_2048.png'
 import { SPIRITUALITIES } from '../data/prayers.js'
 
 // Each tradition's prayer-light colour, so the lights of the world glow by
@@ -60,20 +59,18 @@ const FRAG = /* glsl */ `
 
     vec2 uv = equirect(sp);
 
-    // The living Earth: deep, quiet ocean and land at first, lit by the sun
-    // terminator. As the world prays together, the surface gradually sheds its
-    // darkness — ocean and land brighten toward a luminous, lit world.
+    // The living Earth: deep, quiet ocean and land, lit by the sun terminator.
+    // A gentle luminous shift accumulates as the world prays together.
     float landMask = texture2D(uMaskTex, uv).r;
 
     // uGlow rises with every prayer ever made (toward a million), uTier with
-    // the lifetime seconds of shared prayer, so the dark areas of the planet
-    // visibly fade out as the world prays together.
-    vec3 oceanC = vec3(0.016, 0.05, 0.115)
-      + vec3(0.06, 0.12, 0.18) * uTier
-      + vec3(0.08, 0.15, 0.22) * uGlow;
-    vec3 landC = vec3(0.085, 0.095, 0.085)
-      + vec3(0.18, 0.2, 0.16) * uTier
-      + vec3(0.24, 0.26, 0.2) * uGlow;
+    // the lifetime seconds of shared prayer.
+    vec3 oceanC = vec3(0.014, 0.045, 0.1)
+      + vec3(0.012, 0.028, 0.05) * uTier
+      + vec3(0.016, 0.038, 0.062) * uGlow;
+    vec3 landC = vec3(0.075, 0.085, 0.075)
+      + vec3(0.038, 0.042, 0.034) * uTier
+      + vec3(0.05, 0.052, 0.04) * uGlow;
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -352,7 +349,6 @@ export class EarthScene {
     this.coronaT = 0
     this.wispsT = 0
     this._dayLoaded = false
-    this._nightLoaded = false
     this._ready = false
     this._youWorldPos = new THREE.Vector3()
     this._youCamPos = new THREE.Vector3()
@@ -381,7 +377,7 @@ export class EarthScene {
     this.camera.position.set(0, this.backdrop ? 0 : 0.55, this.backdrop ? 4.7 : 4.6)
     this.camera.lookAt(0, 0, 0)
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    this.renderer = new THREE.WebGLRenderer({ antialias: !this.lowPower, alpha: true })
     // base render resolution: modest cap on the earth view, low on the backdrop
     this.basePR = this.backdrop ? 1.25 : Math.min(window.devicePixelRatio, 2)
     if (this.lowPower) this.basePR = 1
@@ -417,21 +413,6 @@ export class EarthScene {
     dayTex.colorSpace = THREE.SRGBColorSpace
     dayTex.wrapS = THREE.RepeatWrapping
     this.dayTex = dayTex
-    const nightTex = loader.load(
-      nightUrl,
-      (tex) => {
-        tex.image = this.makeSeamless(tex.image)
-        tex.needsUpdate = true
-        this._nightLoaded = true
-      },
-      undefined,
-      () => {
-        this._nightLoaded = true
-      }
-    )
-    nightTex.colorSpace = THREE.SRGBColorSpace
-    nightTex.wrapS = THREE.RepeatWrapping
-    this.nightTex = nightTex
 
     // Never let the loading overlay hang: even if a texture is slow or fails on
     // a low-end phone, show the Earth (slightly untextured) after a short wait.
@@ -537,7 +518,6 @@ export class EarthScene {
         uGlow: { value: this.glow },
         uSunDir: { value: this.sunDir },
         uDayTex: { value: dayTex },
-        uNightTex: { value: nightTex },
         uMaskTex: { value: this.maskTex },
         uSurge: { value: 0 },
         uTier: { value: 0 }
@@ -1053,7 +1033,7 @@ export class EarthScene {
         r * Math.sin(lat),
         r * Math.cos(lat) * Math.sin(lon)
       )
-      spr.userData.baseOpacity = Math.min(0.6, 0.3 + n * 0.06)
+      spr.userData.baseOpacity = Math.min(0.9, 0.6 + n * 0.05)
       const s = 0.2 + Math.min(n, 8) * 0.03
       spr.scale.set(s, s, s)
       const color = TRAD_LIGHT[spirits?.[k]] || GOLD_LIGHT
@@ -1372,7 +1352,7 @@ export class EarthScene {
         // pulse so the lights feel alive as they ride the turning globe
         const limbFade = Math.max(0, Math.min(1, (facing + 0.2) / 0.5))
         const phase = (spr.userData.pulse = (spr.userData.pulse || (Math.random() * Math.PI * 2)))
-        const breathe = 0.7 + 0.3 * Math.sin(t * 2.1 + phase)
+        const breathe = 0.85 + 0.15 * Math.sin(t * 2.1 + phase)
         spr.material.opacity = spr.userData.baseOpacity * limbFade * breathe
       }
     }

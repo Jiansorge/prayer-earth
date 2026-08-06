@@ -92,7 +92,7 @@ export default function EarthPage() {
           <div className="eh-caption">
             {connected
               ? people === 1
-                ? t('earth.soulNow')
+                ? t('earth.soulNow', { n: people })
                 : t('earth.soulsNow', { n: people })
               : t('earth.quietCompany')}          </div>
         </div>

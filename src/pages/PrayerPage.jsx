@@ -414,7 +414,7 @@ export default function PrayerPage() {
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span className="pulse-dot" />
-          <span style={{ fontSize: 13, color: 'var(--ink-dim)' }}>{t('prayer.peoplePraying', { n: people })}</span>
+          <span style={{ fontSize: 13, color: 'var(--ink-dim)' }}>{t('prayer.peoplePraying', { n: Math.max(playing && !paused ? 1 : 0, people) })}</span>
           <button
             className={`fave-btn ${favorite ? 'on' : ''}`}
             onClick={() => toggleFavorite(prayer.id)}

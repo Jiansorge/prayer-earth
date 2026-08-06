@@ -13,10 +13,19 @@ export function useBackdropCanvas(ref, draw) {
     const reduced = !!(
       window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
     )
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+    // Low-end devices (few cores) get a lighter canvas: lower resolution and a
+    // ~30fps cap so the animated backdrop doesn't starve the rest of the app.
+    const low = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4
+    const dpr = Math.min(window.devicePixelRatio || 1, low ? 1 : 1.5)
 
     let raf = 0
+    let frame = 0
     const loop = (t) => {
+      frame++
+      if (low && (frame & 1)) {
+        raf = requestAnimationFrame(loop)
+        return
+      }
       draw(ctx, dpr, t / 1000, reduced)
       if (!reduced) raf = requestAnimationFrame(loop)
     }
