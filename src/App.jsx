@@ -2,6 +2,7 @@ import React, { Component, Suspense, lazy, useEffect, useRef, useState } from 'r
 import { useStore } from './store.js'
 import { syncClient } from './sync/client.js'
 import { ambient } from './audio/ambience.js'
+import { speech } from './audio/speech.js'
 import HomePage from './pages/HomePage.jsx'
 import PrayerPage from './pages/PrayerPage.jsx'
 import LegalPage from './pages/LegalPage.jsx'
@@ -147,6 +148,24 @@ export default function App() {
     }
     window.addEventListener('pointermove', move, { passive: true })
     return () => window.removeEventListener('pointermove', move)
+  }, [])
+
+  // If the whole browser tab is hidden, a prayer playing in the background
+  // (Home/Earth/Prayer) pauses quietly, and resumes where it left off when the
+  // person returns. This lives here (not on the prayer page) so it works even
+  // when the prayer keeps playing on another view.
+  useEffect(() => {
+    const onVis = () => {
+      if (!document.hidden) return
+      const s = useStore.getState()
+      if (s.playing && !s.paused) {
+        speech.pause()
+        useStore.setState({ paused: true, praying: false })
+        syncClient.presenceNow()
+      }
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
   }, [])
 
   // Deep links: #/earth  or  #/pray/<spirit>/<prayer>

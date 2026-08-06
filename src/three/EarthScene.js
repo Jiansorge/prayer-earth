@@ -382,9 +382,9 @@ export class EarthScene {
 
     // sun light for the earth shader â€” toward the camera so the day side faces us
     this.sunDir = new THREE.Vector3(0.35, 0.28, 0.89).normalize()
-    // the prayer backdrop turns a little faster than the main map so the
-    // silhouette feels quietly alive behind the words
-    this.rotVel = this.backdrop ? 0.002 : 0.0016
+    // the prayer backdrop turns slowly and steadily so the silhouette feels
+    // quietly alive behind the words
+    this.rotVel = this.backdrop ? 0.004 : 0.0016
 
     // start facing Europe/Africa so recognizable geography greets the viewer
     this.earthGroupRotation = 1.25

@@ -2514,6 +2514,15 @@ html[dir='rtl'] .chooser-arrow.right {
   pointer-events: auto;
 }
 
+/* In the compact (earth) feed the pills stack vertically; let them fill the
+   column and wrap so the bubble always covers the text. */
+.earth-view .world-feed.compact .feed-pill {
+  width: 100%;
+  white-space: normal;
+  justify-content: flex-start;
+  line-height: 1.35;
+}
+
 /* ---- QR share card ---- */
 .qr-backdrop {
   position: fixed;

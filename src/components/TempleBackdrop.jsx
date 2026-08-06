@@ -1,9 +1,9 @@
 import React, { useRef } from 'react'
 import { useBackdropCanvas } from './useBackdropCanvas.js'
 
-// A quiet, non-denominational ancient temple, warm stone, a row of columns
-// and a central arch, candlelight flickering, incense smoke drifting upward,
-// and dust motes in the light.
+// A quiet, non-denominational ancient temple: warm stone columns under a
+// classical pediment, a glowing central doorway, moonlight and stars, candles
+// flickering, incense smoke drifting, and dust motes in the light.
 
 function mulberry(seed) {
   let s = seed
@@ -17,10 +17,10 @@ function mulberry(seed) {
 }
 
 const rnd = mulberry(71)
-const columns = Array.from({ length: 9 }, (_, i) => ({
-  x: i / 9 + rnd() * 0.02,
-  w: 0.045 + rnd() * 0.012,
-  h: 0.5 + rnd() * 0.16
+const columns = Array.from({ length: 7 }, (_, i) => ({
+  x: 0.14 + i * 0.12 + rnd() * 0.015,
+  w: 0.032 + rnd() * 0.006,
+  h: 0.34 + rnd() * 0.06
 }))
 const candles = Array.from({ length: 7 }, (_, i) => ({
   x: 0.1 + i * 0.13 + rnd() * 0.03,
@@ -41,6 +41,12 @@ const motes = Array.from({ length: 26 }, () => ({
   vy: 0.004 + rnd() * 0.01,
   ph: rnd() * Math.PI * 2
 }))
+const stars = Array.from({ length: 34 }, () => ({
+  x: rnd(),
+  y: rnd() * 0.55,
+  r: 0.4 + rnd() * 0.9,
+  ph: rnd() * Math.PI * 2
+}))
 
 function drawTemple(ctx, dpr, t, reduced) {
   const w = window.innerWidth
@@ -53,18 +59,41 @@ function drawTemple(ctx, dpr, t, reduced) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.clearRect(0, 0, w, h)
 
-  const g = ctx.createLinearGradient(0, 0, 0, h)
-  g.addColorStop(0, '#120c08')
-  g.addColorStop(0.55, '#241709')
-  g.addColorStop(0.82, '#3a2410')
-  g.addColorStop(1, '#4a2c12')
-  ctx.fillStyle = g
+  // night sky, deep indigo to warm earth
+  const sky = ctx.createLinearGradient(0, 0, 0, h)
+  sky.addColorStop(0, '#0b1020')
+  sky.addColorStop(0.55, '#1c1830')
+  sky.addColorStop(0.8, '#3a2410')
+  sky.addColorStop(1, '#4a2c12')
+  ctx.fillStyle = sky
   ctx.fillRect(0, 0, w, h)
 
+  // stars, gently twinkling
+  for (const st of stars) {
+    const a = reduced ? 0.25 : 0.2 + 0.25 * (0.5 + 0.5 * Math.sin(t * 0.9 + st.ph))
+    ctx.fillStyle = `rgba(220,225,255,${a})`
+    ctx.beginPath()
+    ctx.arc(st.x * w, st.y * h, st.r, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // a soft moon with a pale halo
+  const mx = w * 0.78
+  const my = h * 0.18
+  const moonHalo = ctx.createRadialGradient(mx, my, 0, mx, my, w * 0.16)
+  moonHalo.addColorStop(0, 'rgba(240,230,200,0.22)')
+  moonHalo.addColorStop(1, 'rgba(0,0,0,0)')
+  ctx.fillStyle = moonHalo
+  ctx.fillRect(mx - w * 0.16, my - w * 0.16, w * 0.32, w * 0.32)
+  ctx.fillStyle = 'rgba(244,236,210,0.9)'
+  ctx.beginPath()
+  ctx.arc(mx, my, w * 0.028, 0, Math.PI * 2)
+  ctx.fill()
+
   ctx.globalCompositeOperation = 'screen'
-  const halo = ctx.createRadialGradient(w * 0.5, h * 0.55, 0, w * 0.5, h * 0.55, w * 0.4)
+  const halo = ctx.createRadialGradient(w * 0.5, h * 0.62, 0, w * 0.5, h * 0.62, w * 0.42)
   const flicker = reduced ? 0.5 : 0.5 + 0.06 * Math.sin(t * 1.8)
-  halo.addColorStop(0, `rgba(255,190,110,${0.16 * flicker})`)
+  halo.addColorStop(0, `rgba(255,190,110,${0.2 * flicker})`)
   halo.addColorStop(1, 'rgba(0,0,0,0)')
   ctx.fillStyle = halo
   ctx.fillRect(0, 0, w, h)
@@ -87,34 +116,92 @@ function drawTemple(ctx, dpr, t, reduced) {
   }
   ctx.globalCompositeOperation = 'source-over'
 
-  const floor = ctx.createLinearGradient(0, h * 0.72, 0, h)
-  floor.addColorStop(0, 'rgba(0,0,0,0)')
-  floor.addColorStop(1, 'rgba(0,0,0,0.45)')
-  ctx.fillStyle = floor
-  ctx.fillRect(0, h * 0.72, w, h * 0.28)
+  // the temple: warm stone, columns, a classical pediment, and a glowing doorway
+  const baseY = h * 0.86
+  const colW = columns[0].w * w
+  const colTop = baseY - columns[0].h * h * 1.2
+  const templeLeft = (columns[0].x - 0.03) * w
+  const templeRight = (columns[columns.length - 1].x + 0.05) * w
 
-  ctx.fillStyle = 'rgba(14,9,5,0.96)'
+  // warm light spilling from inside the doorway
+  const doorX = w * 0.5
+  const doorR = w * 0.075
+  const doorGlow = ctx.createRadialGradient(doorX, baseY - doorR * 0.6, 0, doorX, baseY - doorR * 0.6, doorR * 4)
+  doorGlow.addColorStop(0, `rgba(255,196,120,${reduced ? 0.2 : 0.3})`)
+  doorGlow.addColorStop(1, 'rgba(0,0,0,0)')
+  ctx.fillStyle = doorGlow
+  ctx.fillRect(doorX - doorR * 4, baseY - doorR * 5, doorR * 8, doorR * 9)
+
+  // the pediment (triangular roof) over the columns
+  ctx.fillStyle = 'rgba(24,15,8,0.98)'
+  ctx.beginPath()
+  ctx.moveTo(templeLeft - w * 0.02, colTop)
+  ctx.lineTo(w * 0.5, colTop - h * 0.075)
+  ctx.lineTo(templeRight + w * 0.02, colTop)
+  ctx.closePath()
+  ctx.fill()
+  // a thin roofline highlight catching the moonlight
+  ctx.strokeStyle = 'rgba(230,200,150,0.35)'
+  ctx.lineWidth = 1.5
+  ctx.beginPath()
+  ctx.moveTo(templeLeft - w * 0.02, colTop)
+  ctx.lineTo(w * 0.5, colTop - h * 0.075)
+  ctx.lineTo(templeRight + w * 0.02, colTop)
+  ctx.stroke()
+
+  // frieze band under the pediment
+  ctx.fillStyle = 'rgba(20,13,7,0.98)'
+  ctx.fillRect(templeLeft - w * 0.02, colTop, templeRight - templeLeft + w * 0.04, h * 0.018)
+
+  // columns with capitals and bases, warm and softly lit on the inner edge
   for (const c of columns) {
     const cx = c.x * w
     const cw = c.w * w
-    const ch = c.h * h
-    ctx.fillRect(cx, h - ch, cw, ch)
-    ctx.fillRect(cx - cw * 0.18, h - ch, cw * 1.36, cw * 0.55)
-    ctx.fillRect(cx - cw * 0.18, h - cw * 0.5, cw * 1.36, cw * 0.5)
+    const ch = c.h * h * 1.2
+    const top = baseY - ch
+    // capital
+    ctx.fillStyle = 'rgba(28,18,9,0.98)'
+    ctx.fillRect(cx - cw * 0.55, top - h * 0.012, cw * 2.1, h * 0.014)
+    // shaft
+    const shaft = ctx.createLinearGradient(cx - cw / 2, 0, cx + cw / 2, 0)
+    shaft.addColorStop(0, 'rgba(26,17,9,0.98)')
+    shaft.addColorStop(0.5, 'rgba(60,40,20,0.98)')
+    shaft.addColorStop(1, 'rgba(24,15,8,0.98)')
+    ctx.fillStyle = shaft
+    ctx.fillRect(cx - cw / 2, top, cw, ch)
+    // base
+    ctx.fillStyle = 'rgba(24,15,8,0.98)'
+    ctx.fillRect(cx - cw * 0.6, baseY - h * 0.014, cw * 2.2, h * 0.014)
   }
-  const ax = w * 0.5
-  const ar = w * 0.13
+
+  // steps
+  for (let i = 0; i < 3; i++) {
+    const sy = baseY + i * h * 0.02
+    ctx.fillStyle = `rgba(26,17,9,${0.9 - i * 0.18})`
+    ctx.fillRect(templeLeft - w * 0.06, sy, templeRight - templeLeft + w * 0.12, h * 0.02)
+  }
+
+  // the central doorway: a warm arch
+  ctx.fillStyle = 'rgba(12,7,3,0.99)'
   ctx.beginPath()
-  ctx.moveTo(ax - ar, h)
-  ctx.arc(ax, h, ar, Math.PI, 0)
-  ctx.lineTo(ax + ar, h)
+  ctx.moveTo(doorX - doorR, baseY)
+  ctx.arc(doorX, baseY - doorR, doorR, Math.PI, 0)
+  ctx.lineTo(doorX + doorR, baseY)
   ctx.closePath()
   ctx.fill()
+  // doorway edge catching the light
+  ctx.strokeStyle = 'rgba(255,200,130,0.4)'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.moveTo(doorX - doorR, baseY)
+  ctx.arc(doorX, baseY - doorR, doorR, Math.PI, 0)
+  ctx.lineTo(doorX + doorR, baseY)
+  ctx.stroke()
 
   ctx.globalCompositeOperation = 'screen'
   for (const c of candles) {
     const cx = c.x * w
-    const cy = h * 0.72
+    const cy = baseY - h * 0.02
     const cr = c.r * Math.min(w, h)
     const a = reduced ? 0.55 : 0.45 + 0.3 * (0.5 + 0.5 * Math.sin(t * 2.2 + c.ph))
     const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, cr * 6)
