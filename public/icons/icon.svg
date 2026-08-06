@@ -21,20 +21,20 @@
   <rect width="512" height="512" fill="url(#bg)"/>
   <ellipse cx="256" cy="300" rx="180" ry="150" fill="#8db8ff" opacity="0.22" filter="url(#soft)"/>
 
-  <!-- left hand (palm + 4 separated fingers + thumb); mirrored for the right -->
+  <!-- left hand (slender palm + 4 tapered fingers + thumb); mirrored for the right -->
   <g id="handL" fill="url(#hand)">
-    <!-- palm -->
-    <path d="M 156 300 C 156 268, 172 254, 200 254 C 228 254, 244 268, 246 300 C 248 336, 246 382, 244 420 C 243 434, 232 440, 200 440 C 168 440, 157 434, 156 420 C 155 380, 156 336, 156 300 Z"/>
-    <!-- little finger -->
-    <path d="M 152 300 C 152 252, 156 218, 165 208 C 171 203, 181 206, 184 214 C 185 226, 185 240, 184 300 Z"/>
+    <!-- palm, lean and gently curved -->
+    <path d="M 158 300 C 158 274, 172 260, 190 260 C 208 260, 222 274, 224 300 C 225 342, 224 386, 222 418 C 221 432, 214 438, 190 438 C 166 438, 159 432, 158 418 C 157 380, 158 342, 158 300 Z"/>
+    <!-- little finger, slender and tapered -->
+    <path d="M 152 300 C 152 258, 156 226, 162 213 C 166 206, 174 208, 177 215 C 178 228, 178 246, 177 300 Z"/>
     <!-- ring finger -->
-    <path d="M 179 300 C 179 244, 185 204, 194 192 C 200 186, 210 190, 213 199 C 214 214, 214 230, 213 300 Z"/>
+    <path d="M 176 300 C 176 252, 181 214, 188 201 C 193 194, 201 197, 204 205 C 205 220, 205 240, 204 300 Z"/>
     <!-- middle finger -->
-    <path d="M 204 300 C 204 240, 211 194, 220 180 C 227 173, 237 177, 240 187 C 241 204, 241 222, 240 300 Z"/>
-    <!-- index finger (innermost) -->
-    <path d="M 226 300 C 226 244, 232 196, 240 182 C 247 175, 256 177, 259 186 C 260 202, 260 220, 259 300 Z"/>
-    <!-- thumb rising toward the centre -->
-    <path d="M 206 448 C 200 448, 196 440, 198 424 C 202 392, 214 368, 232 360 C 244 355, 252 360, 254 372 C 255 386, 252 410, 250 432 C 249 442, 244 448, 236 448 Z"/>
+    <path d="M 199 300 C 199 248, 205 204, 212 190 C 217 183, 225 186, 228 194 C 229 210, 229 232, 228 300 Z"/>
+    <!-- index finger (innermost), reaching highest -->
+    <path d="M 220 300 C 220 252, 225 206, 232 191 C 237 184, 245 187, 248 195 C 249 210, 249 230, 248 300 Z"/>
+    <!-- thumb rising toward the centre, slim and curved -->
+    <path d="M 198 448 C 193 448, 189 440, 191 426 C 195 398, 207 376, 223 368 C 233 363, 240 367, 242 377 C 243 390, 241 412, 239 432 C 238 441, 233 448, 226 448 Z"/>
   </g>
   <use href="#handL" transform="translate(512 0) scale(-1 1)"/>
 
