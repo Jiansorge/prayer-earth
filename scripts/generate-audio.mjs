@@ -13,7 +13,7 @@
 //
 // Run:  node scripts/generate-audio.mjs
 
-import { writeFileSync, mkdirSync, existsSync, renameSync } from 'node:fs'
+import { writeFileSync, mkdirSync, existsSync, renameSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { SPIRITUALITIES } from '../src/data/prayers.js'
 import edgePkg from 'msedge-tts'
@@ -33,7 +33,7 @@ const MAX_VOICES = process.env.MAX_VOICES ? parseInt(process.env.MAX_VOICES, 10)
 // Gurmukhi (Punjabi) is left to device voices, no free engine reads it.
 const FALLBACK_LANG = {
   sa: 'hi',
-  pi: 'en',
+  pi: 'hi',
   pra: 'hi',
   mi: 'en',
   la: 'en',
@@ -41,7 +41,9 @@ const FALLBACK_LANG = {
   lkt: 'en',
   haw: 'en',
   yo: 'en',
-  ak: 'en'
+  ak: 'en',
+  zu: 'en',
+  ig: 'en'
 }
 
 const LIMIT = process.env.AUDIO_LIMIT ? parseInt(process.env.AUDIO_LIMIT, 10) : 0
@@ -139,7 +141,13 @@ for (const s of SPIRITUALITIES) {
 }
 const targets = prayers.filter((p) => !ONLY || ONLY.has(p.id))
 
-const manifest = { generated: new Date().toISOString(), prayers: {} }
+// Seed from any existing manifest so a partial run (AUDIO_PRAYERS) merges
+// instead of wiping the prayers already rendered.
+let manifest = { generated: new Date().toISOString(), prayers: {} }
+try {
+  const existing = JSON.parse(readFileSync(join(OUT, 'manifest.json'), 'utf8'))
+  if (existing && existing.prayers) manifest.prayers = existing.prayers
+} catch {}
 let generated = 0
 let skipped = 0
 let failed = 0
@@ -182,10 +190,17 @@ async function renderPrayer(p, n, total) {
       }
     }
   }
-  manifest.prayers[p.id] = { lang: FALLBACK_LANG[lang] || lang, voices: vs, phrases: (p.phrases || []).length }
+  // Only advertise the prayer once it actually has renderable audio; otherwise
+  // the app falls back to on-device voices instead of dead links.
+  const files = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.mp3')) : []
+  if (files.length) {
+    manifest.prayers[p.id] = { lang: FALLBACK_LANG[lang] || lang, voices: vs, phrases: (p.phrases || []).length }
+    console.log(`[${n + 1}/${total}] ${p.id} (${lang}), ${vs.length} voices`)
+  } else {
+    console.log(`[${n + 1}/${total}] ${p.id} (${lang}), no audio rendered, left to device voices`)
+  }
   // write progress after each prayer so an interrupted run keeps what it did
   writeFileSync(join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2))
-  console.log(`[${n + 1}/${total}] ${p.id} (${lang}), ${vs.length} voices`)
 }
 
 writeFileSync(join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2))

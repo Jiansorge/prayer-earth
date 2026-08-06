@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-05T03:48:11.483Z",
+  "generated": "2026-08-06T03:00:54.825Z",
   "prayers": {
     "lords-prayer": {
       "lang": "en",
@@ -1138,6 +1138,396 @@
         "en-IE-ConnorNeural"
       ],
       "phrases": 3
+    },
+    "serenity-prayer": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 7
+    },
+    "beatitudes": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 10
+    },
+    "basmala": {
+      "lang": "ar",
+      "voices": [
+        "ar-DZ-AminaNeural",
+        "ar-DZ-IsmaelNeural",
+        "ar-BH-LailaNeural",
+        "ar-BH-AliNeural"
+      ],
+      "phrases": 2
+    },
+    "rabbana-atina": {
+      "lang": "ar",
+      "voices": [
+        "ar-DZ-AminaNeural",
+        "ar-DZ-IsmaelNeural",
+        "ar-BH-LailaNeural",
+        "ar-BH-AliNeural"
+      ],
+      "phrases": 3
+    },
+    "purnamadah": {
+      "lang": "hi",
+      "voices": [
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
+      ],
+      "phrases": 4
+    },
+    "metta-sutta": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 8
+    },
+    "namo-tassa": {
+      "lang": "hi",
+      "voices": [
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
+      ],
+      "phrases": 2
+    },
+    "simran": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 6
+    },
+    "shehecheyanu": {
+      "lang": "he",
+      "voices": [
+        "he-IL-HilaNeural",
+        "he-IL-AvriNeural"
+      ],
+      "phrases": 2
+    },
+    "vahavta": {
+      "lang": "he",
+      "voices": [
+        "he-IL-HilaNeural",
+        "he-IL-AvriNeural"
+      ],
+      "phrases": 4
+    },
+    "water-way": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "sincerity": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "arigato-kami": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 6
+    },
+    "maitri-bhavana": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "ubuntu": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "zulu-thanks": {
+      "lang": "en",
+      "voices": [
+        "zu-ZA-ThandoNeural",
+        "zu-ZA-ThembaNeural"
+      ],
+      "phrases": 4
+    },
+    "akan-nyame": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 4
+    },
+    "igbo-chi": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "masai-blessing": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "yoruba-morning": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "lakota-wopila": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "cherokee-morning": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "hopi-rains": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "inuit-sila": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "ojibwe-water": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "maya-dawn": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "inca-inti": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "amazon-forest": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "aboriginal-country": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "maori-harvest": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 4
+    },
+    "samoan-faafetai": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "hawaiian-pule": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "mapuche-newen": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "sami-beaivi": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "ainu-kamuy": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "mongolian-sky": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "good-conduct": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "bahai-healing": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 6
+    },
+    "bahai-gratitude": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 6
+    },
+    "bahai-unity": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 6
     }
   }
 }
