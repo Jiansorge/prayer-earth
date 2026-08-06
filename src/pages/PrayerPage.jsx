@@ -225,6 +225,31 @@ export default function PrayerPage() {
 
   // Keep the chosen prayer's chip in view when switching prayers or traditions.
   const chooserRef = useRef(null)
+
+  // Hovering the prayer list, a vertical mouse-wheel scrolls it horizontally.
+  useEffect(() => {
+    const el = chooserRef.current
+    if (!el) return
+    const onWheel = (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        el.scrollLeft += e.deltaY
+        e.preventDefault()
+      }
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [])
+
+  // The voice/tune panel closes when you tap anywhere outside it.
+  useEffect(() => {
+    if (!tuning) return
+    const onDoc = (e) => {
+      if (e.target.closest && (e.target.closest('.prayer-tune') || e.target.closest('.ctrl-btn.tune'))) return
+      setTuning(false)
+    }
+    document.addEventListener('pointerdown', onDoc)
+    return () => document.removeEventListener('pointerdown', onDoc)
+  }, [tuning])
   useEffect(() => {
     const el = chooserRef.current
     if (!el) return
@@ -578,6 +603,14 @@ export default function PrayerPage() {
 
       {tuning && (
         <div className="prayer-tune fade-in" aria-label={t('prayer.tuneLabel')}>
+          <button
+            className="pt-close"
+            onClick={() => setTuning(false)}
+            aria-label={t('prayer.tuneClose')}
+            title={t('prayer.tuneClose')}
+          >
+            ▼
+          </button>
           {prayerVoices.length > 1 && (
             <div className="pt-row pt-voices">
               <label className="pt-label" id="pt-voice-label">{t('prayer.voice')}</label>
