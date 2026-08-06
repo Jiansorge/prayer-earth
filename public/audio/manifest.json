@@ -1139,16 +1139,6 @@
       ],
       "phrases": 3
     },
-    "serenity-prayer": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-CA-LiamNeural",
-        "en-CA-ClaraNeural",
-        "en-HK-SamNeural"
-      ],
-      "phrases": 7
-    },
     "beatitudes": {
       "lang": "en",
       "voices": [
@@ -1498,36 +1488,6 @@
         "en-HK-SamNeural"
       ],
       "phrases": 5
-    },
-    "bahai-healing": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-CA-LiamNeural",
-        "en-CA-ClaraNeural",
-        "en-HK-SamNeural"
-      ],
-      "phrases": 6
-    },
-    "bahai-gratitude": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-CA-LiamNeural",
-        "en-CA-ClaraNeural",
-        "en-HK-SamNeural"
-      ],
-      "phrases": 6
-    },
-    "bahai-unity": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-CA-LiamNeural",
-        "en-CA-ClaraNeural",
-        "en-HK-SamNeural"
-      ],
-      "phrases": 6
     }
   }
 }

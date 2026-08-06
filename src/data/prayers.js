@@ -100,22 +100,6 @@ export const SPIRITUALITIES = [
         translation: 'A beloved prayer of peace and humility, offered across every tradition of service.'
       },
       {
-        id: 'serenity-prayer',
-        title: 'The Serenity Prayer',
-        lang: 'en',
-        langLabel: 'English',
-        phrases: [
-          { t: 'God, grant me the serenity' },
-          { t: 'to accept the things I cannot change,' },
-          { t: 'courage to change the things I can,' },
-          { t: 'and wisdom to know the difference.' },
-          { t: 'Living one day at a time,' },
-          { t: 'enjoying one moment at a time,' },
-          { t: 'accepting hardship as the pathway to peace.' }
-        ],
-        translation: 'A prayer of quiet acceptance and courage, beloved across the world.'
-      },
-      {
         id: 'beatitudes',
         title: 'The Beatitudes',
         lang: 'en',
@@ -2103,61 +2087,6 @@ export const SPIRITUALITIES = [
           { t: 'May I walk the path of Asha, truth and harmony, all my days.' }
         ],
         translation: 'A prayer of the Asha path, keeping thought, word, and deed aligned with the good.'
-      }
-    ]
-  },
-  {
-    id: 'bahai',
-    name: 'Bah\u2019\u00e1\u2019\u00ed Faith',
-    emoji: '\u{1F54A}\uFE0F',
-    glow: 'rgba(120, 200, 255, 0.24)',
-    lightColor: '#7ac0ff',
-    tagline: 'Unity of humanity, the oneness of God and religion.',
-    prayers: [
-      {
-        id: 'bahai-healing',
-        title: 'A Healing Prayer',
-        lang: 'en',
-        langLabel: 'English',
-        phrases: [
-          { t: 'Thy name is my healing, O my God,' },
-          { t: 'and remembrance of Thee is my remedy.' },
-          { t: 'Nearness to Thee is my hope,' },
-          { t: 'and love for Thee is my companion.' },
-          { t: 'Thy mercy to me is my healing,' },
-          { t: 'and Thy succor in every hour of need is my greatest joy.' }
-        ],
-        translation: 'A prayer of healing from Bah\u00e1\u2019u\u2019ll\u00e1h, turning to God as the source of all remedy.'
-      },
-      {
-        id: 'bahai-gratitude',
-        title: 'A Prayer of Gratitude',
-        lang: 'en',
-        langLabel: 'English',
-        phrases: [
-          { t: 'O God, my God, I thank Thee' },
-          { t: 'for the gift of this day and the light of this life.' },
-          { t: 'Make me a source of joy to the sorrowful,' },
-          { t: 'a helper to the weak, and a friend to the friendless.' },
-          { t: 'Let my heart overflow with gratitude,' },
-          { t: 'that it may become a spring of kindness to all.' }
-        ],
-        translation: 'A prayer of thanksgiving in the Bah\u00e1\u2019\u00ed spirit, turning gratitude into service.'
-      },
-      {
-        id: 'bahai-unity',
-        title: 'A Prayer for Unity',
-        lang: 'en',
-        langLabel: 'English',
-        phrases: [
-          { t: 'O God, who art the Author of all things,' },
-          { t: 'unite our hearts in Thy love.' },
-          { t: 'Make us as waves of one sea,' },
-          { t: 'and as rays of one sun.' },
-          { t: 'Cause us to dwell in peace within one another,' },
-          { t: 'that we may serve the good of all Thy children.' }
-        ],
-        translation: 'A prayer for the oneness of humanity, the great hope of the Bah\u00e1\u2019\u00ed Faith.'
       }
     ]
   }
