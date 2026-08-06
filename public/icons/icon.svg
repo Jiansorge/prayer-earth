@@ -26,21 +26,31 @@
   <rect width="512" height="512" fill="url(#bg)"/>
   <ellipse cx="256" cy="300" rx="190" ry="158" fill="#9cc4ff" opacity="0.3" filter="url(#soft)"/>
 
-  <!-- left hand (slender palm + 4 tapered fingers + thumb); mirrored for the right -->
+  <!-- two hands pressed together in prayer (🙏): one smooth, elegant silhouette,
+       fine finger lines, bright light-blue -->
   <g id="handL" fill="url(#hand)">
-    <!-- palm, lean and gently curved -->
-    <path d="M 158 300 C 158 274, 172 260, 190 260 C 208 260, 222 274, 224 300 C 225 342, 224 386, 222 418 C 221 432, 214 438, 190 438 C 166 438, 159 432, 158 418 C 157 380, 158 342, 158 300 Z"/>
-    <!-- little finger, slender and tapered -->
-    <path d="M 152 300 C 150 260, 154 230, 160 217 C 164 210, 172 212, 174 220 C 175 234, 175 254, 174 300 Z"/>
-    <!-- ring finger -->
-    <path d="M 175 300 C 172 254, 177 218, 184 205 C 189 198, 197 200, 200 208 C 201 224, 201 246, 200 300 Z"/>
-    <!-- middle finger -->
-    <path d="M 197 300 C 194 250, 200 208, 207 194 C 212 187, 220 190, 223 198 C 224 214, 224 238, 223 300 Z"/>
-    <!-- index finger (innermost), reaching highest, leaning toward the centre -->
-    <path d="M 218 300 C 215 252, 221 208, 228 193 C 233 186, 241 189, 244 197 C 245 212, 245 232, 244 300 Z"/>
-    <!-- thumb rising toward the centre, slim and curved -->
-    <path d="M 198 448 C 193 448, 189 440, 191 426 C 195 398, 207 376, 223 368 C 233 363, 240 367, 242 377 C 243 390, 241 412, 239 432 C 238 441, 233 448, 226 448 Z"/>
+    <path d="M 152 478
+             C 146 450, 152 414, 170 388
+             C 186 366, 202 350, 216 338
+             C 224 330, 232 324, 240 320
+             C 248 316, 252 314, 256 314
+             C 260 314, 264 316, 272 320
+             C 280 324, 288 330, 296 338
+             C 310 350, 326 366, 342 388
+             C 360 414, 366 450, 360 478
+             C 328 486, 184 486, 152 478 Z"/>
   </g>
+  <g id="fingerL" fill="none" stroke="#2f54a8" stroke-width="2.4" stroke-linecap="round" opacity="0.5">
+    <path d="M 178 362 C 181 380, 182 402, 182 424"/>
+    <path d="M 200 342 C 201 362, 201 388, 201 416"/>
+    <path d="M 220 330 C 220 350, 220 378, 220 408"/>
+    <path d="M 238 322 C 238 340, 238 366, 238 398"/>
+  </g>
+  <use href="#fingerL" transform="translate(512 0) scale(-1 1)"/>
+  <g id="thumbL" fill="url(#hand)">
+    <path d="M 154 452 C 149 462, 150 471, 157 476 C 163 472, 169 463, 170 452 C 170 445, 166 438, 161 435 Z"/>
+  </g>
+  <use href="#thumbL" transform="translate(512 0) scale(-1 1)"/>
   <use href="#handL" transform="translate(512 0) scale(-1 1)"/>
 
   <!-- bright light where the two palms meet (the pressed centre) -->

@@ -1053,8 +1053,8 @@ export class EarthScene {
         r * Math.sin(lat),
         r * Math.cos(lat) * Math.sin(lon)
       )
-      spr.userData.baseOpacity = Math.min(0.7, 0.3 + n * 0.08)
-      const s = 0.2 + Math.min(n, 8) * 0.03
+      spr.userData.baseOpacity = Math.min(0.45, 0.18 + n * 0.05)
+      const s = 0.13 + Math.min(n, 8) * 0.018
       spr.scale.set(s, s, s)
       const color = TRAD_LIGHT[spirits?.[k]] || GOLD_LIGHT
       spr.material.color.set(color)
@@ -1368,9 +1368,12 @@ export class EarthScene {
         }
         spr.visible = true
         // soft, early fade so the glow dims out smoothly as it rounds the limb
-        // (never a hard clip against the planet's edge)
+        // (never a hard clip against the planet's edge), plus a gentle per-light
+        // pulse so the lights feel alive as they ride the turning globe
         const limbFade = Math.max(0, Math.min(1, (facing + 0.2) / 0.5))
-        spr.material.opacity = spr.userData.baseOpacity * limbFade
+        const phase = (spr.userData.pulse = (spr.userData.pulse || (Math.random() * Math.PI * 2)))
+        const breathe = 0.7 + 0.3 * Math.sin(t * 2.1 + phase)
+        spr.material.opacity = spr.userData.baseOpacity * limbFade * breathe
       }
     }
     if (this.halo) this.halo.material.uniforms.uGlow.value = this.glow

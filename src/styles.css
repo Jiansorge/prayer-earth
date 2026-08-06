@@ -1629,16 +1629,12 @@ html[dir='rtl'] .chooser-arrow.right {
 
 /* A close button that stays put at the top-right even when the sheet scrolls. */
 .sheet-x-row {
-  position: sticky;
-  top: 0;
-  z-index: 3;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 8px 10px 6px;
+  padding: 12px 14px 2px;
   margin: 0;
-  background: linear-gradient(180deg, rgba(20, 29, 62, 0.98), rgba(16, 24, 54, 0.9));
-  border-radius: 20px 20px 0 0;
+  background: transparent;
 }
 
 .sheet-x {
@@ -3035,12 +3031,13 @@ html {
 }
 
 /* On the bright Dawn theme the light gradient headline would wash out, so give
-   it a deeper gradient + soft shadow so it reads over the luminous sky. */
+   it a clean deep-blue solid (no gradient blob) with a soft pale glow. */
 .app[data-theme='dawn'] .home-hero h1,
 .app[data-theme='dawn'] .page-title {
-  background: linear-gradient(120deg, #c98a3a, #f0d48a 45%, #6f8fd8);
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 1px 14px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(60, 70, 100, 0.25);
+  background: none;
+  color: #24346a;
+  -webkit-text-fill-color: #24346a;
+  text-shadow: 0 1px 10px rgba(255, 252, 240, 0.7), 0 2px 5px rgba(60, 70, 100, 0.25);
 }
 .app[data-theme='dawn'] .subtitle {
   color: rgba(40, 48, 78, 0.85);

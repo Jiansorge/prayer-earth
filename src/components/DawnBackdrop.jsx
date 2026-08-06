@@ -99,31 +99,43 @@ function drawDawn(ctx, dpr, t, reduced) {
   // calm sea at the horizon, catching the sun's light
   const seaY = h * 0.86
   const sea = ctx.createLinearGradient(0, seaY, 0, h)
-  sea.addColorStop(0, 'rgba(205,222,238,0.9)')
-  sea.addColorStop(1, 'rgba(150,185,215,0.95)')
+  sea.addColorStop(0, 'rgba(215,228,242,0.95)')
+  sea.addColorStop(0.5, 'rgba(178,205,228,0.97)')
+  sea.addColorStop(1, 'rgba(132,170,205,0.98)')
   ctx.fillStyle = sea
   ctx.fillRect(0, seaY, w, h - seaY)
-  // a shimmering path of sunlight on the water
+  // a shimmering vertical column of sun reflected on the water
   ctx.globalCompositeOperation = 'screen'
-  const shimmer = ctx.createLinearGradient(sx - w * 0.06, seaY, sx + w * 0.06, h)
-  shimmer.addColorStop(0, `rgba(255,244,205,${reduced ? 0.25 : 0.3 + 0.1 * Math.sin(t * 1.6)})`)
-  shimmer.addColorStop(1, 'rgba(255,244,205,0)')
-  ctx.fillStyle = shimmer
+  const reflect = ctx.createLinearGradient(0, seaY, 0, h)
+  reflect.addColorStop(0, `rgba(255,244,205,${reduced ? 0.4 : 0.55 + 0.18 * Math.sin(t * 1.6)})`)
+  reflect.addColorStop(1, 'rgba(255,244,205,0.02)')
+  ctx.fillStyle = reflect
   ctx.beginPath()
-  ctx.moveTo(sx - w * 0.02, seaY)
-  ctx.lineTo(sx + w * 0.02, seaY)
-  ctx.lineTo(sx + w * 0.16, h)
-  ctx.lineTo(sx - w * 0.16, h)
+  ctx.moveTo(sx - w * 0.012, seaY)
+  ctx.lineTo(sx + w * 0.012, seaY)
+  ctx.lineTo(sx + w * 0.13, h)
+  ctx.lineTo(sx - w * 0.13, h)
   ctx.closePath()
   ctx.fill()
+  // scattered caustic glints dancing across the water
+  for (let i = 0; i < 10; i++) {
+    const cx = ((i * 0.09 + t * (0.003 + (i % 3) * 0.0015)) % 1.15 - 0.075) * w
+    const cy = seaY + (0.12 + (i % 5) * 0.16) * (h - seaY)
+    const r = (0.012 + (i % 3) * 0.008) * w
+    const a = reduced ? 0.12 : 0.08 + 0.14 * (0.5 + 0.5 * Math.sin(t * (1.2 + (i % 3) * 0.4) + i * 1.7))
+    ctx.fillStyle = `rgba(255,247,214,${a})`
+    ctx.beginPath()
+    ctx.ellipse(cx, cy, r, r * 0.4, 0, 0, Math.PI * 2)
+    ctx.fill()
+  }
   // gentle wave lines
-  for (let i = 0; i < 6; i++) {
-    const yy = seaY + (i + 0.5) * ((h - seaY) / 7)
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)'
+  for (let i = 0; i < 7; i++) {
+    const yy = seaY + (i + 0.5) * ((h - seaY) / 8)
+    ctx.strokeStyle = `rgba(255,255,255,${0.18 - i * 0.02})`
     ctx.lineWidth = 1
     ctx.beginPath()
     for (let x = 0; x <= w; x += 8) {
-      const y = yy + Math.sin(x * 0.008 + t * (0.6 + i * 0.1) + i) * 2
+      const y = yy + Math.sin(x * 0.008 + t * (0.6 + i * 0.1) + i) * 2.2
       if (x === 0) ctx.moveTo(x, y)
       else ctx.lineTo(x, y)
     }
