@@ -998,10 +998,9 @@ export class EarthScene {
         map: glow,
         transparent: true,
         depthWrite: false,
-        // No depth test: far-side lights are hidden per-frame by facing instead
-        // (see animate), so a light's glow is never clipped by the sphere as it
-        // rounds the limb — it fades out naturally instead of losing a piece.
-        depthTest: false,
+        // Depth-tested so lights on the far side of the planet are hidden by
+        // the globe itself — never a see-through glow of the "other side".
+        depthTest: true,
         blending: THREE.AdditiveBlending,
         opacity: 0
       })
@@ -1038,7 +1037,7 @@ export class EarthScene {
         r * Math.sin(lat),
         r * Math.cos(lat) * Math.sin(lon)
       )
-      spr.userData.baseOpacity = Math.min(0.8, 0.35 + n * 0.09)
+      spr.userData.baseOpacity = Math.min(0.7, 0.3 + n * 0.08)
       const s = 0.2 + Math.min(n, 8) * 0.03
       spr.scale.set(s, s, s)
       const color = TRAD_LIGHT[spirits?.[k]] || GOLD_LIGHT
