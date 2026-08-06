@@ -1552,9 +1552,9 @@ html[dir='rtl'] .chooser-arrow.right {
 }
 
 .earth-loading-icon {
-  width: 76px;
-  height: 76px;
-  border-radius: 20px;
+  width: 104px;
+  height: 104px;
+  border-radius: 26px;
   border: 2px solid rgba(198, 222, 255, 0.5);
   box-shadow: 0 0 0 3px rgba(10, 18, 40, 0.9), 0 0 30px rgba(111, 163, 255, 0.6), 0 0 90px rgba(111, 163, 255, 0.3);
   animation: bootGlow 2.4s ease-in-out infinite;
