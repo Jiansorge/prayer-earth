@@ -56,6 +56,8 @@ export default function PrayerPage() {
   const [chantMode, setChantMode] = useState(false)
   const [chantReason, setChantReason] = useState(null)
   const [voiceNote, setVoiceNote] = useState(false)
+  const [muted, setMuted] = useState(false)
+  const lastVol = useRef(volume)
   const [tuning, setTuning] = useState(false)
   const [celebration, setCelebration] = useState(0)
   const celebrationTimer = useRef(null)
@@ -250,6 +252,33 @@ export default function PrayerPage() {
     document.addEventListener('pointerdown', onDoc)
     return () => document.removeEventListener('pointerdown', onDoc)
   }, [tuning])
+
+  // Keyboard controls: Space play/pause, ↑/↓ volume, M mute, R repeat, S stop.
+  useEffect(() => {
+    const onKey = (e) => {
+      const tag = e.target && e.target.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+      if (e.code === 'Space') {
+        e.preventDefault()
+        togglePlay()
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setLiveVolume(Math.min(1, Math.round((volume + 0.08) * 100) / 100))
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setLiveVolume(Math.max(0, Math.round((volume - 0.08) * 100) / 100))
+      } else if (e.key === 'm' || e.key === 'M') {
+        toggleMute()
+      } else if (e.key === 'r' || e.key === 'R') {
+        toggleLoop()
+      } else if (e.key === 's' || e.key === 'S') {
+        stopJob()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playing, paused, volume, muted, loopOn, tuning])
   useEffect(() => {
     const el = chooserRef.current
     if (!el) return
@@ -339,6 +368,17 @@ export default function PrayerPage() {
       setPraying(true)
       syncClient.presenceNow()
       ambient.setLevel(0.9)
+    }
+  }
+
+  const toggleMute = () => {
+    if (muted) {
+      setLiveVolume(lastVol.current)
+      setMuted(false)
+    } else {
+      lastVol.current = volume
+      setLiveVolume(0)
+      setMuted(true)
     }
   }
 
@@ -645,6 +685,7 @@ export default function PrayerPage() {
             />
             <span className="pt-val">{Math.round(volume * 100)}%</span>
           </div>
+          {muted && <div className="pt-muted">🔇 {t('prayer.muted')}</div>}
           <div className="pt-row">
             <label className="pt-label" htmlFor="pt-rate">{t('prayer.speed')}</label>
             <input

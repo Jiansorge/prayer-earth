@@ -3426,3 +3426,19 @@ html {
   background: rgba(255, 255, 255, 0.45);
   border-color: rgba(30, 60, 110, 0.3);
 }
+/* visible keyboard focus */
+button:focus-visible,
+[role='button']:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--gold-soft);
+  outline-offset: 2px;
+}
+.pt-muted {
+  color: var(--gold-soft);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
