@@ -134,6 +134,20 @@ function drawScene(ctx, w, h, scene) {
     ctx.fill()
   }
 
+  // a few birds gliding across the sky
+  ctx.strokeStyle = 'rgba(40,50,70,0.4)'
+  ctx.lineWidth = 1.4
+  for (let i = 0; i < 3; i++) {
+    const bx = ((0.25 + i * 0.3 + t * 0.01) % 1.3 - 0.15) * w
+    const by = h * (0.18 + i * 0.06) + Math.sin(t * 0.7 + i * 2) * 3
+    const s = w * 0.008
+    ctx.beginPath()
+    ctx.moveTo(bx - s, by)
+    ctx.quadraticCurveTo(bx - s * 0.4, by - s * 0.7, bx, by)
+    ctx.quadraticCurveTo(bx + s * 0.4, by - s * 0.7, bx + s, by)
+    ctx.stroke()
+  }
+
   // clouds (two layers, soft blobs)
   const cloud = (tint, count, yMin, yMax, scale, alpha) => {
     for (let i = 0; i < count; i++) {
@@ -200,6 +214,19 @@ function drawScene(ctx, w, h, scene) {
     ctx.closePath()
     ctx.fill()
   }
+
+  // fireflies drifting among the trees
+  ctx.globalCompositeOperation = 'screen'
+  for (let i = 0; i < 10; i++) {
+    const fy = ((rnd() * 0.2 + 0.1 - t * 0.004) % 1 + 1) % 1
+    const fx = rnd() * w
+    const a = reduced ? 0.25 : 0.15 + 0.35 * (0.5 + 0.5 * Math.sin(t * 1.3 + i * 2.4))
+    ctx.fillStyle = `rgba(220,255,190,${a})`
+    ctx.beginPath()
+    ctx.arc(fx, h - fy * h * 0.2, 1.2 + rnd() * 0.6, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  ctx.globalCompositeOperation = 'source-over'
 }
 
 export default function NatureBackdrop() {

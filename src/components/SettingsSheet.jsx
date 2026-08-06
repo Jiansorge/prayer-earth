@@ -203,7 +203,8 @@ export default function SettingsSheet() {
             { id: 'nature', emoji: '🌲', label: t('theme.nature') },
             { id: 'space', emoji: '🚀', label: t('theme.space') },
             { id: 'temple', emoji: '🏛️', label: t('theme.temple') },
-            { id: 'ocean', emoji: '🌊', label: t('theme.ocean') }
+            { id: 'ocean', emoji: '🌊', label: t('theme.ocean') },
+            { id: 'dawn', emoji: '🌅', label: t('theme.dawn') }
           ].map((th) => (
             <button
               key={th.id}

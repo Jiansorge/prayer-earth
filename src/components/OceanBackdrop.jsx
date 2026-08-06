@@ -34,6 +34,13 @@ const rays = Array.from({ length: 5 }, () => ({
   w: 0.05 + rnd() * 0.07,
   tilt: -0.25 + rnd() * 0.5
 }))
+const fish = Array.from({ length: 6 }, () => ({
+  x: rnd(),
+  y: 0.4 + rnd() * 0.4,
+  v: 0.006 + rnd() * 0.012,
+  s: 0.5 + rnd() * 0.8,
+  ph: rnd() * Math.PI * 2
+}))
 
 function drawOcean(ctx, dpr, t, reduced) {
   const w = window.innerWidth
@@ -52,6 +59,19 @@ function drawOcean(ctx, dpr, t, reduced) {
   g.addColorStop(1, '#0d3b4f')
   ctx.fillStyle = g
   ctx.fillRect(0, 0, w, h)
+
+  // a soft moon with a wide pale halo above the water
+  const mx = w * 0.74
+  const my = h * 0.16
+  const moonHalo = ctx.createRadialGradient(mx, my, 0, mx, my, w * 0.2)
+  moonHalo.addColorStop(0, 'rgba(200,225,255,0.14)')
+  moonHalo.addColorStop(1, 'rgba(0,0,0,0)')
+  ctx.fillStyle = moonHalo
+  ctx.fillRect(mx - w * 0.2, my - w * 0.2, w * 0.4, w * 0.4)
+  ctx.fillStyle = 'rgba(225,238,255,0.9)'
+  ctx.beginPath()
+  ctx.arc(mx, my, w * 0.022, 0, Math.PI * 2)
+  ctx.fill()
 
   ctx.globalCompositeOperation = 'screen'
   for (const r of rays) {
@@ -90,6 +110,23 @@ function drawOcean(ctx, dpr, t, reduced) {
     ctx.beginPath()
     ctx.arc(b.x * w, yy * h, b.r, 0, Math.PI * 2)
     ctx.stroke()
+  }
+
+  // tiny fish silhouettes drifting through the middle water
+  ctx.fillStyle = 'rgba(190,235,245,0.22)'
+  for (const f of fish) {
+    const fx = ((f.x + t * f.v) % 1.2 - 0.1) * w
+    const fy = f.y * h + Math.sin(t * 0.6 + f.ph) * 4
+    const s = f.s * w * 0.006
+    ctx.beginPath()
+    ctx.ellipse(fx, fy, s, s * 0.5, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.moveTo(fx + s, fy)
+    ctx.lineTo(fx + s * 1.7, fy - s * 0.5)
+    ctx.lineTo(fx + s * 1.7, fy + s * 0.5)
+    ctx.closePath()
+    ctx.fill()
   }
 
   ctx.globalCompositeOperation = 'screen'

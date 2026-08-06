@@ -16,6 +16,7 @@ import MysticBackdrop from './components/MysticBackdrop.jsx'
 import SpaceBackdrop from './components/SpaceBackdrop.jsx'
 import TempleBackdrop from './components/TempleBackdrop.jsx'
 import OceanBackdrop from './components/OceanBackdrop.jsx'
+import DawnBackdrop from './components/DawnBackdrop.jsx'
 
 // The home backdrop each theme draws on.
 const THEME_BACKDROPS = {
@@ -23,7 +24,8 @@ const THEME_BACKDROPS = {
   nature: NatureBackdrop,
   space: SpaceBackdrop,
   temple: TempleBackdrop,
-  ocean: OceanBackdrop
+  ocean: OceanBackdrop,
+  dawn: DawnBackdrop
 }
 import { useT, RTL_LOCALES } from './i18n.js'
 
