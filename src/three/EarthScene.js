@@ -65,8 +65,15 @@ const FRAG = /* glsl */ `
     // gradually brightens the surface forever.
     float landMask = texture2D(uMaskTex, uv).r;
 
-    vec3 oceanC = vec3(0.05, 0.16, 0.30) + vec3(0.03, 0.07, 0.10) * uTier;
-    vec3 landC = vec3(0.22, 0.26, 0.20) + vec3(0.08, 0.09, 0.07) * uTier;
+    // uGlow rises with every prayer ever made (toward a million), uTier with
+    // the lifetime seconds of shared prayer, so the planet itself lights up
+    // as the world prays together.
+    vec3 oceanC = vec3(0.05, 0.16, 0.30)
+      + vec3(0.03, 0.07, 0.10) * uTier
+      + vec3(0.04, 0.08, 0.12) * uGlow;
+    vec3 landC = vec3(0.22, 0.26, 0.20)
+      + vec3(0.08, 0.09, 0.07) * uTier
+      + vec3(0.10, 0.11, 0.08) * uGlow;
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -235,20 +242,32 @@ const ETHEREAL_FRAG = /* glsl */ `  uniform float uGlow;
   }
 `
 
-// The golden aura sparks: each carries its own phase so the whole ring
-// twinkles in and out gently, always alive around the Earth.
+// The golden aura sparks: each carries its own phase so the ring twinkles in
+// and out gently and swirls around the globe. Motion is done on the GPU (the
+// shell rotates + breathes in the vertex shader), so it stays cheap at 60fps.
 const SPARK_VERT = /* glsl */ `
   attribute float aPhase;
   attribute vec3 aColor;
   uniform float uTime;
+  uniform float uSwell;
+  uniform float uDpr;
   varying vec3 vColor;
   varying float vA;
   void main() {
     vColor = aColor;
+    // staggered twinkle in and out
     float tw = 0.5 + 0.5 * sin(uTime * 1.4 + aPhase * 6.2831853);
     vA = 0.4 + 0.6 * tw;
-    vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = 3.0;
+    vec3 p = position;
+    // the whole aura slowly circulates the globe like an orbit of light
+    float ang = uTime * 0.05;
+    float ca = cos(ang), sa = sin(ang);
+    p.xz = mat2(ca, -sa, sa, ca) * p.xz;
+    // prayer surges swell the shell gently outward
+    float sw = 1.0 + uSwell * (0.22 + 0.16 * sin(uTime * 1.7 + aPhase * 3.0));
+    p *= sw;
+    gl_PointSize = (4.0 + 2.6 * vA) * uDpr;
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
   }
 `
@@ -260,8 +279,12 @@ const SPARK_FRAG = /* glsl */ `
   void main() {
     vec2 c = gl_PointCoord - 0.5;
     float d = length(c);
-    float a = smoothstep(0.5, 0.15, d);
-    if (a <= 0.001) discard;
+    // soft round orb
+    float orb = 1.0 - smoothstep(0.06, 0.5, d);
+    // four-point star glint so it reads as a sparkle, never a square pixel
+    float dia = 1.0 - smoothstep(0.04, 0.5, abs(c.x) + abs(c.y));
+    float a = max(orb, dia * 0.55);
+    if (a <= 0.002) discard;
     gl_FragColor = vec4(vColor, a * vA * uOpacity);
   }
 `
@@ -333,6 +356,8 @@ export class EarthScene {
     this._ready = false
     this._youWorldPos = new THREE.Vector3()
     this._youCamPos = new THREE.Vector3()
+    this._lightWorldPos = new THREE.Vector3()
+    this._lightCamPos = new THREE.Vector3()
     this.autoRotate = true
     this.disposed = false
     this.hidden = false
@@ -629,7 +654,9 @@ export class EarthScene {
       fragmentShader: SPARK_FRAG,
       uniforms: {
         uTime: { value: 0 },
-        uOpacity: { value: 0 }
+        uOpacity: { value: 0 },
+        uSwell: { value: 0 },
+        uDpr: { value: this.renderer ? this.renderer.getPixelRatio() : 1 }
       },
       transparent: true,
       blending: THREE.AdditiveBlending,
@@ -695,11 +722,24 @@ export class EarthScene {
     }
     const geo = new THREE.BufferGeometry()
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    const mat = new THREE.PointsMaterial({
-      size: 0.04,
-      color: new THREE.Color(1, 0.94, 0.8),
+    const col = new Float32Array(N * 3)
+    for (let i = 0; i < N; i++) {
+      col[i * 3] = 1
+      col[i * 3 + 1] = 0.94
+      col[i * 3 + 2] = 0.8
+    }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3))
+    geo.setAttribute('aPhase', new THREE.BufferAttribute(this.wispPhase, 1))
+    const mat = new THREE.ShaderMaterial({
+      vertexShader: SPARK_VERT,
+      fragmentShader: SPARK_FRAG,
+      uniforms: {
+        uTime: { value: 0 },
+        uOpacity: { value: 0 },
+        uSwell: { value: 0 },
+        uDpr: { value: this.renderer ? this.renderer.getPixelRatio() : 1 }
+      },
       transparent: true,
-      opacity: 0,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       depthTest: false
@@ -958,9 +998,10 @@ export class EarthScene {
         map: glow,
         transparent: true,
         depthWrite: false,
-        // depth-tested so lights on the far side of the Earth are hidden behind
-        // it instead of showing through
-        depthTest: true,
+        // No depth test: far-side lights are hidden per-frame by facing instead
+        // (see animate), so a light's glow is never clipped by the sphere as it
+        // rounds the limb — it fades out naturally instead of losing a piece.
+        depthTest: false,
         blending: THREE.AdditiveBlending,
         opacity: 0
       })
@@ -977,7 +1018,8 @@ export class EarthScene {
 
   // Reuse the sprite pool: position/scale/colour one per active grid cell.
   // The colour comes from the cell's dominant tradition, so the world's lights
-  // glow by faith; unknown cells glow warm gold.
+  // glow by faith; unknown cells glow warm gold. `active` marks the cell so the
+  // per-frame facing cull in animate() shows/hides each light cleanly.
   setLights(map, spirits) {
     if (!this.lights) return
     const { pool, r, MAX } = this.lights
@@ -996,15 +1038,15 @@ export class EarthScene {
         r * Math.sin(lat),
         r * Math.cos(lat) * Math.sin(lon)
       )
-      spr.material.opacity = Math.min(1, 0.5 + n * 0.14)
+      spr.userData.baseOpacity = Math.min(1, 0.5 + n * 0.14)
       const s = 0.2 + Math.min(n, 8) * 0.03
       spr.scale.set(s, s, s)
       const color = TRAD_LIGHT[spirits?.[k]] || GOLD_LIGHT
       spr.material.color.set(color)
-      spr.visible = true
+      spr.userData.active = true
       used++
     }
-    for (let i = used; i < MAX; i++) pool[i].visible = false
+    for (let i = used; i < MAX; i++) pool[i].userData.active = false
   }
 
   buildPlanets() {
@@ -1240,23 +1282,15 @@ export class EarthScene {
       if (this.ether.material.uniforms.uSurge) this.ether.material.uniforms.uSurge.value = this.surge || 0
     }
 
-    // a gentle golden aura: sparks always twinkle and drift around the globe,
+    // a gentle golden aura: sparks twinkle and circulate the globe on the GPU,
     // blooming outward when collective prayer surges
     if (this.sparkPts) {
       const s = this.surge || 0
       const u = this.sparkMat.uniforms
       u.uTime.value = t
+      u.uSwell.value = s
       u.uOpacity.value =
         0.42 + 0.2 * Math.sin(t * 1.1) + 0.12 * Math.sin(t * 2.3 + 1.2) + Math.min(0.9, s * 1.4)
-      const N = this.sparkPhase.length
-      for (let i = 0; i < N; i++) {
-        const ph = this.sparkPhase[i]
-        const rad = 1.47 + 0.1 * Math.sin(t * 0.8 + ph * 2.0) + 0.4 * Math.sin(t * 1.7 + ph) * s
-        this.sparkPos[i * 3] = this.sparkDir[i * 3] * rad
-        this.sparkPos[i * 3 + 1] = this.sparkDir[i * 3 + 1] * rad
-        this.sparkPos[i * 3 + 2] = this.sparkDir[i * 3 + 2] * rad
-      }
-      this.sparkPos.needsUpdate = true
     }
 
     // the halo blooms around the whole world at high ladder rungs
@@ -1269,35 +1303,48 @@ export class EarthScene {
       }
     }
 
-    // gentle healing motes drift at the highest rungs
+    // gentle healing motes drift at the highest rungs (motion on the GPU)
     if (this.wispPts) {
-      this.wispMat.opacity = this.wisps * 0.5
-      if (this.wisps > 0.02) {
-        const N = this.wispPhase.length
-        for (let i = 0; i < N; i++) {
-          const wob = Math.sin(t * 0.5 + this.wispPhase[i]) * 0.16
-          const r = 1.75 + this.wisps * 1.1 + Math.sin(t * 0.35 + this.wispPhase[i] * 1.3) * 0.18
-          const d = this.wispDir
-          this.wispPos[i * 3] = d[i * 3] * r
-          this.wispPos[i * 3 + 1] = d[i * 3 + 1] * r + wob
-          this.wispPos[i * 3 + 2] = d[i * 3 + 2] * r
-        }
-        this.wispPos.needsUpdate = true
-      }
+      const u = this.wispMat.uniforms
+      u.uTime.value = t
+      u.uSwell.value = this.wisps
+      u.uOpacity.value = this.wisps * 0.5
     }
 
     // your own prayer light pulses on the surface so you can always find you.
-    // It fades out as it goes around the far side of the Earth.
+    // It stays fully bright across the whole near side and only dims as it
+    // rounds the limb toward the far side (where the depth test hides it).
     if (this.youMarker && this.youMarker.visible) {
       this.youMarker.updateWorldMatrix(true, false)
       const wp = this._youWorldPos
         .setFromMatrixPosition(this.youMarker.matrixWorld)
         .normalize()
       const facing = wp.dot(this._youCamPos.copy(this.camera.position).normalize())
-      const fade = Math.max(0, Math.min(1, (facing - 0.15) / 0.35))
+      const fade = Math.max(0, Math.min(1, (facing + 0.1) / 0.35))
       const pulse = 0.5 + 0.5 * Math.sin(t * 2.4)
       this.youMarker.scale.set(0.3 + 0.18 * pulse, 0.3 + 0.18 * pulse, 0.3)
-      this.youMarker.material.opacity = fade * (0.5 + 0.5 * pulse)
+      this.youMarker.material.opacity = fade * (0.55 + 0.45 * pulse)
+    }
+
+    // Prayer lights: fully bright across the whole near side; fade as they
+    // round the limb; hidden once they pass onto the far side of the planet.
+    // (Depth test is off for these sprites, so facing is what hides them —
+    // this is what keeps a glow from being clipped into a "missing piece".)
+    if (this.lights) {
+      const camDir = this._lightCamPos.copy(this.camera.position).normalize()
+      for (const spr of this.lights.pool) {
+        if (!spr.userData.active) continue
+        spr.updateWorldMatrix(true, false)
+        const wp = this._lightWorldPos.setFromMatrixPosition(spr.matrixWorld).normalize()
+        const facing = wp.dot(camDir)
+        if (facing < -0.05) {
+          spr.visible = false
+          continue
+        }
+        spr.visible = true
+        const limbFade = Math.max(0, Math.min(1, (facing + 0.12) / 0.3))
+        spr.material.opacity = spr.userData.baseOpacity * limbFade
+      }
     }
     if (this.halo) this.halo.material.uniforms.uGlow.value = this.glow
     if (this.stars) this.stars.material.opacity = 0.72 + 0.2 * Math.sin(t * 0.7)
