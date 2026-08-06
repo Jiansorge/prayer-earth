@@ -814,9 +814,9 @@ export class EarthScene {
     c.height = S
     const ctx = c.getContext('2d')
     const g = ctx.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2)
-    g.addColorStop(0, 'rgba(255, 255, 255, 1)')
-    g.addColorStop(0.25, 'rgba(255, 255, 255, 0.9)')
-    g.addColorStop(0.6, 'rgba(255, 255, 255, 0.32)')
+    g.addColorStop(0, 'rgba(255, 255, 255, 0.8)')
+    g.addColorStop(0.25, 'rgba(255, 255, 255, 0.7)')
+    g.addColorStop(0.6, 'rgba(255, 255, 255, 0.25)')
     g.addColorStop(1, 'rgba(255, 255, 255, 0)')
     ctx.fillStyle = g
     ctx.fillRect(0, 0, S, S)
@@ -1038,7 +1038,7 @@ export class EarthScene {
         r * Math.sin(lat),
         r * Math.cos(lat) * Math.sin(lon)
       )
-      spr.userData.baseOpacity = Math.min(1, 0.5 + n * 0.14)
+      spr.userData.baseOpacity = Math.min(0.8, 0.35 + n * 0.09)
       const s = 0.2 + Math.min(n, 8) * 0.03
       spr.scale.set(s, s, s)
       const color = TRAD_LIGHT[spirits?.[k]] || GOLD_LIGHT
