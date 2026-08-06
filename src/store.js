@@ -29,8 +29,8 @@ const safeStorage = {
 }
 
 const dayKey = (t) =>
-  `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(
-    t.getDate()
+  `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, '0')}-${String(
+    t.getUTCDate()
   ).padStart(2, '0')}`
 
 export const useStore = create(
@@ -218,12 +218,12 @@ export const useStore = create(
       markPrayedToday: () => {
         const d = new Date()
         const key = (t) =>
-          `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(
-            t.getDate()
+          `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, '0')}-${String(
+            t.getUTCDate()
           ).padStart(2, '0')}`
         const today = key(d)
         const y = new Date(d)
-        y.setDate(d.getDate() - 1)
+        y.setUTCDate(d.getUTCDate() - 1)
         const yesterday = key(y)
         set((s) => {
           if (s.lastPrayedDay === today) return {}

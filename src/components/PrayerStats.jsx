@@ -3,8 +3,8 @@ import { useStore } from '../store.js'
 import { useT } from '../i18n.js'
 
 const dayKey = (t) =>
-  `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(
-    t.getDate()
+  `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, '0')}-${String(
+    t.getUTCDate()
   ).padStart(2, '0')}`
 
 const WEEK = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
