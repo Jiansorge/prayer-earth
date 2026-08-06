@@ -90,7 +90,11 @@ export default function EarthPage() {
           <div className="eh-glow-pct">{glowPct}%</div>
           <div className="eh-glow-label">{t('meter.toMillion')}</div>
           <div className="eh-caption">
-            {connected ? t('earth.soulsNow', { n: people }) : t('earth.quietCompany')}          </div>
+            {connected
+              ? people === 1
+                ? t('earth.soulNow')
+                : t('earth.soulsNow', { n: people })
+              : t('earth.quietCompany')}          </div>
         </div>
         <WorldFeed limit={8} compact />
       </div>

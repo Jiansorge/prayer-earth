@@ -185,6 +185,8 @@ export default function PrayerPage() {
       onCycle: () => {
         ambient.ring(0.5)
         useStore.getState().markPrayedToday()
+        // each full round of a repeating prayer is a completed set too
+        useStore.getState().setCompletedAt(Date.now())
         celebrateStreak()
       },
       onEnd: () => {

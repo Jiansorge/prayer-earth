@@ -1634,9 +1634,11 @@ html[dir='rtl'] .chooser-arrow.right {
   z-index: 3;
   display: flex;
   justify-content: flex-end;
-  padding: 4px 0 0;
-  margin-bottom: -8px;
-  background: transparent;
+  align-items: center;
+  padding: 8px 10px 6px;
+  margin: 0;
+  background: linear-gradient(180deg, rgba(20, 29, 62, 0.98), rgba(16, 24, 54, 0.9));
+  border-radius: 20px 20px 0 0;
 }
 
 .sheet-x {
@@ -3042,6 +3044,17 @@ html {
 }
 .app[data-theme='dawn'] .subtitle {
   color: rgba(40, 48, 78, 0.85);
+}
+.app[data-theme='dawn'] .row h2 {
+  color: rgba(34, 44, 76, 0.95);
+}
+.app[data-theme='dawn'] .hint {
+  color: rgba(38, 50, 84, 0.85);
+}
+.app[data-theme='dawn'] .world-meter,
+.app[data-theme='dawn'] .card,
+.app[data-theme='dawn'] .life-card {
+  background: rgba(10, 16, 40, 0.82);
 }
 .app[data-theme='dawn'] .view {
   /* a whisper of pale light at the top so the headline area separates from the

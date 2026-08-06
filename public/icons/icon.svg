@@ -6,10 +6,15 @@
       <stop offset="100%" stop-color="#060a1c"/>
     </radialGradient>
     <linearGradient id="hand" x1="0" y1="1" x2="0" y2="0">
-      <stop offset="0%" stop-color="#7fa8f2"/>
-      <stop offset="70%" stop-color="#b6d7ff"/>
-      <stop offset="100%" stop-color="#d9ecff"/>
+      <stop offset="0%" stop-color="#9cc4ff"/>
+      <stop offset="60%" stop-color="#cfe4ff"/>
+      <stop offset="100%" stop-color="#f2f9ff"/>
     </linearGradient>
+    <radialGradient id="pressed" cx="50%" cy="60%" r="45%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="60%" stop-color="#dcebff"/>
+      <stop offset="100%" stop-color="rgba(220,235,255,0)"/>
+    </radialGradient>
     <filter id="soft" x="-80%" y="-80%" width="260%" height="260%">
       <feGaussianBlur stdDeviation="13"/>
     </filter>
@@ -19,27 +24,31 @@
   </defs>
 
   <rect width="512" height="512" fill="url(#bg)"/>
-  <ellipse cx="256" cy="300" rx="180" ry="150" fill="#8db8ff" opacity="0.22" filter="url(#soft)"/>
+  <ellipse cx="256" cy="300" rx="190" ry="158" fill="#9cc4ff" opacity="0.3" filter="url(#soft)"/>
 
   <!-- left hand (slender palm + 4 tapered fingers + thumb); mirrored for the right -->
   <g id="handL" fill="url(#hand)">
     <!-- palm, lean and gently curved -->
     <path d="M 158 300 C 158 274, 172 260, 190 260 C 208 260, 222 274, 224 300 C 225 342, 224 386, 222 418 C 221 432, 214 438, 190 438 C 166 438, 159 432, 158 418 C 157 380, 158 342, 158 300 Z"/>
     <!-- little finger, slender and tapered -->
-    <path d="M 152 300 C 152 258, 156 226, 162 213 C 166 206, 174 208, 177 215 C 178 228, 178 246, 177 300 Z"/>
+    <path d="M 152 300 C 150 260, 154 230, 160 217 C 164 210, 172 212, 174 220 C 175 234, 175 254, 174 300 Z"/>
     <!-- ring finger -->
-    <path d="M 176 300 C 176 252, 181 214, 188 201 C 193 194, 201 197, 204 205 C 205 220, 205 240, 204 300 Z"/>
+    <path d="M 175 300 C 172 254, 177 218, 184 205 C 189 198, 197 200, 200 208 C 201 224, 201 246, 200 300 Z"/>
     <!-- middle finger -->
-    <path d="M 199 300 C 199 248, 205 204, 212 190 C 217 183, 225 186, 228 194 C 229 210, 229 232, 228 300 Z"/>
-    <!-- index finger (innermost), reaching highest -->
-    <path d="M 220 300 C 220 252, 225 206, 232 191 C 237 184, 245 187, 248 195 C 249 210, 249 230, 248 300 Z"/>
+    <path d="M 197 300 C 194 250, 200 208, 207 194 C 212 187, 220 190, 223 198 C 224 214, 224 238, 223 300 Z"/>
+    <!-- index finger (innermost), reaching highest, leaning toward the centre -->
+    <path d="M 218 300 C 215 252, 221 208, 228 193 C 233 186, 241 189, 244 197 C 245 212, 245 232, 244 300 Z"/>
     <!-- thumb rising toward the centre, slim and curved -->
     <path d="M 198 448 C 193 448, 189 440, 191 426 C 195 398, 207 376, 223 368 C 233 363, 240 367, 242 377 C 243 390, 241 412, 239 432 C 238 441, 233 448, 226 448 Z"/>
   </g>
   <use href="#handL" transform="translate(512 0) scale(-1 1)"/>
 
+  <!-- bright light where the two palms meet (the pressed centre) -->
+  <ellipse cx="256" cy="360" rx="22" ry="86" fill="url(#pressed)" opacity="0.85"/>
+  <ellipse cx="256" cy="470" rx="16" ry="26" fill="#eaf4ff" opacity="0.5" filter="url(#soft)"/>
+
   <!-- soft outer glow around both hands -->
-  <use href="#handL" filter="url(#soft)" opacity="0.9"/>
+  <use href="#handL" filter="url(#soft)" opacity="0.95"/>
   <use href="#handL" filter="url(#soft)" opacity="0.9" transform="translate(512 0) scale(-1 1)"/>
 
   <!-- magic: rising motes -->
@@ -56,6 +65,10 @@
     <circle cx="162" cy="238" r="2.6"/>
     <circle cx="216" cy="200" r="2.2"/>
     <circle cx="300" cy="192" r="2.2"/>
+    <circle cx="246" cy="240" r="2.0"/>
+    <circle cx="270" cy="236" r="1.8"/>
+    <circle cx="196" cy="262" r="1.8"/>
+    <circle cx="322" cy="254" r="1.8"/>
   </g>
 
   <!-- sparkles bursting from the hands -->
@@ -63,7 +76,11 @@
     <path d="M 256 92 l 4.5 11 11 4.5 -11 4.5 -4.5 11 -4.5 -11 -11 -4.5 11 -4.5 Z"/>
     <path d="M 204 146 l 3 7.5 7.5 3 -7.5 3 -3 7.5 -3 -7.5 -7.5 -3 7.5 -3 Z"/>
     <path d="M 308 142 l 3 7.5 7.5 3 -7.5 3 -3 7.5 -3 -7.5 -7.5 -3 7.5 -3 Z"/>
+    <path d="M 238 250 l 2.4 6 6 2.4 -6 2.4 -2.4 6 -2.4 -6 -6 -2.4 6 -2.4 Z"/>
+    <path d="M 274 244 l 2.4 6 6 2.4 -6 2.4 -2.4 6 -2.4 -6 -6 -2.4 6 -2.4 Z"/>
     <circle cx="236" cy="120" r="2.6"/>
     <circle cx="284" cy="124" r="2.4"/>
+    <circle cx="208" cy="206" r="2.2"/>
+    <circle cx="304" cy="200" r="2.2"/>
   </g>
 </svg>

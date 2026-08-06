@@ -1,33 +1,20 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useStore } from '../store.js'
 import { EarthScene } from '../three/EarthScene.js'
 
 // A quiet, translucent Earth behind the prayer view. Its coastlines glow a
 // little brighter as collective prayer accumulates, it rotates slowly, and it
-// lights up at the places around the world praying this same tradition right
-// now — your own light joins them the moment you pray.
+// carries every prayer light in the world behind the words — a subtle, living
+// reminder that the whole world is praying together.
 export default function EarthBackdrop() {
   const mountRef = useRef(null)
   const sceneRef = useRef(null)
   const glow = useStore((s) => s.getGlow())
   const lights = useStore((s) => s.lights)
   const lightSpirits = useStore((s) => s.lightSpirits)
-  const spiritId = useStore((s) => s.spiritId)
   const people = useStore((s) => s.peoplePraying)
   const totalSeconds = useStore((s) => s.totalPrayerSeconds)
   const youLoc = useStore((s) => s.youLoc)
-
-  // Only the prayer lights for the tradition currently on screen: the shared
-  // world tracks a coarse spirit per cell, so show those who are praying this
-  // tradition now.
-  const spiritLights = useMemo(() => {
-    if (!lights || !lightSpirits) return lights
-    const out = {}
-    for (const [cell, n] of Object.entries(lights)) {
-      if (lightSpirits[cell] === spiritId) out[cell] = n
-    }
-    return out
-  }, [lights, lightSpirits, spiritId])
 
   useEffect(() => {
     let scene = null
@@ -48,10 +35,10 @@ export default function EarthBackdrop() {
     const scene = sceneRef.current
     if (!scene) return
     scene.setGlow(glow)
-    scene.setLights(spiritLights, lightSpirits)
+    scene.setLights(lights, lightSpirits)
     scene.setMood(people, totalSeconds, useStore.getState().getPrayerCount())
     scene.setYouLoc(youLoc)
-  }, [glow, spiritLights, lightSpirits, people, totalSeconds, youLoc])
+  }, [glow, lights, lightSpirits, people, totalSeconds, youLoc])
 
   return (
     <div className="earth-backdrop" aria-hidden="true">
