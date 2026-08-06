@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-06T03:00:54.825Z",
+  "generated": "2026-08-06T05:23:40.800Z",
   "prayers": {
     "lords-prayer": {
       "lang": "en",
@@ -1488,6 +1488,660 @@
         "en-HK-SamNeural"
       ],
       "phrases": 5
+    },
+    "psalm-100": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 6
+    },
+    "psalm-121": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "psalm-46": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "psalm-139": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "greatest-commandment": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "love-is-patient": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 6
+    },
+    "canticle-of-creation": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 6
+    },
+    "suscipe": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "benedictus": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 6
+    },
+    "psalm-150": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "tasbih": {
+      "lang": "ar",
+      "voices": [
+        "ar-DZ-AminaNeural",
+        "ar-DZ-IsmaelNeural",
+        "ar-BH-LailaNeural",
+        "ar-BH-AliNeural"
+      ],
+      "phrases": 3
+    },
+    "dua-musa": {
+      "lang": "ar",
+      "voices": [
+        "ar-DZ-AminaNeural",
+        "ar-DZ-IsmaelNeural",
+        "ar-BH-LailaNeural",
+        "ar-BH-AliNeural"
+      ],
+      "phrases": 4
+    },
+    "dua-ibrahim": {
+      "lang": "ar",
+      "voices": [
+        "ar-DZ-AminaNeural",
+        "ar-DZ-IsmaelNeural",
+        "ar-BH-LailaNeural",
+        "ar-BH-AliNeural"
+      ],
+      "phrases": 4
+    },
+    "rabbana-la-tuzigh": {
+      "lang": "ar",
+      "voices": [
+        "ar-DZ-AminaNeural",
+        "ar-DZ-IsmaelNeural",
+        "ar-BH-LailaNeural",
+        "ar-BH-AliNeural"
+      ],
+      "phrases": 3
+    },
+    "dua-nabi-knowledge": {
+      "lang": "ar",
+      "voices": [
+        "ar-DZ-AminaNeural",
+        "ar-DZ-IsmaelNeural",
+        "ar-BH-LailaNeural",
+        "ar-BH-AliNeural"
+      ],
+      "phrases": 3
+    },
+    "al-ashr": {
+      "lang": "ar",
+      "voices": [
+        "ar-DZ-AminaNeural",
+        "ar-DZ-IsmaelNeural",
+        "ar-BH-LailaNeural",
+        "ar-BH-AliNeural"
+      ],
+      "phrases": 4
+    },
+    "ayat-nur": {
+      "lang": "ar",
+      "voices": [
+        "ar-DZ-AminaNeural",
+        "ar-DZ-IsmaelNeural",
+        "ar-BH-LailaNeural",
+        "ar-BH-AliNeural"
+      ],
+      "phrases": 5
+    },
+    "dua-sabr": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "dua-salam": {
+      "lang": "ar",
+      "voices": [
+        "ar-DZ-AminaNeural",
+        "ar-DZ-IsmaelNeural",
+        "ar-BH-LailaNeural",
+        "ar-BH-AliNeural"
+      ],
+      "phrases": 2
+    },
+    "rabbana-ghufran": {
+      "lang": "ar",
+      "voices": [
+        "ar-DZ-AminaNeural",
+        "ar-DZ-IsmaelNeural",
+        "ar-BH-LailaNeural",
+        "ar-BH-AliNeural"
+      ],
+      "phrases": 4
+    },
+    "loka-samastah": {
+      "lang": "hi",
+      "voices": [
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
+      ],
+      "phrases": 2
+    },
+    "om-ganeshaya": {
+      "lang": "hi",
+      "voices": [
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
+      ],
+      "phrases": 2
+    },
+    "saraswati-vandana": {
+      "lang": "hi",
+      "voices": [
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
+      ],
+      "phrases": 5
+    },
+    "surya-namaskara": {
+      "lang": "hi",
+      "voices": [
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
+      ],
+      "phrases": 4
+    },
+    "om-namah-narayanaya": {
+      "lang": "hi",
+      "voices": [
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
+      ],
+      "phrases": 2
+    },
+    "gita-love": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 6
+    },
+    "atma-shatakam": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "devi-gayatri": {
+      "lang": "hi",
+      "voices": [
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
+      ],
+      "phrases": 3
+    },
+    "shri-lakshmi": {
+      "lang": "hi",
+      "voices": [
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
+      ],
+      "phrases": 2
+    },
+    "sitaram": {
+      "lang": "hi",
+      "voices": [
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
+      ],
+      "phrases": 2
+    },
+    "ardaas-thanks": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 6
+    },
+    "nam-japna": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "kirat-karo": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "sukhmani-peace": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "prema-nam": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "japji-light": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "guru-charan": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "hukam": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "hashkiveinu": {
+      "lang": "he",
+      "voices": [
+        "he-IL-HilaNeural",
+        "he-IL-AvriNeural"
+      ],
+      "phrases": 5
+    },
+    "psalm-133": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 6
+    },
+    "tehillim-150": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "psalm-128": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "sim-shalom": {
+      "lang": "he",
+      "voices": [
+        "he-IL-HilaNeural",
+        "he-IL-AvriNeural"
+      ],
+      "phrases": 4
+    },
+    "aleinu": {
+      "lang": "he",
+      "voices": [
+        "he-IL-HilaNeural",
+        "he-IL-AvriNeural"
+      ],
+      "phrases": 4
+    },
+    "baruch-haba": {
+      "lang": "he",
+      "voices": [
+        "he-IL-HilaNeural",
+        "he-IL-AvriNeural"
+      ],
+      "phrases": 2
+    },
+    "tehillim-121": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "ma-tovu": {
+      "lang": "he",
+      "voices": [
+        "he-IL-HilaNeural",
+        "he-IL-AvriNeural"
+      ],
+      "phrases": 4
+    },
+    "tehillim-100": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 6
+    },
+    "dao-emptiness": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 7
+    },
+    "dao-return": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "dao-contentment": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "dao-uncarved": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "zhuangzi-free": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "dao-nonaction": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "daodejing-heaven": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 4
+    },
+    "taoist-breathe": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "dao-simplicity-nature": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "yin-yang-balance": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "analects-friends": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 4
+    },
+    "analects-junzi": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "mencius-goodness": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "filial-xiao": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "mean-balance": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "analects-ritual": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "analects-knowledge": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "analects-virtue": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "confucius-study": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 5
+    },
+    "analects-warmth": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
+      ],
+      "phrases": 2
     }
   }
 }

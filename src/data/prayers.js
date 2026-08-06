@@ -117,6 +117,150 @@ export const SPIRITUALITIES = [
           { t: 'for they shall be satisfied.' }
         ],
         translation: 'The blessings of Jesus, a vision of the gentle and the just who are closest to God.'
+      },
+      {
+        id: 'psalm-100',
+        title: 'Psalm 100, A Joyful Noise',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Make a joyful noise to the Lord, all the earth.' },
+          { t: 'Serve the Lord with gladness; come into his presence with singing.' },
+          { t: 'Know that the Lord is God. It is he who made us, and we are his.' },
+          { t: 'We are his people, and the sheep of his pasture.' },
+          { t: 'Enter his gates with thanksgiving, and his courts with praise.' },
+          { t: 'For the Lord is good; his steadfast love endures forever.' }
+        ],
+        translation: 'A psalm of pure gladness, gratitude, and belonging, a call to come before God with joy.'
+      },
+      {
+        id: 'psalm-121',
+        title: 'Psalm 121, A Prayer of Safe-Keeping',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'I lift up my eyes to the hills. From where does my help come?' },
+          { t: 'My help comes from the Lord, who made heaven and earth.' },
+          { t: 'He who keeps you will not slumber; he who watches over you will not sleep.' },
+          { t: 'The Lord will keep you from all harm; he will watch over your life.' },
+          { t: 'The Lord will watch over your going out and your coming in, now and forever.' }
+        ],
+        translation: 'A psalm of trust and protection, the assurance that we are watched over through every journey.'
+      },
+      {
+        id: 'psalm-46',
+        title: 'Psalm 46, Be Still',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'God is our refuge and strength, a very present help in trouble.' },
+          { t: 'Therefore we will not fear, though the earth should change.' },
+          { t: 'Be still, and know that I am God.' },
+          { t: 'I will be exalted among the nations, I will be exalted in the earth.' },
+          { t: 'The Lord of hosts is with us; the God of Jacob is our refuge.' }
+        ],
+        translation: 'A psalm of stillness and courage, the quiet assurance of a God who is our shelter.'
+      },
+      {
+        id: 'psalm-139',
+        title: 'Psalm 139, Wonderfully Made',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'O Lord, you have searched me and known me.' },
+          { t: 'You knit me together in my mother\u2019s womb.' },
+          { t: 'I praise you, for I am fearfully and wonderfully made.' },
+          { t: 'Wonderful are your works; my soul knows it very well.' },
+          { t: 'Search me, O God, and know my heart; lead me in the way everlasting.' }
+        ],
+        translation: 'A psalm of wonder at being known and made with love, an invitation to be led in a good way.'
+      },
+      {
+        id: 'greatest-commandment',
+        title: 'The Greatest Commandment',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Hear, O Israel: the Lord our God, the Lord is one.' },
+          { t: 'You shall love the Lord your God with all your heart,' },
+          { t: 'and with all your soul, and with all your mind, and with all your strength.' },
+          { t: 'And you shall love your neighbor as yourself.' },
+          { t: 'There is no commandment greater than these.' }
+        ],
+        translation: 'The heart of Jesus\u2019 teaching, the whole law summed up in love of God and love of neighbor.'
+      },
+      {
+        id: 'love-is-patient',
+        title: 'Love Is Patient',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Love is patient; love is kind.' },
+          { t: 'Love is not envious or boastful or arrogant or rude.' },
+          { t: 'It does not insist on its own way; it is not irritable or resentful.' },
+          { t: 'It does not rejoice in wrongdoing, but rejoices in the truth.' },
+          { t: 'Love bears all things, believes all things, hopes all things, endures all things.' },
+          { t: 'And now faith, hope, and love abide, these three; and the greatest of these is love.' }
+        ],
+        translation: 'The hymn of love from the first letter to the Corinthians, a portrait of how to hold one another.'
+      },
+      {
+        id: 'canticle-of-creation',
+        title: 'The Canticle of Creation',
+        lang: 'en',
+        langLabel: 'English \u00b7 attributed to Saint Francis',
+        phrases: [
+          { t: 'Praised be you, my Lord, with all your creatures,' },
+          { t: 'especially our brother sun, who brings us the day and the light.' },
+          { t: 'Praised be you for sister moon and the stars, clear and precious and fair.' },
+          { t: 'Praised be you for our sister water, useful, humble, precious, and pure.' },
+          { t: 'Praised be you for our sister mother earth, who sustains and guides us.' },
+          { t: 'Praise and bless my Lord, and give thanks, and serve him with great humility.' }
+        ],
+        translation: 'Saint Francis\u2019 hymn of praise to the Creator through sun, moon, water, and the living earth.'
+      },
+      {
+        id: 'suscipe',
+        title: 'Suscipe, Take and Receive',
+        lang: 'en',
+        langLabel: 'English \u00b7 attributed to Saint Ignatius',
+        phrases: [
+          { t: 'Take, Lord, and receive all my liberty, my memory, my understanding, and my entire will.' },
+          { t: 'All I have and call my own, you have given me; to you, Lord, I return it.' },
+          { t: 'Everything is yours; do with it what you will.' },
+          { t: 'Give me only your love and your grace,' },
+          { t: 'for with these I am rich enough, and ask for nothing more.' }
+        ],
+        translation: 'The prayer of total surrender of Saint Ignatius of Loyola, giving everything back to God with joy.'
+      },
+      {
+        id: 'benedictus',
+        title: 'The Benedictus',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Blessed be the Lord, the God of Israel,' },
+          { t: 'who has visited and redeemed his people.' },
+          { t: 'In the tender compassion of our God,' },
+          { t: 'the dawn from on high shall break upon us,' },
+          { t: 'to give light to those who sit in darkness and in the shadow of death,' },
+          { t: 'and to guide our feet into the way of peace.' }
+        ],
+        translation: 'The song of Zechariah, a hymn of hope that the dawn of mercy will guide us into peace.'
+      },
+      {
+        id: 'psalm-150',
+        title: 'Psalm 150, Let Everything Praise',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Praise the Lord!' },
+          { t: 'Praise God in his sanctuary; praise him in his mighty firmament.' },
+          { t: 'Praise him with trumpet sound, with lute and harp,' },
+          { t: 'with tambourine and dance, with strings and pipe.' },
+          { t: 'Let everything that breathes praise the Lord. Praise the Lord!' }
+        ],
+        translation: 'The final psalm, a joyful burst of music and dance in which all of creation praises.'
       }
     ]
   },
@@ -245,6 +389,135 @@ export const SPIRITUALITIES = [
           { t: 'وَقِنَا عَذَابَ النَّارِ', s: 'Wa-qinā ʿaḏāban-nār', e: 'and shield us from harm.' }
         ],
         translation: 'A verse prayed for goodness in this life and the next, a request for beauty, safety, and peace.'
+      },
+      {
+        id: 'tasbih',
+        title: 'The Tasbih of Praise',
+        lang: 'ar',
+        langLabel: 'العربية · Arabic · repeated',
+        loop: true,
+        phrases: [
+          { t: 'سُبْحَانَ اللَّهِ', s: 'Subḥān Allāh', e: 'Glory to God.' },
+          { t: 'الْحَمْدُ لِلَّهِ', s: 'Al-ḥamdu lillāh', e: 'All praise is for God.' },
+          { t: 'اللَّهُ أَكْبَرُ', s: 'Allāhu akbar', e: 'God is the greatest.' }
+        ],
+        translation: 'The simple round of praise spoken on the beads, glory, gratitude, and the greatness of God.'
+      },
+      {
+        id: 'dua-musa',
+        title: "Du'a of Mūsā",
+        lang: 'ar',
+        langLabel: 'العربية · Arabic',
+        phrases: [
+          { t: 'رَبِّ اشْرَحْ لِي صَدْرِي', s: 'Rabbi-shraḥ lī ṣadrī', e: 'My Lord, open up my heart,' },
+          { t: 'وَيَسِّرْ لِي أَمْرِي', s: 'Wa-yassir lī amrī', e: 'and make my task easy for me.' },
+          { t: 'وَاحْلُلْ عُقْدَةً مِّن لِّسَانِي', s: 'Wa-ḥlul ʿuqdatan min lisānī', e: 'And loosen the knot from my tongue,' },
+          { t: 'يَفْقَهُوا قَوْلِي', s: 'Yafqahū qawlī', e: 'that they may understand my words.' }
+        ],
+        translation: 'The prayer of Prophet Moses for an open heart, an easy task, and clear speech — a prayer of courage and calm.'
+      },
+      {
+        id: 'dua-ibrahim',
+        title: "Du'a of Ibrāhīm",
+        lang: 'ar',
+        langLabel: 'العربية · Arabic',
+        phrases: [
+          { t: 'رَبَّنَا اجْعَلْنَا مُسْلِمَيْنِ لَكَ', s: 'Rabbanā-jʿalnā muslimayni laka', e: 'Our Lord, make us people who surrender to You,' },
+          { t: 'وَمِن ذُرِّيَّتِنَا أُمَّةً مُّسْلِمَةً لَّكَ', s: 'Wa-min dhurriyyatinā ummatan muslimatan laka', e: 'and from our descendants a community surrendered to You.' },
+          { t: 'وَأَرِنَا مَنَاسِكَنَا', s: 'Wa-arina manāsikanā', e: 'Show us how to worship,' },
+          { t: 'وَتُبْ عَلَيْنَا ۖ إِنَّكَ أَنتَ التَّوَّابُ الرَّحِيمُ', s: 'Wa-tub ʿalaynā, innaka antat-tawwābur-raḥīm', e: 'and turn to us with mercy; truly You are the Accepting, the Merciful.' }
+        ],
+        translation: 'The prayer of Prophet Abraham for hearts surrendered to God and a community of peace.'
+      },
+      {
+        id: 'rabbana-la-tuzigh',
+        title: 'Rabbana Lā Tuzigh',
+        lang: 'ar',
+        langLabel: 'العربية · Arabic',
+        phrases: [
+          { t: 'رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا', s: 'Rabbanā lā tuzigh qulūbanā baʿda idh hadaytanā', e: 'Our Lord, let not our hearts stray after You have guided us,' },
+          { t: 'وَهَبْ لَنَا مِن لَّدُنكَ رَحْمَةً', s: 'Wa-hab lanā min ladunka raḥmah', e: 'and bestow upon us mercy from Yourself.' },
+          { t: 'إِنَّكَ أَنتَ الْوَهَّابُ', s: 'Innaka antal-wahhāb', e: 'Truly, You are the Bestower.' }
+        ],
+        translation: 'A Quranic prayer to stay steady on the good path and to receive the gift of mercy.'
+      },
+      {
+        id: 'dua-nabi-knowledge',
+        title: 'A Prayer for Knowledge',
+        lang: 'ar',
+        langLabel: 'العربية · Arabic',
+        phrases: [
+          { t: 'اللَّهُمَّ انْفَعْنِي بِمَا عَلَّمْتَنِي', s: 'Allāhumma-nfaʿnī bimā ʿallamtanī', e: 'O God, benefit me with what You have taught me,' },
+          { t: 'وَعَلِّمْنِي مَا يَنْفَعُنِي', s: 'Wa-ʿallimnī mā yanfaʿunī', e: 'and teach me what will benefit me,' },
+          { t: 'وَزِدْنِي عِلْمًا', s: 'Wa-zidnī ʿilman', e: 'and increase me in knowledge.' }
+        ],
+        translation: 'A beloved prophetic prayer for learning that serves, and a heart that grows in wisdom.'
+      },
+      {
+        id: 'al-ashr',
+        title: 'Sūrat al-ʿAṣr, The Time',
+        lang: 'ar',
+        langLabel: 'العربية · Arabic',
+        phrases: [
+          { t: 'وَالْعَصْرِ', s: 'Wal-ʿaṣr', e: 'By the passing of time,' },
+          { t: 'إِنَّ الْإِنسَانَ لَفِي خُسْرٍ', s: 'Innal-insāna lafī khusr', e: 'truly, humankind is in loss,' },
+          { t: 'إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ', s: 'Illal-ladhīna āmanū wa-ʿamiluṣ-ṣāliḥāt', e: 'except those who believe, do good deeds,' },
+          { t: 'وَتَوَاصَوْا بِالْحَقِّ وَتَوَاصَوْا بِالصَّبْرِ', s: 'Wa-tawāṣaw bil-ḥaqqi wa-tawāṣaw biṣ-ṣabr', e: 'and encourage one another to truth and to patience.' }
+        ],
+        translation: 'A short chapter of the Qur\u2019an on the value of time, goodness, and encouraging one another in patience.'
+      },
+      {
+        id: 'ayat-nur',
+        title: 'Āyat an-Nūr, The Light',
+        lang: 'ar',
+        langLabel: 'العربية · Arabic',
+        phrases: [
+          { t: 'اللَّهُ نُورُ السَّمَاوَاتِ وَالْأَرْضِ', s: 'Allāhu nūrus-samāwāti wal-arḍ', e: 'God is the Light of the heavens and the earth.' },
+          { t: 'مَثَلُ نُورِهِ كَمِشْكَاةٍ فِيهَا مِصْبَاحٌ', s: 'Mathalu nūrihi kamishkātin fīhā miṣbāḥ', e: 'The likeness of His light is a niche in which there is a lamp.' },
+          { t: 'الْمِصْبَاحُ فِي زُجَاجَةٍ', s: 'Al-miṣbāḥu fī zujājah', e: 'The lamp within a glass,' },
+          { t: 'يُوقَدُ مِن شَجَرَةٍ مُّبَارَكَةٍ', s: 'Yūqadu min shajaratin mubārakah', e: 'lit from a blessed tree,' },
+          { t: 'نُورٌ عَلَى نُورٍ', s: 'Nūrun ʿalā nūr', e: 'light upon light.' }
+        ],
+        translation: 'The verse of Light, a luminous image of divine guidance shining upon the world.'
+      },
+      {
+        id: 'dua-sabr',
+        title: 'A Prayer for Patience',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'O God, grant me patience when the road is long,' },
+          { t: 'and gratitude when the day is bright.' },
+          { t: 'Help me to be gentle with myself and others,' },
+          { t: 'and to trust that every season has its purpose.' },
+          { t: 'Make my heart like water — clear, calm, and ever-flowing.' }
+        ],
+        translation: 'A gentle prayer for patience and trust, written in the spirit of sabr.'
+      },
+      {
+        id: 'dua-salam',
+        title: 'The Greeting of Peace',
+        lang: 'ar',
+        langLabel: 'العربية · Arabic · repeated',
+        loop: true,
+        phrases: [
+          { t: 'السَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللَّهِ', s: 'As-salāmu ʿalaykum wa-raḥmatullāh', e: 'Peace be upon you, and the mercy of God.' },
+          { t: 'وَبَرَكَاتُهُ', s: 'Wa-barakātuh', e: 'and His blessings.' }
+        ],
+        translation: 'The daily greeting of the Muslim world, peace and mercy wished upon all you meet.'
+      },
+      {
+        id: 'rabbana-ghufran',
+        title: 'Rabbana, A Prayer of Grace',
+        lang: 'ar',
+        langLabel: 'العربية · Arabic',
+        phrases: [
+          { t: 'رَبَّنَا اغْفِرْ لَنَا وَلِإِخْوَانِنَا', s: 'Rabbanā-ghfir lanā wa-li-ikhwāninā', e: 'Our Lord, forgive us and our brothers and sisters,' },
+          { t: 'الَّذِينَ سَبَقُونَا بِالْإِيمَانِ', s: 'Alladhīna sabaqūnā bil-īmān', e: 'who came before us in faith,' },
+          { t: 'وَلَا تَجْعَلْ فِي قُلُوبِنَا غِلًّا لِّلَّذِينَ آمَنُوا', s: 'Wa-lā tajʿal fī qulūbinā ghillan lilladhīna āmanū', e: 'and leave no rancor in our hearts toward those who believe.' },
+          { t: 'رَبَّنَا إِنَّكَ رَءُوفٌ رَّحِيمٌ', s: 'Rabbanā innaka ra\u2019ūfur-raḥīm', e: 'Our Lord, truly You are Kind, Merciful.' }
+        ],
+        translation: 'A Quranic prayer for forgiveness and a heart free of resentment toward all who share the path.'
       }
     ]
   },
@@ -358,6 +631,135 @@ export const SPIRITUALITIES = [
           { t: 'ॐ शान्तिः शान्तिः शान्तिः', s: 'Om śāntiḥ śāntiḥ śāntiḥ', e: 'Om. Peace, peace, peace.' }
         ],
         translation: 'An Upanishadic invocation of the fullness that never diminishes, a meditation on the infinite whole.'
+      },
+      {
+        id: 'loka-samastah',
+        title: 'Lokah Samastah',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit · repeated',
+        loop: true,
+        phrases: [
+          { t: 'लोकाः समस्ताः सुखिनो भवन्तु', s: 'Lokāḥ samastāḥ sukhino bhavantu', e: 'May all beings everywhere be happy and free.' },
+          { t: 'लोकाः समस्ताः सुखिनो भवन्तु', s: 'Lokāḥ samastāḥ sukhino bhavantu', e: 'May all beings everywhere be happy and free.' }
+        ],
+        translation: 'A beloved wish for universal well-being, that no one anywhere be left out of happiness.'
+      },
+      {
+        id: 'om-ganeshaya',
+        title: 'Om Gaṇeśāya',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit · repeated',
+        loop: true,
+        phrases: [
+          { t: 'ॐ गं गणपतये नमः', s: 'Om gaṁ gaṇapataye namaḥ', e: 'Om, I bow to the remover of obstacles.' },
+          { t: 'ॐ गं गणपतये नमः', s: 'Om gaṁ gaṇapataye namaḥ', e: 'Om, I bow to the remover of obstacles.' }
+        ],
+        translation: 'A gentle mantra to Ganesha, who clears the way and blesses every new beginning.'
+      },
+      {
+        id: 'saraswati-vandana',
+        title: 'Sarasvatī Vandana',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit',
+        phrases: [
+          { t: 'या कुन्देन्दुतुषारहारधवला', s: 'Yā kundendutuṣārahāradhavalā', e: 'She who is fair as the jasmine, the moon, and snow,' },
+          { t: 'या शुभ्रवस्त्रावृता', s: 'Yā śubhravastrāvṛtā', e: 'clothed in radiant white,' },
+          { t: 'या वीणावरदण्डमण्डितकरा', s: 'Yā vīṇāvaradaṇḍamaṇḍitakarā', e: 'her hand adorned with the veena,' },
+          { t: 'या श्वेतपद्मासना', s: 'Yā śvetapadmāsanā', e: 'seated upon the white lotus,' },
+          { t: 'सा मां पातु सरस्वती भगवती निःशेषजाड्यापहा', s: 'Sā māṁ pātu sarasvatī bhagavatī niḥśeṣajāḍyāpahā', e: 'may that goddess Saraswati protect me and remove all dullness of mind.'
+        },
+        ],
+        translation: 'A vandana, a prayer of homage to Saraswati, the goddess of wisdom, speech, and the arts.'
+      },
+      {
+        id: 'surya-namaskara',
+        title: 'Sūrya Namaskāra, Sun Salutation',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit',
+        phrases: [
+          { t: 'ॐ मित्राय नमः', s: 'Om mitrāya namaḥ', e: 'Om, I bow to the friend of all — the sun.' },
+          { t: 'ॐ रवये नमः', s: 'Om ravaye namaḥ', e: 'Om, I bow to the radiant one.' },
+          { t: 'ॐ सूर्याय नमः', s: 'Om sūryāya namaḥ', e: 'Om, I bow to the giver of light and life.' },
+          { t: 'ॐ भानवे नमः', s: 'Om bhānave namaḥ', e: 'Om, I bow to the illuminator.' }
+        ],
+        translation: 'The mantras of the sun salutation, a greeting of gratitude to the light that wakes the world.'
+      },
+      {
+        id: 'om-namah-narayanaya',
+        title: 'Om Namo Nārāyaṇāya',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit · repeated',
+        loop: true,
+        phrases: [
+          { t: 'ॐ नमो नारायणाय', s: 'Om namo nārāyaṇāya', e: 'Om, I bow to the Lord who dwells in all things.' },
+          { t: 'ॐ नमो नारायणाय', s: 'Om namo nārāyaṇāya', e: 'Om, I bow to the Lord who dwells in all things.' }
+        ],
+        translation: 'An eight-syllable mantra of devotion to the divine presence that upholds the universe.'
+      },
+      {
+        id: 'gita-love',
+        title: 'The One Dear to Me',
+        lang: 'en',
+        langLabel: 'English · from the Bhagavad Gita',
+        phrases: [
+          { t: 'One who is not hostile to any being,' },
+          { t: 'who is friendly and compassionate,' },
+          { t: 'free from possessiveness and from ego,' },
+          { t: 'balanced in joy and sorrow, patient and forgiving,' },
+          { t: 'ever content, self-controlled, and firm in purpose —' },
+          { t: 'such a one is dear to me.' }
+        ],
+        translation: 'From the Bhagavad Gita, the portrait of the person who is most dear to the Divine.'
+      },
+      {
+        id: 'atma-shatakam',
+        title: 'Ātma Ṣaṭakam, The Song of the Self',
+        lang: 'en',
+        langLabel: 'English · attributed to Shankara',
+        phrases: [
+          { t: 'I am not the mind, the intellect, the ego, or the memory.' },
+          { t: 'I am not the five senses; I am beyond them all.' },
+          { t: 'I am not the earth, water, fire, air, or space.' },
+          { t: 'I am that pure consciousness, the witness of all —' },
+          { t: 'ever free, ever blissful, one with the eternal.' }
+        ],
+        translation: 'Shankara\u2019s Nirvana Shatakam, a meditation on the innermost Self that is peace itself.'
+      },
+      {
+        id: 'devi-gayatri',
+        title: 'The Devī Gāyatrī',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit',
+        phrases: [
+          { t: 'ॐ सर्वदेवाय विद्महे', s: 'Om sarvadevāya vidmahe', e: 'Om, we know the divine in all its forms,' },
+          { t: 'सर्वशक्त्यै धीमहि', s: 'Sarvaśaktyai dhīmahi', e: 'we meditate on the great power of the Mother,' },
+          { t: 'तन्नो देवी प्रचोदयात्', s: 'Tanno devī pracodayāt', e: 'may the Goddess illumine and guide our minds.' }
+        ],
+        translation: 'A Gāyatrī honouring the divine Mother, the power of love and courage within all things.'
+      },
+      {
+        id: 'shri-lakshmi',
+        title: 'A Prayer of Gratitude to Lakṣmī',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit · repeated',
+        loop: true,
+        phrases: [
+          { t: 'ॐ श्रीं महालक्ष्म्यै नमः', s: 'Om śrīṁ mahālakṣmyai namaḥ', e: 'Om, I bow to Lakshmi, the giver of abundance.' },
+          { t: 'ॐ श्रीं महालक्ष्म्यै नमः', s: 'Om śrīṁ mahālakṣmyai namaḥ', e: 'Om, I bow to Lakshmi, the giver of abundance.' }
+        ],
+        translation: 'A mantra of gratitude for abundance — health, wisdom, and kindness shared with all.'
+      },
+      {
+        id: 'sitaram',
+        title: 'Sītā Rām',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit · repeated',
+        loop: true,
+        phrases: [
+          { t: 'सीता राम', s: 'Sītā Rām', e: 'Sita and Rama — love and righteousness.' },
+          { t: 'सीता राम', s: 'Sītā Rām', e: 'Sita and Rama — love and righteousness.' }
+        ],
+        translation: 'The sweet repetition of the holy names of Sita and Rama, a meditation on love and dharma.'
       }
     ]
   },
@@ -1044,6 +1446,143 @@ export const SPIRITUALITIES = [
           { t: 'Waheguru, wonderful Lord — I remember You.' }
         ],
         translation: 'A meditation of the Name from the Guru\u2019s teaching, remembrance that carries the soul through every day.'
+      },
+      {
+        id: 'sarbat-da-bhala',
+        title: 'Sarbat da Bhala',
+        lang: 'pa',
+        langLabel: 'ਪੰਜਾਬੀ · Gurmukhi · repeated',
+        loop: true,
+        phrases: [
+          { t: 'ਸਰਬਤ ਦਾ ਭਲਾ', s: 'Sarbat dā bhalā', e: 'May all beings prosper and be well.' },
+          { t: 'ਸਰਬਤ ਦਾ ਭਲਾ', s: 'Sarbat dā bhalā', e: 'May all beings prosper and be well.' }
+        ],
+        translation: 'The closing wish of the Ardas, the prayer that everyone, everywhere, be blessed and at peace.'
+      },
+      {
+        id: 'ardaas-thanks',
+        title: 'A Thanksgiving Ardaas',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Waheguru, Wonderful Lord, we give You thanks' },
+          { t: 'for this day, this breath, and this company.' },
+          { t: 'Thank You for the food that reached our table' },
+          { t: 'and the hands and the land that brought it.' },
+          { t: 'Bless our loved ones, bless all beings,' },
+          { t: 'and keep our hearts turned to You. Waheguru Ji Ka Khalsa, Waheguru Ji Ki Fateh.' }
+        ],
+        translation: 'A thanksgiving offered in the spirit of the Ardas, gratitude for the day and goodwill for all.'
+      },
+      {
+        id: 'nam-japna',
+        title: 'Nām Japna, Meditate on the Name',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Wake early, and in the stillness remember the One Name.' },
+          { t: 'Let the Name be on your lips and in your heart.' },
+          { t: 'Through remembrance, the mind grows clear and the soul finds peace.' },
+          { t: 'Walk through the world carrying that Name,' },
+          { t: 'and let it shape every word you speak.' }
+        ],
+        translation: 'The first pillar of the Sikh path, the daily practice of meditating on the One Name.'
+      },
+      {
+        id: 'kirat-karo',
+        title: 'Kirat Karo, Earn by Honest Work',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Work with your hands, honestly and well.' },
+          { t: 'Share what you earn with those in need.' },
+          { t: 'Let your work be your worship,' },
+          { t: 'done with joy and without deceit.' },
+          { t: 'For the One who gives all work also gives the strength to do it.' }
+        ],
+        translation: 'The Sikh teaching of honest work and sharing, labour offered as a form of devotion.'
+      },
+      {
+        id: 'sukhmani-peace',
+        title: 'From the Sukhmani Sahib',
+        lang: 'en',
+        langLabel: 'English · from the Guru Granth Sahib',
+        phrases: [
+          { t: 'Those who remember the Name are at peace,' },
+          { t: 'their minds clear as a still pool.' },
+          { t: 'In remembrance, fear departs and the heart grows wide.' },
+          { t: 'The Name is the boat across every storm.' },
+          { t: 'Sing it, and be at peace. Waheguru.' }
+        ],
+        translation: 'A loose rendering of the Sukhmani Sahib\u2019s teaching that remembrance of the Name brings peace.'
+      },
+      {
+        id: 'sat-nam',
+        title: 'Sat Nām, Truth Is the Name',
+        lang: 'pa',
+        langLabel: 'ਪੰਜਾਬੀ · Gurmukhi · repeated',
+        loop: true,
+        phrases: [
+          { t: 'ਸਤਿ ਨਾਮੁ', s: 'Sat nām', e: 'Truth is the Name.' },
+          { t: 'ਸਤਿ ਨਾਮੁ', s: 'Sat nām', e: 'Truth is the Name.' }
+        ],
+        translation: 'The essence of the Mool Mantar, that the divine is truth itself, repeated as a meditation.'
+      },
+      {
+        id: 'prema-nam',
+        title: 'A Meditation of Love',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'The Name is sweet to those who love it.' },
+          { t: 'Let me love the world as the Guru loved it,' },
+          { t: 'seeing the divine light in every face.' },
+          { t: 'Let kindness be my speech and service my joy,' },
+          { t: 'and let the Name dwell in my heart always.' }
+        ],
+        translation: 'A meditation on love for the Name and for all beings, the heart of Sikh devotion.'
+      },
+      {
+        id: 'japji-light',
+        title: 'From the Japji Sahib',
+        lang: 'en',
+        langLabel: 'English · from the Guru Granth Sahib',
+        phrases: [
+          { t: 'As in the darkness of night a lamp illumines the way,' },
+          { t: 'so the Guru\u2019s word illumines the mind.' },
+          { t: 'Meditate on the One who made the universe,' },
+          { t: 'and you will find your way through every darkness.' },
+          { t: 'Nanak says: the One is with you always.' }
+        ],
+        translation: 'A loose rendering of the Japji Sahib\u2019s image of the Guru\u2019s word as a lamp in the dark.'
+      },
+      {
+        id: 'guru-charan',
+        title: 'Guru Charan, At the Guru\u2019s Feet',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'At the Guru\u2019s feet I sit, and my heart grows quiet.' },
+          { t: 'From the Guru I learn to serve without pride,' },
+          { t: 'to speak truth without cruelty,' },
+          { t: 'and to give without counting the cost.' },
+          { t: 'May I walk this way all my days. Waheguru.' }
+        ],
+        translation: 'A prayer of humility and service, learning the way of truth and love from the Guru.'
+      },
+      {
+        id: 'hukam',
+        title: 'Hukam, Accepting the Divine Will',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Whatever comes, let me receive it with a quiet heart.' },
+          { t: 'The seasons turn, the rivers flow, and all things have their time.' },
+          { t: 'Help me to work with joy in what is mine to do,' },
+          { t: 'and to let go of what is not.' },
+          { t: 'In acceptance is peace; in peace is strength.' }
+        ],
+        translation: 'A meditation on hukam, the divine order, learning to live in harmony with what is.'
       }
     ]
   },
@@ -1174,6 +1713,145 @@ export const SPIRITUALITIES = [
           { t: 'בְּשִׁבְתְּךָ בְּבֵיתֶךָ וּבְלֶכְתְּךָ בַדֶּרֶךְ', s: 'Beshibtecha beveitecha uvelechtecha vaderech', e: 'when you sit in your house and when you walk on the way.' }
         ],
         translation: 'The heart of the Shema, the command to love with everything we are and to pass that love on.'
+      },
+      {
+        id: 'hashkiveinu',
+        title: 'Hashkiveinu, Lay Us Down in Peace',
+        lang: 'he',
+        langLabel: 'עברית · Hebrew',
+        phrases: [
+          { t: 'הַשְׁכִּיבֵנוּ אָבִינוּ לְשָׁלוֹם', s: 'Hashkiveinu Avinu leshalom', e: 'Lay us down in peace, our Father,' },
+          { t: 'וְהַעֲמִידֵנוּ מַלְכֵּנוּ לְחַיִּים טוֹבִים', s: 'Veha\u2019amideinu Malkeinu lechayim tovim', e: 'and raise us up, our King, to a good life.' },
+          { t: 'וּפְרֹשׂ עָלֵינוּ סֻכַּת שְׁלוֹמֶךָ', s: 'Ufros aleinu sukkat shlomecha', e: 'Spread over us the shelter of Your peace,' },
+          { t: 'וְשָׁמְרֵנוּ מִכָּל דָּבָר רָע', s: 'Veshamreinu mikol davar ra', e: 'and guard us from all harm,' },
+          { t: 'בָּרוּךְ אַתָּה אֲדֹנָי הַפּוֹרֵשׂ סֻכַּת שָׁלוֹם', s: 'Baruch atah Adonai, hapores sukkat shalom', e: 'Blessed are You, Lord, who spreads a shelter of peace.'
+        },
+        ],
+        translation: 'The evening prayer for a peaceful rest, a plea for a night of calm and a morning of goodness.'
+      },
+      {
+        id: 'psalm-133',
+        title: 'Psalm 133, How Good and Pleasant',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'How good and pleasant it is' },
+          { t: 'when kindred live together in unity!' },
+          { t: 'It is like precious oil upon the head,' },
+          { t: 'running down upon the beard of Aaron,' },
+          { t: 'like the dew of Hermon falling on the mountains of Zion.' },
+          { t: 'For there the Lord bestows his blessing, even life forevermore.' }
+        ],
+        translation: 'A psalm of harmony, celebrating the sweetness of people dwelling together in peace.'
+      },
+      {
+        id: 'tehillim-150',
+        title: 'Tehillim 150, Let Everything Praise',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Praise the Lord!' },
+          { t: 'Praise God in his sanctuary; praise him in his mighty firmament.' },
+          { t: 'Praise him with trumpet sound, with lute and harp,' },
+          { t: 'with tambourine and dance, with strings and pipe.' },
+          { t: 'Let everything that breathes praise the Lord. Praise the Lord!' }
+        ],
+        translation: 'The final psalm, a joyful burst of music and dance in which all of creation praises.'
+      },
+      {
+        id: 'psalm-128',
+        title: 'Psalm 128, Blessed Is the Household',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Blessed is everyone who reveres the Lord, who walks in his ways.' },
+          { t: 'You shall eat the fruit of the labor of your hands; you shall be happy, and it shall go well with you.' },
+          { t: 'Your wife shall be like a fruitful vine within your house,' },
+          { t: 'your children like olive shoots around your table.' },
+          { t: 'Thus shall the one be blessed who reveres the Lord.' }
+        ],
+        translation: 'A psalm of blessing on family and honest work, the happiness of a home that reveres goodness.'
+      },
+      {
+        id: 'sim-shalom',
+        title: 'Sim Shalom, Grant Peace',
+        lang: 'he',
+        langLabel: 'עברית · Hebrew',
+        phrases: [
+          { t: 'שִׂים שָׁלוֹם טוֹבָה וּבְרָכָה', s: 'Sim shalom, tovah uvrachah', e: 'Grant peace, goodness, and blessing,' },
+          { t: 'חֵן וָחֶסֶד וְרַחֲמִים', s: 'Chen vachesed verachamim', e: 'grace, kindness, and compassion,' },
+          { t: 'עָלֵינוּ וְעַל כָּל יִשְׂרָאֵל עַמֶּךָ', s: 'Aleinu ve\u2019al kol Yisrael amecha', e: 'upon us and upon all your people,' },
+          { t: 'וּבָרְכֵנוּ אָבִינוּ כֻּלָּנוּ כְּאֶחָד בְּאוֹר פָּנֶיךָ', s: 'Uvarcheinu Avinu kulanu ke\u2019echad be\u2019or panecha', e: 'and bless us, our Father, all of us together, in the light of Your face.'
+        },
+        ],
+        translation: 'A prayer for peace, blessing, and grace to rest upon all people, together as one.'
+      },
+      {
+        id: 'aleinu',
+        title: 'Aleinu, It Is Our Duty',
+        lang: 'he',
+        langLabel: 'עברית · Hebrew',
+        phrases: [
+          { t: 'עָלֵינוּ לְשַׁבֵּחַ לַאֲדוֹן הַכֹּל', s: 'Aleinu leshabeach la\u2019Adon hakol', e: 'It is our duty to praise the Master of all,' },
+          { t: 'לָתֵת גְּדֻלָּה לְיוֹצֵר בְּרֵאשִׁית', s: 'Latet gedulah leyotzer bereishit', e: 'to give greatness to the One who formed the beginning,' },
+          { t: 'שֶׁלֹּא עָשָׂנוּ כְּגוֹיֵי הָאֲרָצוֹת', s: 'Shelo asanu kegoyei haaratzot', e: 'who made us free and upright,' },
+          { t: 'וְשֶׁלֹּא שָׂם חֶלְקֵנוּ כְּחֶלְקָם', s: 'Veshelo sam chelkeinu kechelkam', e: 'and set our portion with those who seek good.' }
+        ],
+        translation: 'A hymn of praise that opens with duty to God and closes with the hope of a world made whole.'
+      },
+      {
+        id: 'baruch-haba',
+        title: 'Baruch Haba',
+        lang: 'he',
+        langLabel: 'עברית · Hebrew · repeated',
+        loop: true,
+        phrases: [
+          { t: 'בָּרוּךְ הַבָּא', s: 'Baruch haba', e: 'Blessed is the one who comes.' },
+          { t: 'בָּרוּךְ הַבָּא בְּשֵׁם ה׳', s: 'Baruch haba beshem Adonai', e: 'Blessed is the one who comes in the name of the Lord.' }
+        ],
+        translation: 'A greeting of welcome and blessing, spoken joyfully to guests and on glad occasions.'
+      },
+      {
+        id: 'tehillim-121',
+        title: 'Tehillim 121, A Prayer of Safe-Keeping',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'I lift up my eyes to the hills. From where does my help come?' },
+          { t: 'My help comes from the Lord, who made heaven and earth.' },
+          { t: 'He who keeps you will not slumber; he who watches over you will not sleep.' },
+          { t: 'The Lord will keep you from all harm; he will watch over your life.' },
+          { t: 'The Lord will watch over your going out and your coming in, now and forever.' }
+        ],
+        translation: 'A psalm of trust and protection, the assurance that we are watched over through every journey.'
+      },
+      {
+        id: 'ma-tovu',
+        title: 'Ma Tovu, How Good',
+        lang: 'he',
+        langLabel: 'עברית · Hebrew',
+        phrases: [
+          { t: 'מַה טֹּבוּ אֹהָלֶיךָ יַעֲקֹב', s: 'Mah tovu ohalecha Yaakov', e: 'How good are your tents, O Jacob,' },
+          { t: 'מִשְׁכְּנֹתֶיךָ יִשְׂרָאֵל', s: 'Mishkenotecha Yisrael', e: 'your dwelling places, O Israel.' },
+          { t: 'וַאֲנִי בְּרֹב חַסְדְּךָ אָבוֹא בֵיתֶךָ', s: 'Va\u2019ani berov chasdecha avo veitecha', e: 'And I, through the abundance of Your love, will enter Your house,' },
+          { t: 'אֶשְׁתַּחֲוֶה אֶל הֵיכַל קָדְשְׁךָ בְּיִרְאָתֶךָ', s: 'Eshtachaveh el heichal kodshecha beyiratecha', e: 'and bow toward Your holy dwelling with reverence.' }
+        ],
+        translation: 'A morning prayer of wonder at the goodness of home and the joy of drawing near to God.'
+      },
+      {
+        id: 'tehillim-100',
+        title: 'Tehillim 100, A Joyful Noise',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Make a joyful noise to the Lord, all the earth.' },
+          { t: 'Serve the Lord with gladness; come into his presence with singing.' },
+          { t: 'Know that the Lord is God. It is he who made us, and we are his.' },
+          { t: 'We are his people, and the sheep of his pasture.' },
+          { t: 'Enter his gates with thanksgiving, and his courts with praise.' },
+          { t: 'For the Lord is good; his steadfast love endures forever.' }
+        ],
+        translation: 'A psalm of pure gladness, gratitude, and belonging, a call to come before God with joy.'
       }
     ]
   },
@@ -1266,6 +1944,147 @@ export const SPIRITUALITIES = [
           { t: 'Be like water: yielding, patient, and quietly strong.' }
         ],
         translation: 'From the Dao De Jing, the teaching that gentleness flows around every obstacle and still arrives.'
+      },
+      {
+        id: 'dao-emptiness',
+        title: 'The Use of Emptiness',
+        lang: 'en',
+        langLabel: 'English · from the Dao De Jing',
+        phrases: [
+          { t: 'Thirty spokes share one hub,' },
+          { t: 'and it is the empty space that makes the wheel useful.' },
+          { t: 'Clay is shaped into a vessel,' },
+          { t: 'and it is the hollow within that makes it useful.' },
+          { t: 'Doors and windows are cut to make a room,' },
+          { t: 'and it is the emptiness that makes it a home.' },
+          { t: 'What is, is for usefulness; what is not, is for its use.' }
+        ],
+        translation: 'From the Dao De Jing, the quiet teaching that emptiness and space are where the value lives.'
+      },
+      {
+        id: 'dao-return',
+        title: 'Returning Is the Movement',
+        lang: 'en',
+        langLabel: 'English · from the Dao De Jing',
+        phrases: [
+          { t: 'Empty the mind and fill the heart; quiet the senses and see clearly.' },
+          { t: 'Returning is the movement of the Dao; yielding is the way of the Dao.' },
+          { t: 'All things return to the root, and in returning they find stillness.' },
+          { t: 'Stillness is how we become whole again.' },
+          { t: 'Knowing this constancy is to be at peace.' }
+        ],
+        translation: 'From the Dao De Jing, the practice of stillness and return, the way we find our center again.'
+      },
+      {
+        id: 'dao-contentment',
+        title: 'Know When to Stop',
+        lang: 'en',
+        langLabel: 'English · from the Dao De Jing',
+        phrases: [
+          { t: 'Which is dearer, fame or life?' },
+          { t: 'Which is more, health or wealth?' },
+          { t: 'To know when you have enough is to be rich.' },
+          { t: 'To stop before you are full is to endure long.' },
+          { t: 'Keep to the simple, and you will have all you truly need.' }
+        ],
+        translation: 'From the Dao De Jing, the teaching of contentment, that knowing enough is true wealth.'
+      },
+      {
+        id: 'dao-uncarved',
+        title: 'Return to the Uncarved Block',
+        lang: 'en',
+        langLabel: 'English · from the Dao De Jing',
+        phrases: [
+          { t: 'Give up cleverness, and people benefit a hundredfold.' },
+          { t: 'Give up selfishness, and people return to honesty.' },
+          { t: 'Return to simplicity, and put aside desire.' },
+          { t: 'The uncarved block is whole and unbroken.' },
+          { t: 'Be like the uncarved block: natural, unforced, and quietly complete.' }
+        ],
+        translation: 'From the Dao De Jing, the call back to simplicity, before the world complicates us.'
+      },
+      {
+        id: 'zhuangzi-free',
+        title: 'Free and Easy Wandering',
+        lang: 'en',
+        langLabel: 'English · from the Zhuangzi',
+        phrases: [
+          { t: 'The great bird rides the wind for a journey of ten thousand miles.' },
+          { t: 'The little sparrow hops from branch to branch,' },
+          { t: 'and each is at ease in its own way.' },
+          { t: 'Do not measure yourself by another\u2019s journey.' },
+          { t: 'Wander freely; be content with your own season and your own sky.' }
+        ],
+        translation: 'From the Zhuangzi, a tale of contentment, that every being has its own natural freedom.'
+      },
+      {
+        id: 'dao-nonaction',
+        title: 'The Grace of Non-Action',
+        lang: 'en',
+        langLabel: 'English · from the Dao De Jing',
+        phrases: [
+          { t: 'Practice non-action, and nothing is left undone.' },
+          { t: 'The sage does not force, and nothing is beyond reach.' },
+          { t: 'The great tree grows from a tiny sprout.' },
+          { t: 'The nine-story tower rises from a handful of earth.' },
+          { t: 'Begin where you are; act gently; let things ripen in their own time.' }
+        ],
+        translation: 'From the Dao De Jing, the art of wu-wei, acting with the grain of things rather than against it.'
+      },
+      {
+        id: 'daodejing-heaven',
+        title: 'The Way of Heaven',
+        lang: 'en',
+        langLabel: 'English · from the Dao De Jing',
+        phrases: [
+          { t: 'The way of heaven is to benefit others and not harm.' },
+          { t: 'The sage does not accumulate; the more she gives, the more she has.' },
+          { t: 'The more he helps others, the richer he becomes.' },
+          { t: 'Heaven\u2019s way is to give; the sage\u2019s way is to give without keeping.' }
+        ],
+        translation: 'From the Dao De Jing, the teaching that generosity is the nature of heaven and of a good life.'
+      },
+      {
+        id: 'taoist-breathe',
+        title: 'A Breath of Stillness',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Breathe in, and gather peace.' },
+          { t: 'Breathe out, and let the day fall away.' },
+          { t: 'Feel the slow river of breath within you.' },
+          { t: 'You are not in a hurry; the Dao is not in a hurry.' },
+          { t: 'Rest in this quiet, and be renewed.' }
+        ],
+        translation: 'A simple breathing meditation in the Taoist spirit, stillness gathered with every breath.'
+      },
+      {
+        id: 'dao-simplicity-nature',
+        title: 'The Dao, and Nature Follows',
+        lang: 'en',
+        langLabel: 'English · from the Dao De Jing',
+        phrases: [
+          { t: 'There is something formless and complete, born before heaven and earth.' },
+          { t: 'I do not know its name; I call it the Dao.' },
+          { t: 'The Dao follows its own nature; heaven follows the Dao;' },
+          { t: 'earth follows heaven, and humanity follows earth.' },
+          { t: 'When we follow our nature, we fall into place like rain finding the valley.' }
+        ],
+        translation: 'From the Dao De Jing, the image of the Dao as the source that all things follow naturally.'
+      },
+      {
+        id: 'yin-yang-balance',
+        title: 'A Meditation on Balance',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Light and shadow together make the day.' },
+          { t: 'Rest and motion together make a life.' },
+          { t: 'Do not cling to the bright and flee the dark;' },
+          { t: 'each gives the other its meaning.' },
+          { t: 'May I hold both gently, and walk the center path.' }
+        ],
+        translation: 'A meditation on yin and yang, the harmony found in welcoming both halves of every whole.'
       }
     ]
   },
@@ -1337,6 +2156,142 @@ export const SPIRITUALITIES = [
           { t: 'Let me be genuine in heart, gentle in word, and faithful in deed.' }
         ],
         translation: 'From the Doctrine of the Mean, sincerity as the root of a life in harmony with heaven and others.'
+      },
+      {
+        id: 'analects-friends',
+        title: 'Delightful Friends',
+        lang: 'en',
+        langLabel: 'English · from the Analects',
+        phrases: [
+          { t: 'Is it not a joy to practice what you learn?' },
+          { t: 'Is it not delightful to have friends come from afar?' },
+          { t: 'To be trusted, yet not put out — is that not the mark of a noble person?' },
+          { t: 'Let me be a warm friend and a ready learner all my days.' }
+        ],
+        translation: 'The opening of the Analects, a celebration of learning and of friendship that crosses distances.'
+      },
+      {
+        id: 'analects-junzi',
+        title: 'The Noble Person',
+        lang: 'en',
+        langLabel: 'English · from the Analects',
+        phrases: [
+          { t: 'The noble person is calm and serene;' },
+          { t: 'the small person is always anxious.' },
+          { t: 'The noble person thinks of what is right;' },
+          { t: 'the small person thinks of what will pay.' },
+          { t: 'Let me face the world with a settled heart and a sense of what is good.' }
+        ],
+        translation: 'From the Analects, the portrait of the junzi, serene, principled, and at ease.'
+      },
+      {
+        id: 'mencius-goodness',
+        title: 'The Heart That Cannot Bear Suffering',
+        lang: 'en',
+        langLabel: 'English · from Mencius',
+        phrases: [
+          { t: 'Everyone has a heart that cannot bear to see suffering.' },
+          { t: 'Seeing a child about to fall into a well,' },
+          { t: 'anyone would rush to help — not for reward, not for praise,' },
+          { t: 'but because compassion is natural to every human heart.' },
+          { t: 'Nurture this heart, and it grows into goodness for all.' }
+        ],
+        translation: 'From Mencius, the teaching that compassion is the seed of goodness in every person.'
+      },
+      {
+        id: 'filial-xiao',
+        title: 'A Prayer of Filial Love',
+        lang: 'en',
+        langLabel: 'English · from the Confucian tradition',
+        phrases: [
+          { t: 'Honor your father and your mother,' },
+          { t: 'and those who raised you and taught you.' },
+          { t: 'Their love was the first love you knew.' },
+          { t: 'Let me repay it with care in their later years,' },
+          { t: 'and pass that care on to the generations to come.' }
+        ],
+        translation: 'A prayer reflecting xiao, filial piety, the root of love that grows outward to all the world.'
+      },
+      {
+        id: 'mean-balance',
+        title: 'The Center of the Mean',
+        lang: 'en',
+        langLabel: 'English · from the Doctrine of the Mean',
+        phrases: [
+          { t: 'Before joy, anger, sorrow, and pleasure are expressed, it is called the center.' },
+          { t: 'When they are expressed in due measure, it is called harmony.' },
+          { t: 'The center is the root of all things; harmony is the way of the world.' },
+          { t: 'Let me find the quiet center in myself,' },
+          { t: 'and let all I do come forth in harmony.' }
+        ],
+        translation: 'From the Doctrine of the Mean, the practice of balance, the center from which harmony flows.'
+      },
+      {
+        id: 'analects-ritual',
+        title: 'Look, Listen, and Be Kind',
+        lang: 'en',
+        langLabel: 'English · from the Analects',
+        phrases: [
+          { t: 'Look at nothing contrary to what is fitting.' },
+          { t: 'Listen to nothing contrary to what is fitting.' },
+          { t: 'Speak nothing contrary to what is fitting.' },
+          { t: 'Do nothing contrary to what is fitting.' },
+          { t: 'In all things, let courtesy guard the heart.' }
+        ],
+        translation: 'From the Analects, the practice of courtesy as a way of protecting the good in every moment.'
+      },
+      {
+        id: 'analects-knowledge',
+        title: 'To Know What You Do Not Know',
+        lang: 'en',
+        langLabel: 'English · from the Analects',
+        phrases: [
+          { t: 'To say you know what you know,' },
+          { t: 'and to know what you do not know —' },
+          { t: 'that is true knowledge.' },
+          { t: 'Let me learn eagerly from the wise,' },
+          { t: 'and remain humble before what is still unknown.' }
+        ],
+        translation: 'From the Analects, the wisdom of honest ignorance, the foundation of all true learning.'
+      },
+      {
+        id: 'analects-virtue',
+        title: 'Virtue Is Never Lonely',
+        lang: 'en',
+        langLabel: 'English · from the Analects',
+        phrases: [
+          { t: 'Virtue is never solitary;' },
+          { t: 'it always has neighbors.' },
+          { t: 'Do good, and goodness finds its way home to you.' },
+          { t: 'Be kind, and kindness gathers around.' },
+          { t: 'Let me be a neighbor to every good thing.' }
+        ],
+        translation: 'From the Analects, the assurance that a life of virtue naturally draws good company.'
+      },
+      {
+        id: 'confucius-study',
+        title: 'A Humble Seeker',
+        lang: 'en',
+        langLabel: 'English · from the Analects',
+        phrases: [
+          { t: 'I was not born with knowledge;' },
+          { t: 'I love the ancient teachings and work hard to follow them.' },
+          { t: 'Learn as if you could never reach the end,' },
+          { t: 'as if you were afraid of losing what you have gained.' },
+          { t: 'The road of learning is a road without end, and it is a joy to walk.' }
+        ],
+        translation: 'From the Analects, the portrait of the humble, tireless seeker after wisdom.'
+      },
+      {
+        id: 'analects-warmth',
+        title: 'Warmth at Home, Gentleness Abroad',
+        lang: 'en',
+        langLabel: 'English · from the Analects',
+        phrases: [
+          { t: 'Let me be warm and reverent at home,' },
+          { t: 'respectful and gentle with all I meet,' }
+        ],
+        translation: 'From the Analects, the simple daily practice of kindness in the home and courtesy in the world.'
       }
     ]
   },
