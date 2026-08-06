@@ -377,7 +377,7 @@ class SpeechEngine {
     // Prefer authentic server-proxied neural voices (Google Cloud TTS).
     if (this.cloud === null) await this.probeCloud()
     if (this.cloud) {
-      this.speakIndex(0)
+      this.speakIndex(opts.index || 0)
       return
     }
 
@@ -402,7 +402,7 @@ class SpeechEngine {
 
     this.prime()
     this.primeKicker()
-    this.speakIndex(0)
+    this.speakIndex(this.job ? this.job.index || 0 : 0)
   }
 
   // Lets the UI know speech gave up and the audible chant took over.

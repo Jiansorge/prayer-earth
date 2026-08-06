@@ -47,6 +47,9 @@ export const useStore = create(
       // which prayer is actually producing audio right now (so the footer and
       // other pages know what's playing even when viewing a different prayer)
       playingPrayerId: null,
+      // the phrase index the playing prayer is on, so the highlight survives
+      // leaving and returning to the prayer page
+      currentPhrase: null,
       // seconds of the current playback, kept in the store so it keeps ticking
       // while the prayer page is not on screen
       elapsed: 0,
@@ -134,6 +137,7 @@ export const useStore = create(
       setPendingPlay: (pendingPlay) => set({ pendingPlay }),
       setPlayingPrayerId: (playingPrayerId) => set({ playingPrayerId }),
       setElapsed: (elapsed) => set({ elapsed }),
+      setCurrentPhrase: (currentPhrase) => set({ currentPhrase }),
       setLoopOn: (loopOn) => set({ loopOn }),
       setVoiceURI: (voiceURI) => set({ voiceURI }),
       setPrayerVoice: (prayerId, voiceId) =>

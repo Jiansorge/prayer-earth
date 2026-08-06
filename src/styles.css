@@ -1551,6 +1551,19 @@ html[dir='rtl'] .chooser-arrow.right {
   gap: 14px;
 }
 
+.earth-loading-icon {
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  box-shadow: 0 0 30px rgba(111, 163, 255, 0.5), 0 0 90px rgba(111, 163, 255, 0.22);
+  animation: bootGlow 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .earth-loading-icon {
+    animation: none;
+  }
+}
+
 .earth-loading-dot {
   width: 46px;
   height: 46px;
@@ -2458,6 +2471,29 @@ html[dir='rtl'] .chooser-arrow.right {
   bottom: calc(104px + env(safe-area-inset-bottom));
   width: min(280px, calc(100vw - 36px));
   text-align: start;
+}
+
+/* On small screens the feed sits up and slim so it never collides with the
+   centered glow percentage at the bottom of the Earth. */
+@media (max-width: 640px) {
+  .earth-view .world-feed.compact {
+    left: 14px;
+    bottom: calc(196px + env(safe-area-inset-bottom));
+    width: min(220px, calc(100vw - 28px));
+  }
+  .earth-view .world-feed.compact .world-feed-scroll {
+    max-height: 118px;
+  }
+}
+
+/* Very short screens (landscape phones): keep the feed, glow, and nav apart. */
+@media (max-height: 620px) {
+  .earth-view .world-feed.compact {
+    bottom: calc(182px + env(safe-area-inset-bottom));
+  }
+  .earth-view .world-feed.compact .world-feed-scroll {
+    max-height: 84px;
+  }
 }
 
 .earth-view .world-feed.compact .world-feed-title {

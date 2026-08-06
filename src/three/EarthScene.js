@@ -60,20 +60,20 @@ const FRAG = /* glsl */ `
 
     vec2 uv = equirect(sp);
 
-    // The living Earth: deep luminous ocean and quiet land that read clearly
-    // from the first frame, lit by the sun terminator. The world's prayer
-    // gradually brightens the surface forever.
+    // The living Earth: deep, quiet ocean and land that read clearly from the
+    // first frame without ever shouting, lit by the sun terminator. The world's
+    // prayer gradually brightens the surface forever.
     float landMask = texture2D(uMaskTex, uv).r;
 
     // uGlow rises with every prayer ever made (toward a million), uTier with
     // the lifetime seconds of shared prayer, so the planet itself lights up
     // as the world prays together.
-    vec3 oceanC = vec3(0.05, 0.16, 0.30)
-      + vec3(0.03, 0.07, 0.10) * uTier
-      + vec3(0.04, 0.08, 0.12) * uGlow;
-    vec3 landC = vec3(0.22, 0.26, 0.20)
-      + vec3(0.08, 0.09, 0.07) * uTier
-      + vec3(0.10, 0.11, 0.08) * uGlow;
+    vec3 oceanC = vec3(0.016, 0.05, 0.115)
+      + vec3(0.012, 0.028, 0.05) * uTier
+      + vec3(0.016, 0.038, 0.062) * uGlow;
+    vec3 landC = vec3(0.085, 0.095, 0.085)
+      + vec3(0.038, 0.042, 0.034) * uTier
+      + vec3(0.05, 0.052, 0.04) * uGlow;
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -661,7 +661,7 @@ export class EarthScene {
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      depthTest: false
+      depthTest: true
     })
     const pts = new THREE.Points(g, m)
     this.sparkPos = pos
@@ -742,7 +742,7 @@ export class EarthScene {
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      depthTest: false
+      depthTest: true
     })
     const pts = new THREE.Points(geo, mat)
     this.wispPts = pts

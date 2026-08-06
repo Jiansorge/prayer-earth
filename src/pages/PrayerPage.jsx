@@ -125,6 +125,17 @@ export default function PrayerPage() {
     setTuning(false)
   }, [prayerId])
 
+  // Rehighlight the current phrase when the playing prayer advances, even if
+  // this page mounted after playback already began (e.g. returning from Home
+  // or the Earth while the prayer kept playing in the background).
+  const currentPhrase = useStore((s) => s.currentPhrase)
+  useEffect(() => {
+    const s = useStore.getState()
+    if (typeof currentPhrase === 'number' && s.playing && s.playingPrayerId === prayer?.id) {
+      setActive(currentPhrase)
+    }
+  }, [currentPhrase, prayer?.id])
+
   // The static voice options for this prayer (from the pre-rendered audio).
   useEffect(() => {
     let on = true
@@ -166,6 +177,8 @@ export default function PrayerPage() {
       loop: loopOn,
       gapMs: prayer.loop ? 250 : 700,
       onPhrase: (i) => {
+        // Track the phrase globally so returning to this page can rehighlight.
+        useStore.getState().setCurrentPhrase(i)
         // Only highlight lines when this prayer is the one actually on screen.
         if (useStore.getState().prayerId === prayer.id) setActive(i)
         // A repeated mantra is one prayer per recitation, not per cycle.
@@ -188,6 +201,7 @@ export default function PrayerPage() {
         setPlaying(false)
         setPraying(false)
         useStore.getState().setPlayingPrayerId(null)
+        useStore.getState().setCurrentPhrase(null)
         setFinished(true)
         setActive(null)
         setChantMode(false)
@@ -262,6 +276,7 @@ export default function PrayerPage() {
     setPaused(false)
     setPraying(false)
     useStore.getState().setPlayingPrayerId(null)
+    useStore.getState().setCurrentPhrase(null)
     syncClient.presenceNow()
     setActive(null)
     setChantMode(false)

@@ -43,20 +43,6 @@
       ],
       "phrases": 10
     },
-    "jesus-prayer": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-CA-LiamNeural",
-        "en-CA-ClaraNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IN-PrabhatNeural",
-        "en-IN-NeerjaNeural",
-        "en-IE-ConnorNeural"
-      ],
-      "phrases": 2
-    },
     "magnificat": {
       "lang": "en",
       "voices": [

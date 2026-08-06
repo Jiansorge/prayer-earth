@@ -68,18 +68,6 @@ export const SPIRITUALITIES = [
         translation: 'A psalm of quiet trust, the shepherd who guides, provides, and stays near.'
       },
       {
-        id: 'jesus-prayer',
-        title: 'The Jesus Prayer',
-        lang: 'en',
-        langLabel: 'English · a breath-prayer, repeated',
-        loop: true,
-        phrases: [
-          { t: 'Lord Jesus Christ, Son of God,' },
-          { t: 'have mercy on me, a sinner.' }
-        ],
-        translation: 'The ancient prayer of the heart of Eastern Christianity, one phrase on the in-breath, one on the out-breath.'
-      },
-      {
         id: 'magnificat',
         title: 'The Magnificat',
         lang: 'en',
@@ -110,6 +98,41 @@ export const SPIRITUALITIES = [
           { t: 'and where there is sadness, joy.' }
         ],
         translation: 'A beloved prayer of peace and humility, offered across every tradition of service.'
+      },
+      {
+        id: 'serenity-prayer',
+        title: 'The Serenity Prayer',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'God, grant me the serenity' },
+          { t: 'to accept the things I cannot change,' },
+          { t: 'courage to change the things I can,' },
+          { t: 'and wisdom to know the difference.' },
+          { t: 'Living one day at a time,' },
+          { t: 'enjoying one moment at a time,' },
+          { t: 'accepting hardship as the pathway to peace.' }
+        ],
+        translation: 'A prayer of quiet acceptance and courage, beloved across the world.'
+      },
+      {
+        id: 'beatitudes',
+        title: 'The Beatitudes',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Blessed are the peacemakers,' },
+          { t: 'for they shall be called children of God.' },
+          { t: 'Blessed are the merciful,' },
+          { t: 'for they shall receive mercy.' },
+          { t: 'Blessed are the pure in heart,' },
+          { t: 'for they shall see God.' },
+          { t: 'Blessed are the meek,' },
+          { t: 'for they shall inherit the earth.' },
+          { t: 'Blessed are those who hunger and thirst for justice,' },
+          { t: 'for they shall be satisfied.' }
+        ],
+        translation: 'The blessings of Jesus, a vision of the gentle and the just who are closest to God.'
       }
     ]
   },
@@ -214,6 +237,30 @@ export const SPIRITUALITIES = [
           { t: 'وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ', s: 'Wa-lam yakun lahū kufuwan aḥad', e: 'And there is none comparable to Him.' }
         ],
         translation: 'The chapter of Divine Unity, called by the Prophet equal to a third of the Qurʼan.'
+      },
+      {
+        id: 'basmala',
+        title: 'The Basmala',
+        lang: 'ar',
+        langLabel: 'العربية · Arabic · repeated',
+        loop: true,
+        phrases: [
+          { t: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', s: 'Bismillāhir-raḥmānir-raḥīm', e: 'In the name of God, the Most Gracious, the Most Merciful.' },
+          { t: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', s: 'Bismillāhir-raḥmānir-raḥīm', e: 'In the name of God, the Most Gracious, the Most Merciful.' }
+        ],
+        translation: 'The sacred phrase that begins every chapter and every good deed, a breath of mercy before all things.'
+      },
+      {
+        id: 'rabbana-atina',
+        title: 'Rabbana Ātinā',
+        lang: 'ar',
+        langLabel: 'العربية · Arabic',
+        phrases: [
+          { t: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً', s: 'Rabbanā ātinā fid-dunyā ḥasanah', e: 'Our Lord, give us good in this world,' },
+          { t: 'وَفِي الْآخِرَةِ حَسَنَةً', s: 'Wa-fil-ākhirati ḥasanah', e: 'and good in the world to come,' },
+          { t: 'وَقِنَا عَذَابَ النَّارِ', s: 'Wa-qinā ʿaḏāban-nār', e: 'and shield us from harm.' }
+        ],
+        translation: 'A verse prayed for goodness in this life and the next, a request for beauty, safety, and peace.'
       }
     ]
   },
@@ -314,6 +361,19 @@ export const SPIRITUALITIES = [
           { t: 'राम राम हरे हरे', s: 'Rāma, Rāma, Hare, Hare', e: 'Rama, Rama, Hare, Hare.' }
         ],
         translation: 'The great mantra of the heart from the Vaishnava tradition, the divine names sung until the mind grows still.'
+      },
+      {
+        id: 'purnamadah',
+        title: 'The Invocation of Fullness',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit',
+        phrases: [
+          { t: 'ॐ पूर्णमदः पूर्णमिदम्', s: 'Om pūrṇamadaḥ pūrṇamidam', e: 'Om. That is whole; this is whole.' },
+          { t: 'पूर्णात् पूर्णमुदच्यते', s: 'Pūrṇāt pūrṇam udacyate', e: 'From wholeness, wholeness arises.' },
+          { t: 'पूर्णस्य पूर्णमादाय पूर्णमेवावशिष्यते', s: 'Pūrṇasya pūrṇam ādāya pūrṇam evāvaśiṣyate', e: 'Take wholeness from wholeness, and wholeness still remains.' },
+          { t: 'ॐ शान्तिः शान्तिः शान्तिः', s: 'Om śāntiḥ śāntiḥ śāntiḥ', e: 'Om. Peace, peace, peace.' }
+        ],
+        translation: 'An Upanishadic invocation of the fullness that never diminishes, a meditation on the infinite whole.'
       }
     ]
   },
@@ -641,6 +701,35 @@ export const SPIRITUALITIES = [
           { t: 'ॐ वज्रसत्त्व हूं', s: 'Om vajrasattva hūṃ', e: 'The essence of Vajrasattva, purification and confession.' }
         ],
         translation: 'The short Vajrasattva mantra, the heart of the hundred-syllable purification practice.'
+      },
+      {
+        id: 'metta-sutta',
+        title: 'The Words of Loving-Kindness',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'May all beings be happy and secure;' },
+          { t: 'may they be glad and safe.' },
+          { t: 'Just as a mother protects her only child' },
+          { t: 'with her very life,' },
+          { t: 'so let boundless love be held for all beings —' },
+          { t: 'above, below, and all around, without limit.' },
+          { t: 'May we dwell with a heart that is wide and free,' },
+          { t: 'sharing goodwill with all the world.' }
+        ],
+        translation: 'The Buddha\u2019s discourse on loving-kindness, the wish that all beings, without exception, be well.'
+      },
+      {
+        id: 'namo-tassa',
+        title: 'Namo Tassa',
+        lang: 'pi',
+        langLabel: 'पालि · Pali · repeated',
+        loop: true,
+        phrases: [
+          { t: 'नमो तस्स भगवतो अरहतो सम्मासम्बुद्धस्स', s: 'Namo tassa bhagavato arahato sammāsambuddhassa', e: 'Homage to the Blessed One, the worthy one, the fully awakened.' },
+          { t: 'नमो तस्स भगवतो अरहतो सम्मासम्बुद्धस्स', s: 'Namo tassa bhagavato arahato sammāsambuddhassa', e: 'Homage to the Blessed One, the worthy one, the fully awakened.' }
+        ],
+        translation: 'The ancient homage recited before the Buddha\u2019s teachings, a bow of gratitude for the awakening path.'
       }
     ]
   },
@@ -956,6 +1045,21 @@ export const SPIRITUALITIES = [
           { t: 'ਵਾਹਿਗੁਰੂ', s: 'Waheguru', e: 'Wonderful Lord, the divine light beyond all knowing.' }
         ],
         translation: 'The meditative repetition of the Name, remembrance of the One through every breath.'
+      },
+      {
+        id: 'simran',
+        title: 'Simran, Remembering the Name',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'The One Name fills the whole creation.' },
+          { t: 'Singing it, one finds joy.' },
+          { t: 'Let no thought of greed, fear, or doubt cloud the heart.' },
+          { t: 'The divine light shines in every being.' },
+          { t: 'Bowing to that light, may I live with humility and courage.' },
+          { t: 'Waheguru, wonderful Lord — I remember You.' }
+        ],
+        translation: 'A meditation of the Name from the Guru\u2019s teaching, remembrance that carries the soul through every day.'
       }
     ]
   },
@@ -1062,6 +1166,30 @@ export const SPIRITUALITIES = [
           { t: 'יִשָּׂא יְהוָה פָּנָיו אֵלֶיךָ וְיָשֵׂם לְךָ שָׁלוֹם', s: 'Yissa Adonai panav eilecha veyasem lecha shalom', e: 'May the Lord lift up His face to you and give you peace.' }
         ],
         translation: 'The ancient blessing God gave the priests, spoken over the people, among the oldest words of peace.'
+      },
+      {
+        id: 'shehecheyanu',
+        title: 'Shehecheyanu',
+        lang: 'he',
+        langLabel: 'עברית · Hebrew',
+        phrases: [
+          { t: 'בָּרוּךְ אַתָּה אֲדֹנָי אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם', s: 'Baruch atah Adonai, Eloheinu melech haolam', e: 'Blessed are You, Lord our God, Ruler of the universe,' },
+          { t: 'שֶׁהֶחֱיָנוּ וְקִיְּמָנוּ וְהִגִּיעָנוּ לַזְּמַן הַזֶּה', s: 'Shehecheyanu vekiyemanu vehigiyanu lazman hazeh', e: 'who has kept us alive, sustained us, and brought us to this season.' }
+        ],
+        translation: 'The blessing of new beginnings and glad occasions, gratitude that we are here to share this moment.'
+      },
+      {
+        id: 'vahavta',
+        title: 'V\u2019ahavta',
+        lang: 'he',
+        langLabel: 'עברית · Hebrew',
+        phrases: [
+          { t: 'וְאָהַבְתָּ אֵת יְהוָה אֱלֹהֶיךָ', s: 'Ve\u2019ahavta et Adonai Elohecha', e: 'And you shall love the Lord your God' },
+          { t: 'בְּכָל־לְבָבְךָ וּבְכָל־נַפְשְׁךָ וּבְכָל־מְאֹדֶךָ', s: 'Bechol-levavcha uvechol-nafshecha uvechol-meodecha', e: 'with all your heart, with all your soul, and with all your might.' },
+          { t: 'וְשִׁנַּנְתָּם לְבָנֶיךָ וְדִבַּרְתָּ בָּם', s: 'Veshinantam levanecha vedibarta bam', e: 'Teach these words to your children, and speak of them' },
+          { t: 'בְּשִׁבְתְּךָ בְּבֵיתֶךָ וּבְלֶכְתְּךָ בַדֶּרֶךְ', s: 'Beshibtecha beveitecha uvelechtecha vaderech', e: 'when you sit in your house and when you walk on the way.' }
+        ],
+        translation: 'The heart of the Shema, the command to love with everything we are and to pass that love on.'
       }
     ]
   },
@@ -1140,6 +1268,20 @@ export const SPIRITUALITIES = [
           { t: 'Dare to be gentle. That is to accord with heaven.' }
         ],
         translation: 'The three treasures of the Dao De Jing, the quiet strengths that keep a life in harmony.'
+      },
+      {
+        id: 'water-way',
+        title: 'The Way of Water',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Nothing in the world is softer or more yielding than water.' },
+          { t: 'Yet nothing is better at overcoming the hard and the rigid.' },
+          { t: 'The weak overcomes the strong; the gentle overcomes the fierce.' },
+          { t: 'Everyone knows this is so, yet few live by it.' },
+          { t: 'Be like water: yielding, patient, and quietly strong.' }
+        ],
+        translation: 'From the Dao De Jing, the teaching that gentleness flows around every obstacle and still arrives.'
       }
     ]
   },
@@ -1197,6 +1339,20 @@ export const SPIRITUALITIES = [
           { t: '夫仁者，己欲立而立人，己欲達而達人。', s: 'Fū rén zhě, jǐ yù lì ér lì rén, jǐ yù dá ér dá rén.', e: 'The human-hearted: wishing to stand, they help others stand; wishing to succeed, they help others succeed.' }
         ],
         translation: 'The Confucian Golden Rule from the Analects, empathy as the very heart of ren.'
+      },
+      {
+        id: 'sincerity',
+        title: 'The Way of Sincerity',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Sincerity is the way of heaven,' },
+          { t: 'and the cultivation of sincerity is the way of the human-hearted.' },
+          { t: 'Through sincerity one comes to understand all things,' },
+          { t: 'and through understanding, one becomes sincere.' },
+          { t: 'Let me be genuine in heart, gentle in word, and faithful in deed.' }
+        ],
+        translation: 'From the Doctrine of the Mean, sincerity as the root of a life in harmony with heaven and others.'
       }
     ]
   },
@@ -1275,6 +1431,21 @@ export const SPIRITUALITIES = [
           { t: 'to the sacred woven through all things.' }
         ],
         translation: 'A reflection on kannagara, the Shinto way of living in harmony with the divine that pervades the world.'
+      },
+      {
+        id: 'arigato-kami',
+        title: 'A Thank-You to the Kami',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Thank you for the morning light,' },
+          { t: 'thank you for the food upon the table,' },
+          { t: 'thank you for the hands that prepared it.' },
+          { t: 'Thank you for the family and friends who walk beside me,' },
+          { t: 'and for the peace that rests upon this home.' },
+          { t: 'May I give back to the world as much as I have received.' }
+        ],
+        translation: 'A simple gratitude prayer offered before the kami of home, family, and the day.'
       }
     ]
   },
@@ -1353,6 +1524,20 @@ export const SPIRITUALITIES = [
           { t: 'In this vast web of life, I take my place gently.' }
         ],
         translation: 'A reflection on the five great vows of Mahavira, non-violence, truth, non-stealing, chastity, and non-attachment.'
+      },
+      {
+        id: 'maitri-bhavana',
+        title: 'Maitrī, Friendship with All Beings',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'I am a friend to all that lives —' },
+          { t: 'to those I know and those I have never met,' },
+          { t: 'to the small and the great, the near and the far.' },
+          { t: 'May no one fear me, and may I fear no one.' },
+          { t: 'Let my life bring ease to every being it touches.' }
+        ],
+        translation: 'The Jain ideal of maitri, universal friendship, a heart held open to every living thing.'
       }
     ]
   },
@@ -1417,6 +1602,88 @@ export const SPIRITUALITIES = [
           { t: 'Umvelinqangi', s: 'Umvelinqangi', e: 'The Great Spirit, present from the beginning.' }
         ],
         translation: 'A Zulu name for the Great Spirit, repeated as a meditation on the divine that was before all things.'
+      },
+      {
+        id: 'ubuntu',
+        title: 'Ubuntu, I Am Because We Are',
+        lang: 'en',
+        langLabel: 'English · from the Bantu traditions',
+        phrases: [
+          { t: 'A person is a person through other persons.' },
+          { t: 'I am because we are; we are because I am.' },
+          { t: 'Let me see the divine in every face,' },
+          { t: 'and be my brother\u2019s and my sister\u2019s keeper.' },
+          { t: 'In sharing, we grow; in kindness, we are whole. Ubuntu.' }
+        ],
+        translation: 'The great African teaching of ubuntu, our shared humanity — that no one flourishes alone.'
+      },
+      {
+        id: 'zulu-thanks',
+        title: 'Ukubonga, A Zulu Thanksgiving',
+        lang: 'zu',
+        langLabel: 'isiZulu',
+        phrases: [
+          { t: 'Ngiyabonga Nkulunkulu', s: 'Ngiyabonga Nkulunkulu', e: 'I give thanks to the Great Spirit.' },
+          { t: 'Ngobuhle bangaphezulu', s: 'Ngobuhle bangaphezulu', e: 'For the goodness that comes from above,' },
+          { t: 'Ngokuthula kwenhliziyo', s: 'Ngokuthula kwenhliziyo', e: 'for the peace of a quiet heart,' },
+          { t: 'Ngezibusiso zonke', s: 'Ngezibusiso zonke', e: 'and for every blessing that surrounds me.' }
+        ],
+        translation: 'A Zulu prayer of thanksgiving to Nkulunkulu, gratitude for goodness, peace, and every blessing.'
+      },
+      {
+        id: 'akan-nyame',
+        title: 'Nyame, The Sky God',
+        lang: 'ak',
+        langLabel: 'Akan · Twi',
+        phrases: [
+          { t: 'Nyame', s: 'Nyame', e: 'God above, the one who holds the sky.' },
+          { t: 'Wose wode ns\u025b\u025b a na fa', s: 'W\u0254s\u025b w\u0254de ns\u025b\u025b a na fa', e: 'If you do not take something, nothing is gained.' },
+          { t: 'Y\u025bda wo ase', s: 'Y\u025bda wo ase', e: 'We give You thanks.' },
+          { t: 'Ma y\u025bnnya asomdwee', s: 'Ma y\u025bnnya asomdwee', e: 'Grant us peace and wellbeing.' }
+        ],
+        translation: 'An Akan prayer to Nyame, the great sky God, thanking the source of all gifts and asking for peace.'
+      },
+      {
+        id: 'igbo-chi',
+        title: 'A Prayer to One\u2019s Chi',
+        lang: 'ig',
+        langLabel: 'Igbo',
+        phrases: [
+          { t: 'Chi m, the spirit that walks with me,' },
+          { t: 'stay close and guide my path.' },
+          { t: 'When I stumble, lift me gently.' },
+          { t: 'When I am lost, show me home.' },
+          { t: 'In all things, let me walk with a good heart. \u00cdke m.' }
+        ],
+        translation: 'An Igbo prayer to one\u2019s chi, the personal guardian spirit, asking for guidance and a good heart.'
+      },
+      {
+        id: 'masai-blessing',
+        title: 'A Maasai Blessing',
+        lang: 'en',
+        langLabel: 'English · from the Maasai people',
+        phrases: [
+          { t: 'May God give you rain,' },
+          { t: 'and grass for your cattle,' },
+          { t: 'and children to carry your name.' },
+          { t: 'May you walk in health and peace,' },
+          { t: 'and may the morning find you strong. Enkai akee.' }
+        ],
+        translation: 'A Maasai blessing of rain, abundance, and family, offered with love for a long and peaceful life.'
+      },
+      {
+        id: 'yoruba-morning',
+        title: 'A Yoruba Morning Greeting',
+        lang: 'en',
+        langLabel: 'English · from the Yoruba people',
+        phrases: [
+          { t: 'May the new day meet you gently,' },
+          { t: 'with blessings on your head and peace in your home.' },
+          { t: 'May the sun rise on your joy,' },
+          { t: 'and the road ahead be smooth.' },
+          { t: 'As we greet the dawn together, \u00c0\u1e63\u1eb9. So be it.' }
+        ],
+        translation: 'A Yoruba greeting for the new day, wishing blessings, joy, and a smooth road to all.'
       }
     ]
   },
@@ -1537,6 +1804,229 @@ export const SPIRITUALITIES = [
           { t: 'in the way I speak and the way I live.' }
         ],
         translation: 'A reflection on the Seven Grandfather Teachings of the Anishinaabe, the virtues that make a good life.'
+      },
+      {
+        id: 'lakota-wopila',
+        title: 'W\u00f3phila, A Lakota Thanksgiving',
+        lang: 'en',
+        langLabel: 'English · from the Lakota tradition',
+        phrases: [
+          { t: 'W\u00f3phila, thank you.' },
+          { t: 'To the Great Mystery, thank you.' },
+          { t: 'To the sun that warms us and the rain that waters us, thank you.' },
+          { t: 'To all our relatives — the four-legged, the winged, the finned, and the rooted, thank you.' },
+          { t: 'Mit\u00e1kuye Oy\u00e1s\u02bei\u014b, all my relations.' }
+        ],
+        translation: 'A Lakota prayer of thanksgiving, gratitude offered to the Great Mystery and to all of creation, our relatives.'
+      },
+      {
+        id: 'cherokee-morning',
+        title: 'A Cherokee Morning Prayer',
+        lang: 'en',
+        langLabel: 'English · from the Cherokee tradition',
+        phrases: [
+          { t: 'Great Spirit, I greet this morning with a thankful heart.' },
+          { t: 'For the breath of life and the light of day, I give thanks.' },
+          { t: 'Help me walk in harmony and in peace today.' },
+          { t: 'Let me be kind to all I meet,' },
+          { t: 'and remember that we are all relatives. Wado.' }
+        ],
+        translation: 'A Cherokee morning prayer of gratitude to the Great Spirit, asking for harmony, peace, and kindness.'
+      },
+      {
+        id: 'hopi-rains',
+        title: 'A Hopi Prayer for Rain',
+        lang: 'en',
+        langLabel: 'English · from the Hopi tradition',
+        phrases: [
+          { t: 'May the clouds gather gently over the land.' },
+          { t: 'May the rain come soft and steady.' },
+          { t: 'May the corn grow tall and the fields be green.' },
+          { t: 'We are the Water People; we give thanks for the gift of life.' },
+          { t: 'In the way of the ancestors, so be it. Paatuwapqa.' }
+        ],
+        translation: 'A Hopi prayer for the rains that bring life to the fields, gratitude to the clouds and the water.'
+      },
+      {
+        id: 'inuit-sila',
+        title: 'Sila, The Great Breath',
+        lang: 'en',
+        langLabel: 'English · from the Inuit tradition',
+        phrases: [
+          { t: 'Sila, the great breath of the world,' },
+          { t: 'you are in every wind and every sky.' },
+          { t: 'You give us the air we breathe and the wisdom to live.' },
+          { t: 'When I am lost, quiet my mind and show me the way.' },
+          { t: 'I walk gently upon this land, as the ancestors taught. Qujannamiik.' }
+        ],
+        translation: 'An Inuit prayer to Sila, the spirit of the air and sky, asking for wisdom and a gentle way of living.'
+      },
+      {
+        id: 'ojibwe-water',
+        title: 'Nibi, A Water Prayer',
+        lang: 'en',
+        langLabel: 'English · from the Anishinaabe tradition',
+        phrases: [
+          { t: 'Nibi, we thank you for your gifts.' },
+          { t: 'You give us life, you carry us, you cleanse us.' },
+          { t: 'As women carry life, so you carry the world.' },
+          { t: 'We promise to care for you as you care for us,' },
+          { t: 'for the children and the children yet to come.' }
+        ],
+        translation: 'An Anishinaabe water prayer honouring Nibi, the water that gives and sustains all life.'
+      },
+      {
+        id: 'maya-dawn',
+        title: 'A Maya Greeting to the Dawn',
+        lang: 'en',
+        langLabel: 'English · from the Maya tradition',
+        phrases: [
+          { t: 'Ajaw, Lord of the dawn, I greet you.' },
+          { t: 'As the sun rises over the forest, so may joy rise in my heart.' },
+          { t: 'Thank you for this day, for the maize and the water,' },
+          { t: 'for the ancestors who watch over us.' },
+          { t: 'Let me live in balance with the earth, in beauty and in thanks.' }
+        ],
+        translation: 'A Maya greeting to the rising sun, a prayer of thanks for the day, the maize, and the guidance of ancestors.'
+      },
+      {
+        id: 'inca-inti',
+        title: 'Inti, A Prayer to the Sun',
+        lang: 'en',
+        langLabel: 'English · from the Andean tradition',
+        phrases: [
+          { t: 'Inti, father sun, we give you thanks.' },
+          { t: 'Pachamama, mother earth, we give you thanks.' },
+          { t: 'For the harvest and the rain, for the mountains and the rivers, thank you.' },
+          { t: 'May we live in ayni, in sacred reciprocity with all that is.' },
+          { t: 'From our hearts to the heart of the world: thank you.' }
+        ],
+        translation: 'An Andean prayer to Inti the sun and Pachamama the earth, living in ayni, the sacred give and take of life.'
+      },
+      {
+        id: 'amazon-forest',
+        title: 'A Prayer of the Forest Peoples',
+        lang: 'en',
+        langLabel: 'English · with the peoples of the Amazon',
+        phrases: [
+          { t: 'O spirit of the living forest,' },
+          { t: 'thank you for the breath of the trees and the song of the river.' },
+          { t: 'Every leaf, every creature, every stream is our kin.' },
+          { t: 'Help us protect this green home for all who live within it,' },
+          { t: 'and walk with the forest in the way of our elders.' }
+        ],
+        translation: 'A prayer of the peoples of the great rainforest, honouring the living forest as home and family.'
+      },
+      {
+        id: 'aboriginal-country',
+        title: 'A Prayer for Country',
+        lang: 'en',
+        langLabel: 'English · from the Aboriginal peoples of Australia',
+        phrases: [
+          { t: 'The land is our mother; we are the land.' },
+          { t: 'From the Dreaming, we carry the songlines of our ancestors.' },
+          { t: 'Thank you, Country, for the water, the food, and the shelter.' },
+          { t: 'May I care for you as you have always cared for us,' },
+          { t: 'and pass this love of country to the children to come.' }
+        ],
+        translation: 'A prayer of the Aboriginal peoples for Country, the deep bond between people and the living land.'
+      },
+      {
+        id: 'maori-harvest',
+        title: 'A Harvest Prayer',
+        lang: 'mi',
+        langLabel: 'Te Reo M\u0101ori \u00b7 M\u0101ori',
+        phrases: [
+          { t: 'He mihi aroha ki te whenua', s: 'He mihi aroha ki te whenua', e: 'A loving thanks to the land,' },
+          { t: 'ki ng\u0101 mea katoa e tipu mai ana', s: 'ki ng\u0101 mea katoa e tipu mai ana', e: 'and to all that grows from it.' },
+          { t: 'He mihi ki ng\u0101 t\u016bpuna', s: 'He mihi ki ng\u0101 t\u016bpuna', e: 'Thanks to the ancestors' },
+          { t: 'n\u0101 r\u0101tou te whakaaro nui ki te whenua', s: 'n\u0101 r\u0101tou te whakaaro nui ki te whenua', e: 'who taught us to care for the earth.' }
+        ],
+        translation: 'A M\u0101ori prayer of the harvest, giving thanks to the land and to the ancestors who cared for it.'
+      },
+      {
+        id: 'samoan-faafetai',
+        title: 'Fa\u2019afetai, A Prayer of Thanks',
+        lang: 'en',
+        langLabel: 'English \u00b7 from the S\u0101moan tradition',
+        phrases: [
+          { t: 'Fa\u2019afetai tele lava — thank you from the heart.' },
+          { t: 'To God, the source of all blessings, thank you.' },
+          { t: 'To the land and the sea that feed us, thank you.' },
+          { t: 'To the family who surrounds us with alofa, love, thank you.' },
+          { t: 'May our lives be a gift to others, as theirs are a gift to us.' }
+        ],
+        translation: 'A S\u0101moan prayer of deep gratitude for God, land, sea, and family, and the love that holds them all.'
+      },
+      {
+        id: 'hawaiian-pule',
+        title: 'A Hawaiian Prayer of Gratitude',
+        lang: 'en',
+        langLabel: 'English \u00b7 from the Hawaiian tradition',
+        phrases: [
+          { t: 'Ke Akua, Great Spirit of life, we give thanks.' },
+          { t: 'For the sun, the sea, and the green land, thank you.' },
+          { t: 'For our k\u016bpuna, our elders and ancestors, thank you.' },
+          { t: 'Help us live with aloha — love for all — in all we do.' },
+          { t: 'Mahalo nui loa, thank you with all our heart.' }
+        ],
+        translation: 'A Hawaiian pule, a prayer of gratitude to Ke Akua for the land, the elders, and the way of aloha.'
+      },
+      {
+        id: 'mapuche-newen',
+        title: 'Newen, A Prayer for Strength',
+        lang: 'en',
+        langLabel: 'English \u00b7 from the Mapuche tradition',
+        phrases: [
+          { t: 'Newen, the strength of the spirit,' },
+          { t: 'fill my heart with courage and my hands with gentleness.' },
+          { t: 'Like the araucaria that stands in the storm,' },
+          { t: 'let me be rooted and unbending in what is right.' },
+          { t: 'From the land and the ancestors, I receive this strength. Marichiwew.' }
+        ],
+        translation: 'A Mapuche prayer for newen, inner strength, rooted like the sacred tree and guided by the ancestors.'
+      },
+      {
+        id: 'sami-beaivi',
+        title: 'Beaivi, The Sun Mother',
+        lang: 'en',
+        langLabel: 'English \u00b7 from the S\u00e1mi tradition',
+        phrases: [
+          { t: 'Beaivi, mother sun, warm our hearts and our land.' },
+          { t: 'Thank you for the light that wakes the earth each spring.' },
+          { t: 'May we live in harmony with the reindeer and the tundra,' },
+          { t: 'as the elders of the S\u00e1pmi have always done.' },
+          { t: 'Your light reminds us: we are one with all that lives.' }
+        ],
+        translation: 'A S\u00e1mi prayer to Beaivi, the sun mother, for warmth, harmony, and oneness with the living land.'
+      },
+      {
+        id: 'ainu-kamuy',
+        title: 'A Prayer to the Kamuy',
+        lang: 'en',
+        langLabel: 'English \u00b7 from the Ainu tradition',
+        phrases: [
+          { t: 'O kamuy, spirits of the forest, the river, and the sea,' },
+          { t: 'we welcome you and give you thanks.' },
+          { t: 'You give us the deer, the salmon, and the good water.' },
+          { t: 'We honour you with humble hearts and gentle hands,' },
+          { t: 'and we vow to protect this land you have entrusted to us.' }
+        ],
+        translation: 'An Ainu prayer to the kamuy, the spirits of nature, expressing gratitude and the sacred duty to protect the land.'
+      },
+      {
+        id: 'mongolian-sky',
+        title: 'The Eternal Blue Sky',
+        lang: 'en',
+        langLabel: 'English \u00b7 from the steppe traditions',
+        phrases: [
+          { t: 'O eternal blue sky, Tengri of our fathers,' },
+          { t: 'we raise our hearts to your endless horizon.' },
+          { t: 'Thank you for the wind, the grass, and the open road.' },
+          { t: 'Grant us the wisdom of the steppe: to move with the seasons,' },
+          { t: 'to honour all beings, and to keep faith with the land.' }
+        ],
+        translation: 'A prayer of the steppe peoples to the eternal blue sky, gratitude for the open land and the wisdom to live within it.'
       }
     ]
   },
@@ -1599,6 +2089,75 @@ export const SPIRITUALITIES = [
           { t: 'Humata, hukhta, huvarshta.', s: 'Humata, hukhta, huvarshta.', e: 'Good thoughts, good words, good deeds.' }
         ],
         translation: 'The threefold path at the heart of Zoroastrian faith, thought, speech, and action kept pure.'
+      },
+      {
+        id: 'good-conduct',
+        title: 'A Prayer of Good Conduct',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'O Wise Lord, source of all that is good,' },
+          { t: 'let me think good thoughts, speak good words, and do good deeds.' },
+          { t: 'Let me be a friend to the truthful and a shelter to the weary.' },
+          { t: 'May the fire within my heart warm, and never burn.' },
+          { t: 'May I walk the path of Asha, truth and harmony, all my days.' }
+        ],
+        translation: 'A prayer of the Asha path, keeping thought, word, and deed aligned with the good.'
+      }
+    ]
+  },
+  {
+    id: 'bahai',
+    name: 'Bah\u2019\u00e1\u2019\u00ed Faith',
+    emoji: '\u{1F54A}\uFE0F',
+    glow: 'rgba(120, 200, 255, 0.24)',
+    lightColor: '#7ac0ff',
+    tagline: 'Unity of humanity, the oneness of God and religion.',
+    prayers: [
+      {
+        id: 'bahai-healing',
+        title: 'A Healing Prayer',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'Thy name is my healing, O my God,' },
+          { t: 'and remembrance of Thee is my remedy.' },
+          { t: 'Nearness to Thee is my hope,' },
+          { t: 'and love for Thee is my companion.' },
+          { t: 'Thy mercy to me is my healing,' },
+          { t: 'and Thy succor in every hour of need is my greatest joy.' }
+        ],
+        translation: 'A prayer of healing from Bah\u00e1\u2019u\u2019ll\u00e1h, turning to God as the source of all remedy.'
+      },
+      {
+        id: 'bahai-gratitude',
+        title: 'A Prayer of Gratitude',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'O God, my God, I thank Thee' },
+          { t: 'for the gift of this day and the light of this life.' },
+          { t: 'Make me a source of joy to the sorrowful,' },
+          { t: 'a helper to the weak, and a friend to the friendless.' },
+          { t: 'Let my heart overflow with gratitude,' },
+          { t: 'that it may become a spring of kindness to all.' }
+        ],
+        translation: 'A prayer of thanksgiving in the Bah\u00e1\u2019\u00ed spirit, turning gratitude into service.'
+      },
+      {
+        id: 'bahai-unity',
+        title: 'A Prayer for Unity',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'O God, who art the Author of all things,' },
+          { t: 'unite our hearts in Thy love.' },
+          { t: 'Make us as waves of one sea,' },
+          { t: 'and as rays of one sun.' },
+          { t: 'Cause us to dwell in peace within one another,' },
+          { t: 'that we may serve the good of all Thy children.' }
+        ],
+        translation: 'A prayer for the oneness of humanity, the great hope of the Bah\u00e1\u2019\u00ed Faith.'
       }
     ]
   }
