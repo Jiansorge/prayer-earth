@@ -21,3 +21,12 @@ jobs:
         run: node scripts/test-server.mjs
       - name: i18n audit
         run: node scripts/audit-i18n.mjs
+      - name: Trigger auto-deploy (on main)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${{ secrets.DEPLOY_PAT }}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d '{"event_type":"deploy"}' \
+            https://api.github.com/repos/Jiansorge/sync-engine/dispatches

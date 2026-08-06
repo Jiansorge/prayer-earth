@@ -17,6 +17,7 @@ import SpaceBackdrop from './components/SpaceBackdrop.jsx'
 import TempleBackdrop from './components/TempleBackdrop.jsx'
 import OceanBackdrop from './components/OceanBackdrop.jsx'
 import DawnBackdrop from './components/DawnBackdrop.jsx'
+import CelebrateToast from './components/CelebrateToast.jsx'
 
 // The home backdrop each theme draws on.
 const THEME_BACKDROPS = {
@@ -211,9 +212,10 @@ export default function App() {
   }, [view, spiritId, prayerId, legalPage])
 
   return (
-    <div className="app" data-scene={view === 'home' && theme === 'nature' ? scene : undefined}>
+    <div className="app" data-scene={view === 'home' && theme === 'nature' ? scene : undefined} data-theme={theme}>
       <div className="sky" />
       {view === 'home' && <Backdrop />}
+      <CelebrateToast />
       {syncNotice && (
         <div
           className="sync-notice"

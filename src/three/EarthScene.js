@@ -365,6 +365,13 @@ export class EarthScene {
     this.frameMs = this.backdrop ? 42 : 0 // backdrop renders ~24fps, Earth view full speed
     this.peopleTarget = 0
 
+    // Low-power devices (or anyone who prefers stillness) get a lighter scene:
+    // fewer sphere segments, capped resolution, and a leaner aura. This is the
+    // biggest smoothness lever on budget phones.
+    const reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+    this.lowPower = reducedMotion || (typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4)
+    this.seg = this.lowPower ? 96 : 128 // sphere segments (was 192)
+
     const w = container.clientWidth || 1
     const h = container.clientHeight || 1
 
@@ -375,7 +382,10 @@ export class EarthScene {
     this.camera.lookAt(0, 0, 0)
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.backdrop ? 1.25 : 2))
+    // base render resolution: modest cap on the earth view, low on the backdrop
+    this.basePR = this.backdrop ? 1.25 : Math.min(window.devicePixelRatio, 2)
+    if (this.lowPower) this.basePR = 1
+    this.renderer.setPixelRatio(this.basePR)
     this.renderer.setSize(w, h)
     this.renderer.setClearColor(0x000000, 0)
     container.appendChild(this.renderer.domElement)
@@ -518,7 +528,7 @@ export class EarthScene {
   }
 
   buildFullEarth(dayTex, nightTex) {
-    const geo = new THREE.SphereGeometry(1.42, 192, 192)
+    const geo = new THREE.SphereGeometry(1.42, this.seg, this.seg)
     this.earthMat = new THREE.ShaderMaterial({
       vertexShader: VERT,
       fragmentShader: FRAG,
@@ -622,7 +632,7 @@ export class EarthScene {
 // Each one carries its own phase so the aura twinkles in and out gently,
 // always alive around the Earth.
   buildSparks() {
-    const N = 200
+    const N = this.lowPower ? 80 : 200
     const pos = new Float32Array(N * 3)
     const col = new Float32Array(N * 3)
     this.sparkDir = new Float32Array(N * 3)
@@ -704,7 +714,7 @@ export class EarthScene {
   // Gentle golden motes that drift around the Earth at the highest rungs, a
   // soft "healing" shimmer over the whole scene.
   buildWisps() {
-    const N = 150
+    const N = this.lowPower ? 60 : 150
     const pos = new Float32Array(N * 3)
     this.wispDir = new Float32Array(N * 3)
     this.wispPhase = new Float32Array(N)
@@ -1161,11 +1171,20 @@ export class EarthScene {
     let dragging = false
     let px = 0
     let py = 0
+    const setRes = (pr) => {
+      try {
+        this.renderer.setPixelRatio(pr)
+        this.renderer.setSize(el.clientWidth || 1, el.clientHeight || 1)
+      } catch {}
+    }
     const down = (e) => {
       dragging = true
       px = e.clientX
       py = e.clientY
       this.autoRotate = false
+      // While the user is spinning the globe, drop the render resolution so
+      // fast motion stays smooth; it sharpens back on release.
+      if (!this.lowPower && this.basePR > 1.25) setRes(1.25)
     }
     const move = (e) => {
       if (!dragging) return
@@ -1181,10 +1200,11 @@ export class EarthScene {
     }
     const up = () => {
       dragging = false
-    this.autoRotate = true
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      this.autoRotate = false // don't spin the globe for users who prefer stillness
-    }
+      setRes(this.basePR)
+      this.autoRotate = true
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        this.autoRotate = false // don't spin the globe for users who prefer stillness
+      }
     }
     el.addEventListener('pointerdown', down)
     window.addEventListener('pointermove', move)

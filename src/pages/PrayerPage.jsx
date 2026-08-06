@@ -190,6 +190,7 @@ export default function PrayerPage() {
       onEnd: () => {
         useStore.getState().markPrayedToday()
         if (!prayer.loop) notePrayerComplete(prayer.id)
+        useStore.getState().setCompletedAt(Date.now())
         celebrateStreak()
         setPlaying(false)
         setPraying(false)
@@ -461,7 +462,7 @@ export default function PrayerPage() {
           {playing && active != null && phrases[active] ? phrases[active].t : ''}
         </span>
 
-        <div className="praying-now" title={t('prayer.prayingNowTitle')}>
+        <div className={`praying-now ${prayerCounts[prayer.id] ? 'together' : ''}`} title={t('prayer.prayingNowTitle')}>
           <span className="pulse-dot" />
           <b>{prayerCounts[prayer.id] || 0}</b>{' '}
           <span className="praying-now-rest">

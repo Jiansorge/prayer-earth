@@ -39,6 +39,22 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url)
   if (url.origin !== location.origin) return
 
+  // Pages (navigation) are network-first: a fresh deploy reaches users on
+  // their next load, with the cached page as an offline fallback. Everything
+  // else (hashed JS/CSS, audio, images) stays cache-first for speed + offline.
+  if (req.mode === 'navigate') {
+    e.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone()
+          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {})
+          return res
+        })
+        .catch(() => caches.match(req).then((hit) => hit || caches.match('/index.html')))
+    )
+    return
+  }
+
   e.respondWith(
     caches.match(req).then(
       (hit) =>

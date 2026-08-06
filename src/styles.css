@@ -3032,6 +3032,24 @@ html {
   -webkit-text-fill-color: transparent;
 }
 
+/* On the bright Dawn theme the light gradient headline would wash out, so give
+   it a deeper gradient + soft shadow so it reads over the luminous sky. */
+.app[data-theme='dawn'] .home-hero h1,
+.app[data-theme='dawn'] .page-title {
+  background: linear-gradient(120deg, #c98a3a, #f0d48a 45%, #6f8fd8);
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 1px 14px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(60, 70, 100, 0.25);
+}
+.app[data-theme='dawn'] .subtitle {
+  color: rgba(40, 48, 78, 0.85);
+}
+.app[data-theme='dawn'] .view {
+  /* a whisper of pale light at the top so the headline area separates from the
+     sun without darkening the bright, airy feel */
+  background: linear-gradient(180deg, rgba(255, 250, 235, 0.28), rgba(255, 250, 235, 0) 46%);
+}
+
+
 /* a little more breathing room at the bottom of modals */
 .picker-sheet,
 .settings-sheet,
@@ -3153,4 +3171,59 @@ html {
 }
 @media (prefers-reduced-motion: reduce) {
   .sp--sway { animation: none; opacity: 0.45; }
+}
+
+/* ==== prayer-completion toast ==== */
+.celebrate-toast {
+  position: fixed;
+  top: calc(14px + env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(30, 42, 82, 0.92), rgba(14, 20, 46, 0.94));
+  border: 1px solid rgba(232, 196, 122, 0.45);
+  color: #f6e3b0;
+  font-size: 13.5px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4), 0 0 24px rgba(232, 196, 122, 0.25);
+  animation: toastIn 0.35s var(--ease) both, toastOut 0.5s ease 2.15s both;
+  pointer-events: none;
+  max-width: min(90vw, 420px);
+  text-align: center;
+}
+.celebrate-spark {
+  display: inline-block;
+  animation: sparklePop 1.6s ease-in-out infinite;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, -12px) scale(0.94); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+@keyframes toastOut {
+  to { opacity: 0; transform: translate(-50%, -8px) scale(0.96); }
+}
+@keyframes sparklePop {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.25) rotate(12deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .celebrate-toast, .celebrate-spark { animation: none; }
+}
+
+/* a warm glow when people are praying this prayer with you right now */
+.praying-now.together {
+  color: var(--gold-soft);
+}
+.praying-now.together .pulse-dot {
+  background: var(--gold);
+  box-shadow: 0 0 12px var(--gold);
+  animation: breathe 1.6s ease-in-out infinite;
+}
+.praying-now.together b {
+  color: var(--gold);
+  text-shadow: 0 0 12px rgba(232, 196, 122, 0.5);
 }

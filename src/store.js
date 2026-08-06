@@ -50,6 +50,9 @@ export const useStore = create(
       // the phrase index the playing prayer is on, so the highlight survives
       // leaving and returning to the prayer page
       currentPhrase: null,
+      // last time a full prayer completed on this device (ms), drives the
+      // gentle "your prayer is carried" toast
+      completedAt: 0,
       // seconds of the current playback, kept in the store so it keeps ticking
       // while the prayer page is not on screen
       elapsed: 0,
@@ -138,6 +141,7 @@ export const useStore = create(
       setPlayingPrayerId: (playingPrayerId) => set({ playingPrayerId }),
       setElapsed: (elapsed) => set({ elapsed }),
       setCurrentPhrase: (currentPhrase) => set({ currentPhrase }),
+      setCompletedAt: (completedAt) => set({ completedAt }),
       setLoopOn: (loopOn) => set({ loopOn }),
       setVoiceURI: (voiceURI) => set({ voiceURI }),
       setPrayerVoice: (prayerId, voiceId) =>
