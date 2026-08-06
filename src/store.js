@@ -308,15 +308,7 @@ export const useStore = create(
       getGlow: () => {
         const s = get()
         const prayers = s.getPrayerCount()
-        const honest = Math.pow(prayers / 1_000_000, 0.4)
-        // On the shared world's very first day, hold a small floor so a
-        // brand-new launch doesn't read as dead; after that it is fully honest.
-        // Prefer the server's birthday; fall back to this device's first run
-        // when the engine doesn't report one (e.g. Cloudflare, or offline).
-        const now = Date.now()
-        const birth = s.startedAt || s.firstSeen || now
-        const floor = now - birth < 86400000 ? 0.04 : 0
-        return Math.min(1, Math.max(honest, floor))
+        return Math.min(1, Math.pow(prayers / 1_000_000, 0.4))
       },
       getGlowPercent: () => Math.round(get().getGlow() * 100),
       getEarthBrightness: () => {

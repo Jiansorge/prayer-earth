@@ -993,7 +993,10 @@ export class EarthScene {
   buildLights() {
     const glow = this.buildLightGlowTexture()
     this.lightKeys = buildLightKeys()
-    const r = 1.435
+    // Float clearly above the surface so a light's glow is never clipped by the
+    // sphere as it rounds the limb — it fades out smoothly instead of losing a
+    // piece. Depth-test is on, so far-side lights are still hidden by the globe.
+    const r = 1.5
     const pool = []
     const MAX = 256
     for (let i = 0; i < MAX; i++) {
@@ -1344,7 +1347,9 @@ export class EarthScene {
           continue
         }
         spr.visible = true
-        const limbFade = Math.max(0, Math.min(1, (facing + 0.12) / 0.3))
+        // soft, early fade so the glow dims out smoothly as it rounds the limb
+        // (never a hard clip against the planet's edge)
+        const limbFade = Math.max(0, Math.min(1, (facing + 0.2) / 0.5))
         spr.material.opacity = spr.userData.baseOpacity * limbFade
       }
     }

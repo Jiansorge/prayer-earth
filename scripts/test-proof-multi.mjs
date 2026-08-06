@@ -125,8 +125,28 @@ const c3 = await (async () => {
 })()
 const E = c1
 const A = c2 // second tab (also named A2 helper below)
-const S = () => E.evaljs(`(() => { const s = window.__store; if (!s) return null; const g = s.getState(); return { view: g.view, playing: g.playing, paused: g.paused, praying: g.praying, playingPrayerId: g.playingPrayerId, elapsed: g.elapsed, spiritId: g.spiritId, prayerId: g.prayerId, profile: g.profile, locale: g.locale } })()`)
-const job = () => E.evaljs(`(() => { const sp = window.__speech; return sp ? { has: !!sp.job, paused: !!(sp.job && sp.job.paused) } : null })()`)
+const S = async () => {
+  for (let i = 0; i < 8; i++) {
+    const s = await E.evaljs(`(() => { const s = window.__store; if (!s) return null; const g = s.getState(); return { view: g.view, playing: g.playing, paused: g.paused, praying: g.praying, playingPrayerId: g.playingPrayerId, elapsed: g.elapsed, spiritId: g.spiritId, prayerId: g.prayerId, profile: g.profile, locale: g.locale } })()`)
+    if (s) return s
+    await sleep(200)
+  }
+  return { view: null, playing: false, paused: false, praying: false, playingPrayerId: null, elapsed: 0, spiritId: null, prayerId: null, profile: {}, locale: null }
+}
+process.on('uncaughtException', (e) => {
+  console.log('SUITE CRASHED (flaky harness):', e?.message)
+  console.log('PROOF #2 RESULT: crashed')
+  try { edge.kill() } catch {}
+  process.exit(1)
+})
+const job = async () => {
+  for (let i = 0; i < 8; i++) {
+    const j = await E.evaljs(`(() => { const sp = window.__speech; return sp ? { has: !!sp.job, paused: !!(sp.job && sp.job.paused) } : null })()`)
+    if (j) return j
+    await sleep(200)
+  }
+  return { has: false, paused: false }
+}
 const click = async (sel) => E.evaljs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return false; el.click(); return true })()`)
 const clickNav = async (label) => E.evaljs(`(() => { const b = Array.from(document.querySelectorAll('nav button')).find(x => x.getAttribute('aria-label') === ${JSON.stringify(label)} && !x.classList.contains('nav-play') && !x.classList.contains('nav-stop')); if (!b) return false; b.click(); return true })()`)
 
@@ -150,7 +170,7 @@ await click('.ctrl-btn.play')
 await c1.waitFor(`window.__store.getState().playing === true`, 8000)
 await sleep(2200)
 const beforeReload = await S()
-ok('H1 playing before reload', beforeReload.playing && beforeReload.elapsed >= 1, `elapsed=${beforeReload.elapsed}`)
+ok('H1 playing before reload', !!beforeReload && beforeReload.playing && beforeReload.elapsed >= 1, `elapsed=${beforeReload?.elapsed}`)
 const saved = await E.evaljs(`localStorage.getItem('prayer-earth-v1')`)
 ok('H2 state persisted to localStorage', !!saved, `len=${saved ? saved.length : 0}`)
 await c1.send('Page.reload', { ignoreCache: true })
