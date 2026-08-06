@@ -3,6 +3,7 @@ import { useStore } from '../store.js'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
 import { useT } from '../i18n.js'
 import { stopPlayback } from '../playback.js'
+import Sparkles from './Sparkles.jsx'
 
 // A quiet sheet that lists every prayer of a chosen tradition, so a person
 // can see and choose any of them instead of always landing on the first one.
@@ -75,6 +76,7 @@ export default function PrayerPicker() {
   return (
     <div className="picker-overlay" onClick={close} role="dialog" aria-modal="true">
       <div className="picker-sheet" onClick={(e) => e.stopPropagation()} tabIndex={-1} ref={sheetRef}>
+        <Sparkles count={10} />
         <div className="picker-head">
           <span className="picker-emoji">{spirit.emoji}</span>
           <div>

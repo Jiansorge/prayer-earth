@@ -49,24 +49,24 @@ const FRAG = /* glsl */ `
     );
   }
 
+  // The textures are uploaded as sRGB, so sampling yields linear (dark)
+  // values; lift them back to display space for the few places the map is
+  // sampled.
+  vec3 srgb(vec3 c) { return pow(max(c, vec3(0.0)), vec3(1.0 / 2.2)); }
+
   void main() {
     vec3 n = normalize(vNormal);
     vec3 sp = normalize(vPos);
 
     vec2 uv = equirect(sp);
 
-    // A clean, graphic world map: solid neutral-dark landmasses on a deep blue
-    // ocean. Land is told apart by being greener than the blue water, so every
-    // continent shows regardless of how dark its texture is.
-    // A clean, graphic world map: solid neutral-dark landmasses on deep water.
-    // Land comes from a binary mask classified once in JS, so every continent
-    // shows cleanly with no underwater or speckled boundaries.
+    // The living Earth: deep luminous ocean and quiet land that read clearly
+    // from the first frame, lit by the sun terminator. The world's prayer
+    // gradually brightens the surface forever.
     float landMask = texture2D(uMaskTex, uv).r;
 
-    // the world's prayer accumulates forever, the ocean and land slowly
-    // brighten with it, a permanent shift in the living map
-    vec3 oceanC = vec3(0.006, 0.02, 0.05) + vec3(0.004, 0.012, 0.02) * uTier;
-    vec3 landC = vec3(0.05, 0.056, 0.054) + vec3(0.012, 0.014, 0.013) * uTier;
+    vec3 oceanC = vec3(0.05, 0.16, 0.30) + vec3(0.03, 0.07, 0.10) * uTier;
+    vec3 landC = vec3(0.22, 0.26, 0.20) + vec3(0.08, 0.09, 0.07) * uTier;
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -104,9 +104,9 @@ const FRAG = /* glsl */ `
     vec3 dawn = vec3(1.0, 0.55, 0.3) * term * 0.08;
     col += dawn;
 
-    // soft vignette at the limb
-    float limb = smoothstep(0.0, 0.6, dot(n, vec3(0.0, 0.0, 1.0)));
-    col *= 0.5 + 0.5 * limb;
+    // soft limb fade so the globe's edge always reads as a clean curve
+    float limb = smoothstep(-0.08, 0.6, dot(n, vec3(0.0, 0.0, 1.0)));
+    col *= 0.68 + 0.32 * limb;
 
     gl_FragColor = vec4(col, 1.0);
   }
@@ -215,8 +215,7 @@ const ATMO_FRAG = /* glsl */ `
 `
 
 // A wide, soft outer halo so the globe feels magical and alive.
-const ETHEREAL_FRAG = /* glsl */ `
-  uniform float uGlow;
+const ETHEREAL_FRAG = /* glsl */ `  uniform float uGlow;
   uniform float uTime;
   uniform float uSurge;
   varying vec3 vNormal;
@@ -233,6 +232,37 @@ const ETHEREAL_FRAG = /* glsl */ `
     float waves = pow(0.5 + 0.5 * sin(rim * 40.0 - uTime * 3.2 + uGlow * 5.0), 3.0) * uSurge;
     float alpha = (f * (0.08 + 0.12 * uGlow) + waves * 0.08) * breathe;
     gl_FragColor = vec4(col + vec3(0.2, 0.35, 0.6) * waves * 0.2, alpha);
+  }
+`
+
+// The golden aura sparks: each carries its own phase so the whole ring
+// twinkles in and out gently, always alive around the Earth.
+const SPARK_VERT = /* glsl */ `
+  attribute float aPhase;
+  attribute vec3 aColor;
+  uniform float uTime;
+  varying vec3 vColor;
+  varying float vA;
+  void main() {
+    vColor = aColor;
+    float tw = 0.5 + 0.5 * sin(uTime * 1.4 + aPhase * 6.2831853);
+    vA = 0.4 + 0.6 * tw;
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = 3.0;
+    gl_Position = projectionMatrix * mv;
+  }
+`
+
+const SPARK_FRAG = /* glsl */ `
+  uniform float uOpacity;
+  varying vec3 vColor;
+  varying float vA;
+  void main() {
+    vec2 c = gl_PointCoord - 0.5;
+    float d = length(c);
+    float a = smoothstep(0.5, 0.15, d);
+    if (a <= 0.001) discard;
+    gl_FragColor = vec4(vColor, a * vA * uOpacity);
   }
 `
 
@@ -563,7 +593,9 @@ export class EarthScene {
     return spr
   }
 
-  // Little sparks that shimmer out from the globe as collective prayer surges.
+// Little sparks that shimmer out from the globe as collective prayer surges.
+// Each one carries its own phase so the aura twinkles in and out gently,
+// always alive around the Earth.
   buildSparks() {
     const N = 200
     const pos = new Float32Array(N * 3)
@@ -591,11 +623,15 @@ export class EarthScene {
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
     g.setAttribute('color', new THREE.BufferAttribute(col, 3))
-    const m = new THREE.PointsMaterial({
-      size: 0.02,
-      vertexColors: true,
+    g.setAttribute('aPhase', new THREE.BufferAttribute(this.sparkPhase, 1))
+    const m = new THREE.ShaderMaterial({
+      vertexShader: SPARK_VERT,
+      fragmentShader: SPARK_FRAG,
+      uniforms: {
+        uTime: { value: 0 },
+        uOpacity: { value: 0 }
+      },
       transparent: true,
-      opacity: 0,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       depthTest: false
@@ -1204,21 +1240,23 @@ export class EarthScene {
       if (this.ether.material.uniforms.uSurge) this.ether.material.uniforms.uSurge.value = this.surge || 0
     }
 
-    // sparks shimmer out from the globe when collective prayer surges
+    // a gentle golden aura: sparks always twinkle and drift around the globe,
+    // blooming outward when collective prayer surges
     if (this.sparkPts) {
       const s = this.surge || 0
-      this.sparkMat.opacity = Math.min(0.9, s * 1.4)
-      this.sparkMat.size = 0.02 + 0.012 * this.corona
-      if (s > 0.02) {
-        const N = this.sparkPhase.length
-        for (let i = 0; i < N; i++) {
-          const rad = 1.47 + Math.sin(t * 1.7 + this.sparkPhase[i]) * 0.35 * s
-          this.sparkPos[i * 3] = this.sparkDir[i * 3] * rad
-          this.sparkPos[i * 3 + 1] = this.sparkDir[i * 3 + 1] * rad
-          this.sparkPos[i * 3 + 2] = this.sparkDir[i * 3 + 2] * rad
-        }
-        this.sparkPos.needsUpdate = true
+      const u = this.sparkMat.uniforms
+      u.uTime.value = t
+      u.uOpacity.value =
+        0.42 + 0.2 * Math.sin(t * 1.1) + 0.12 * Math.sin(t * 2.3 + 1.2) + Math.min(0.9, s * 1.4)
+      const N = this.sparkPhase.length
+      for (let i = 0; i < N; i++) {
+        const ph = this.sparkPhase[i]
+        const rad = 1.47 + 0.1 * Math.sin(t * 0.8 + ph * 2.0) + 0.4 * Math.sin(t * 1.7 + ph) * s
+        this.sparkPos[i * 3] = this.sparkDir[i * 3] * rad
+        this.sparkPos[i * 3 + 1] = this.sparkDir[i * 3 + 1] * rad
+        this.sparkPos[i * 3 + 2] = this.sparkDir[i * 3 + 2] * rad
       }
+      this.sparkPos.needsUpdate = true
     }
 
     // the halo blooms around the whole world at high ladder rungs

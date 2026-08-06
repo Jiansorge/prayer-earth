@@ -253,7 +253,7 @@ export default function App() {
       </div>
 
       <div className="sparkles" aria-hidden="true">
-        {[...Array(16)].map((_, i) => (
+        {[...Array(24)].map((_, i) => (
           <span
             key={i}
             className="sp"

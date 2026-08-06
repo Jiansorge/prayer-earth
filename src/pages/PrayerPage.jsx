@@ -6,6 +6,7 @@ import { ambient } from '../audio/ambience.js'
 import { syncClient } from '../sync/client.js'
 import { useT } from '../i18n.js'
 import PrayerStats from '../components/PrayerStats.jsx'
+import Sparkles from '../components/Sparkles.jsx'
 import { stopPlayback } from '../playback.js'
 
 const fmt = (s) => {
@@ -359,6 +360,7 @@ export default function PrayerPage() {
 
   return (
     <div className="view prayer-page">
+      <Sparkles count={14} />
       <div className="back-row">
         <button onClick={closePrayer} aria-label={t('prayer.back')}>
           ←

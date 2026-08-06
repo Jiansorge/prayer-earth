@@ -3,6 +3,7 @@ import { useStore } from '../store.js'
 import { SPIRITUALITIES } from '../data/prayers.js'
 import WorldMeter from '../components/WorldMeter.jsx'
 import WorldFeed from '../components/WorldFeed.jsx'
+import Sparkles from '../components/Sparkles.jsx'
 import { useT } from '../i18n.js'
 
 const fmtLife = (s) => {
@@ -41,6 +42,7 @@ export default function HomePage() {
 
   return (
     <div className="view fade-in">
+      <Sparkles count={18} />
       <div className="row" style={{ marginTop: 4 }}>
         <div>
           <h1 className="page-title">
