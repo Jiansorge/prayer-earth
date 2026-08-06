@@ -7,7 +7,12 @@ import { gridKey } from '../shared/geo.js'
 import { SyncEngine, CfEngine } from './engine.js'
 import { C_PRESENCE, C_SYNC } from './protocol.js'
 
-const PING_MS = 5000
+// How often presence is re-sent. 30 s keeps the DO's live counts fresh while
+// cutting presence traffic (and Durable Object cost) ~6× vs 5 s. The engine's
+// PRESENCE_TTL_MS (60 s) is comfortably above this, and CfEngine's 20 s
+// keepalive pings refresh the session too, so a slightly delayed presence never
+// causes the session to be swept.
+const PING_MS = 30000
 const RETRY_MS = 10000
 
 // A gentle crowd for when the shared server can't be reached, so the world
