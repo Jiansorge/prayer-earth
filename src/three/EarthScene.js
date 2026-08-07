@@ -1225,9 +1225,9 @@ export class EarthScene {
       const warm = Math.random()
       // a handful of bright beacons, mostly quiet white-blue stardust
       const bright = Math.random()
-      size[i] = bright > 0.92 ? 0.55 : bright > 0.6 ? 0.3 : 0.16
+      size[i] = bright > 0.9 ? 0.85 : bright > 0.55 ? 0.5 : 0.3
       col.set(
-        [warm > 0.72 ? 0.85 : 0.75, warm > 0.72 ? 0.9 : 0.85, 1],
+        [warm > 0.72 ? 0.9 : 0.82, warm > 0.72 ? 0.94 : 0.9, 1],
         i * 3
       )
     }
@@ -1251,7 +1251,7 @@ export class EarthScene {
         uniform float uDpr;
         void main() {
           vColor = color;
-          gl_PointSize = aSize * 30.0 * uDpr;
+          gl_PointSize = aSize * 46.0 * uDpr;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }`,
       fragmentShader: `varying vec3 vColor;
@@ -1646,7 +1646,7 @@ export class EarthScene {
       }
     }
     if (this.halo) this.halo.material.uniforms.uGlow.value = this.glow
-    if (this.stars) this.starMat.uniforms.uOpacity.value = 0.62 + 0.25 * Math.sin(t * 0.7)
+    if (this.stars) this.starMat.uniforms.uOpacity.value = 0.82 + 0.18 * Math.sin(t * 0.7)
 
     // nebula clouds drift slowly and breathe, keeping the space behind the
     // Earth deep and alive
