@@ -1077,6 +1077,9 @@ html[dir='rtl'] .chooser-arrow.right {
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
   box-shadow: 0 8px 26px rgba(232, 196, 122, 0.4);
   transition: transform 0.3s var(--ease);
+  width: 52px;
+  height: 52px;
+  font-size: 19px;
 }
 
 .ctrl-btn:hover,
@@ -3477,3 +3480,21 @@ select:focus-visible {
   font-weight: 600;
 }
 .keys-val { color: var(--ink); font-size: 14px; }
+/* a11y: skip-to-content link + reduced-motion safety */
+.skip-link {
+  position: fixed;
+  top: -60px;
+  left: 12px;
+  z-index: 200;
+  background: var(--gold-soft);
+  color: #0d2214;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+.skip-link:focus { top: 12px; }
+@media (prefers-reduced-motion: reduce) {
+  .skip-link { transition: none; }
+}

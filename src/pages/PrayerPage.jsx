@@ -528,7 +528,7 @@ export default function PrayerPage() {
           </div>
         )}
 
-        <div className="prayer-title">{prayer.title}</div>
+        <h1 className="prayer-title">{prayer.title}</h1>
         <div className="prayer-sub">
           <span className="prayer-lang-badge">
             {String(prayer.langLabel || '').split(' · ').slice(0, 2).join(' · ')}

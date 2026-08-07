@@ -80,7 +80,7 @@ class Boundary extends Component {
         </div>
       )
     }
-    return this.props.children
+    return <main id="main" role="main">{this.props.children}</main>
   }
 }
 
@@ -234,6 +234,8 @@ export default function App() {
   }, [view, spiritId, prayerId, legalPage])
 
   return (
+    <>
+    <a href="#main" className="skip-link">{t('a11y.skip')}</a>
     <div className="app" data-scene={view === 'home' && theme === 'nature' ? scene : undefined} data-theme={theme}>
       <div className="sky" />
       {view === 'home' && <Backdrop />}
@@ -344,5 +346,6 @@ export default function App() {
       <Onboarding />
       <PrayerPicker />
     </div>
+    </>
   )
 }
