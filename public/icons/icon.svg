@@ -1,33 +1,67 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Joining Palms">
   <defs>
-    <radialGradient id="bg" cx="50%" cy="38%" r="80%">
-      <stop offset="0%" stop-color="#27428c"/>
-      <stop offset="55%" stop-color="#0e1a45"/>
-      <stop offset="100%" stop-color="#060a1c"/>
+    <!-- deep velvety cosmic space, indigo toward the top -->
+    <radialGradient id="bg" cx="50%" cy="40%" r="85%">
+      <stop offset="0%" stop-color="#241458"/>
+      <stop offset="45%" stop-color="#120a34"/>
+      <stop offset="100%" stop-color="#060313"/>
     </radialGradient>
+    <!-- nebula haze -->
+    <radialGradient id="nebA" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4a7dff" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#4a7dff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="nebB" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8a4dff" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#8a4dff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="nebC" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#27c3b8" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#27c3b8" stop-opacity="0"/>
+    </radialGradient>
+    <!-- the hands: not flesh, but luminescent sapphire energy -->
     <linearGradient id="hand" x1="0" y1="1" x2="0" y2="0">
-      <stop offset="0%" stop-color="#9cc4ff"/>
-      <stop offset="60%" stop-color="#cfe4ff"/>
-      <stop offset="100%" stop-color="#f2f9ff"/>
+      <stop offset="0%" stop-color="#4d8bff"/>
+      <stop offset="50%" stop-color="#9ccbff"/>
+      <stop offset="100%" stop-color="#ffffff"/>
     </linearGradient>
-    <radialGradient id="pressed" cx="50%" cy="60%" r="45%">
+    <!-- divine light erupting where the palms touch -->
+    <radialGradient id="burst" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="60%" stop-color="#dcebff"/>
-      <stop offset="100%" stop-color="rgba(220,235,255,0)"/>
+      <stop offset="35%" stop-color="#ffe9b0"/>
+      <stop offset="70%" stop-color="#9fd0ff" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#9fd0ff" stop-opacity="0"/>
     </radialGradient>
     <filter id="soft" x="-80%" y="-80%" width="260%" height="260%">
-      <feGaussianBlur stdDeviation="13"/>
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6"/>
     </filter>
     <filter id="spark" x="-120%" y="-120%" width="340%" height="340%">
-      <feGaussianBlur stdDeviation="3.5"/>
+      <feGaussianBlur stdDeviation="3"/>
     </filter>
   </defs>
 
   <rect width="512" height="512" fill="url(#bg)"/>
-  <ellipse cx="256" cy="300" rx="190" ry="158" fill="#9cc4ff" opacity="0.3" filter="url(#soft)"/>
 
-  <!-- left hand: triangular pressed-hands — wide wrists at the bottom, four
-       long fingers converging to a point at the top, like the prayer emoji -->
+  <!-- distant nebulae + astral dust -->
+  <ellipse cx="150" cy="120" rx="150" ry="110" fill="url(#nebA)"/>
+  <ellipse cx="380" cy="150" rx="140" ry="120" fill="url(#nebB)"/>
+  <ellipse cx="300" cy="430" rx="170" ry="90" fill="url(#nebC)"/>
+
+  <!-- sacred geometry: a quiet mandala halo around the joined hands -->
+  <g fill="none" stroke="#ffedb0" stroke-width="1.6" opacity="0.28">
+    <circle cx="256" cy="330" r="118"/>
+    <circle cx="256" cy="330" r="148" stroke-width="1"/>
+    <circle cx="256" cy="330" r="178" stroke-width="0.8" stroke-dasharray="3 7"/>
+  </g>
+
+  <!-- soft azure radiance behind the hands -->
+  <ellipse cx="256" cy="360" rx="150" ry="170" fill="#5aa0ff" opacity="0.32" filter="url(#soft)"/>
+
+  <!-- left hand: wide wrist, four long fingers converging to a point, palms
+       pressed together — the prayer gesture, now made of pure light -->
   <g id="handL" fill="url(#hand)">
     <path d="M 132 470 C 130 458, 134 440, 146 414 C 156 392, 166 374, 174 360 C 190 348, 210 348, 224 360 C 234 374, 244 396, 252 420 C 256 436, 258 452, 258 466 C 258 474, 250 478, 238 478 C 206 480, 156 476, 132 470 Z"/>
     <path d="M 156 358 C 148 310, 150 250, 158 218 C 163 202, 173 206, 175 216 C 178 238, 177 300, 176 358 Z"/>
@@ -38,15 +72,45 @@
   </g>
   <use href="#handL" transform="translate(512 0) scale(-1 1)"/>
 
-  <!-- bright light where the two palms meet (the pressed centre) -->
-  <ellipse cx="256" cy="360" rx="22" ry="86" fill="url(#pressed)" opacity="0.85"/>
-  <ellipse cx="256" cy="470" rx="16" ry="26" fill="#eaf4ff" opacity="0.5" filter="url(#soft)"/>
+  <!-- divine light bursting from the point where the palms touch -->
+  <circle cx="256" cy="330" r="140" fill="url(#burst)"/>
+  <circle cx="256" cy="330" r="28" fill="#ffffff"/>
+  <circle cx="256" cy="330" r="50" fill="#fff6d8" opacity="0.85" filter="url(#glow)"/>
+  <g fill="none" stroke="#fff7dd" stroke-width="2.4" opacity="0.9" filter="url(#glow)">
+    <path d="M 256 300 C 252 278, 250 260, 256 238" stroke-linecap="round"/>
+    <path d="M 256 300 C 260 278, 262 260, 256 238" stroke-linecap="round"/>
+    <path d="M 220 318 C 240 312, 250 308, 256 306" stroke-linecap="round"/>
+    <path d="M 292 318 C 272 312, 262 308, 256 306" stroke-linecap="round"/>
+  </g>
+  <!-- radiant star at the touch -->
+  <path d="M 256 280 l 7 17 17 7 -17 7 -7 17 -7 -17 -17 -7 17 -7 Z" fill="#ffffff" filter="url(#glow)"/>
 
-  <!-- soft outer glow around both hands -->
-  <use href="#handL" filter="url(#soft)" opacity="0.95"/>
-  <use href="#handL" filter="url(#soft)" opacity="0.9" transform="translate(512 0) scale(-1 1)"/>
+  <!-- light ribbons radiating upward (fractal divine energy) -->
+  <g stroke="url(#hand)" stroke-width="5" stroke-linecap="round" opacity="0.8" filter="url(#glow)">
+    <path d="M 256 236 C 240 196, 238 168, 250 132"/>
+    <path d="M 256 236 C 272 196, 274 168, 262 132"/>
+  </g>
+  <g stroke="#cfe6ff" stroke-width="3" stroke-linecap="round" opacity="0.65" filter="url(#glow)">
+    <path d="M 256 240 C 222 210, 204 190, 196 156"/>
+    <path d="M 256 240 C 290 210, 308 190, 316 156"/>
+  </g>
 
-  <!-- magic: rising motes -->
+  <!-- galaxies + stardust swirling in the palms -->
+  <g fill="#eaf4ff" filter="url(#glow)">
+    <circle cx="238" cy="318" r="2.6"/>
+    <circle cx="246" cy="312" r="1.8"/>
+    <circle cx="230" cy="326" r="1.6"/>
+    <circle cx="274" cy="318" r="2.6"/>
+    <circle cx="266" cy="312" r="1.8"/>
+    <circle cx="282" cy="326" r="1.6"/>
+  </g>
+  <g fill="#9cc9ff">
+    <circle cx="228" cy="344" r="1.5"/>
+    <circle cx="284" cy="344" r="1.5"/>
+    <circle cx="256" cy="356" r="1.5"/>
+  </g>
+
+  <!-- rising motes across the void -->
   <g fill="#eaf4ff">
     <circle cx="200" cy="116" r="5"/>
     <circle cx="256" cy="82" r="6"/>

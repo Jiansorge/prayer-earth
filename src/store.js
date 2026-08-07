@@ -38,6 +38,7 @@ export const useStore = create(
     (set, get) => ({
       view: 'home',
       legalPage: null,
+      localeReady: 0,
       spiritId: null,
       prayerId: null,
       praying: false,
@@ -163,6 +164,7 @@ export const useStore = create(
       setAmbienceLevel: (ambienceLevel) => set({ ambienceLevel }),
       setVolume: (volume) => set({ volume }),
       setLocale: (locale) => set({ locale }),
+      bumpLocaleReady: () => set((s) => ({ localeReady: s.localeReady + 1 })),
       setTheme: (theme) => set({ theme }),
 
       // ---- sync ----

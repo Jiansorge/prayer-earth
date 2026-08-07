@@ -1152,6 +1152,37 @@ html[dir='rtl'] .chooser-arrow.right {
   font-size: 26px;
 }
 
+/* pressing play gives instant feedback: a pulsing glow + spinner while the
+   audio engine warms up, so it never feels like a dead tap */
+.ctrl-btn.play.starting {
+  animation: playStarting 1s ease-in-out infinite;
+  cursor: wait;
+}
+.ctrl-btn.play:disabled {
+  cursor: wait;
+}
+@keyframes playStarting {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 18px rgba(232, 196, 122, 0.45); }
+  50% { transform: scale(1.06); box-shadow: 0 0 34px rgba(232, 196, 122, 0.8); }
+}
+.play-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(13, 34, 20, 0.3);
+  border-top-color: #0d2214;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ctrl-btn.play.starting,
+  .play-spinner {
+    animation: none;
+  }
+}
+
 .ctrl-btn.stop {
   width: 52px;
   height: 52px;

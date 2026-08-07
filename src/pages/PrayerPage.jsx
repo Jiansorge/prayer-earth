@@ -60,6 +60,9 @@ export default function PrayerPage() {
   const [voiceNote, setVoiceNote] = useState(false)
   const muted = useStore((s) => s.muted)
   const [tuning, setTuning] = useState(false)
+  const [starting, setStarting] = useState(false)
+  const startAt = useRef(0)
+  const startingRef = useRef(false)
   const [celebration, setCelebration] = useState(0)
   const celebrationTimer = useRef(null)
   const prayer = spirit ? spirit.prayers.find((p) => p.id === prayerId) : null
@@ -80,13 +83,14 @@ export default function PrayerPage() {
   }, [spirit, prayer])
 
   // One prayer at a time per browser: another tab starting playback pauses us.
-  // BroadcastChannel also delivers to this same tab, so ignore our own starts.
-  const localStart = useRef(0)
+  // BroadcastChannel also delivers to this same tab, so each message carries its
+  // sender's tab id and we ignore our own.
+  const TAB_ID = (window.__PE_TAB = window.__PE_TAB || Math.random().toString(36).slice(2))
   useEffect(() => {
     const ch = new BroadcastChannel('prayer-earth')
     ch.onmessage = (e) => {
-      if (e.data !== 'play') return
-      if (Date.now() - (localStart.current || 0) < 1500) return
+      const m = e.data
+      if (!m || m.type !== 'play' || m.from === TAB_ID) return
       if (useStore.getState().playing && !useStore.getState().paused) {
         togglePlay()
       }
@@ -149,8 +153,10 @@ export default function PrayerPage() {
   }, [prayer?.id])
 
   const startJob = (fromIndex = 0) => {
-    localStart.current = Date.now()
     stopJob()
+    startAt.current = Date.now()
+    startingRef.current = true
+    setStarting(true)
     setActive(fromIndex)
     setPaused(false)
     setPlaying(true)
@@ -164,7 +170,7 @@ export default function PrayerPage() {
     ambient.ring(0.6)
     if (fromIndex === 0) useStore.getState().setElapsed(0)
     try {
-      new BroadcastChannel('prayer-earth').postMessage('play')
+      new BroadcastChannel('prayer-earth').postMessage({ type: 'play', from: TAB_ID })
     } catch {}
 
     const opts = {
@@ -176,6 +182,19 @@ export default function PrayerPage() {
       loop: loopOn,
       gapMs: prayer.loop ? 250 : 700,
       onPhrase: (i) => {
+        // First phrase engaging means audio is actually starting — drop the
+        // "starting…" spinner, but never before it has been visible ~350ms so
+        // the tap always gives instant feedback even on fast devices.
+        const waited = Date.now() - startAt.current
+        if (waited >= 350) {
+          startingRef.current = false
+          setStarting(false)
+        } else {
+          setTimeout(() => {
+            startingRef.current = false
+            setStarting(false)
+          }, 350 - waited)
+        }
         // Track the phrase globally so returning to this page can rehighlight.
         useStore.getState().setCurrentPhrase(i)
         // Only highlight lines when this prayer is the one actually on screen.
@@ -326,6 +345,8 @@ export default function PrayerPage() {
 
   const stopJob = () => {
     speech.stop()
+    startingRef.current = false
+    setStarting(false)
     setPlaying(false)
     setPaused(false)
     setPraying(false)
@@ -343,18 +364,20 @@ export default function PrayerPage() {
   const elapsed = useStore((s) => s.elapsed)
 
   const togglePlay = () => {
-    if (!playing) {
+    if (startingRef.current) return
+    const live = useStore.getState()
+    if (!live.playing) {
       startJob()
       return
     }
-    const cur = useStore.getState()
+    const cur = live
     if (cur.prayerId !== cur.playingPrayerId) {
       // A different prayer is playing in the background; starting this view
       // switches to it.
       startJob()
       return
     }
-    if (!paused) {
+    if (!cur.paused) {
       speech.pause()
       setPaused(true)
       setPraying(false)
@@ -609,11 +632,12 @@ export default function PrayerPage() {
           {'⟳\uFE0E'}
         </button>
         <button
-          className="ctrl-btn play"
+          className={`ctrl-btn play ${starting ? 'starting' : ''}`}
           onClick={togglePlay}
-          aria-label={playing ? t('prayer.pause') : t('prayer.pray')}
+          aria-label={starting ? t('prayer.loading') : playing ? t('prayer.pause') : t('prayer.pray')}
+          disabled={starting}
         >
-          {playing && !paused ? '❚❚' : '▶\uFE0E'}
+          {starting ? <span className="play-spinner" aria-hidden="true" /> : (playing && !paused ? '❚❚' : '▶\uFE0E')}
         </button>
         <button
           className="ctrl-btn stop"

@@ -397,14 +397,18 @@ export class EarthScene {
     this.earthGroupRotation = 1.25
 
     const loader = new THREE.TextureLoader()
-    this.maskTex = this.buildLandMaskCanvas()
+    // The land mask is only read by the full Earth shader. The prayer backdrop
+    // classifies land from the day texture directly, so it never needs the
+    // mask — and building it is a heavy main-thread pixel pass that froze slow
+    // devices the moment the prayer view opened. Skip it entirely here.
+    if (!this.backdrop) this.maskTex = this.buildLandMaskCanvas()
     // The prayer backdrop only reads luminance from the map (land/coast
     // classification), so it gets a half-res texture — 70 KB instead of 501 KB
     // on every prayer view. The full-resolution map stays on the Earth view.
     const dayTex = loader.load(
       this.backdrop ? dayUrlSmall : dayUrl,
       (tex) => {
-        this.processLandMask(tex.image)
+        if (!this.backdrop) this.processLandMask(tex.image)
         tex.image = this.makeSeamless(tex.image)
         tex.needsUpdate = true
         this._dayLoaded = true
@@ -856,8 +860,11 @@ export class EarthScene {
   // A clean binary land/ocean mask, classified once in JS from the real map
   // (where dark forests and ice read as land even though they look bluish).
   buildLandMaskCanvas() {
-    const W = 2048
-    const H = 1024
+    // Low-power devices get a half-res mask — a fraction of the pixel work for
+    // the same coastline, since the mask is upsampled by the GPU anyway.
+    const S = this.lowPower ? 0.5 : 1
+    const W = Math.round(2048 * S)
+    const H = Math.round(1024 * S)
     const c = document.createElement('canvas')
     c.width = W
     c.height = H
