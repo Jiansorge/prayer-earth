@@ -95,6 +95,8 @@ export const useStore = create(
       speechRate: 0.85,
       ambienceLevel: 0.7,
       volume: 0.5,
+      muted: false,
+      lastVolume: 0.5,
       locale: 'en',
       theme: 'mystic',
 
@@ -371,6 +373,8 @@ export const useStore = create(
         speechRate: s.speechRate,
         ambienceLevel: s.ambienceLevel,
         volume: s.volume,
+        muted: s.muted,
+        lastVolume: s.lastVolume,
         locale: s.locale,
         theme: s.theme,
         profile: s.profile,

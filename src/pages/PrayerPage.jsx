@@ -9,6 +9,7 @@ import { tPrayer } from '../i18n/prayerL10n.js'
 import PrayerStats from '../components/PrayerStats.jsx'
 import Sparkles from '../components/Sparkles.jsx'
 import { stopPlayback } from '../playback.js'
+import { toggleMute } from '../audio/mute.js'
 
 const fmt = (s) => {
   const m = Math.floor(s / 60)
@@ -57,8 +58,7 @@ export default function PrayerPage() {
   const [chantMode, setChantMode] = useState(false)
   const [chantReason, setChantReason] = useState(null)
   const [voiceNote, setVoiceNote] = useState(false)
-  const [muted, setMuted] = useState(false)
-  const lastVol = useRef(volume)
+  const muted = useStore((s) => s.muted)
   const [tuning, setTuning] = useState(false)
   const [celebration, setCelebration] = useState(0)
   const celebrationTimer = useRef(null)
@@ -373,17 +373,6 @@ export default function PrayerPage() {
     }
   }
 
-  const toggleMute = () => {
-    if (muted) {
-      setLiveVolume(lastVol.current)
-      setMuted(false)
-    } else {
-      lastVol.current = volume
-      setLiveVolume(0)
-      setMuted(true)
-    }
-  }
-
   const toggleLoop = () => {
     const next = !loopOn
     setLoopOn(next)
@@ -632,6 +621,15 @@ export default function PrayerPage() {
           aria-label={t('prayer.stop')}
         >
           ◼
+        </button>
+        <button
+          className={`ctrl-btn mute ${muted ? 'on' : ''}`}
+          onClick={toggleMute}
+          aria-label={t('keys.mute')}
+          title={t('keys.mute')}
+          aria-pressed={muted}
+        >
+          {muted ? '🔇' : '🔊'}
         </button>
         <button
           className={`ctrl-btn tune ${tuning ? 'on' : ''}`}
