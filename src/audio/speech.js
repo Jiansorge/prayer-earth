@@ -51,6 +51,7 @@ class SpeechEngine {
     this.primed = false
     this.lastCancel = 0
     this.voiceDead = false
+    this.tabPause = false
     // The deployed worker exposes no /api/tts proxy (static audio + browser
     // voices cover every prayer), so keep the cloud path off to avoid probing a
     // URL that 404s on every load.
@@ -737,6 +738,9 @@ class SpeechEngine {
 
   // Gracefully pause mid-utterance. The job survives so it can be resumed.
   pause() {
+    // Remember whether this pause came from the tab going away — resuming after
+    // that needs a fresh audio element, not a resume() of a suspended one.
+    this.tabPause = !!document.hidden
     if (this.cloudAudio) {
       try {
         this.cloudAudio.pause()
@@ -753,6 +757,19 @@ class SpeechEngine {
     const j = this.job
     if (!j || !j.active) return false
     j.paused = false
+    // After a tab suspension the shared audio element can accept play() and
+    // still sit silent (and speechSynthesis.resume is unreliable too). Restart
+    // the current phrase fresh under this user gesture so sound always comes
+    // back — the safest resume after switching away.
+    if (this.tabPause) {
+      this.tabPause = false
+      if (j.mode === 'tts') {
+        try {
+          this.speakIndex(j.index)
+        } catch {}
+        return true
+      }
+    }
     if (this.cloudAudio) {
       try {
         const p = this.cloudAudio.play()

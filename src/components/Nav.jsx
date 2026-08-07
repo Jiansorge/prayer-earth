@@ -52,7 +52,7 @@ export default function Nav() {
                 )}
               </span>
             </button>
-            {item.id === 'prayer' && (
+            {item.id === 'prayer' && view !== 'prayer' && (
               <button
                 className={`nav-play ${playing && !paused ? 'on' : ''}`}
                 onClick={requestPlayToggle}

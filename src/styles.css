@@ -1100,6 +1100,32 @@ html[dir='rtl'] .chooser-arrow.right {
   cursor: pointer;
 }
 
+/* on narrow phones the control row (repeat, play, stop, tune, volume) must not
+   overflow — shrink the round buttons and the vertical slider slightly */
+@media (max-width: 380px) {
+  .controls {
+    gap: 10px;
+  }
+  .ctrl-btn.repeat,
+  .ctrl-btn.stop,
+  .ctrl-btn.tune {
+    width: 42px;
+    height: 42px;
+    font-size: 17px;
+  }
+  .ctrl-btn.play {
+    width: 56px;
+    height: 56px;
+    font-size: 22px;
+  }
+  .vol-vert {
+    gap: 2px;
+  }
+  .vol-slider-vert {
+    height: 40px;
+  }
+}
+
 .ctrl-btn {
   border: none;
   cursor: pointer;
