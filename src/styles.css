@@ -3208,11 +3208,81 @@ html {
   50% { box-shadow: 0 0 26px rgba(232, 196, 122, 0.6); }
 }
 
+/* app chrome is not selectable — only real prose stays selectable */
+.app button,
+.app [role='button'],
+button,
+[role='button'],
+.chip,
+.voice-chip,
+.tile,
+.nav,
+.nav-play,
+.nav-stop,
+.ctrl-btn,
+.field-btn,
+.qr-btn,
+.sheet-x,
+.pt-close,
+.pt-help,
+.gear-btn,
+.settings-label-btn,
+.swatch,
+.picker-row,
+.picker-fav,
+.feed-pill,
+.world-meter .wm-value,
+.eh-glow-pct,
+input[type='range'],
+input[type='checkbox'],
+input[type='radio'] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* tactile press: everything that is not the big golden buttons dimples in */
+.chip:active,
+.voice-chip:active,
+.tile:active,
+.field-btn:active,
+.qr-btn:active,
+.sheet-x:active,
+.pt-close:active,
+.pt-help:active,
+.gear-btn:active,
+.settings-label-btn:active,
+.picker-fav:active,
+.swatch:active,
+.feed-pill:active {
+  transform: scale(0.94);
+}
+
+/* the main play button gets a twinkle ring when hovered/focused */
+.ctrl-btn.play:hover,
+.ctrl-btn.play:focus-visible {
+  box-shadow:
+    0 0 0 6px rgba(232, 196, 122, 0.22),
+    0 0 28px rgba(232, 196, 122, 0.55),
+    0 8px 26px rgba(232, 196, 122, 0.4);
+}
+
+/* soft golden glow breathes on chips as they're hovered */
+.chip:hover,
+.voice-chip:hover,
+.tile:hover {
+  box-shadow: 0 0 0 3px rgba(232, 196, 122, 0.16), 0 0 20px rgba(232, 196, 122, 0.3);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .glow-field,
   .ctrl-btn.repeat.on,
-  .ctrl-btn.tune.on {
+  .ctrl-btn.tune.on,
+  .chip:hover,
+  .voice-chip:hover,
+  .tile:hover,
+  .ctrl-btn.play:hover {
     animation: none;
+    box-shadow: none;
   }
 }
 
@@ -3529,6 +3599,13 @@ input:focus-visible,
 select:focus-visible {
   outline: 2px solid var(--gold-soft);
   outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(232, 196, 122, 0.15), 0 0 18px rgba(232, 196, 122, 0.35);
+}
+@media (prefers-reduced-motion: reduce) {
+  button:focus-visible,
+  [role='button']:focus-visible {
+    box-shadow: none;
+  }
 }
 .pt-muted {
   color: var(--gold-soft);

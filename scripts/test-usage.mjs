@@ -21,6 +21,15 @@ const ok = (name, cond, extra = '') => {
   }
 }
 
+// Watchdog: headless Edge can freeze on Windows; never let this suite hang the
+// regression run. Force-exit after 4 minutes regardless.
+const WATCHDOG = setTimeout(() => {
+  console.error('[usage] TIMEOUT — killing hung run')
+  try { edge.kill() } catch {}
+  process.exit(2)
+}, 240000)
+WATCHDOG.unref()
+
 const edge = spawn(EDGE, [
   '--headless=new',
   '--disable-gpu',
@@ -158,7 +167,7 @@ ok(
 )
 ok(
   'settings offers app/site share',
-  await c.eval(`[...document.querySelectorAll('.field-btn')].some((b) => b.innerText.includes('Share Prayer Earth'))`)
+  await c.eval(`[...document.querySelectorAll('.field-btn')].some((b) => b.innerText.includes('Share Joining Palms'))`)
 )
 await c.eval(`document.querySelector('.sheet-close').click()`)
 ok('settings sheet closes', await c.waitFor(`!document.querySelector('.sheet')`))
