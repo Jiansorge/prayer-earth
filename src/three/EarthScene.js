@@ -430,7 +430,7 @@ export class EarthScene {
       this.buildSilhouette(dayTex)
       this.buildHalo()
     } else {
-      this.buildFullEarth(dayTex, nightTex)
+      this.buildFullEarth(dayTex)
     }
 
     // --- people lights (on the surface, at real locations) ---
@@ -508,7 +508,7 @@ export class EarthScene {
     this.earthGroup.add(halo)
   }
 
-  buildFullEarth(dayTex, nightTex) {
+  buildFullEarth(dayTex) {
     const geo = new THREE.SphereGeometry(1.42, this.seg, this.seg)
     this.earthMat = new THREE.ShaderMaterial({
       vertexShader: VERT,
@@ -1252,7 +1252,7 @@ export class EarthScene {
 
     // Surface the Earth only once its textures have loaded and a frame has
     // rendered, so the page never flashes a half-formed globe.
-    if (!this._ready && this._dayLoaded && this._nightLoaded) {
+    if (!this._ready && this._dayLoaded) {
       this._ready = true
       if (this.onReady) this.onReady()
     }

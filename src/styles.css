@@ -1331,7 +1331,9 @@ html[dir='rtl'] .chooser-arrow.right {
 .world-meter {
   margin-top: 18px;
   text-align: center;
-}
+  overflow: hidden;
+  border-radius: 18px;
+  }
 
 .world-meter .wm-row {
   display: flex;
@@ -3447,18 +3449,21 @@ select:focus-visible {
 }
 /* keyboard help: nav button + sheet rows */
 .nav-help {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--ink-dim);
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  font-size: 13px;
+  border: none;
+  background: none;
+  color: var(--ink-faint);
+  font-size: 16px;
   font-weight: 600;
+  width: 34px;
+  height: 34px;
   cursor: pointer;
-  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+  transition: color 0.2s var(--ease), text-shadow 0.2s var(--ease), transform 0.2s var(--ease);
 }
-.nav-help:hover { color: var(--gold-soft); border-color: rgba(232, 196, 122, 0.4); }
+.nav-help:hover {
+  color: var(--gold-soft);
+  text-shadow: 0 0 10px rgba(232, 196, 122, 0.5);
+  transform: scale(1.12);
+}
 .keys-row {
   display: flex;
   align-items: center;
