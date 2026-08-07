@@ -525,30 +525,9 @@ h3,
 .nav .nav-stop {
   border: none;
   border-radius: 999px;
-  width: 26px;
-  height: 26px;
-  margin-inline-start: 4px;
-  flex: 0 0 auto;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--ink-faint);
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.25s var(--ease), color 0.25s var(--ease);
-}
-.nav .nav-stop:hover {
-  background: rgba(255, 255, 255, 0.14);
-  color: var(--ink);
-}
-
-.nav .nav-vol {
-  border: none;
-  border-radius: 999px;
-  width: 30px;
-  height: 30px;
-  margin-inline-start: 4px;
+  width: 36px;
+  height: 36px;
+  margin-inline-start: 6px;
   flex: 0 0 auto;
   background: rgba(255, 255, 255, 0.08);
   color: var(--ink-faint);
@@ -557,16 +536,14 @@ h3,
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.25s var(--ease), color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  transition: background 0.25s var(--ease), color 0.25s var(--ease), transform 0.2s var(--ease);
 }
-.nav .nav-vol:hover {
+.nav .nav-stop:hover {
   background: rgba(255, 255, 255, 0.14);
   color: var(--ink);
 }
-.nav .nav-vol.on {
-  background: rgba(232, 196, 122, 0.16);
-  color: var(--gold-soft);
-  box-shadow: 0 0 12px rgba(232, 196, 122, 0.35);
+.nav .nav-stop:active {
+  transform: scale(0.9);
 }
 
 .nav .nav-play:active {
@@ -1097,7 +1074,37 @@ html[dir='rtl'] .chooser-arrow.right {
   align-items: center;
   justify-content: center;
   gap: 14px;
-  padding: 8px 0 calc(96px + env(safe-area-inset-bottom));
+  padding: 8px 0 4px;
+}
+
+/* inline volume control under the main play buttons */
+.controls-sub {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 18px calc(92px + env(safe-area-inset-bottom));
+}
+.vol-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(240px, calc(100vw - 120px));
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.vol-icon {
+  font-size: 15px;
+  line-height: 1;
+  filter: drop-shadow(0 0 6px rgba(232, 196, 122, 0.35));
+}
+.vol-slider {
+  flex: 1;
+  min-width: 0;
+  height: 4px;
+  accent-color: var(--gold);
+  cursor: pointer;
 }
 
 .ctrl-btn {
@@ -1172,28 +1179,12 @@ html[dir='rtl'] .chooser-arrow.right {
   box-shadow: 0 0 16px rgba(232, 196, 122, 0.3);
 }
 
-.ctrl-btn.mute {
-  width: 44px;
-  height: 44px;
-  font-size: 17px;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--ink-dim);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: none;
-}
-.ctrl-btn.mute.on {
-  color: var(--gold-soft);
-  border-color: rgba(232, 196, 122, 0.5);
-  box-shadow: 0 0 16px rgba(232, 196, 122, 0.3);
-  background: rgba(232, 196, 122, 0.12);
-}
-
 /* quick volume + speed tuning right above the play controls */
 .prayer-tune {
   position: absolute;
   left: 18px;
   right: 18px;
-  bottom: calc(170px + env(safe-area-inset-bottom));
+  bottom: calc(216px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -3117,7 +3108,6 @@ html {
 .app[data-theme='dawn'] .hint {
   color: rgba(38, 50, 84, 0.85);
 }
-.app[data-theme='dawn'] .world-meter,
 .app[data-theme='dawn'] .card,
 .app[data-theme='dawn'] .life-card {
   background: rgba(10, 16, 40, 0.82);
@@ -3397,6 +3387,15 @@ html {
   color: rgba(40, 50, 84, 0.95);
   background: rgba(255, 255, 255, 0.35);
   border-color: rgba(60, 70, 110, 0.25);
+}
+.app[data-theme='dawn'] .settings-label-btn {
+  color: rgba(36, 52, 106, 0.95);
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(60, 70, 110, 0.25);
+}
+.app[data-theme='dawn'] .settings-label-btn:hover {
+  color: #123a6b;
+  background: rgba(255, 255, 255, 0.55);
 }
 .app[data-theme='dawn'] .feed-pill {
   background: rgba(20, 30, 60, 0.42);

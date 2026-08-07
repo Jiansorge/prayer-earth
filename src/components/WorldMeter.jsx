@@ -7,9 +7,13 @@ export default function WorldMeter() {
   const connected = useStore((s) => s.connected)
   const usersToday = useStore((s) => s.usersToday)
   const usersWeek = useStore((s) => s.usersWeek)
-  const glowPct = useStore((s) => Math.round(s.getGlow() * 100))
+  const glowPct = useStore((s) => s.getGlowPercent())
   const [, force] = useState(0)
   const t = useT()
+
+  // the honest % of a million prayers; keep a few decimals when it's still tiny
+  const fmtPct = (p) =>
+    p >= 1 ? Math.round(p) : p >= 0.1 ? p.toFixed(1) : p.toFixed(2)
 
   useEffect(() => {
     const t = setInterval(() => force((x) => x + 1), 1000)
@@ -35,7 +39,7 @@ export default function WorldMeter() {
       </div>
       <div className="wm-row" style={{ marginTop: 8, marginBottom: 0 }}>
         <span className="wm-label">{t('meter.toMillion')}</span>
-        <span className="wm-value" style={glow(glowPct)}>{glowPct}%</span>
+        <span className="wm-value" style={glow(glowPct)}>{fmtPct(glowPct)}%</span>
       </div>
       <div className="wm-row" style={{ marginTop: 8, marginBottom: 0 }}>
         <span className="wm-label">{t('meter.prayedToday')}</span>

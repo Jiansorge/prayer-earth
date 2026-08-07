@@ -327,7 +327,10 @@ export const useStore = create(
         const prayers = s.getPrayerCount()
         return Math.min(1, Math.pow(prayers / 1_000_000, 0.4))
       },
-      getGlowPercent: () => Math.round(get().getGlow() * 100),
+      // The honest share of a million prayers (linear, not the eased curve used
+      // for the Earth's visual glow), so the % text always means what it says.
+      getGlowPercent: () =>
+        Math.min(100, (get().getPrayerCount() / 1_000_000) * 100),
       getEarthBrightness: () => {
         const glow = get().getGlow()
         return 0.16 + glow * 0.84

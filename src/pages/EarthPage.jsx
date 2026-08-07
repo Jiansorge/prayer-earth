@@ -9,7 +9,9 @@ export default function EarthPage() {
   const sceneRef = useRef(null)
   const [webglFail, setWebglFail] = useState(false)
   const [ready, setReady] = useState(false)
-  const glowPct = useStore((s) => Math.round(s.getGlow() * 100))
+  const glowPct = useStore((s) => s.getGlowPercent())
+  const fmtPct = (p) =>
+    p >= 1 ? Math.round(p) : p >= 0.1 ? p.toFixed(1) : p.toFixed(2)
   const people = useStore((s) => s.peoplePraying)
   const totalSeconds = useStore((s) => s.totalPrayerSeconds)
   const connected = useStore((s) => s.connected)
@@ -62,7 +64,7 @@ export default function EarthPage() {
             {t('earth.failTitle')}
           </h2>
           <p className="subtitle">
-            {t('earth.failBody', { pct: glowPct, company })}
+            {t('earth.failBody', { pct: fmtPct(glowPct), company })}
           </p>
         </div>
       </div>
@@ -87,7 +89,7 @@ export default function EarthPage() {
           <p>{t('earth.sub')}</p>
         </div>
         <div className="eh-bottom fade-in">
-          <div className="eh-glow-pct">{glowPct}%</div>
+          <div className="eh-glow-pct">{fmtPct(glowPct)}%</div>
           <div className="eh-glow-label">{t('meter.toMillion')}</div>
           <div className="eh-caption">
             {connected

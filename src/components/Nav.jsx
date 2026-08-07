@@ -3,7 +3,6 @@ import { useStore } from '../store.js'
 import { SPIRITUALITIES } from '../data/prayers.js'
 import { useT } from '../i18n.js'
 import { requestPlayToggle, stopPlayback } from '../playback.js'
-import { toggleMute } from '../audio/mute.js'
 
 const ITEMS = [
   { id: 'home', icon: '🌙', labelKey: 'nav.home' },
@@ -18,7 +17,6 @@ export default function Nav() {
   const praying = useStore((s) => s.praying)
   const playing = useStore((s) => s.playing)
   const paused = useStore((s) => s.paused)
-  const muted = useStore((s) => s.muted)
   const t = useT()
 
   const onTap = (id) => {
@@ -61,17 +59,6 @@ export default function Nav() {
                 aria-label={playing && !paused ? t('prayer.pause') : t('prayer.pray')}
               >
                 {playing && !paused ? '❚❚' : '▶\uFE0E'}
-              </button>
-            )}
-            {item.id === 'prayer' && (playing || praying) && (
-              <button
-                className={`nav-vol ${muted ? 'on' : ''}`}
-                onClick={toggleMute}
-                aria-label={t('keys.mute')}
-                title={t('keys.mute')}
-                aria-pressed={muted}
-              >
-                {muted ? '🔇' : '🔊'}
               </button>
             )}
             {item.id === 'prayer' && (playing || praying) && (

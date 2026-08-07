@@ -9,7 +9,7 @@ import { tPrayer } from '../i18n/prayerL10n.js'
 import PrayerStats from '../components/PrayerStats.jsx'
 import Sparkles from '../components/Sparkles.jsx'
 import { stopPlayback } from '../playback.js'
-import { toggleMute } from '../audio/mute.js'
+import { toggleMute, applyMute } from '../audio/mute.js'
 
 const fmt = (s) => {
   const m = Math.floor(s / 60)
@@ -623,15 +623,6 @@ export default function PrayerPage() {
           ◼
         </button>
         <button
-          className={`ctrl-btn mute ${muted ? 'on' : ''}`}
-          onClick={toggleMute}
-          aria-label={t('keys.mute')}
-          title={t('keys.mute')}
-          aria-pressed={muted}
-        >
-          {muted ? '🔇' : '🔊'}
-        </button>
-        <button
           className={`ctrl-btn tune ${tuning ? 'on' : ''}`}
           onClick={() => setTuning(!tuning)}
           aria-label={t('prayer.tuneLabel')}
@@ -639,6 +630,28 @@ export default function PrayerPage() {
         >
           ♪
         </button>
+      </div>
+
+      <div className="controls-sub">
+        <div className="vol-inline" role="group" aria-label={t('prayer.volume')}>
+          <span className="vol-icon" aria-hidden="true">
+            {volume <= 0 ? '🔇' : volume < 0.4 ? '🔉' : '🔊'}
+          </span>
+          <input
+            className="vol-slider"
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={muted ? 0 : volume}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value)
+              setLiveVolume(v)
+              if (muted && v > 0) applyMute(false)
+            }}
+            aria-label={t('prayer.volume')}
+          />
+        </div>
       </div>
 
       {tuning && (
