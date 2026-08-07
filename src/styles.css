@@ -1489,6 +1489,15 @@ html[dir='rtl'] .chooser-arrow.right {
   overflow: hidden;
 }
 
+/* On the Earth view the app's forest sky gives way to deep, starry space */
+.app:has(.earth-view) .sky {
+  background:
+    radial-gradient(120% 100% at 50% 42%, #0b0b24 0%, #050510 55%, #020209 100%);
+}
+.app:has(.earth-view) .sky::before {
+  display: none;
+}
+
 /* quiet translucent Earth behind the prayer view */
 .earth-backdrop {
   position: fixed;

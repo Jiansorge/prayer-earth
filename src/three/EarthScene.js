@@ -67,13 +67,14 @@ const FRAG = /* glsl */ `
     float landMask = texture2D(uMaskTex, uv).r;
 
     // uGlow rises with every prayer ever made (toward a million), uTier with
-    // the lifetime seconds of shared prayer.
-    vec3 oceanC = vec3(0.006, 0.024, 0.055)
-      + vec3(0.01, 0.024, 0.045) * uTier
-      + vec3(0.014, 0.034, 0.058) * uGlow;
-    vec3 landC = vec3(0.032, 0.048, 0.045)
-      + vec3(0.03, 0.036, 0.03) * uTier
-      + vec3(0.042, 0.045, 0.036) * uGlow;
+    // the lifetime seconds of shared prayer. Land and ocean are deep and quiet
+    // so the luminous blue aura is what glows.
+    vec3 oceanC = vec3(0.004, 0.016, 0.04)
+      + vec3(0.008, 0.02, 0.04) * uTier
+      + vec3(0.012, 0.03, 0.052) * uGlow;
+    vec3 landC = vec3(0.02, 0.04, 0.05)
+      + vec3(0.024, 0.032, 0.032) * uTier
+      + vec3(0.036, 0.042, 0.038) * uGlow;
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -481,6 +482,7 @@ export class EarthScene {
     if (!this.backdrop) {
       this.nebulae = this.buildNebulae()
       this.scene.add(this.nebulae)
+      this.scene.add(this.buildAuraRing())
     }
 
     this.bindResize()
@@ -609,6 +611,25 @@ export class EarthScene {
     ctx.arc(S / 2 + off, S / 2, R, 0, Math.PI * 2)
     ctx.fill()
     ctx.restore()
+    // a few gentle craters so the moon reads as a world, not a flat disc
+    ctx.save()
+    ctx.beginPath()
+    ctx.arc(S / 2, S / 2, R, 0, Math.PI * 2)
+    ctx.clip()
+    const craters = [
+      [S * 0.42, S * 0.44, 7], [S * 0.55, S * 0.58, 5], [S * 0.48, S * 0.38, 4],
+      [S * 0.6, S * 0.42, 3.5], [S * 0.38, S * 0.55, 3]
+    ]
+    for (const [cx, cy, cr] of craters) {
+      const cg = ctx.createRadialGradient(cx, cy, cr * 0.2, cx, cy, cr)
+      cg.addColorStop(0, 'rgba(90, 92, 110, 0.35)')
+      cg.addColorStop(1, 'rgba(90, 92, 110, 0)')
+      ctx.fillStyle = cg
+      ctx.beginPath()
+      ctx.arc(cx, cy, cr, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    ctx.restore()
     const tex = new THREE.CanvasTexture(c)
     const mat = new THREE.SpriteMaterial({
       map: tex,
@@ -626,7 +647,7 @@ export class EarthScene {
 // Each one carries its own phase so the aura twinkles in and out gently,
 // always alive around the Earth.
   buildSparks() {
-    const N = this.lowPower ? 80 : 200
+    const N = this.lowPower ? 90 : 340
     const pos = new Float32Array(N * 3)
     const col = new Float32Array(N * 3)
     this.sparkDir = new Float32Array(N * 3)
@@ -641,10 +662,11 @@ export class EarthScene {
       this.sparkDir[i * 3 + 1] = y
       this.sparkDir[i * 3 + 2] = z
       this.sparkPhase[i] = Math.random() * Math.PI * 2
-      const warm = Math.random()
-      col[i * 3] = warm > 0.5 ? 1 : 0.9
-      col[i * 3 + 1] = warm > 0.5 ? 0.92 : 0.86
-      col[i * 3 + 2] = 0.62
+      // a mix of warm gold and luminous azure, so the aura feels celestial
+      const warm = Math.random() < 0.55
+      col[i * 3] = warm ? 1 : 0.55
+      col[i * 3 + 1] = warm ? 0.92 : 0.82
+      col[i * 3 + 2] = warm ? 0.62 : 1
       // float clearly above the surface so the aura reads as a halo ring around
       // the globe, never as dots speckling its face
       const r = 1.75 + Math.random() * 0.22
@@ -1089,18 +1111,59 @@ export class EarthScene {
     for (let i = used; i < MAX; i++) pool[i].userData.active = false
   }
 
+  // A soft lit-sphere texture so a small body reads as a real globe (bright on
+  // the sun side, falling to a darker limb) instead of a flat round pixel.
+  makeOrbTexture(color, spots) {
+    const S = 128
+    const c = document.createElement('canvas')
+    c.width = c.height = S
+    const g = c.getContext('2d')
+    const hex = '#' + new THREE.Color(color).getHexString()
+    const grad = g.createRadialGradient(S * 0.34, S * 0.3, S * 0.08, S / 2, S / 2, S * 0.52)
+    grad.addColorStop(0, this._lighten(hex, 0.55))
+    grad.addColorStop(0.55, hex)
+    grad.addColorStop(1, this._darken(hex, 0.6))
+    g.fillStyle = grad
+    g.beginPath()
+    g.arc(S / 2, S / 2, S / 2, 0, Math.PI * 2)
+    g.fill()
+    if (spots) {
+      for (let i = 0; i < spots; i++) {
+        const a = Math.random() * Math.PI * 2
+        const r = Math.random() * S * 0.22
+        const x = S / 2 + Math.cos(a) * r
+        const y = S / 2 + Math.sin(a) * r
+        g.beginPath()
+        g.arc(x, y, 2 + Math.random() * 4, 0, Math.PI * 2)
+        g.fillStyle = this._darken(hex, 0.45)
+        g.fill()
+      }
+    }
+    return new THREE.CanvasTexture(c)
+  }
+
+  _lighten(hex, amt) {
+    const c = new THREE.Color(hex)
+    return '#' + c.offsetHSL(0, 0, amt * 0.5).getHexString()
+  }
+
+  _darken(hex, amt) {
+    const c = new THREE.Color(hex)
+    return '#' + c.offsetHSL(0, 0, -amt * 0.5).getHexString()
+  }
+
   buildPlanets() {
     const group = new THREE.Group()
     const defs = [
-      { r: 0.09, color: 0xe8c47a, dist: 2.35, speed: 0.18, tilt: 0.5, size: 0.14 },
-      { r: 0.05, color: 0x9fb7ff, dist: 2.9, speed: -0.12, tilt: -0.7, size: 0.08 },
-      { r: 0.07, color: 0xb9a6f5, dist: 3.4, speed: 0.09, tilt: 0.2, size: 0.11 }
+      { r: 0.09, color: 0xe8c47a, dist: 2.35, speed: 0.18, tilt: 0.5, size: 0.14, spots: 3 },
+      { r: 0.05, color: 0x9fb7ff, dist: 2.9, speed: -0.12, tilt: -0.7, size: 0.08, spots: 0 },
+      { r: 0.07, color: 0xb9a6f5, dist: 3.4, speed: 0.09, tilt: 0.2, size: 0.11, spots: 1 }
     ]
     const planets = defs.map((d, i) => {
+      const tex = this.makeOrbTexture(d.color, d.spots)
       const mat = new THREE.MeshBasicMaterial({
-        color: d.color,
-        transparent: true,
-        opacity: 0.95
+        map: tex,
+        transparent: true
       })
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(d.r, 24, 24), mat)
       const ring = new THREE.Mesh(
@@ -1227,6 +1290,49 @@ export class EarthScene {
       group.add(spr)
       return { spr, phase: i * 1.7 }
     })
+    return group
+  }
+
+  // A slow-turning luminous band around the Earth — a celestial energy ring
+  // that shimmers with moving light and breathes with the world's prayer.
+  buildAuraRing() {
+    const RING_FRAG = /* glsl */ `
+      uniform float uTime;
+      uniform float uGlow;
+      uniform float uSurge;
+      varying vec2 vUv;
+      void main() {
+        float band = 1.0 - abs(vUv.y - 0.5) * 2.6;
+        band = max(0.0, band);
+        float shimmer = 0.6 + 0.4 * sin(vUv.x * 26.0 + uTime * 1.3);
+        float streak = 0.5 + 0.5 * sin(vUv.x * 9.0 - uTime * 0.85);
+        vec3 a = vec3(0.5, 0.8, 1.0);
+        vec3 b = vec3(0.72, 0.56, 1.0);
+        vec3 col = mix(a, b, streak);
+        float alpha = band * shimmer * (0.16 + 0.12 * uGlow + 0.12 * uSurge);
+        gl_FragColor = vec4(col, alpha);
+      }
+    `
+    const geo = new THREE.RingGeometry(1.64, 1.9, 120)
+    const mat = new THREE.ShaderMaterial({
+      vertexShader: `varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+      fragmentShader: RING_FRAG,
+      uniforms: { uTime: { value: 0 }, uGlow: { value: this.glow }, uSurge: { value: 0 } },
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    })
+    const ring = new THREE.Mesh(geo, mat)
+    const group = new THREE.Group()
+    group.add(ring)
+    group.rotation.x = 1.05
+    group.rotation.z = 0.35
+    this.auraRing = { group, mat, ring }
     return group
   }
 
@@ -1411,6 +1517,15 @@ export class EarthScene {
       u.uSwell.value = s
       u.uOpacity.value =
         0.42 + 0.2 * Math.sin(t * 1.1) + 0.12 * Math.sin(t * 2.3 + 1.2) + Math.min(0.9, s * 1.4)
+    }
+
+    // the celestial energy ring drifts around the Earth, shimmering
+    if (this.auraRing) {
+      this.auraRing.group.rotation.y += 0.0012
+      const ru = this.auraRing.mat.uniforms
+      ru.uTime.value = t
+      ru.uGlow.value = this.glow
+      ru.uSurge.value = this.surge || 0
     }
 
     // the halo blooms around the whole world at high ladder rungs
