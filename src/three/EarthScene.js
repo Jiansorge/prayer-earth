@@ -72,16 +72,20 @@ const FRAG = /* glsl */ `
     vec3 oceanC = vec3(0.004, 0.014, 0.034)
       + vec3(0.006, 0.016, 0.032) * uTier
       + vec3(0.01, 0.026, 0.048) * uGlow;
-    vec3 landC = vec3(0.17, 0.33, 0.2)
-      + vec3(0.03, 0.05, 0.028) * uTier
-      + vec3(0.04, 0.06, 0.032) * uGlow;
+    // land: deep navy blue (brighter + more saturated than the near-black
+    // ocean so the two still read apart, and the luminous coastline glows)
+    vec3 landC = vec3(0.16, 0.23, 0.4)
+      + vec3(0.028, 0.04, 0.06) * uTier
+      + vec3(0.04, 0.055, 0.08) * uGlow;
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
-    float sun = smoothstep(-0.15, 0.35, ndl);
-    // higher-contrast light: deeper terminator shadow, brighter day side, so
-    // the living Earth reads clearly against the dark space around it
-    vec3 lit = base * (0.4 + 0.66 * sun);
+    // a clean, physically-plausible terminator: a tight great-circle shadow
+    // between the lit day side and the dark night side, with a soft dawn band
+    float sun = smoothstep(-0.1, 0.16, ndl);
+    // higher-contrast light: deep terminator shadow on night, bright day side,
+    // so the Earth reads clearly against the dark space around it
+    vec3 lit = base * (0.32 + 0.72 * sun);
 
     float night = 1.0 - smoothstep(-0.25, 0.08, ndl);
 
@@ -118,7 +122,7 @@ const FRAG = /* glsl */ `
     // so the living Earth always feels faintly alive
     float tw = 0.5 + 0.5 * sin(uv.x * 80.0 + uTime * 1.2);
     tw *= 0.5 + 0.5 * sin(uv.y * 55.0 - uTime * 0.8);
-    col += landMask * vec3(0.06, 0.1, 0.07) * tw * 0.14;
+    col += landMask * vec3(0.05, 0.08, 0.13) * tw * 0.14;
     col += (1.0 - landMask) * vec3(0.05, 0.09, 0.16) * tw * 0.06;
 
     // soft limb fade so the globe's edge always reads as a clean curve
@@ -936,7 +940,11 @@ export class EarthScene {
       const W = this._maskData.width
       const H = this._maskData.height
       const out = this._maskData.data
-      const arcticRow = Math.floor((H * 4) / 180) // only the central polar ocean, real arctic land stays
+      // Treat the frozen Arctic Ocean (the polar ice cap, ~north of 82N) as
+      // ocean, not land — its bright ice would otherwise read as a huge arctic
+      // landmass. Real northern land (Siberia, Canada, Greenland) sits south
+      // of this band and stays.
+      const arcticRow = Math.floor((H * 10) / 180)
       for (let y = 0; y < H; y++) {
         const sy = Math.floor((y / H) * c2.height)
         for (let x = 0; x < W; x++) {
@@ -1028,6 +1036,29 @@ export class EarthScene {
         }
       }
       out.set(soft)
+      // light erosion: a pixel stays land only when it is solidly inside land,
+      // which pulls thin spits + false blobs out of the open ocean so a prayer
+      // light can never sit at sea
+      {
+        const er = new Uint8ClampedArray(out.length)
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            let s = 0
+            for (let dy = -1; dy <= 1; dy++) {
+              const ny = Math.max(0, Math.min(H - 1, y + dy))
+              for (let dx = -1; dx <= 1; dx++) {
+                const nx = (x + dx + W) % W
+                if (out[(ny * W + nx) * 4] > 128) s++
+              }
+            }
+            const o = (y * W + x) * 4
+            const isLand = s >= 5
+            er[o] = er[o + 1] = er[o + 2] = isLand ? 255 : 0
+            er[o + 3] = 255
+          }
+        }
+        out.set(er)
+      }
       // make the wrap seam exact: the first and last columns must match so no
       // vertical line appears where the map wraps around the Pacific
       for (let y = 0; y < H; y++) {
@@ -1070,10 +1101,9 @@ export class EarthScene {
     return { group, pool, r, MAX }
   }
 
-  // True when a grid cell sits over open water (its centre pixel is ocean in
-  // the land mask). Prayer lights must never float at sea, so a light only
-  // appears when its cell centre is on land (a real coastal city rounds to a
-  // land cell; open-ocean cells are dropped).
+  // True when a grid cell sits over open water. A prayer light only appears
+  // when its cell's exact centre is on land — anything floating at sea, even
+  // just offshore, is dropped.
   isDeepOcean(latDeg, lonDeg) {
     const m = this._maskData
     if (!m) return false
@@ -1081,16 +1111,9 @@ export class EarthScene {
     const my = Math.floor(((90 - la) / 180) * m.height)
     const mx = Math.floor(((((lonDeg + 180) % 360) + 360) % 360) / 360 * m.width) % m.width
     if (my < 0 || my >= m.height) return true
-    // sample the cell centre plus a hair around it, since the mask edges blur
-    let land = 0
-    for (let dy = -1; dy <= 1; dy++) {
-      const ny = Math.max(0, Math.min(m.height - 1, my + dy))
-      for (let dx = -1; dx <= 1; dx++) {
-        const nx = (mx + dx + m.width) % m.width
-        if (m.data[(ny * m.width + nx) * 4] > 96) land++
-      }
-    }
-    return land < 2 // centre + at least one neighbour must be land
+    // the centre pixel must read as land (mask is blurred at edges, so 96 is
+    // safely inside solid land)
+    return m.data[(my * m.width + mx) * 4] <= 96
   }
 
   // Reuse the sprite pool: position/scale/colour one per active grid cell.

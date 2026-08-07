@@ -1519,6 +1519,7 @@ html[dir='rtl'] .chooser-arrow.right {
   position: absolute;
   inset: 0;
   background:
+    radial-gradient(60% 52% at 50% 46%, rgba(90, 160, 255, 0.14) 0%, rgba(40, 70, 160, 0.08) 42%, rgba(4, 7, 20, 0) 68%),
     radial-gradient(130% 95% at 50% 42%, rgba(4, 7, 20, 0.04) 0%, rgba(4, 7, 20, 0.45) 62%, rgba(4, 7, 20, 0.82) 100%);
 }
 

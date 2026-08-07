@@ -6,6 +6,14 @@ import { EarthScene } from '../three/EarthScene.js'
 // little brighter as collective prayer accumulates, it rotates slowly, and it
 // carries every prayer light in the world behind the words — a subtle, living
 // reminder that the whole world is praying together.
+//
+// Low-power devices (or reduced-motion) get a static, quiet glow instead of
+// the live WebGL scene: the backdrop render loop + audio together freeze old
+// devices the moment play is pressed.
+const isLowPower = () =>
+  (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ||
+  (typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4)
+
 export default function EarthBackdrop() {
   const mountRef = useRef(null)
   const sceneRef = useRef(null)
@@ -17,6 +25,7 @@ export default function EarthBackdrop() {
   const youLoc = useStore((s) => s.youLoc)
 
   useEffect(() => {
+    if (isLowPower()) return
     let scene = null
     try {
       scene = new EarthScene(mountRef.current, { backdrop: true })
