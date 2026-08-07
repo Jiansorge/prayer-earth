@@ -38,17 +38,21 @@ await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 800, dev
 await send('Page.navigate', { url: `${APP}/#/earth` })
 const canvas = await waitFor(`!!document.querySelector('.earth-canvas canvas')`, 30000)
 ok('E1 earth canvas mounts', !!canvas)
+const size = await evaljs(`(() => { const c = document.querySelector('.earth-canvas canvas'); if (!c) return null; return { w: c.clientWidth, h: c.clientHeight, bufW: c.width, bufH: c.height } })()`)
+ok('E2 canvas has real size (not a collapsed 1px strip)', !!size && size.w > 200 && size.h > 200, JSON.stringify(size))
 const overlay = await waitFor(`!document.querySelector('.earth-loading-overlay')`, 15000)
-ok('E2 loading overlay clears', !!overlay)
+ok('E3 loading overlay clears', !!overlay)
 await sleep(1200)
 const scene = await evaljs(`(() => { const e = window.__earthScene; if (!e) return null; return {
   renderer: !!e.renderer, earth: !!e.earth, lights: !!e.lights,
   triangles: e.renderer ? e.renderer.info.render.triangles : 0,
   dpr: e.renderer ? e.renderer.getPixelRatio() : 0
 } })()`)
-ok('E3 scene built (renderer + earth + lights)', !!scene && scene.renderer && scene.earth && scene.lights, JSON.stringify(scene))
-ok('E4 earth actually draws triangles', !!scene && scene.triangles > 5000, `tri=${scene?.triangles}`)
-// the globe must render as a lit planet, not black space
+ok('E4 scene built (renderer + earth + lights)', !!scene && scene.renderer && scene.earth && scene.lights, JSON.stringify(scene))
+ok('E5 earth actually draws triangles', !!scene && scene.triangles > 5000, `tri=${scene?.triangles}`)
+// the globe must render as a lit planet, not black space — sample INSIDE the
+// canvas rect (measured live), not a guessed page region
+const rect = await evaljs(`(() => { const r = document.querySelector('.earth-canvas canvas').getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height } })()`)
 const shot = await send('Page.captureScreenshot', { format: 'png' })
 writeFileSync(OUT, Buffer.from(shot.data, 'base64'))
 const buf = readFileSync(OUT)
@@ -62,9 +66,10 @@ const paeth = (a, b, c) => { const p = a + b - c; const pa = Math.abs(p - a), pb
 let p = 0
 for (let y = 0; y < height; y++) { const f = raw[p++]; const row = y * stride; const prev = (y - 1) * stride; for (let x = 0; x < stride; x++) { let v = raw[p++]; const a = x >= bpp ? px[row + x - bpp] : 0; const b = y > 0 ? px[prev + x] : 0; const c = x >= bpp && y > 0 ? px[prev + x - bpp] : 0; if (f === 1) v = (v + a) & 255; else if (f === 2) v = (v + b) & 255; else if (f === 3) v = (v + ((a + b) >> 1)) & 255; else if (f === 4) v = (v + paeth(a, b, c)) & 255; px[row + x] = v } }
 let lit = 0, n = 0
-for (let y = Math.floor(height * 0.4); y < Math.floor(height * 0.62); y += 2) for (let x = Math.floor(width * 0.38); x < Math.floor(width * 0.62); x += 2) { const i = y * stride + x * bpp; const L = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]; n++; if (L > 26) lit++ }
-ok('E5 globe renders lit (not black space)', lit / n > 0.3, `globeLit=${(lit / n * 100).toFixed(0)}%`)
-ok('E6 no exceptions on earth', exc.length === 0, `exc=${exc.length}`)
+const sX = Math.floor(rect.x), sY = Math.floor(rect.y), eX = Math.ceil(rect.x + rect.w), eY = Math.ceil(rect.y + rect.h)
+for (let y = sY; y < eY; y += 2) for (let x = sX; x < eX; x += 2) { if (x < 0 || y < 0 || x >= width || y >= height) continue; const i = y * stride + x * bpp; const L = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]; n++; if (L > 26) lit++ }
+ok('E6 globe renders lit (not black space)', n > 0 && lit / n > 0.3, `globeLit=${(lit / n * 100).toFixed(0)}%`)
+ok('E7 no exceptions on earth', exc.length === 0, `exc=${exc.length}`)
 
 // ---------- PART 2: TAB-SWITCH AUTO-PAUSE ----------
 await send('Page.navigate', { url: `${APP}/#/pray/buddhism/mani` })

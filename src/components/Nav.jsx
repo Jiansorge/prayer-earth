@@ -61,16 +61,6 @@ export default function Nav() {
                 {playing && !paused ? '❚❚' : '▶\uFE0E'}
               </button>
             )}
-            {item.id === 'prayer' && (
-              <button
-                className="nav-help"
-                onClick={() => useStore.getState().setKeyboardHelpOpen(true)}
-                aria-label={t('keys.help')}
-                title={t('keys.help')}
-              >
-                ?
-              </button>
-            )}
             {item.id === 'prayer' && (playing || praying) && (
               <button
                 className="nav-stop"

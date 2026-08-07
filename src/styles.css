@@ -62,6 +62,13 @@ h3,
   overflow: hidden;
 }
 
+/* a11y main landmark — sized so absolutely-positioned views and
+   percentage-height children (the earth canvas) resolve against it */
+#main {
+  position: absolute;
+  inset: 0;
+}
+
 /* ---- layered background: a living forest at dusk ---- */
 .sky {
   position: fixed;
@@ -1392,9 +1399,10 @@ html[dir='rtl'] .chooser-arrow.right {
 
 /* ---- earth view ---- */
 .earth-view {
-  position: relative;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 /* quiet translucent Earth behind the prayer view */
@@ -3354,6 +3362,26 @@ html {
   transition: background 0.2s var(--ease), transform 0.2s var(--ease);
 }
 .pt-close:hover { background: rgba(232, 196, 122, 0.18); transform: translateY(1px); }
+.pt-help {
+  position: absolute;
+  top: 6px;
+  right: 44px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--gold-soft);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.pt-help:hover { background: rgba(232, 196, 122, 0.18); transform: scale(1.1); }
 /* favourite star on each picker row */
 .picker-fav {
   flex: 0 0 auto;

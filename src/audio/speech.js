@@ -51,11 +51,15 @@ class SpeechEngine {
     this.primed = false
     this.lastCancel = 0
     this.voiceDead = false
-    // Server-proxied Google Cloud TTS (authentic neural voices). null until
-    // probed; then true/false.
-    this.cloud = null
+    // The deployed worker exposes no /api/tts proxy (static audio + browser
+    // voices cover every prayer), so keep the cloud path off to avoid probing a
+    // URL that 404s on every load.
+    this.cloud = false
     this.cloudCache = new Map()
     this.cloudAudio = null
+    // One <audio> element per recorded file, reused across repeated phrases
+    // (mantras repeat the same line many times) so the MP3 is fetched once.
+    this._audioByUrl = new Map()
 
     if (this.synth) {
       this.refreshVoices()
@@ -237,10 +241,15 @@ class SpeechEngine {
           this.cloudCache.delete(oldest)
         }
       }
-      const audio = new Audio(url)
-      audio.volume = Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75)
+      let audio = this._audioByUrl.get(url)
+      if (!audio) {
+        audio = new Audio(url)
+        audio.volume = Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75)
+        this.applyReverb(audio)
+        this._audioByUrl.set(url, audio)
+      }
       audio.playbackRate = job.rate ?? 1
-      this.applyReverb(audio)
+      audio.currentTime = 0
       this.cloudAudio = audio
       clearTimeout(job.guard)
       clearTimeout(job.advTimer)
@@ -778,6 +787,16 @@ class SpeechEngine {
         this.cloudAudio.pause()
         this.cloudAudio = null
       } catch {}
+    }
+    if (this._audioByUrl) {
+      for (const a of this._audioByUrl.values()) {
+        try {
+          a.pause()
+          a.onended = null
+          a.onerror = null
+        } catch {}
+      }
+      this._audioByUrl.clear()
     }
     try {
       this.synth.cancel()

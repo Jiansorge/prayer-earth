@@ -294,6 +294,16 @@ export default function SettingsSheet() {
           {t('settings.legal')}
         </button>
 
+        <button
+          className="field-btn"
+          onClick={() => {
+            setOpen(false)
+            useStore.getState().setKeyboardHelpOpen(true)
+          }}
+        >
+          ⌨ {t('keys.title')}
+        </button>
+
         <button className="sheet-close" onClick={() => setOpen(false)}>
           {t('settings.done')}
         </button>

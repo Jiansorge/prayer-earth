@@ -653,6 +653,14 @@ export default function PrayerPage() {
           >
             ▼
           </button>
+          <button
+            className="pt-help"
+            onClick={() => useStore.getState().setKeyboardHelpOpen(true)}
+            aria-label={t('keys.help')}
+            title={t('keys.help')}
+          >
+            ?
+          </button>
           {prayerVoices.length > 1 && (
             <div className="pt-row pt-voices">
               <label className="pt-label" id="pt-voice-label">{t('prayer.voice')}</label>
