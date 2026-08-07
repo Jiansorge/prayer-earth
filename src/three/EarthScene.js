@@ -69,12 +69,12 @@ const FRAG = /* glsl */ `
     // uGlow rises with every prayer ever made (toward a million), uTier with
     // the lifetime seconds of shared prayer. Land and ocean are deep and quiet
     // so the luminous blue aura is what glows.
-    vec3 oceanC = vec3(0.004, 0.016, 0.04)
-      + vec3(0.008, 0.02, 0.04) * uTier
-      + vec3(0.012, 0.03, 0.052) * uGlow;
-    vec3 landC = vec3(0.02, 0.04, 0.05)
-      + vec3(0.024, 0.032, 0.032) * uTier
-      + vec3(0.036, 0.042, 0.038) * uGlow;
+    vec3 oceanC = vec3(0.004, 0.014, 0.034)
+      + vec3(0.006, 0.016, 0.032) * uTier
+      + vec3(0.01, 0.026, 0.048) * uGlow;
+    vec3 landC = vec3(0.17, 0.33, 0.2)
+      + vec3(0.03, 0.05, 0.028) * uTier
+      + vec3(0.04, 0.06, 0.032) * uGlow;
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -210,13 +210,13 @@ const ATMO_FRAG = /* glsl */ `
     vec3 viewDir = normalize(-vPos);
     float rim = 1.0 - max(dot(viewDir, normalize(vNormal)), 0.0);
     float f = pow(rim, 1.7);
-    // ethereal atmosphere: luminous light-blue shifting brighter as prayer
-    // grows, with a soft violet shimmer breathing slowly
+    // ethereal atmosphere: luminous light-blue with a drifting violet shimmer,
+    // brightening as prayer grows
     vec3 cool = vec3(0.5, 0.8, 1.0);
     vec3 warm = vec3(0.85, 0.95, 1.0);
     vec3 inner = mix(cool, warm, uGlow);
-    vec3 shimmer = vec3(0.65, 0.55, 0.95) * (0.6 + 0.4 * sin(uTime * 0.55));
-    vec3 col = inner * (0.75 + 0.3 * f) + shimmer * 0.32 * f;
+    vec3 shimmer = vec3(0.68, 0.58, 0.98) * (0.55 + 0.45 * sin(uTime * 0.7));
+    vec3 col = inner * (0.75 + 0.3 * f) + shimmer * 0.34 * f;
     float alpha = f * (0.14 + 0.2 * uGlow + 0.14 * uSurge);
     gl_FragColor = vec4(col, alpha);
   }
@@ -232,13 +232,21 @@ const ETHEREAL_FRAG = /* glsl */ `  uniform float uGlow;
     vec3 viewDir = normalize(-vPos);
     float rim = 1.0 - max(dot(viewDir, normalize(vNormal)), 0.0);
     float f = pow(rim, 2.2);
-    float breathe = 0.82 + 0.18 * sin(uTime * 0.45);
-    vec3 col = mix(vec3(0.4, 0.7, 0.95), vec3(0.7, 0.9, 1.0), uGlow);
-    vec3 violet = vec3(0.65, 0.55, 0.95);
-    col = mix(col, violet, 0.25 * (0.5 + 0.5 * sin(uTime * 0.3 + 1.5)));
+    // a slow-drifting gradient: azure -> violet -> soft mint, endlessly
+    // shifting, so the aura never reads as one flat colour
+    float drift = uTime * 0.1;
+    vec3 azure = vec3(0.45, 0.75, 1.0);
+    vec3 violet = vec3(0.66, 0.5, 1.0);
+    vec3 mint = vec3(0.4, 0.9, 0.82);
+    vec3 col = mix(azure, violet, 0.5 + 0.5 * sin(drift));
+    col = mix(col, mint, 0.28 * (0.5 + 0.5 * sin(drift * 1.7 + 2.0)));
+    col = mix(col, vec3(0.95, 0.85, 1.0), 0.16 * (0.5 + 0.5 * sin(drift * 0.6 + 4.0)));
+    // strong breathing twinkle + a fine sparkle grain
+    float breathe = 0.72 + 0.28 * sin(uTime * 0.8);
+    float grain = 0.72 + 0.28 * sin(rim * 70.0 - uTime * 2.4);
     // aura waves: rings pulse outward from the globe when many pray at once
     float waves = pow(0.5 + 0.5 * sin(rim * 40.0 - uTime * 3.2 + uGlow * 5.0), 3.0) * uSurge;
-    float alpha = (f * (0.1 + 0.14 * uGlow) + waves * 0.09) * breathe;
+    float alpha = (f * (0.1 + 0.16 * uGlow) * grain + waves * 0.1) * breathe;
     gl_FragColor = vec4(col + vec3(0.3, 0.5, 0.75) * waves * 0.22, alpha);
   }
 `
@@ -477,7 +485,7 @@ export class EarthScene {
     }
 
     // --- stars ---
-    this.stars = this.buildStars(this.backdrop ? 220 : 2400)
+    this.stars = this.buildStars(this.backdrop ? 260 : 5500)
     this.scene.add(this.stars)
     if (!this.backdrop) {
       this.nebulae = this.buildNebulae()
@@ -1050,28 +1058,27 @@ export class EarthScene {
     return { group, pool, r, MAX }
   }
 
-  // True when a grid cell sits in open ocean (its 1-degree square and its
-  // neighbours are all water in the land mask). Guess/anonymous prayer lights
-  // must never float in the sea, so the world's lights only appear over land
-  // (or right at a real coastline).
+  // True when a grid cell sits over open water (its centre pixel is ocean in
+  // the land mask). Prayer lights must never float at sea, so a light only
+  // appears when its cell centre is on land (a real coastal city rounds to a
+  // land cell; open-ocean cells are dropped).
   isDeepOcean(latDeg, lonDeg) {
     const m = this._maskData
     if (!m) return false
-    const W = m.width
-    const H = m.height
-    const data = m.data
+    const la = Math.max(-89, Math.min(89, latDeg))
+    const my = Math.floor(((90 - la) / 180) * m.height)
+    const mx = Math.floor(((((lonDeg + 180) % 360) + 360) % 360) / 360 * m.width) % m.width
+    if (my < 0 || my >= m.height) return true
+    // sample the cell centre plus a hair around it, since the mask edges blur
     let land = 0
-    for (let dl = -1; dl <= 1; dl++) {
-      const la = latDeg + dl
-      const my = Math.floor(((90 - la) / 180) * H)
-      if (my < 0 || my >= H) continue
-      for (let dn = -1; dn <= 1; dn++) {
-        const lo = ((lonDeg + dn + 180) % 360) - 180
-        const mx = Math.floor(((lo + 180) / 360) * W) % W
-        if (data[(my * W + mx) * 4] > 96) land++
+    for (let dy = -1; dy <= 1; dy++) {
+      const ny = Math.max(0, Math.min(m.height - 1, my + dy))
+      for (let dx = -1; dx <= 1; dx++) {
+        const nx = (mx + dx + m.width) % m.width
+        if (m.data[(ny * m.width + nx) * 4] > 96) land++
       }
     }
-    return land === 0
+    return land < 2 // centre + at least one neighbour must be land
   }
 
   // Reuse the sprite pool: position/scale/colour one per active grid cell.
@@ -1516,7 +1523,7 @@ export class EarthScene {
       u.uTime.value = t
       u.uSwell.value = s
       u.uOpacity.value =
-        0.42 + 0.2 * Math.sin(t * 1.1) + 0.12 * Math.sin(t * 2.3 + 1.2) + Math.min(0.9, s * 1.4)
+        0.32 + 0.3 * Math.sin(t * 1.4) + 0.16 * Math.sin(t * 2.7 + 1.2) + Math.min(0.9, s * 1.4)
     }
 
     // the celestial energy ring drifts around the Earth, shimmering

@@ -91,8 +91,15 @@ export default function PrayerPage() {
     ch.onmessage = (e) => {
       const m = e.data
       if (!m || m.type !== 'play' || m.from === TAB_ID) return
-      if (useStore.getState().playing && !useStore.getState().paused) {
-        togglePlay()
+      const s = useStore.getState()
+      // Another tab just started a prayer — one-at-a-time: pause us, and never
+      // let our local "starting…" guard swallow it.
+      if (s.playing && !s.paused) {
+        speech.pause()
+        s.setPaused(true)
+        s.setPraying(false)
+        syncClient.presenceNow()
+        ambient.setLevel(0.35)
       }
     }
     return () => ch.close()
@@ -364,19 +371,20 @@ export default function PrayerPage() {
   const elapsed = useStore((s) => s.elapsed)
 
   const togglePlay = () => {
-    if (startingRef.current) return
     const live = useStore.getState()
     if (!live.playing) {
+      // starting a fresh prayer: ignore double-taps while the engine warms
+      if (startingRef.current) return
       startJob()
       return
     }
+    if (live.prayerId !== live.playingPrayerId) {
+      // Switching to a different prayer is always allowed, even mid-start.
+      startJob()
+      return
+    }
+    if (startingRef.current) return
     const cur = live
-    if (cur.prayerId !== cur.playingPrayerId) {
-      // A different prayer is playing in the background; starting this view
-      // switches to it.
-      startJob()
-      return
-    }
     if (!cur.paused) {
       speech.pause()
       setPaused(true)
@@ -635,7 +643,6 @@ export default function PrayerPage() {
           className={`ctrl-btn play ${starting ? 'starting' : ''}`}
           onClick={togglePlay}
           aria-label={starting ? t('prayer.loading') : playing ? t('prayer.pause') : t('prayer.pray')}
-          disabled={starting}
         >
           {starting ? <span className="play-spinner" aria-hidden="true" /> : (playing && !paused ? '❚❚' : '▶\uFE0E')}
         </button>
