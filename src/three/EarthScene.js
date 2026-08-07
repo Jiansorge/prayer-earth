@@ -1,5 +1,5 @@
 ﻿import * as THREE from 'three'
-import dayUrl from '../assets/textures/earth_atmos.jpg'
+import dayUrl from '../assets/textures/earth_atmos_medium.jpg'
 import dayUrlSmall from '../assets/textures/earth_atmos_small.jpg'
 import { SPIRITUALITIES } from '../data/prayers.js'
 

@@ -212,6 +212,14 @@ export default function App() {
     return () => window.removeEventListener('hashchange', route)
   }, [])
 
+  // Warm the prayer-view bundle (three.js + the earth backdrop) on the first
+  // interaction, so opening a prayer doesn't stall on a lazy chunk download.
+  useEffect(() => {
+    const warm = () => import('./components/EarthBackdrop.jsx').catch(() => {})
+    window.addEventListener('pointerdown', warm, { once: true, passive: true })
+    return () => window.removeEventListener('pointerdown', warm)
+  }, [])
+
   // Keep the address bar in sync so the browser back/forward buttons work.
   // (Skip the very first render, route() owns the initial deep link.)
   const spiritId = useStore((s) => s.spiritId)
