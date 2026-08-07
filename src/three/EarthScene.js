@@ -1022,6 +1022,30 @@ export class EarthScene {
     return { group, pool, r, MAX }
   }
 
+  // True when a grid cell sits in open ocean (its 1-degree square and its
+  // neighbours are all water in the land mask). Guess/anonymous prayer lights
+  // must never float in the sea, so the world's lights only appear over land
+  // (or right at a real coastline).
+  isDeepOcean(latDeg, lonDeg) {
+    const m = this._maskData
+    if (!m) return false
+    const W = m.width
+    const H = m.height
+    const data = m.data
+    let land = 0
+    for (let dl = -1; dl <= 1; dl++) {
+      const la = latDeg + dl
+      const my = Math.floor(((90 - la) / 180) * H)
+      if (my < 0 || my >= H) continue
+      for (let dn = -1; dn <= 1; dn++) {
+        const lo = ((lonDeg + dn + 180) % 360) - 180
+        const mx = Math.floor(((lo + 180) / 360) * W) % W
+        if (data[(my * W + mx) * 4] > 96) land++
+      }
+    }
+    return land === 0
+  }
+
   // Reuse the sprite pool: position/scale/colour one per active grid cell.
   // The colour comes from the cell's dominant tradition, so the world's lights
   // glow by faith; unknown cells glow warm gold. `active` marks the cell so the
@@ -1037,8 +1061,12 @@ export class EarthScene {
       const spr = pool[used]
       if (!spr) break
       const c = k.indexOf(',')
-      const lat = parseFloat(k.slice(0, c)) * (Math.PI / 180)
-      const lon = parseFloat(k.slice(c + 1)) * (Math.PI / 180)
+      const latDeg = parseFloat(k.slice(0, c))
+      const lonDeg = parseFloat(k.slice(c + 1))
+      // Never let a prayer light float in the open ocean.
+      if (this.isDeepOcean(latDeg, lonDeg)) continue
+      const lat = latDeg * (Math.PI / 180)
+      const lon = lonDeg * (Math.PI / 180)
       spr.position.set(
         r * Math.cos(lat) * Math.cos(lon),
         r * Math.sin(lat),

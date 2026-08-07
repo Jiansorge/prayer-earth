@@ -246,7 +246,9 @@ class SpeechEngine {
       if (!audio) {
         audio = new Audio(url)
         audio.volume = Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75)
-        this.applyReverb(audio)
+        // Play directly, never through the WebAudio graph: an element routed
+        // through createMediaElementSource can't play on its own again, so a
+        // suspended AudioContext (mobile/background) would silence it forever.
         this._audioByUrl.set(url, audio)
       }
       audio.playbackRate = job.rate ?? 1
@@ -673,16 +675,28 @@ class SpeechEngine {
     }, delay)
   }
 
-  // iOS sometimes pauses synthesis; a gentle resume keeps the voice going.
+  // iOS sometimes pauses synthesis; a gentle resume keeps the voice going. A
+  // mobile OS can also suspend the shared AudioContext in the background — if
+  // it is still suspended while a prayer is meant to be audible, resume it and
+  // re-kick the current phrase so sound always comes back.
   primeKicker() {
     clearInterval(this.kicker)
     this.kicker = setInterval(() => {
-      if (this.job && this.job.active) {
-        try {
-          if (this.synth.paused) this.synth.resume()
-        } catch {}
-      }
-    }, 8000)
+      const j = this.job
+      if (!j || !j.active) return
+      try {
+        if (this.synth.paused) this.synth.resume()
+      } catch {}
+      try {
+        const ctx = ambient.ctx
+        if (ctx && ctx.state === 'suspended' && !document.hidden && !j.paused) {
+          ctx.resume().then(() => {
+            const k = this.job
+            if (k && k.active && !k.paused) this.speakIndex(k.index)
+          }).catch(() => {})
+        }
+      } catch {}
+    }, 6000)
   }
 
   // No speech engine (or one that stalled) — highlight by estimated reading

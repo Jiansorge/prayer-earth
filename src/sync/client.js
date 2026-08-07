@@ -146,11 +146,10 @@ class SyncClient {
   }
 
   fallbackLoc() {
-    let h = 0
-    const n = this.name
-    for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) >>> 0
-    const [lat, lon] = FALLBACK_CITIES[h % FALLBACK_CITIES.length]
-    this.loc = { lat, lon }
+    // No real position was granted or available. We never pretend an anonymous
+    // guess is the person's actual place — and we don't want guess-prayers
+    // dotting the ocean — so this prayer simply contributes no light.
+    this.loc = null
   }
 
   stop() {

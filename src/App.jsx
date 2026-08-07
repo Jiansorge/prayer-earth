@@ -291,7 +291,8 @@ export default function App() {
           </button>
         </div>
       )}
-      <div className="glow-field" />
+      {view !== 'earth' && <div className="glow-field" />}
+      {view !== 'earth' && (
       <div className="fireflies" aria-hidden="true">
         {[...Array(10)].map((_, i) => (
           <span
@@ -307,7 +308,9 @@ export default function App() {
           />
         ))}
       </div>
+      )}
 
+      {view !== 'earth' && (
       <div className="sparkles" aria-hidden="true">
         {[...Array(24)].map((_, i) => (
           <span
@@ -323,6 +326,7 @@ export default function App() {
           />
         ))}
       </div>
+      )}
 
       <Boundary>
         {view === 'prayer' && (

@@ -446,12 +446,13 @@ h3,
 .nav {
   position: fixed;
   left: 50%;
-  bottom: max(14px, env(safe-area-inset-bottom));
+  bottom: max(10px, env(safe-area-inset-bottom));
   transform: translateX(-50%);
   z-index: 40;
   display: flex;
+  align-items: center;
   gap: 4px;
-  padding: 6px;
+  padding: 5px;
   border-radius: 999px;
   background: rgba(9, 25, 16, 0.72);
   backdrop-filter: blur(18px) saturate(140%);
@@ -469,7 +470,7 @@ h3,
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 10px 16px;
+  padding: 8px 15px;
   border-radius: 999px;
   cursor: pointer;
   display: flex;
@@ -1073,8 +1074,8 @@ html[dir='rtl'] .chooser-arrow.right {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  padding: 8px 0 calc(96px + env(safe-area-inset-bottom));
+  gap: 12px;
+  padding: 6px 0 calc(78px + env(safe-area-inset-bottom));
 }
 
 /* vertical volume control, sits right after the sound-options (tune) button */
@@ -1602,7 +1603,7 @@ html[dir='rtl'] .chooser-arrow.right {
 
 .hint {
   font-size: 12px;
-  color: var(--ink-faint);
+  color: rgba(241, 245, 232, 0.72);
   text-align: center;
   margin-top: 8px;
 }
@@ -1758,13 +1759,13 @@ html[dir='rtl'] .chooser-arrow.right {
   font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ink-dim);
+  color: rgba(241, 245, 232, 0.85);
   margin: 16px 0 6px;
 }
 
 .field-hint {
   font-size: 12.5px;
-  color: var(--ink-faint);
+  color: rgba(241, 245, 232, 0.74);
   line-height: 1.5;
   margin-bottom: 8px;
 }
@@ -3594,13 +3595,12 @@ input[type='radio'] {
 }
 
 /* The nature theme cycles through bright day scenes: dark text + translucent
-   cards so the home page stays readable over the bright sky. */
+   cards so the home page stays readable over the bright sky. Dawn and dusk
+   keep their own dark sky-tops, so they keep the default light text. */
 .app[data-scene='day'] .page-title,
 .app[data-scene='day'] .home-hero h1,
 .app[data-scene='golden'] .page-title,
-.app[data-scene='golden'] .home-hero h1,
-.app[data-scene='dawn'] .page-title,
-.app[data-scene='dawn'] .home-hero h1 {
+.app[data-scene='golden'] .home-hero h1 {
   background: none;
   color: #123a6b;
   -webkit-text-fill-color: #123a6b;
@@ -3611,11 +3611,18 @@ input[type='radio'] {
 .app[data-scene='day'] .hint,
 .app[data-scene='golden'] .subtitle,
 .app[data-scene='golden'] .row h2,
-.app[data-scene='golden'] .hint,
+.app[data-scene='golden'] .hint {
+  color: rgba(16, 38, 70, 0.95);
+  text-shadow: 0 1px 5px rgba(255, 255, 255, 0.65);
+}
+/* dawn keeps the default light text; over its bright lower sky give it a soft
+   dark scrim so the letters always separate from the sky. */
+.app[data-scene='dawn'] .page-title,
+.app[data-scene='dawn'] .home-hero h1,
 .app[data-scene='dawn'] .subtitle,
 .app[data-scene='dawn'] .row h2,
 .app[data-scene='dawn'] .hint {
-  color: rgba(20, 45, 80, 0.9);
+  text-shadow: 0 1px 6px rgba(6, 12, 30, 0.75), 0 2px 14px rgba(6, 12, 30, 0.5);
 }
 .app[data-scene='day'] .card,
 .app[data-scene='day'] .life-card,

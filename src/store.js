@@ -134,7 +134,7 @@ export const useStore = create(
         }),
       openPrayer: (spiritId, prayerId) =>
         set({ view: 'prayer', spiritId, prayerId }),
-      openLegal: (legalPage) => set({ view: 'legal', legalPage }),
+      openLegal: (legalPage) => set({ view: 'legal', legalPage, settingsOpen: false }),
       closeLegal: () => set({ view: 'home', legalPage: null }),
       closePrayer: () => set({ view: 'home', praying: false }),
       openPrayerPicker: (spiritId) => set({ prayerPickerSpiritId: spiritId }),
