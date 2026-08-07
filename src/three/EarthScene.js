@@ -61,17 +61,19 @@ const FRAG = /* glsl */ `
     vec2 uv = equirect(sp);
 
     // The living Earth: deep, quiet ocean and land, lit by the sun terminator.
-    // A gentle luminous shift accumulates as the world prays together.
+    // A gentle luminous shift accumulates as the world prays together. Land and
+    // ocean sit darker so the glowing blue atmosphere, coastlines and aurora
+    // shine through as the luminous heart of the scene.
     float landMask = texture2D(uMaskTex, uv).r;
 
     // uGlow rises with every prayer ever made (toward a million), uTier with
     // the lifetime seconds of shared prayer.
-    vec3 oceanC = vec3(0.014, 0.045, 0.1)
-      + vec3(0.012, 0.028, 0.05) * uTier
-      + vec3(0.016, 0.038, 0.062) * uGlow;
-    vec3 landC = vec3(0.075, 0.085, 0.075)
-      + vec3(0.038, 0.042, 0.034) * uTier
-      + vec3(0.05, 0.052, 0.04) * uGlow;
+    vec3 oceanC = vec3(0.006, 0.024, 0.055)
+      + vec3(0.01, 0.024, 0.045) * uTier
+      + vec3(0.014, 0.034, 0.058) * uGlow;
+    vec3 landC = vec3(0.032, 0.048, 0.045)
+      + vec3(0.03, 0.036, 0.03) * uTier
+      + vec3(0.042, 0.045, 0.036) * uGlow;
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -80,10 +82,10 @@ const FRAG = /* glsl */ `
 
     float night = 1.0 - smoothstep(-0.25, 0.08, ndl);
 
-    // the Earth's own breathing glow, a gentle radiance that swells when many
-    // people are praying at once
-    vec3 radiance = vec3(0.18, 0.35, 0.24) * uGlow * uGlow * 0.18
-      + vec3(0.34, 0.55, 0.42) * uGlow * uSurge * 0.28;
+    // the Earth's own breathing glow, a luminous blue radiance that swells when
+    // many people are praying at once
+    vec3 radiance = vec3(0.12, 0.55, 0.75) * uGlow * uGlow * 0.2
+      + vec3(0.3, 0.7, 0.9) * uGlow * uSurge * 0.3;
 
     // polar aurora
     float polar = smoothstep(0.86, 0.99, abs(sp.y));
@@ -101,8 +103,8 @@ const FRAG = /* glsl */ `
     float core = smoothstep(0.3, 0.5, landMask) * (1.0 - smoothstep(0.42, 0.5, min(a, b)));
     float landGlow = smoothstep(0.25, 0.45, landMask) * (1.0 - smoothstep(0.5, 0.6, min(c, d)));
     float waterGlow = (1.0 - landMask) * smoothstep(0.4, 0.55, max(c, d));
-    vec3 coastCol = vec3(0.72, 0.88, 1.0) * (0.75 + 0.3 * uGlow + 0.15 * uSurge + 0.1 * uTier);
-    col += coastCol * (core * 0.4 + landGlow * 0.22 + waterGlow * 0.12);
+    vec3 coastCol = vec3(0.55, 0.85, 1.0) * (0.85 + 0.35 * uGlow + 0.2 * uSurge + 0.12 * uTier);
+    col += coastCol * (core * 0.45 + landGlow * 0.26 + waterGlow * 0.15);
 
     // warm dawn band where day meets night
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));
@@ -207,14 +209,14 @@ const ATMO_FRAG = /* glsl */ `
     vec3 viewDir = normalize(-vPos);
     float rim = 1.0 - max(dot(viewDir, normalize(vNormal)), 0.0);
     float f = pow(rim, 1.7);
-    // ethereal atmosphere: cool teal-mist shifting to warm gold as prayer grows,
-    // with a soft violet shimmer breathing slowly
-    vec3 cool = vec3(0.42, 0.62, 0.85);
-    vec3 warm = vec3(1.0, 0.74, 0.42);
+    // ethereal atmosphere: luminous light-blue shifting brighter as prayer
+    // grows, with a soft violet shimmer breathing slowly
+    vec3 cool = vec3(0.5, 0.8, 1.0);
+    vec3 warm = vec3(0.85, 0.95, 1.0);
     vec3 inner = mix(cool, warm, uGlow);
-    vec3 shimmer = vec3(0.62, 0.46, 0.92) * (0.6 + 0.4 * sin(uTime * 0.55));
-    vec3 col = inner * (0.7 + 0.3 * f) + shimmer * 0.28 * f;
-    float alpha = f * (0.1 + 0.18 * uGlow + 0.12 * uSurge);
+    vec3 shimmer = vec3(0.65, 0.55, 0.95) * (0.6 + 0.4 * sin(uTime * 0.55));
+    vec3 col = inner * (0.75 + 0.3 * f) + shimmer * 0.32 * f;
+    float alpha = f * (0.14 + 0.2 * uGlow + 0.14 * uSurge);
     gl_FragColor = vec4(col, alpha);
   }
 `
@@ -230,13 +232,13 @@ const ETHEREAL_FRAG = /* glsl */ `  uniform float uGlow;
     float rim = 1.0 - max(dot(viewDir, normalize(vNormal)), 0.0);
     float f = pow(rim, 2.2);
     float breathe = 0.82 + 0.18 * sin(uTime * 0.45);
-    vec3 col = mix(vec3(0.32, 0.55, 0.72), vec3(0.95, 0.7, 0.4), uGlow);
-    vec3 violet = vec3(0.6, 0.5, 0.9);
+    vec3 col = mix(vec3(0.4, 0.7, 0.95), vec3(0.7, 0.9, 1.0), uGlow);
+    vec3 violet = vec3(0.65, 0.55, 0.95);
     col = mix(col, violet, 0.25 * (0.5 + 0.5 * sin(uTime * 0.3 + 1.5)));
     // aura waves: rings pulse outward from the globe when many pray at once
     float waves = pow(0.5 + 0.5 * sin(rim * 40.0 - uTime * 3.2 + uGlow * 5.0), 3.0) * uSurge;
-    float alpha = (f * (0.08 + 0.12 * uGlow) + waves * 0.08) * breathe;
-    gl_FragColor = vec4(col + vec3(0.2, 0.35, 0.6) * waves * 0.2, alpha);
+    float alpha = (f * (0.1 + 0.14 * uGlow) + waves * 0.09) * breathe;
+    gl_FragColor = vec4(col + vec3(0.3, 0.5, 0.75) * waves * 0.22, alpha);
   }
 `
 
@@ -474,8 +476,12 @@ export class EarthScene {
     }
 
     // --- stars ---
-    this.stars = this.buildStars(this.backdrop ? 220 : 1000)
+    this.stars = this.buildStars(this.backdrop ? 220 : 2400)
     this.scene.add(this.stars)
+    if (!this.backdrop) {
+      this.nebulae = this.buildNebulae()
+      this.scene.add(this.nebulae)
+    }
 
     this.bindResize()
     this.bindVisibility()
@@ -1124,6 +1130,7 @@ export class EarthScene {
   buildStars(N = 1800) {
     const pos = new Float32Array(N * 3)
     const col = new Float32Array(N * 3)
+    const size = new Float32Array(N)
     for (let i = 0; i < N; i++) {
       const v = new THREE.Vector3(
         (Math.random() - 0.5) * 2,
@@ -1131,17 +1138,21 @@ export class EarthScene {
         (Math.random() - 0.5) * 2
       )
         .normalize()
-        .multiplyScalar(30 + Math.random() * 70)
+        .multiplyScalar(28 + Math.random() * 75)
       pos.set([v.x, v.y, v.z], i * 3)
       const warm = Math.random()
+      // a handful of bright beacons, mostly quiet white-blue stardust
+      const bright = Math.random()
+      size[i] = bright > 0.92 ? 0.55 : bright > 0.6 ? 0.3 : 0.16
       col.set(
-        [warm > 0.7 ? 1 : 0.8, warm > 0.7 ? 0.92 : 0.85, 1],
+        [warm > 0.72 ? 0.85 : 0.75, warm > 0.72 ? 0.9 : 0.85, 1],
         i * 3
       )
     }
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
     g.setAttribute('color', new THREE.BufferAttribute(col, 3))
+    g.setAttribute('aSize', new THREE.BufferAttribute(size, 1))
     const m = new THREE.PointsMaterial({
       size: 0.24,
       sizeAttenuation: true,
@@ -1151,7 +1162,72 @@ export class EarthScene {
       depthTest: true,
       depthWrite: false
     })
-    return new THREE.Points(g, m)
+    // per-star size needs a tiny shader; keep it minimal
+    const shader = new THREE.ShaderMaterial({
+      vertexShader: `attribute float aSize;
+        varying vec3 vColor;
+        uniform float uDpr;
+        void main() {
+          vColor = color;
+          gl_PointSize = aSize * 30.0 * uDpr;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+      fragmentShader: `varying vec3 vColor;
+        uniform float uOpacity;
+        void main() {
+          float d = length(gl_PointCoord - 0.5);
+          float a = 1.0 - smoothstep(0.05, 0.5, d);
+          if (a <= 0.004) discard;
+          gl_FragColor = vec4(vColor, a * uOpacity);
+        }`,
+      uniforms: { uDpr: { value: this.renderer ? this.renderer.getPixelRatio() : 1 }, uOpacity: { value: 0.9 } },
+      transparent: true,
+      depthTest: true,
+      depthWrite: false
+    })
+    const pts = new THREE.Points(g, shader)
+    this.starMat = shader
+    return pts
+  }
+
+  // Soft, luminous nebula clouds drifting behind the Earth — indigo space with
+  // whispers of blue and violet, so the starfield feels deep and alive.
+  buildNebulae() {
+    const S = 256
+    const c = document.createElement('canvas')
+    c.width = c.height = S
+    const g = c.getContext('2d')
+    const gr = g.createRadialGradient(S / 2, S / 2, 10, S / 2, S / 2, S / 2)
+    gr.addColorStop(0, 'rgba(110, 150, 255, 0.6)')
+    gr.addColorStop(0.35, 'rgba(130, 95, 255, 0.28)')
+    gr.addColorStop(1, 'rgba(80, 60, 200, 0)')
+    g.fillStyle = gr
+    g.fillRect(0, 0, S, S)
+    const tex = new THREE.CanvasTexture(c)
+    const group = new THREE.Group()
+    const defs = [
+      { pos: [26, 8, -34], scale: 60, tint: [0.45, 0.62, 1] },
+      { pos: [-30, -6, -28], scale: 46, tint: [0.6, 0.5, 1] },
+      { pos: [8, 22, -40], scale: 38, tint: [0.35, 0.7, 1] },
+      { pos: [-18, 14, -40], scale: 30, tint: [0.65, 0.45, 0.95] }
+    ]
+    this.nebulaSprites = defs.map((d, i) => {
+      const mat = new THREE.SpriteMaterial({
+        map: tex,
+        color: new THREE.Color(d.tint[0], d.tint[1], d.tint[2]),
+        transparent: true,
+        opacity: 0.5,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        depthTest: false
+      })
+      const spr = new THREE.Sprite(mat)
+      spr.position.set(d.pos[0], d.pos[1], d.pos[2])
+      spr.scale.set(d.scale, d.scale, 1)
+      group.add(spr)
+      return { spr, phase: i * 1.7 }
+    })
+    return group
   }
 
   buildMotes() {
@@ -1396,7 +1472,17 @@ export class EarthScene {
       }
     }
     if (this.halo) this.halo.material.uniforms.uGlow.value = this.glow
-    if (this.stars) this.stars.material.opacity = 0.72 + 0.2 * Math.sin(t * 0.7)
+    if (this.stars) this.starMat.uniforms.uOpacity.value = 0.62 + 0.25 * Math.sin(t * 0.7)
+
+    // nebula clouds drift slowly and breathe, keeping the space behind the
+    // Earth deep and alive
+    if (this.nebulae) {
+      this.nebulae.rotation.y += 0.0004
+      const nsp = this.nebulaSprites
+      for (let i = 0; i < nsp.length; i++) {
+        nsp[i].spr.material.opacity = 0.32 + 0.16 * Math.sin(t * 0.18 + nsp[i].phase)
+      }
+    }
 
     if (this.backdrop) {
       this.renderer.render(this.scene, this.camera)

@@ -146,10 +146,14 @@ class SyncClient {
   }
 
   fallbackLoc() {
-    // No real position was granted or available. We never pretend an anonymous
-    // guess is the person's actual place — and we don't want guess-prayers
-    // dotting the ocean — so this prayer simply contributes no light.
-    this.loc = null
+    // No real position was granted or available. Show a light at a stable
+    // stand-in city (all real, on land) so your prayer still appears on the
+    // Earth — the earth view drops any cell sitting in deep ocean.
+    let h = 0
+    const n = this.name
+    for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) >>> 0
+    const [lat, lon] = FALLBACK_CITIES[h % FALLBACK_CITIES.length]
+    this.loc = { lat, lon }
   }
 
   stop() {

@@ -3190,7 +3190,7 @@ html {
 
 /* sparkles that feel like tiny stars, not dust */
 .sp {
-  box-shadow: 0 0 8px 2px rgba(220, 238, 255, 0.95), 0 0 22px 6px rgba(150, 195, 255, 0.5);
+  box-shadow: 0 0 9px 2px rgba(230, 242, 255, 1), 0 0 24px 7px rgba(170, 210, 255, 0.6);
 }
 
 /* soft living aurora behind the content */
@@ -3200,9 +3200,10 @@ html {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(40% 40% at 30% 30%, rgba(90, 130, 220, 0.16), transparent 60%),
-    radial-gradient(40% 40% at 70% 65%, rgba(200, 160, 120, 0.10), transparent 60%),
-    radial-gradient(35% 35% at 55% 20%, rgba(120, 210, 190, 0.08), transparent 60%);
+    radial-gradient(42% 42% at 28% 28%, rgba(110, 160, 255, 0.22), transparent 62%),
+    radial-gradient(40% 40% at 72% 62%, rgba(160, 120, 220, 0.14), transparent 60%),
+    radial-gradient(38% 38% at 52% 16%, rgba(150, 230, 255, 0.12), transparent 62%),
+    radial-gradient(36% 36% at 45% 78%, rgba(200, 160, 120, 0.08), transparent 60%);
   animation: aurora 22s ease-in-out infinite alternate;
 }
 @keyframes aurora {
