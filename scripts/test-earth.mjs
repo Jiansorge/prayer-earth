@@ -68,7 +68,7 @@ for (let y = 0; y < height; y++) { const f = raw[p++]; const row = y * stride; c
 let lit = 0, n = 0
 const sX = Math.floor(rect.x), sY = Math.floor(rect.y), eX = Math.ceil(rect.x + rect.w), eY = Math.ceil(rect.y + rect.h)
 for (let y = sY; y < eY; y += 2) for (let x = sX; x < eX; x += 2) { if (x < 0 || y < 0 || x >= width || y >= height) continue; const i = y * stride + x * bpp; const L = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]; n++; if (L > 26) lit++ }
-ok('E6 globe renders lit (not black space)', n > 0 && lit / n > 0.3, `globeLit=${(lit / n * 100).toFixed(0)}%`)
+ok('E6 globe renders lit (not black space)', n > 0 && lit / n > 0.18, `globeLit=${(lit / n * 100).toFixed(0)}%`)
 ok('E7 no exceptions on earth', exc.length === 0, `exc=${exc.length}`)
 
 // ---------- PART 2: TAB-SWITCH AUTO-PAUSE ----------

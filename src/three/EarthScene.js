@@ -79,7 +79,9 @@ const FRAG = /* glsl */ `
 
     float ndl = dot(n, normalize(uSunDir));
     float sun = smoothstep(-0.15, 0.35, ndl);
-    vec3 lit = base * (0.5 + 0.5 * sun);
+    // higher-contrast light: deeper terminator shadow, brighter day side, so
+    // the living Earth reads clearly against the dark space around it
+    vec3 lit = base * (0.4 + 0.66 * sun);
 
     float night = 1.0 - smoothstep(-0.25, 0.08, ndl);
 
@@ -111,6 +113,13 @@ const FRAG = /* glsl */ `
     float term = smoothstep(0.1, -0.12, ndl) * (1.0 - smoothstep(-0.5, -0.2, ndl));
     vec3 dawn = vec3(1.0, 0.55, 0.3) * term * 0.08;
     col += dawn;
+
+    // a gentle surface twinkle: soft shimmer waves drift over land and ocean
+    // so the living Earth always feels faintly alive
+    float tw = 0.5 + 0.5 * sin(uv.x * 80.0 + uTime * 1.2);
+    tw *= 0.5 + 0.5 * sin(uv.y * 55.0 - uTime * 0.8);
+    col += landMask * vec3(0.06, 0.1, 0.07) * tw * 0.14;
+    col += (1.0 - landMask) * vec3(0.05, 0.09, 0.16) * tw * 0.06;
 
     // soft limb fade so the globe's edge always reads as a clean curve
     float limb = smoothstep(-0.08, 0.6, dot(n, vec3(0.0, 0.0, 1.0)));
@@ -485,12 +494,13 @@ export class EarthScene {
     }
 
     // --- stars ---
-    this.stars = this.buildStars(this.backdrop ? 260 : 5500)
+    this.stars = this.buildStars(this.backdrop ? 260 : 8000)
     this.scene.add(this.stars)
     if (!this.backdrop) {
       this.nebulae = this.buildNebulae()
       this.scene.add(this.nebulae)
       this.scene.add(this.buildAuraRing())
+      this.scene.add(this.buildShootingStar())
     }
 
     this.bindResize()
@@ -828,7 +838,9 @@ export class EarthScene {
   setYouLoc(loc) {
     this.youLoc = loc
     if (!this.youMarker) return
-    if (!loc) {
+    // A coarse geolocation can be wildly wrong (VPN/ISP in the ocean) — never
+    // float "you are here" out at sea.
+    if (!loc || this.isDeepOcean(loc.lat, loc.lon)) {
       this.youMarker.visible = false
       return
     }
@@ -1300,8 +1312,9 @@ export class EarthScene {
     return group
   }
 
-  // A slow-turning luminous band around the Earth — a celestial energy ring
-  // that shimmers with moving light and breathes with the world's prayer.
+  // Two slow-turning luminous bands around the Earth — an outer celestial
+  // energy ring and a finer inner one counter-rotating, shimmering with moving
+  // light and breathing with the world's prayer.
   buildAuraRing() {
     const RING_FRAG = /* glsl */ `
       uniform float uTime;
@@ -1320,27 +1333,62 @@ export class EarthScene {
         gl_FragColor = vec4(col, alpha);
       }
     `
-    const geo = new THREE.RingGeometry(1.64, 1.9, 120)
-    const mat = new THREE.ShaderMaterial({
-      vertexShader: `varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }`,
-      fragmentShader: RING_FRAG,
-      uniforms: { uTime: { value: 0 }, uGlow: { value: this.glow }, uSurge: { value: 0 } },
+    const make = (inner, outer, seg, tilt, z, mult) => {
+      const geo = new THREE.RingGeometry(inner, outer, seg)
+      const mat = new THREE.ShaderMaterial({
+        vertexShader: `varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }`,
+        fragmentShader: RING_FRAG,
+        uniforms: { uTime: { value: 0 }, uGlow: { value: this.glow }, uSurge: { value: 0 } },
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      })
+      const mesh = new THREE.Mesh(geo, mat)
+      mesh.rotation.x = tilt
+      mesh.rotation.z = z
+      return { mesh, mat, mult }
+    }
+    const outer = make(1.66, 1.9, 120, 1.05, 0.35, 1)
+    const inner = make(1.58, 1.68, 96, 1.12, 0.8, -1.6)
+    const group = new THREE.Group()
+    group.add(outer.mesh)
+    group.add(inner.mesh)
+    this.auraRing = { group, outer, inner }
+    return group
+  }
+
+  // A rare bright shooting star that streaks across the space around the Earth.
+  buildShootingStar() {
+    const S = 64
+    const c = document.createElement('canvas')
+    c.width = S
+    c.height = 8
+    const g = c.getContext('2d')
+    const grad = g.createLinearGradient(0, 0, S, 0)
+    grad.addColorStop(0, 'rgba(255,255,255,0)')
+    grad.addColorStop(0.8, 'rgba(225, 240, 255, 0.85)')
+    grad.addColorStop(1, 'rgba(255,255,255,1)')
+    g.fillStyle = grad
+    g.fillRect(0, 0, S, 8)
+    const tex = new THREE.CanvasTexture(c)
+    const mat = new THREE.SpriteMaterial({
+      map: tex,
       transparent: true,
+      opacity: 0,
       blending: THREE.AdditiveBlending,
-      side: THREE.DoubleSide,
       depthWrite: false
     })
-    const ring = new THREE.Mesh(geo, mat)
-    const group = new THREE.Group()
-    group.add(ring)
-    group.rotation.x = 1.05
-    group.rotation.z = 0.35
-    this.auraRing = { group, mat, ring }
-    return group
+    const spr = new THREE.Sprite(mat)
+    spr.scale.set(1.6, 0.22, 1)
+    spr.visible = false
+    spr.userData.next = performance.now() + 5000
+    this.shootingStar = spr
+    return spr
   }
 
   buildMotes() {
@@ -1526,13 +1574,17 @@ export class EarthScene {
         0.32 + 0.3 * Math.sin(t * 1.4) + 0.16 * Math.sin(t * 2.7 + 1.2) + Math.min(0.9, s * 1.4)
     }
 
-    // the celestial energy ring drifts around the Earth, shimmering
+    // the celestial energy rings drift around the Earth, shimmering
     if (this.auraRing) {
       this.auraRing.group.rotation.y += 0.0012
-      const ru = this.auraRing.mat.uniforms
-      ru.uTime.value = t
-      ru.uGlow.value = this.glow
-      ru.uSurge.value = this.surge || 0
+      for (const k of ['outer', 'inner']) {
+        const u = this.auraRing[k].mat.uniforms
+        u.uTime.value = t
+        u.uGlow.value = this.glow
+        u.uSurge.value = this.surge || 0
+      }
+      // the inner ring counter-rotates and spins a touch faster
+      this.auraRing.inner.mesh.rotation.y -= 0.002
     }
 
     // the halo blooms around the whole world at high ladder rungs
@@ -1603,6 +1655,33 @@ export class EarthScene {
       const nsp = this.nebulaSprites
       for (let i = 0; i < nsp.length; i++) {
         nsp[i].spr.material.opacity = 0.32 + 0.16 * Math.sin(t * 0.18 + nsp[i].phase)
+      }
+    }
+
+    // a rare shooting star streaks across the void, fades, and vanishes
+    if (this.shootingStar) {
+      const ss = this.shootingStar
+      const nowMs = performance.now()
+      if (!ss.visible && nowMs > ss.userData.next) {
+        ss.userData.next = nowMs + 6000 + Math.random() * 12000
+        ss.userData.ang = Math.random() * Math.PI * 2
+        ss.userData.speed = 0.55 + Math.random() * 0.6
+        ss.userData.life = 0
+        ss.visible = true
+      }
+      if (ss.visible) {
+        ss.userData.life += 0.016
+        const l = ss.userData.life
+        const fade = Math.min(1, l * 3) * Math.max(0, 1 - (l - 1.1) / 0.5)
+        const th = ss.userData.ang + l * ss.userData.speed
+        const ph = -0.45 + l * 0.5
+        const r = 62
+        ss.position.set(r * Math.cos(ph) * Math.cos(th), r * Math.sin(ph), r * Math.cos(ph) * Math.sin(th))
+        ss.material.opacity = 0.9 * Math.max(0, fade)
+        if (l > 1.6) {
+          ss.visible = false
+          ss.material.opacity = 0
+        }
       }
     }
 
