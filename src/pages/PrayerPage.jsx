@@ -630,15 +630,12 @@ export default function PrayerPage() {
         >
           ♪
         </button>
-      </div>
-
-      <div className="controls-sub">
-        <div className="vol-inline" role="group" aria-label={t('prayer.volume')}>
-          <span className="vol-icon" aria-hidden="true">
+        <div className="vol-vert" role="group" aria-label={t('prayer.volume')}>
+          <span className="vol-vert-icon" aria-hidden="true">
             {volume <= 0 ? '🔇' : volume < 0.4 ? '🔉' : '🔊'}
           </span>
           <input
-            className="vol-slider"
+            className="vol-slider-vert"
             type="range"
             min="0"
             max="1"

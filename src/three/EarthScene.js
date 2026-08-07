@@ -1,5 +1,6 @@
 ﻿import * as THREE from 'three'
 import dayUrl from '../assets/textures/earth_atmos.jpg'
+import dayUrlSmall from '../assets/textures/earth_atmos_small.jpg'
 import { SPIRITUALITIES } from '../data/prayers.js'
 
 // Each tradition's prayer-light colour, so the lights of the world glow by
@@ -397,8 +398,11 @@ export class EarthScene {
 
     const loader = new THREE.TextureLoader()
     this.maskTex = this.buildLandMaskCanvas()
+    // The prayer backdrop only reads luminance from the map (land/coast
+    // classification), so it gets a half-res texture — 70 KB instead of 501 KB
+    // on every prayer view. The full-resolution map stays on the Earth view.
     const dayTex = loader.load(
-      dayUrl,
+      this.backdrop ? dayUrlSmall : dayUrl,
       (tex) => {
         this.processLandMask(tex.image)
         tex.image = this.makeSeamless(tex.image)

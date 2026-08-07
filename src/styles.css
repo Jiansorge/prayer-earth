@@ -1074,35 +1074,28 @@ html[dir='rtl'] .chooser-arrow.right {
   align-items: center;
   justify-content: center;
   gap: 14px;
-  padding: 8px 0 4px;
+  padding: 8px 0 calc(96px + env(safe-area-inset-bottom));
 }
 
-/* inline volume control under the main play buttons */
-.controls-sub {
-  flex-shrink: 0;
+/* vertical volume control, sits right after the sound-options (tune) button */
+.vol-vert {
   display: flex;
-  justify-content: center;
-  padding: 0 18px calc(92px + env(safe-area-inset-bottom));
-}
-.vol-inline {
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  width: min(240px, calc(100vw - 120px));
-  padding: 7px 16px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  gap: 4px;
+  flex: 0 0 auto;
 }
-.vol-icon {
-  font-size: 15px;
+.vol-vert-icon {
+  font-size: 13px;
   line-height: 1;
-  filter: drop-shadow(0 0 6px rgba(232, 196, 122, 0.35));
+  filter: drop-shadow(0 0 5px rgba(232, 196, 122, 0.35));
 }
-.vol-slider {
-  flex: 1;
-  min-width: 0;
-  height: 4px;
+.vol-slider-vert {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 4px;
+  height: 52px;
+  margin: 0;
   accent-color: var(--gold);
   cursor: pointer;
 }
@@ -1184,7 +1177,7 @@ html[dir='rtl'] .chooser-arrow.right {
   position: absolute;
   left: 18px;
   right: 18px;
-  bottom: calc(216px + env(safe-area-inset-bottom));
+  bottom: calc(170px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -3531,16 +3524,16 @@ input[type='radio'] {
   color: var(--gold);
   text-shadow: 0 0 8px rgba(232, 196, 122, 0.7);
 }
-/* dawn: the world meter is a soft translucent card, not a dark rectangle */
+/* dawn: the world meter keeps the standard card look (consistent with the
+   other themes), not a pale/translucent variant */
 .app[data-theme='dawn'] .world-meter.card {
-  background: linear-gradient(160deg, rgba(255, 252, 240, 0.55), rgba(240, 245, 252, 0.35));
-  border-color: rgba(60, 70, 110, 0.18);
-  box-shadow: 0 8px 28px rgba(60, 70, 110, 0.12);
+  background: linear-gradient(165deg, rgba(46, 58, 108, 0.55), rgba(11, 17, 42, 0.88));
+  border-color: rgba(255, 255, 255, 0.1);
 }
 .app[data-theme='dawn'] .world-meter .wm-label,
 .app[data-theme='dawn'] .world-meter .wm-value {
-  color: #24346a;
-  text-shadow: 0 1px 8px rgba(255, 255, 255, 0.6);
+  color: var(--ink);
+  text-shadow: none;
 }
 
 /* The nature theme cycles through bright day scenes: dark text + translucent
