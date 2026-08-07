@@ -1675,15 +1675,17 @@ html[dir='rtl'] .chooser-arrow.right {
   margin: 0 auto 18px;
 }
 
-/* A close button that stays put at the top-right even when the sheet scrolls. */
-.sheet-x-row {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 12px 14px 2px;
-  margin: 0;
-  background: transparent;
-}
+  /* The sheet title sits beside the close button, always visible at the top
+     (never scrolled away with the body). */
+  .sheet-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px 2px;
+    margin: 0;
+    background: transparent;
+  }
 
 .sheet-x {
   border: none;
@@ -1702,13 +1704,13 @@ html[dir='rtl'] .chooser-arrow.right {
   color: var(--gold-soft);
 }
 
-.sheet-title {
-  font-family: var(--serif);
-  font-size: 26px;
-  font-weight: 600;
-  color: var(--gold-soft);
-  margin-bottom: 18px;
-}
+  .sheet-title {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--gold-soft);
+    margin: 0;
+  }
 
 .field-label {
   display: block;
@@ -2005,6 +2007,25 @@ html[dir='rtl'] .chooser-arrow.right {
 
 .gear-btn .nav-icon {
   font-size: 20px;
+}
+
+/* the "Settings" label beside the gear on Home — a quiet text button */
+.settings-label-btn {
+  background: none;
+  border: none;
+  color: var(--ink-dim);
+  font-family: var(--sans);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.settings-label-btn:hover {
+  color: var(--gold-soft);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .life-card {

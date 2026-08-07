@@ -112,13 +112,13 @@ export default function SettingsSheet() {
     <div className="sheet-backdrop" onClick={() => setOpen(false)}>
       <div className="sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('settings.title')} tabIndex={-1} ref={sheetRef}>
         <div className="sheet-head">
-          <div className="sheet-x-row">
+          <div className="sheet-title-row">
+            <h3 className="sheet-title">{t('settings.title')}</h3>
             <button className="sheet-x" onClick={() => setOpen(false)} aria-label={t('settings.done')} title={t('settings.done')}>
               ✕
             </button>
           </div>
           <div className="sheet-handle" />
-          <h3 className="sheet-title">{t('settings.title')}</h3>
         </div>
         <div className="sheet-body">
 

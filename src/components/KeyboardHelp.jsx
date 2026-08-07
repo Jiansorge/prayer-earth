@@ -33,11 +33,11 @@ export default function KeyboardHelp() {
     <div className="sheet-backdrop" onClick={() => setOpen(false)}>
       <div className="sheet keys-sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('keys.title')}>
         <div className="sheet-head">
-          <div className="sheet-x-row">
+          <div className="sheet-title-row">
+            <h3 className="sheet-title">⌨ {t('keys.title')}</h3>
             <button className="sheet-x" onClick={() => setOpen(false)} aria-label={t('keys.close')} title={t('keys.close')}>✕</button>
           </div>
           <div className="sheet-handle" />
-          <h3 className="sheet-title">⌨ {t('keys.title')}</h3>
         </div>
         <div className="sheet-body">
           {rows.map((r) => (
