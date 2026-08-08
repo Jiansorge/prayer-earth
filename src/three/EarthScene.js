@@ -1347,6 +1347,7 @@ export class EarthScene {
         }`,
       uniforms: { uDpr: { value: this.renderer ? this.renderer.getPixelRatio() : 1 }, uOpacity: { value: 1 } },
       transparent: true,
+      vertexColors: true,
       depthTest: true,
       depthWrite: false
     })

@@ -34,6 +34,7 @@ const edge = spawn(EDGE, [
   '--headless=new',
   '--disable-gpu',
   '--mute-audio',
+  '--autoplay-policy=no-user-gesture-required',
   '--no-first-run',
   `--user-data-dir=${PROFILE}`,
   `--remote-debugging-port=${DEBUG_PORT}`,
@@ -250,7 +251,7 @@ ok(
     `(() => { const on=[...document.querySelectorAll('.prayer-line')]; return on.findIndex(l=>l.classList.contains('on')); })() > 0`
   , 10000)
 )
-ok('praying count shown while praying', await c.waitFor(`document.body.innerText.includes('praying this prayer now')`))
+ok('praying count shown while praying', await c.waitFor(`document.body.innerText.includes('praying this with you now')`))
 
 // --- all-time total + weekly per-prayer stats ---
 ok(
@@ -327,7 +328,7 @@ ok('no footer meter on prayer page', (await c.eval(`!document.querySelector('.pr
 
 // --- switch prayer via chip ---
 const chips = await c.eval(`document.querySelectorAll('.chooser .chip:not(.chip-all)').length`)
-ok('Buddhism lists all its prayers as chips', chips === 21, `chips=${chips}`)
+ok('Buddhism lists all its prayers as chips', chips === 25, `chips=${chips}`)
 await c.eval(`document.querySelectorAll('.chooser .chip')[1].click()`)
 ok('switching prayer updates stage', await c.waitFor(`document.querySelectorAll('.prayer-line').length >= 2`))
 await c.eval(`document.querySelector('.ctrl-btn.stop').click()`)
@@ -364,7 +365,7 @@ ok(
 )
 ok(
   'picker lists every prayer of the tradition',
-  (await c.eval(`document.querySelectorAll('.picker-row').length`)) === 6,
+  (await c.eval(`document.querySelectorAll('.picker-row').length`)) === 16,
   `rows=${await c.eval(`document.querySelectorAll('.picker-row').length`)}`
 )
 ok(
@@ -395,9 +396,11 @@ ok(
 // --- daily streak: first day counts, same day is idempotent, yesterday continues ---
 const streakRes = await c.eval(`(() => {
   const store = window.__store
-  const key = (t) => t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0')
+  // The store keys streak days in UTC (store.js markPrayedToday), so the
+  // test must seed UTC dates too or it breaks in non-UTC timezones.
+  const key = (t) => t.getUTCFullYear() + '-' + String(t.getUTCMonth() + 1).padStart(2, '0') + '-' + String(t.getUTCDate()).padStart(2, '0')
   const y = new Date()
-  y.setDate(y.getDate() - 1)
+  y.setUTCDate(y.getUTCDate() - 1)
   const yesterday = key(y)
   store.setState({ streak: 0, bestStreak: 0, lastPrayedDay: null })
   store.getState().markPrayedToday()

@@ -1515,6 +1515,15 @@ html[dir='rtl'] .chooser-arrow.right {
   display: block;
 }
 
+/* static (reduced-motion / low-power) starfield: sits where the live WebGL
+   backdrop would be; the WebGL mount div stays empty in that path */
+.earth-backdrop-static {
+  z-index: 1;
+}
+.earth-backdrop-static + .earth-backdrop-canvas:empty {
+  display: none;
+}
+
 .earth-backdrop-scrim {
   position: absolute;
   inset: 0;
