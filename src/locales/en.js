@@ -218,7 +218,7 @@ export default {
   'legal.pRightsTitle': 'Your rights',
   'legal.pRightsBody': 'Because most of your data never leaves your device, you already control it: clearing your browser storage removes your prayer history and preferences. You may stop using the app at any time.',
   'legal.pContactTitle': 'Contact',
-  'legal.pContactBody': 'Questions about privacy or these terms? Email us at ',
+  'legal.pContactBody': 'For business inquiries, prayer additions, or questions, email us at ',
   'legal.pContactBody2': '. We\u2019ll get back to you.',
   'legal.tIntro': 'By using Joining Palms you agree to these terms.',
   'legal.tUseTitle': 'Personal use',

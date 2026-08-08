@@ -213,8 +213,8 @@ h3,
 .app[data-scene='night'] .orb {
   width: 54px;
   height: 54px;
-  top: 14%;
-  right: 24%;
+  top: 34%;
+  right: 20%;
   background: radial-gradient(circle at 38% 38%, #fffbe8, #d9d2b4 60%, transparent 74%);
   box-shadow: 0 0 70px rgba(230, 226, 202, 0.75), 0 0 26px rgba(230, 226, 202, 0.4);
 }
@@ -231,8 +231,8 @@ h3,
 .app[data-scene='day'] .orb {
   width: 82px;
   height: 82px;
-  top: 12%;
-  right: 16%;
+  top: 32%;
+  right: 14%;
   background: radial-gradient(circle at 36% 36%, #ffffff, #ffe9a8 62%, transparent 76%);
   box-shadow: 0 0 110px rgba(255, 225, 150, 0.9), 0 0 46px rgba(255, 240, 200, 0.5);
 }
@@ -1951,6 +1951,7 @@ html[dir='rtl'] .chooser-arrow.right {
 .legal-sheet {
   max-height: 84dvh;
   overflow-y: auto;
+  padding: 20px 22px calc(26px + env(safe-area-inset-bottom));
 }
 
 .legal-block {

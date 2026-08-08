@@ -4,6 +4,7 @@ import { speech, CHANT_VOICE } from '../audio/speech.js'
 import { ambient } from '../audio/ambience.js'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
 import { useT, LOCALES } from '../i18n.js'
+import { sanitizeName } from '../shared/profanity.js'
 import QRCard from './QRCard.jsx'
 import LegalSheet from './LegalSheet.jsx'
 
@@ -232,7 +233,12 @@ export default function SettingsSheet() {
           maxLength={20}
           value={profile.name}
           placeholder={t('profile.namePlaceholder')}
-          onChange={(e) => setProfile({ name: e.target.value })}
+          onChange={(e) => {
+            const v = e.target.value
+            // block vulgar or profane display names
+            if (sanitizeName(v) === '' && v.trim() !== '') return
+            setProfile({ name: v.slice(0, 20) })
+          }}
         />
 
         <label className="field-label">{t('profile.avatar')}</label>

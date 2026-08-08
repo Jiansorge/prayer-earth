@@ -79,7 +79,7 @@ function drawTemple(ctx, dpr, t, reduced) {
 
   // a soft moon with a pale halo
   const mx = w * 0.78
-  const my = h * 0.18
+  const my = h * 0.34
   const moonHalo = ctx.createRadialGradient(mx, my, 0, mx, my, w * 0.16)
   moonHalo.addColorStop(0, 'rgba(240,230,200,0.22)')
   moonHalo.addColorStop(1, 'rgba(0,0,0,0)')

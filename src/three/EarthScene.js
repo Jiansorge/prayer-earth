@@ -72,11 +72,11 @@ const FRAG = /* glsl */ `
     vec3 oceanC = vec3(0.004, 0.014, 0.034)
       + vec3(0.006, 0.016, 0.032) * uTier
       + vec3(0.01, 0.026, 0.048) * uGlow;
-    // land: deep navy blue (brighter + more saturated than the near-black
-    // ocean so the two still read apart, and the luminous coastline glows)
-    vec3 landC = vec3(0.16, 0.23, 0.4)
-      + vec3(0.028, 0.04, 0.06) * uTier
-      + vec3(0.04, 0.055, 0.08) * uGlow;
+    // land: deep teal (brighter + greener than the near-black ocean so the two
+    // read apart, and the luminous coastline glows)
+    vec3 landC = vec3(0.1, 0.3, 0.32)
+      + vec3(0.02, 0.045, 0.05) * uTier
+      + vec3(0.03, 0.06, 0.065) * uGlow;
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -122,7 +122,7 @@ const FRAG = /* glsl */ `
     // so the living Earth always feels faintly alive
     float tw = 0.5 + 0.5 * sin(uv.x * 80.0 + uTime * 1.2);
     tw *= 0.5 + 0.5 * sin(uv.y * 55.0 - uTime * 0.8);
-    col += landMask * vec3(0.05, 0.08, 0.13) * tw * 0.14;
+    col += landMask * vec3(0.05, 0.1, 0.1) * tw * 0.14;
     col += (1.0 - landMask) * vec3(0.05, 0.09, 0.16) * tw * 0.06;
 
     // soft limb fade so the globe's edge always reads as a clean curve
@@ -843,13 +843,24 @@ export class EarthScene {
     this.youLoc = loc
     if (!this.youMarker) return
     // A coarse geolocation can be wildly wrong (VPN/ISP in the ocean) — never
-    // float "you are here" out at sea.
-    if (!loc || this.isDeepOcean(loc.lat, loc.lon)) {
+    // float "you are here" out at sea; snap to the nearest land instead.
+    if (!loc) {
       this.youMarker.visible = false
       return
     }
-    const lat = loc.lat * (Math.PI / 180)
-    const lon = loc.lon * (Math.PI / 180)
+    let latG = loc.lat
+    let lonG = loc.lon
+    if (this.isDeepOcean(latG, lonG)) {
+      const snap = this.snapToLand(latG, lonG)
+      if (!snap) {
+        this.youMarker.visible = false
+        return
+      }
+      latG = snap.lat
+      lonG = snap.lon
+    }
+    const lat = latG * (Math.PI / 180)
+    const lon = lonG * (Math.PI / 180)
     const r = 1.44
     this.youMarker.position.set(
       r * Math.cos(lat) * Math.cos(lon),
@@ -1107,13 +1118,49 @@ export class EarthScene {
   isDeepOcean(latDeg, lonDeg) {
     const m = this._maskData
     if (!m) return false
-    const la = Math.max(-89, Math.min(89, latDeg))
+    // lights sit on the integer 1-degree grid, so evaluate the rounded cell
+    const la = Math.max(-89, Math.min(89, Math.round(latDeg)))
+    const lon = Math.round(lonDeg)
     const my = Math.floor(((90 - la) / 180) * m.height)
-    const mx = Math.floor(((((lonDeg + 180) % 360) + 360) % 360) / 360 * m.width) % m.width
+    const mx = Math.floor(((((lon + 180) % 360) + 360) % 360) / 360 * m.width) % m.width
     if (my < 0 || my >= m.height) return true
     // the centre pixel must read as land (mask is blurred at edges, so 96 is
     // safely inside solid land)
     return m.data[(my * m.width + mx) * 4] <= 96
+  }
+
+  // Finds the nearest land cell, so a prayer that landed over water still shows
+  // its light on nearby land instead of floating at sea. Deep mid-ocean cells
+  // snap to a gentle global anchor (a real city) so the light always lands.
+  snapToLand(lat, lon) {
+    for (let d = 0; d <= 6; d++) {
+      for (let dl = -d; dl <= d; dl++) {
+        for (let dn = -d; dn <= d; dn++) {
+          const la = lat + dl
+          const lo = ((lon + dn + 180) % 360) - 180
+          if (!this.isDeepOcean(la, lo)) return { lat: la, lon: lo }
+        }
+      }
+    }
+    // far from any coast: land on the nearest real city so the prayer still
+    // shows a light on land
+    const ANCHORS = [
+      [40.7, -74.0], [51.5, -0.1], [35.7, 139.7], [28.6, 77.2], [-23.5, -46.6],
+      [31.2, 121.5], [19.1, 72.9], [1.4, 103.8], [30.0, 31.2], [-34.6, -58.4],
+      [52.5, 13.4], [39.9, 116.4], [-33.9, 151.2], [37.8, -122.4]
+    ]
+    let best = null
+    let bestD = Infinity
+    for (const [la, lo] of ANCHORS) {
+      const dLa = Math.abs(la - lat)
+      const dLo = Math.min(Math.abs(lo - lon), 360 - Math.abs(lo - lon))
+      const dd = dLa + dLo
+      if (dd < bestD) {
+        bestD = dd
+        best = { lat: la, lon: lo }
+      }
+    }
+    return best
   }
 
   // Reuse the sprite pool: position/scale/colour one per active grid cell.
@@ -1133,10 +1180,18 @@ export class EarthScene {
       const c = k.indexOf(',')
       const latDeg = parseFloat(k.slice(0, c))
       const lonDeg = parseFloat(k.slice(c + 1))
-      // Never let a prayer light float in the open ocean.
-      if (this.isDeepOcean(latDeg, lonDeg)) continue
-      const lat = latDeg * (Math.PI / 180)
-      const lon = lonDeg * (Math.PI / 180)
+      // A light must never float at sea: if the cell sits over water, snap it
+      // to the nearest land cell so the prayer still shows its light on land.
+      let latG = latDeg
+      let lonG = lonDeg
+      if (this.isDeepOcean(latDeg, lonDeg)) {
+        const snap = this.snapToLand(latDeg, lonDeg)
+        if (!snap) continue
+        latG = snap.lat
+        lonG = snap.lon
+      }
+      const lat = latG * (Math.PI / 180)
+      const lon = lonG * (Math.PI / 180)
       spr.position.set(
         r * Math.cos(lat) * Math.cos(lon),
         r * Math.sin(lat),

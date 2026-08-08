@@ -22,7 +22,7 @@ function scenePalette(scene) {
       sky: ['#04060f', '#0a1428', '#16233e'],
       horizon: '#1e3050',
       sun: null,
-      moon: { x: 0.76, y: 0.16, r: 0.035, glow: 'rgba(235,231,205,0.75)', core: '#fdf8e6' },
+      moon: { x: 0.72, y: 0.34, r: 0.035, glow: 'rgba(235,231,205,0.75)', core: '#fdf8e6' },
       cloudA: 'rgba(90,110,150,0.28)',
       cloudB: 'rgba(60,80,120,0.2)',
       ridge: ['rgba(10,18,38,0.95)', 'rgba(16,26,50,0.9)', 'rgba(24,36,64,0.85)'],

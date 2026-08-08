@@ -4,6 +4,7 @@
 
 import { useStore } from '../store.js'
 import { gridKey } from '../shared/geo.js'
+import { sanitizeName } from '../shared/profanity.js'
 import { SyncEngine, CfEngine } from './engine.js'
 import { C_PRESENCE, C_SYNC } from './protocol.js'
 
@@ -78,10 +79,11 @@ function pickName() {
 }
 
 // The name the user chose in their profile (falls back to a gentle random one
-// the first time, which is then saved so it stays stable).
+// the first time, which is then saved so it stays stable). Profane or vulgar
+// names are rejected by sanitizeName, falling back to the gentle random one.
 function profileName() {
   const p = useStore.getState().profile
-  return (p.name || '').trim() || pickName()
+  return sanitizeName(p.name) || pickName()
 }
 
 const SIM_FEED_NAMES = ['Lotus', 'Noor', 'River', 'Kavi', 'Amara', 'Rumi', 'Mei', 'Pax']

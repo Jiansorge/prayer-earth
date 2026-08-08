@@ -61,8 +61,8 @@ function drawOcean(ctx, dpr, t, reduced) {
   ctx.fillRect(0, 0, w, h)
 
   // a soft moon with a wide pale halo above the water
-  const mx = w * 0.74
-  const my = h * 0.16
+  const mx = w * 0.78
+  const my = h * 0.326
   const moonHalo = ctx.createRadialGradient(mx, my, 0, mx, my, w * 0.2)
   moonHalo.addColorStop(0, 'rgba(200,225,255,0.14)')
   moonHalo.addColorStop(1, 'rgba(0,0,0,0)')
