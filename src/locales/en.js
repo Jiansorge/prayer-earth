@@ -208,7 +208,7 @@ export default {
   'legal.priv7': 'Joining Palms collects no personal information from children and may be used by people of all ages.',
   'legal.priv8': 'An anonymous activity marker is kept on the server for about a week to count today\u2019s and this week\u2019s participants, then removed. Lifetime prayer totals are kept as anonymous aggregates only \u2014 with no name, email, or precise location.',
   'legal.priv9': 'The display name you choose in Settings is shown to others while you pray, exactly like a username, use any name, never a real one.',
-  'legal.contactEmail': 'hello@yourdomain.com',
+  'legal.contactEmail': 'care@joining-palms.app',
   'legal.termsTitle': 'Terms',
   'legal.termsBody': 'Joining Palms is offered as-is, for personal reflection. Sacred texts are presented for contemplation and respect. Please treat others in the community with kindness. We may update the app and these notes over time.',
   'legal.pIntro': 'Joining Palms is a quiet place to pray together with the world. This page explains, in plain language, what the app knows about you and how it is used.',

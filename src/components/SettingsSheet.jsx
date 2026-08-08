@@ -123,49 +123,28 @@ export default function SettingsSheet() {
         </div>
         <div className="sheet-body">
 
-        <label className="field-label" htmlFor="voice-picker">{t('settings.voiceLabel')}</label>
-        <div className="field-hint">
-          {t('settings.voiceHint')}
-        </div>
-        <select
-          id="voice-picker"
-          className="field-select"
-          value={voiceURI || ''}
-          onChange={(e) => setVoiceURI(e.target.value || null)}
-        >
-          <option value="">{t('settings.automatic')}</option>
-          <option value={CHANT_VOICE}>{t('settings.softChant')}</option>
-          {grouped.map((v) => (
-            <option key={v.voiceURI} value={v.voiceURI}>
-              {v.name} ({v.lang})
-            </option>
+        <label className="field-label">{t('settings.theme')}</label>
+        <div className="field-hint">{t('settings.themeHint')}</div>
+        <div className="theme-pick">
+          {[
+            { id: 'mystic', emoji: '🌌', label: t('theme.mystic') },
+            { id: 'nature', emoji: '🌲', label: t('theme.nature') },
+            { id: 'space', emoji: '🚀', label: t('theme.space') },
+            { id: 'temple', emoji: '🏛️', label: t('theme.temple') },
+            { id: 'ocean', emoji: '🌊', label: t('theme.ocean') },
+            { id: 'dawn', emoji: '🌅', label: t('theme.dawn') }
+          ].map((th) => (
+            <button
+              key={th.id}
+              type="button"
+              className={`theme-opt ${theme === th.id ? 'on' : ''}`}
+              onClick={() => setTheme(th.id)}
+              aria-pressed={theme === th.id}
+            >
+              <span className="theme-emoji">{th.emoji}</span>
+              <span>{th.label}</span>
+            </button>
           ))}
-        </select>
-        {grouped.length === 0 && (
-          <div className="field-hint">{t('settings.noVoices')}</div>
-        )}
-        <button
-          className="field-preview"
-          onClick={preview}
-          aria-label={t('settings.hearSample')}
-        >
-          {previewing ? t('settings.listening') : t('settings.hearSample')}
-        </button>
-
-        <label className="field-label" htmlFor="rate-range">{t('settings.speedLabel')}</label>
-        <input
-          id="rate-range"
-          type="range"
-          className="field-range"
-          min="0.6"
-          max="2.0"
-          step="0.05"
-          value={speechRate}
-          onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
-        />
-        <div className="field-row">
-          <span className="field-hint">{t('settings.speedSlow', { n: speechRate.toFixed(2) })}</span>
-          <span className="field-hint">{t('settings.speedFast')}</span>
         </div>
 
         <label className="field-label" htmlFor="amb-range">{t('settings.ambientLabel')}</label>
@@ -198,30 +177,6 @@ export default function SettingsSheet() {
             </option>
           ))}
         </select>
-
-        <label className="field-label">{t('settings.theme')}</label>
-        <div className="field-hint">{t('settings.themeHint')}</div>
-        <div className="theme-pick">
-          {[
-            { id: 'mystic', emoji: '🌌', label: t('theme.mystic') },
-            { id: 'nature', emoji: '🌲', label: t('theme.nature') },
-            { id: 'space', emoji: '🚀', label: t('theme.space') },
-            { id: 'temple', emoji: '🏛️', label: t('theme.temple') },
-            { id: 'ocean', emoji: '🌊', label: t('theme.ocean') },
-            { id: 'dawn', emoji: '🌅', label: t('theme.dawn') }
-          ].map((th) => (
-            <button
-              key={th.id}
-              type="button"
-              className={`theme-opt ${theme === th.id ? 'on' : ''}`}
-              onClick={() => setTheme(th.id)}
-              aria-pressed={theme === th.id}
-            >
-              <span className="theme-emoji">{th.emoji}</span>
-              <span>{th.label}</span>
-            </button>
-          ))}
-        </div>
 
         <div className="field-divider" />
 
@@ -268,6 +223,55 @@ export default function SettingsSheet() {
             />
           ))}
         </div>
+
+        <div className="field-divider" />
+
+        <label className="field-label" htmlFor="rate-range">{t('settings.speedLabel')}</label>
+        <input
+          id="rate-range"
+          type="range"
+          className="field-range"
+          min="0.6"
+          max="2.0"
+          step="0.05"
+          value={speechRate}
+          onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+        />
+        <div className="field-row">
+          <span className="field-hint">{t('settings.speedSlow', { n: speechRate.toFixed(2) })}</span>
+          <span className="field-hint">{t('settings.speedFast')}</span>
+        </div>
+
+        <div className="field-divider" />
+
+        <label className="field-label" htmlFor="voice-picker">{t('settings.voiceLabel')}</label>
+        <div className="field-hint">
+          {t('settings.voiceHint')}
+        </div>
+        <select
+          id="voice-picker"
+          className="field-select"
+          value={voiceURI || ''}
+          onChange={(e) => setVoiceURI(e.target.value || null)}
+        >
+          <option value="">{t('settings.automatic')}</option>
+          <option value={CHANT_VOICE}>{t('settings.softChant')}</option>
+          {grouped.map((v) => (
+            <option key={v.voiceURI} value={v.voiceURI}>
+              {v.name} ({v.lang})
+            </option>
+          ))}
+        </select>
+        {grouped.length === 0 && (
+          <div className="field-hint">{t('settings.noVoices')}</div>
+        )}
+        <button
+          className="field-preview"
+          onClick={preview}
+          aria-label={t('settings.hearSample')}
+        >
+          {previewing ? t('settings.listening') : t('settings.hearSample')}
+        </button>
 
         <div className="field-divider" />
 

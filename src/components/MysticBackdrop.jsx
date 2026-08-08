@@ -112,7 +112,7 @@ function drawMystic(ctx, dpr, t, reduced) {
     ctx.fill()
   }
 
-  const ox = w * 0.78
+  const ox = w * 0.3
   const oy = h * 0.2
   const or = h * 0.055
   ctx.globalCompositeOperation = 'screen'

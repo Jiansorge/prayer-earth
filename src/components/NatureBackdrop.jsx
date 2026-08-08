@@ -22,7 +22,7 @@ function scenePalette(scene) {
       sky: ['#04060f', '#0a1428', '#16233e'],
       horizon: '#1e3050',
       sun: null,
-      moon: { x: 0.72, y: 0.34, r: 0.035, glow: 'rgba(235,231,205,0.75)', core: '#fdf8e6' },
+      moon: { x: 0.34, y: 0.26, r: 0.035, glow: 'rgba(235,231,205,0.75)', core: '#fdf8e6' },
       cloudA: 'rgba(90,110,150,0.28)',
       cloudB: 'rgba(60,80,120,0.2)',
       ridge: ['rgba(10,18,38,0.95)', 'rgba(16,26,50,0.9)', 'rgba(24,36,64,0.85)'],
@@ -45,7 +45,7 @@ function scenePalette(scene) {
     day: {
       sky: ['#2a6cc9', '#8fc3ef', '#dff3ff'],
       horizon: '#eaf7ff',
-      sun: { x: 0.82, y: 0.14, r: 0.045, glow: 'rgba(255,245,210,0.95)', core: '#ffffff' },
+      sun: { x: 0.3, y: 0.2, r: 0.045, glow: 'rgba(255,245,210,0.95)', core: '#ffffff' },
       moon: null,
       cloudA: 'rgba(255,255,255,0.75)',
       cloudB: 'rgba(235,245,255,0.55)',
@@ -69,7 +69,7 @@ function scenePalette(scene) {
     dusk: {
       sky: ['#20264a', '#5a4a80', '#b05a70'],
       horizon: '#e8906a',
-      sun: { x: 0.72, y: 0.66, r: 0.06, glow: 'rgba(255,160,110,0.9)', core: '#ffe0c0' },
+      sun: { x: 0.3, y: 0.6, r: 0.06, glow: 'rgba(255,160,110,0.9)', core: '#ffe0c0' },
       moon: null,
       cloudA: 'rgba(180,140,200,0.34)',
       cloudB: 'rgba(140,100,170,0.26)',

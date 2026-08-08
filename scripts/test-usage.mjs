@@ -155,11 +155,11 @@ await c.eval(`document.querySelector('.gear-btn').click()`)
 ok('settings sheet opens', await c.waitFor(`!!document.querySelector('.sheet')`))
 ok(
   'voice picker lists voices',
-  (await c.eval(`document.querySelectorAll('.field-select option').length`)) >= 1
+  (await c.eval(`document.querySelectorAll('#voice-picker option').length`)) >= 1
 )
 ok(
   'voice picker offers soft chant',
-  await c.eval(`document.querySelector('.field-select').textContent.includes('Soft chant')`)
+  await c.eval(`document.querySelector('#voice-picker').textContent.includes('Soft chant')`)
 )
 ok(
   'speaking speed slider present',

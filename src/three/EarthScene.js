@@ -72,11 +72,11 @@ const FRAG = /* glsl */ `
     vec3 oceanC = vec3(0.004, 0.014, 0.034)
       + vec3(0.006, 0.016, 0.032) * uTier
       + vec3(0.01, 0.026, 0.048) * uGlow;
-    // land: deep teal (brighter + greener than the near-black ocean so the two
-    // read apart, and the luminous coastline glows)
-    vec3 landC = vec3(0.1, 0.3, 0.32)
-      + vec3(0.02, 0.045, 0.05) * uTier
-      + vec3(0.03, 0.06, 0.065) * uGlow;
+    // land: deep, dark moss-forest teal (darker than before — the luminous
+    // coastline and you/they lights carry the glow, not the continents)
+    vec3 landC = vec3(0.045, 0.17, 0.19)
+      + vec3(0.012, 0.028, 0.03) * uTier
+      + vec3(0.018, 0.038, 0.04) * uGlow;
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
@@ -421,18 +421,18 @@ export class EarthScene {
     this.earthGroupRotation = 1.25
 
     const loader = new THREE.TextureLoader()
-    // The land mask is only read by the full Earth shader. The prayer backdrop
-    // classifies land from the day texture directly, so it never needs the
-    // mask — and building it is a heavy main-thread pixel pass that froze slow
-    // devices the moment the prayer view opened. Skip it entirely here.
-    if (!this.backdrop) this.maskTex = this.buildLandMaskCanvas()
+    // The land mask is read by the full Earth shader and by the grid used to
+    // keep every light on land. The prayer backdrop builds the small mask grid
+    // too (it never uploads a texture) so its lights snap onto land the same
+    // way — building only the tiny grid is fast and never froze slow devices.
+    this.maskTex = this.buildLandMaskCanvas()
     // The prayer backdrop only reads luminance from the map (land/coast
     // classification), so it gets a half-res texture — 70 KB instead of 501 KB
     // on every prayer view. The full-resolution map stays on the Earth view.
     const dayTex = loader.load(
       this.backdrop ? dayUrlSmall : dayUrl,
       (tex) => {
-        if (!this.backdrop) this.processLandMask(tex.image)
+        this.processLandMask(tex.image)
         tex.image = this.makeSeamless(tex.image)
         tex.needsUpdate = true
         this._dayLoaded = true
@@ -498,7 +498,7 @@ export class EarthScene {
     }
 
     // --- stars ---
-    this.stars = this.buildStars(this.backdrop ? 260 : 8000)
+    this.stars = this.buildStars(this.backdrop ? 1400 : 9000)
     this.scene.add(this.stars)
     if (!this.backdrop) {
       this.nebulae = this.buildNebulae()
@@ -922,10 +922,12 @@ export class EarthScene {
 
   // A clean binary land/ocean mask, classified once in JS from the real map
   // (where dark forests and ice read as land even though they look bluish).
-  buildLandMaskCanvas() {
+  buildLandMaskCanvas(scale = null) {
     // Low-power devices get a half-res mask — a fraction of the pixel work for
-    // the same coastline, since the mask is upsampled by the GPU anyway.
-    const S = this.lowPower ? 0.5 : 1
+    // the same coastline, since the mask is upsampled by the GPU anyway. The
+    // prayer backdrop only needs the grid to snap ocean lights onto land, so
+    // it builds half that scale again (fast, and never uploaded as a texture).
+    const S = scale ?? (this.backdrop ? 0.25 : this.lowPower ? 0.5 : 1)
     const W = Math.round(2048 * S)
     const H = Math.round(1024 * S)
     const c = document.createElement('canvas')
@@ -933,6 +935,7 @@ export class EarthScene {
     c.height = H
     this._maskCtx = c.getContext('2d')
     this._maskData = this._maskCtx.createImageData(W, H)
+    if (this.backdrop) return null
     this.maskTex = new THREE.CanvasTexture(c)
     this.maskTex.colorSpace = THREE.NoColorSpace
     // Wraps horizontally so there's no seam at the anti-meridian (Pacific).
@@ -1077,7 +1080,7 @@ export class EarthScene {
         out[last * 4] = out[last * 4 + 1] = out[last * 4 + 2] = out[(y * W) * 4]
       }
       this._maskCtx.putImageData(this._maskData, 0, 0)
-      this.maskTex.needsUpdate = true
+      if (this.maskTex) this.maskTex.needsUpdate = true
     } catch {}
   }
 
@@ -1301,11 +1304,12 @@ export class EarthScene {
         .multiplyScalar(28 + Math.random() * 75)
       pos.set([v.x, v.y, v.z], i * 3)
       const warm = Math.random()
-      // a handful of bright beacons, mostly quiet white-blue stardust
+      // a handful of bright beacons, mostly quiet white-blue stardust. Stars
+      // sit bright against space so they always read on every screen.
       const bright = Math.random()
-      size[i] = bright > 0.9 ? 0.85 : bright > 0.55 ? 0.5 : 0.3
+      size[i] = bright > 0.88 ? 1.15 : bright > 0.45 ? 0.78 : 0.52
       col.set(
-        [warm > 0.72 ? 0.9 : 0.82, warm > 0.72 ? 0.94 : 0.9, 1],
+        [warm > 0.72 ? 0.96 : 0.9, warm > 0.72 ? 0.99 : 0.95, 1],
         i * 3
       )
     }
@@ -1329,18 +1333,19 @@ export class EarthScene {
         uniform float uDpr;
         void main() {
           vColor = color;
-          gl_PointSize = aSize * 46.0 * uDpr;
+          gl_PointSize = aSize * 58.0 * uDpr;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }`,
       fragmentShader: `varying vec3 vColor;
         uniform float uOpacity;
         void main() {
           float d = length(gl_PointCoord - 0.5);
-          float a = 1.0 - smoothstep(0.05, 0.5, d);
+          float a = 1.0 - smoothstep(0.04, 0.5, d);
           if (a <= 0.004) discard;
-          gl_FragColor = vec4(vColor, a * uOpacity);
+          vec3 glow = vColor * (1.0 + 0.6 * a);
+          gl_FragColor = vec4(glow, a * 1.15 * uOpacity);
         }`,
-      uniforms: { uDpr: { value: this.renderer ? this.renderer.getPixelRatio() : 1 }, uOpacity: { value: 0.9 } },
+      uniforms: { uDpr: { value: this.renderer ? this.renderer.getPixelRatio() : 1 }, uOpacity: { value: 1 } },
       transparent: true,
       depthTest: true,
       depthWrite: false
