@@ -1773,6 +1773,13 @@ html[dir='rtl'] .chooser-arrow.right {
   margin: 16px 0 6px;
 }
 
+.field-label.section {
+  margin: 6px 0 10px;
+  color: var(--gold-soft);
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
 .field-hint {
   font-size: 12.5px;
   color: rgba(241, 245, 232, 0.74);

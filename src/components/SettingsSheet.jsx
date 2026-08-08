@@ -123,64 +123,8 @@ export default function SettingsSheet() {
         </div>
         <div className="sheet-body">
 
-        <label className="field-label">{t('settings.theme')}</label>
-        <div className="field-hint">{t('settings.themeHint')}</div>
-        <div className="theme-pick">
-          {[
-            { id: 'mystic', emoji: '🌌', label: t('theme.mystic') },
-            { id: 'nature', emoji: '🌲', label: t('theme.nature') },
-            { id: 'space', emoji: '🚀', label: t('theme.space') },
-            { id: 'temple', emoji: '🏛️', label: t('theme.temple') },
-            { id: 'ocean', emoji: '🌊', label: t('theme.ocean') },
-            { id: 'dawn', emoji: '🌅', label: t('theme.dawn') }
-          ].map((th) => (
-            <button
-              key={th.id}
-              type="button"
-              className={`theme-opt ${theme === th.id ? 'on' : ''}`}
-              onClick={() => setTheme(th.id)}
-              aria-pressed={theme === th.id}
-            >
-              <span className="theme-emoji">{th.emoji}</span>
-              <span>{th.label}</span>
-            </button>
-          ))}
-        </div>
+        <label className="field-label section">{t('profile.title')}</label>
 
-        <label className="field-label" htmlFor="amb-range">{t('settings.ambientLabel')}</label>
-        <div className="field-hint">{t('settings.ambientHint')}</div>
-        <input
-          id="amb-range"
-          type="range"
-          className="field-range"
-          min="0"
-          max="1"
-          step="0.05"
-          value={ambienceLevel}
-          onChange={(e) => setAmbienceLevel(parseFloat(e.target.value))}
-        />
-        <div className="field-row">
-          <span className="field-hint">{t('settings.ambientLow')}</span>
-          <span className="field-hint">{t('settings.ambientHigh')}</span>
-        </div>
-
-        <label className="field-label" htmlFor="locale-picker">{t('settings.languageLabel')}</label>
-        <select
-          id="locale-picker"
-          className="field-select"
-          value={locale}
-          onChange={(e) => setLocale(e.target.value)}
-        >
-          {LOCALES.map((l) => (
-            <option key={l.code} value={l.code}>
-              {l.label}
-            </option>
-          ))}
-        </select>
-
-        <div className="field-divider" />
-
-        <label className="field-label">{t('profile.title')}</label>
         <div className="field-hint">{t('profile.nameHint')}</div>
         <input
           id="profile-name"
@@ -196,8 +140,8 @@ export default function SettingsSheet() {
           }}
         />
 
-        <label className="field-label">{t('profile.avatar')}</label>
-        <div className="avatar-grid">
+        <label className="field-label" htmlFor="avatar-grid">{t('profile.avatar')}</label>
+        <div id="avatar-grid" className="avatar-grid">
           {AVATARS.map((a) => (
             <button
               key={a}
@@ -226,23 +170,7 @@ export default function SettingsSheet() {
 
         <div className="field-divider" />
 
-        <label className="field-label" htmlFor="rate-range">{t('settings.speedLabel')}</label>
-        <input
-          id="rate-range"
-          type="range"
-          className="field-range"
-          min="0.6"
-          max="2.0"
-          step="0.05"
-          value={speechRate}
-          onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
-        />
-        <div className="field-row">
-          <span className="field-hint">{t('settings.speedSlow', { n: speechRate.toFixed(2) })}</span>
-          <span className="field-hint">{t('settings.speedFast')}</span>
-        </div>
-
-        <div className="field-divider" />
+        <label className="field-label section">{t('settings.secPraying')}</label>
 
         <label className="field-label" htmlFor="voice-picker">{t('settings.voiceLabel')}</label>
         <div className="field-hint">
@@ -262,6 +190,7 @@ export default function SettingsSheet() {
             </option>
           ))}
         </select>
+        {voiceURI ? null : <div className="field-hint">{t('settings.automaticHint')}</div>}
         {grouped.length === 0 && (
           <div className="field-hint">{t('settings.noVoices')}</div>
         )}
@@ -273,7 +202,84 @@ export default function SettingsSheet() {
           {previewing ? t('settings.listening') : t('settings.hearSample')}
         </button>
 
+        <label className="field-label" htmlFor="rate-range">{t('settings.speedLabel')}</label>
+        <input
+          id="rate-range"
+          type="range"
+          className="field-range"
+          min="0.6"
+          max="2.0"
+          step="0.05"
+          value={speechRate}
+          onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+        />
+        <div className="field-row">
+          <span className="field-hint">{t('settings.speedSlow', { n: speechRate.toFixed(2) })}</span>
+          <span className="field-hint">{t('settings.speedFast')}</span>
+        </div>
+
+        <label className="field-label" htmlFor="amb-range">{t('settings.ambientLabel')}</label>
+        <div className="field-hint">{t('settings.ambientHint')}</div>
+        <input
+          id="amb-range"
+          type="range"
+          className="field-range"
+          min="0"
+          max="1"
+          step="0.05"
+          value={ambienceLevel}
+          onChange={(e) => setAmbienceLevel(parseFloat(e.target.value))}
+        />
+        <div className="field-row">
+          <span className="field-hint">{t('settings.ambientLow')}</span>
+          <span className="field-hint">{t('settings.ambientHigh')}</span>
+        </div>
+
         <div className="field-divider" />
+
+        <label className="field-label section">{t('settings.secLook')}</label>
+
+        <label className="field-label">{t('settings.theme')}</label>
+        <div className="field-hint">{t('settings.themeHint')}</div>
+        <div className="theme-pick">
+          {[
+            { id: 'mystic', emoji: '🌌', label: t('theme.mystic') },
+            { id: 'nature', emoji: '🌲', label: t('theme.nature') },
+            { id: 'space', emoji: '🚀', label: t('theme.space') },
+            { id: 'temple', emoji: '🏛️', label: t('theme.temple') },
+            { id: 'ocean', emoji: '🌊', label: t('theme.ocean') },
+            { id: 'dawn', emoji: '🌅', label: t('theme.dawn') }
+          ].map((th) => (
+            <button
+              key={th.id}
+              type="button"
+              className={`theme-opt ${theme === th.id ? 'on' : ''}`}
+              onClick={() => setTheme(th.id)}
+              aria-pressed={theme === th.id}
+            >
+              <span className="theme-emoji">{th.emoji}</span>
+              <span>{th.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <label className="field-label" htmlFor="locale-picker">{t('settings.languageLabel')}</label>
+        <select
+          id="locale-picker"
+          className="field-select"
+          value={locale}
+          onChange={(e) => setLocale(e.target.value)}
+        >
+          {LOCALES.map((l) => (
+            <option key={l.code} value={l.code}>
+              {l.label}
+            </option>
+          ))}
+        </select>
+
+        <div className="field-divider" />
+
+        <label className="field-label section">{t('settings.secShare')}</label>
 
         <label className="field-label">{t('settings.sharePrayerLabel')}</label>
         <div className="field-hint">
@@ -289,8 +295,6 @@ export default function SettingsSheet() {
           {t('settings.showQr')}
         </button>
 
-        <div className="field-divider" />
-
         <label className="field-label">{t('settings.shareAppLabel')}</label>
         <div className="field-hint">
           {t('settings.shareAppHint')}
@@ -300,6 +304,9 @@ export default function SettingsSheet() {
         </button>
 
         <div className="field-divider" />
+
+        <label className="field-label section">{t('settings.secAbout')}</label>
+
         <button className="field-btn" onClick={() => setLegalOpen(true)}>
           {t('settings.legal')}
         </button>

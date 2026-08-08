@@ -67,6 +67,11 @@ export default {
   'theme.ocean': 'Ocean',
   'theme.dawn': 'Dawn',
   'settings.automatic': 'Automatic',
+  'settings.automaticHint': 'Let the app pick the best voice for each prayer.',
+  'settings.secPraying': 'Praying sound',
+  'settings.secLook': 'Look & language',
+  'settings.secShare': 'Share',
+  'settings.secAbout': 'About',
   'settings.sharePrayerLabel': 'Share a prayer',
   'settings.sharePrayerHint':
     'Make a card for "{title}" so someone can join by scanning it.',
