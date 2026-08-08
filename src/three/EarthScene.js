@@ -70,8 +70,8 @@ const FRAG = /* glsl */ `
     // the lifetime seconds of shared prayer. Land and ocean are deep and quiet
     // so the luminous blue aura is what glows.
     vec3 oceanC = vec3(0.004, 0.014, 0.034)
-      + vec3(0.006, 0.016, 0.032) * uTier
-      + vec3(0.01, 0.026, 0.048) * uGlow;
+      + vec3(0.004, 0.01, 0.02) * uTier
+      + vec3(0.006, 0.014, 0.026) * uGlow;
     // land: deep, dark moss-forest teal (darker than before — the luminous
     // coastline and you/they lights carry the glow, not the continents)
     vec3 landC = vec3(0.045, 0.17, 0.19)
@@ -90,9 +90,10 @@ const FRAG = /* glsl */ `
     float night = 1.0 - smoothstep(-0.25, 0.08, ndl);
 
     // the Earth's own breathing glow, a luminous blue radiance that swells when
-    // many people are praying at once
-    vec3 radiance = vec3(0.12, 0.55, 0.75) * uGlow * uGlow * 0.2
-      + vec3(0.3, 0.7, 0.9) * uGlow * uSurge * 0.3;
+    // many people are praying at once. It rides the land, not the ocean — the
+    // sea stays dark and quiet so no one ever reads a glow floating at sea.
+    vec3 radiance = (vec3(0.12, 0.55, 0.75) * uGlow * uGlow * 0.2
+      + vec3(0.3, 0.7, 0.9) * uGlow * uSurge * 0.3) * (0.12 + 0.88 * landMask);
 
     // polar aurora
     float polar = smoothstep(0.86, 0.99, abs(sp.y));
@@ -1305,9 +1306,10 @@ export class EarthScene {
       pos.set([v.x, v.y, v.z], i * 3)
       const warm = Math.random()
       // a handful of bright beacons, mostly quiet white-blue stardust. Stars
-      // sit bright against space so they always read on every screen.
+      // sit bright against space so they always read on every screen, but they
+      // stay small and crisp so they never blur into the prayer lights.
       const bright = Math.random()
-      size[i] = bright > 0.88 ? 1.15 : bright > 0.45 ? 0.78 : 0.52
+      size[i] = bright > 0.88 ? 0.62 : bright > 0.45 ? 0.42 : 0.28
       col.set(
         [warm > 0.72 ? 0.96 : 0.9, warm > 0.72 ? 0.99 : 0.95, 1],
         i * 3
@@ -1333,17 +1335,19 @@ export class EarthScene {
         uniform float uDpr;
         void main() {
           vColor = color;
-          gl_PointSize = aSize * 58.0 * uDpr;
+          gl_PointSize = aSize * 14.0 * uDpr;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }`,
       fragmentShader: `varying vec3 vColor;
         uniform float uOpacity;
         void main() {
           float d = length(gl_PointCoord - 0.5);
-          float a = 1.0 - smoothstep(0.04, 0.5, d);
+          // a tight bright core with a thin halo: stars read as small points,
+          // never as soft blobs that crowd out the prayer text behind them
+          float a = 1.0 - smoothstep(0.06, 0.34, d);
           if (a <= 0.004) discard;
-          vec3 glow = vColor * (1.0 + 0.6 * a);
-          gl_FragColor = vec4(glow, a * 1.15 * uOpacity);
+          vec3 glow = vColor * (1.0 + 0.5 * a);
+          gl_FragColor = vec4(glow, a * 1.1 * uOpacity);
         }`,
       uniforms: { uDpr: { value: this.renderer ? this.renderer.getPixelRatio() : 1 }, uOpacity: { value: 1 } },
       transparent: true,
