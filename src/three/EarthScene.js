@@ -971,9 +971,12 @@ export class EarthScene {
           const lum = 0.299 * r + 0.587 * g + 0.114 * b
           const gb = g - b
           // bright land (desert/ice) must not be blue; darker land (forest) must
-          // be dim and not turquoise, keeps shallow straits from bridging land
+          // be dim and not turquoise, keeps shallow straits from bridging land.
+          // Water is strongly blue-dominant (gb negative, b high); the thresholds
+          // stay tight so deep ocean is never read as land (a user's coarse
+          // geolocation over mid-ocean water must still snap to nearby land).
           const brightLand = lum > 0.2 && gb > -0.01
-          const darkLand = lum <= 0.2 && lum > 0.08 && gb > -0.08 && b < 0.28
+          const darkLand = lum <= 0.2 && lum > 0.08 && gb > -0.05 && b < 0.23
           const land = y < arcticRow ? 0 : brightLand || darkLand ? 255 : 0
           const o = (y * W + x) * 4
           out[o] = out[o + 1] = out[o + 2] = land
