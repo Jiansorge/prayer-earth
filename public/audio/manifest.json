@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-06T05:23:40.800Z",
+  "generated": "2026-08-10T15:49:09.587Z",
   "prayers": {
     "lords-prayer": {
       "lang": "en",
@@ -2142,6 +2142,276 @@
         "en-HK-SamNeural"
       ],
       "phrases": 2
+    },
+    "serenity": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 5
+    },
+    "humanist-pledge": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 5
+    },
+    "impermanence": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 5
+    },
+    "morning-resolution": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 5
+    },
+    "night-letting-go": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 5
+    },
+    "thin-place": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 5
+    },
+    "kindness-spreads": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 5
+    },
+    "where-im-from": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 5
+    },
+    "forgiveness-secular": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 5
+    },
+    "one-breath": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 4
+    },
+    "sonder": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 5
+    },
+    "earth-turn": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 5
+    },
+    "enough": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 5
+    },
+    "courage-then-gentleness": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 5
+    },
+    "for-the-grieving": {
+      "lang": "en",
+      "voices": [
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural",
+        "en-HK-YanNeural",
+        "en-IN-PrabhatNeural",
+        "en-IN-NeerjaNeural",
+        "en-IE-ConnorNeural",
+        "en-IE-EmilyNeural",
+        "en-KE-ChilembaNeural",
+        "en-KE-AsiliaNeural",
+        "en-NZ-MitchellNeural"
+      ],
+      "phrases": 6
     }
   }
 }
