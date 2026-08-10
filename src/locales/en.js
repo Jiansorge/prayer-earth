@@ -54,9 +54,9 @@ export default {
   'settings.speedSlow': 'Slower · {n}×',
   'settings.speedFast': 'Faster',
   'settings.ambientLabel': 'Ambient sound',
-  'settings.ambientHint': 'The sound-bed under your prayer, from whisper to heart.',
-  'settings.ambientLow': 'Whisper',
-  'settings.ambientHigh': 'Heart',
+  'settings.ambientHint': 'How loud the sound-bed under your prayer should be, from quiet to loud.',
+  'settings.ambientLow': 'Quiet',
+  'settings.ambientHigh': 'Loud',
   'settings.languageLabel': 'Language',
   'settings.theme': 'Home theme',
   'settings.themeHint': 'The world behind your home screen',
@@ -93,9 +93,6 @@ export default {
   'prayer.tuneLabel': 'Tune',
   'prayer.tuneClose': 'Close',
   'prayer.volume': 'Volume',
-  'prayer.muted': 'Silenziato',
-  'prayer.muted': 'Silenciado',
-  'prayer.muted': 'Silencieux',
   'prayer.muted': 'Muted',
   'prayer.speed': 'Speed',
   'prayer.voice': 'Voice',
@@ -153,9 +150,9 @@ export default {
   'qr.prayWithWorld': 'pray with the world',
   'qr.err': 'Couldn\u2019t draw the QR code.',
   'qr.saveCard': 'Save card',
-  'stats.thisWeek': 'This week',
-  'stats.allTime': 'all time',
-  'stats.foot': 'Seconds of this prayer, one bar per day.',
+  'stats.thisWeek': 'Your week',
+  'stats.allTime': 'your total',
+  'stats.foot': 'Your seconds on this prayer, one bar per day.',
   'picker.title': 'Choose a prayer',
   'picker.all': 'All',
   'picker.close': 'Close',
@@ -206,12 +203,12 @@ export default {
   'legal.privacyTitle': 'Privacy',
   'legal.priv1': 'No account is required to pray.',
   'legal.priv2': 'Your prayer history and preferences are stored on your own device.',
-  'legal.priv3': 'When you pray, an anonymous name and a coarse region are shared with the Joining Palms server so others see a light where people are praying, no real name or exact address is used.',
+  'legal.priv3': 'When you pray, an anonymous name and a coarse region are shared with the Joining Palms server so others see a light where people are praying. The region normally comes from your device\u2019s location permission, or, if you don\u2019t share location, it is approximated from your device\u2019s timezone (for example the centre of your timezone, never your exact address). No real name or precise address is ever used.',
   'legal.priv4': 'When you pray, audio plays from recordings stored on the device or your browser\u2019s built-in text-to-speech voice. Nothing you pray is sent to our server for audio.',
   'legal.priv5': 'We don\u2019t sell data or show ads.',
   'legal.priv6': 'When you connect, the servers briefly see a network address and may process data in data centers outside your country. Our hosting and CDN provider (Cloudflare) is GDPR-compliant.',
   'legal.priv7': 'Joining Palms collects no personal information from children and may be used by people of all ages.',
-  'legal.priv8': 'An anonymous activity marker is kept on the server for about a week to count today\u2019s and this week\u2019s participants, then removed. Lifetime prayer totals are kept as anonymous aggregates only \u2014 with no name, email, or precise location.',
+  'legal.priv8': 'Live presence is kept only while a session is active and is normally swept after about 60 seconds without an update. The recent activity feed is a bounded in-memory window. Separately, the app may send a random anonymous device identifier and lifetime counters so totals can merge across sessions; those durable records contain no chosen name, email, or precise location, but clearing browser storage does not delete them automatically. Contact us to ask about a data record.',
   'legal.priv9': 'The display name you choose in Settings is shown to others while you pray, exactly like a username, use any name, never a real one.',
   'legal.contactEmail': 'care@joining-palms.app',
   'legal.termsTitle': 'Terms',
@@ -219,7 +216,7 @@ export default {
   'legal.pIntro': 'Joining Palms is a quiet place to pray together with the world. This page explains, in plain language, what the app knows about you and how it is used.',
   'legal.pWhatTitle': 'What we collect',
   'legal.pUseTitle': 'How it is used',
-  'legal.pUseBody': 'Your anonymous presence (a made-up name and a coarse region) is shown to others only as a light on the Earth. Nothing is sold or shared with advertisers.',
+  'legal.pUseBody': 'Your anonymous presence (a made-up name and a coarse region) is shown to others only as a light on the Earth. When you don\u2019t grant location permission, the region is approximated from your timezone \u2014 still coarse, never a precise address. Nothing is sold or shared with advertisers.',
   'legal.pRightsTitle': 'Your rights',
   'legal.pRightsBody': 'Because most of your data never leaves your device, you already control it: clearing your browser storage removes your prayer history and preferences. You may stop using the app at any time.',
   'legal.pContactTitle': 'Contact',
@@ -235,5 +232,72 @@ export default {
   'legal.tChangesTitle': 'Changes',
   'legal.tChangesBody': 'We may update these terms and the app over time. Continued use after changes means you accept them.',
   'legal.viewPrivacy': 'View full privacy policy',
-  'legal.viewTerms': 'View full terms of service'
+  'legal.viewTerms': 'View full terms of service',
+
+  // --- international / regional riders (plain-language) ---
+  'legal.intlTitle': 'International & regional notes',
+  'legal.pRightsEu':
+    'If you are in the European Economic Area, the UK, or Switzerland, the GDPR gives you rights to access, correct, restrict, object to, and request deletion or portability of personal data where applicable. Live presence is anonymous and normally swept after about 60 seconds; durable anonymous counter records may remain unless deletion is technically and legally required or we can identify the relevant record. Contact us to exercise a right or complain to your local data-protection authority.',
+  'legal.pRightsCa':
+    'If you are a California resident, the CCPA/CPRA gives you rights to know, correct, delete, and opt out of \u201csale\u201d or \u201csharing\u201d of personal information. We do not sell or share personal information for advertising, and we keep only the anonymous presence and aggregate data described above.',
+  'legal.pRightsIntl':
+    'These rights apply regardless of where you live. Because we collect so little, most people will never need to exercise them \u2014 but they are yours.',
+  'legal.cookTitle': 'Cookies & local storage',
+  'legal.cookBody':
+    'Joining Palms uses browser storage on your own device to remember your preferences and prayer history. We do not use advertising or tracking cookies. Our hosting provider (Cloudflare) may place standard security and performance cookies or process log data to keep the service fast and safe, and may use its own cookies for fraud protection. Nothing we run is used to build a profile of you across other websites.',
+  'legal.ageTitle': 'Children',
+  'legal.ageBody':
+    'Joining Palms may be used by people of all ages. Where a region requires a child to have a parent\u2019s consent (for example the GDPR at 16, or COPPA below 13 in the United States), we rely on you \u2014 children should have a parent or guardian\u2019s permission before using the app. We collect no deliberately personal information from children, and we never market to children.',
+  'legal.processingTitle': 'Where data is processed',
+  'legal.processingBody':
+    'The anonymous data described above is processed by our hosting and CDN provider Cloudflare. While you pray somewhere, a coarse region is shared with the Joining Palms server so your light appears on the Earth. If that processing happens in a data center outside your country (for example the United States), we rely on lawful transfer mechanisms, such as standard contractual clauses, to protect your information. This doesn\u2019t change what the app knows about you \u2014 it remains anonymous and device-first.',
+  // --- terms additions ---
+  'legal.tGoverningTitle': 'Governing law',
+  'legal.tGoverningBody':
+    'These terms are governed by the laws applicable where the operator of Joining Palms is established, without regard to conflict-of-law rules. The app is provided from a privacy-first hosting provider (Cloudflare) and, where you are in the European Economic Area, UK, or Switzerland, nothing in these terms removes the consumer protections your local law grants you.',
+  'legal.tAbuseTitle': 'Acceptable use',
+  'legal.tAbuseBody':
+    'Joining Palms is a shared world. You agree to treat the community with kindness, not to spam, not to attempt to disrupt the service, and not to use it for anything unlawful. We may restrict access to anyone who abuses the shared world.',
+  'legal.tDisputeTitle': 'Disputes',
+  'legal.tDisputeBody':
+    'We hope disagreements never happen. If one does, first contact us \u2014 most things are resolved in a friendly email. Failing that, disputes regarding these terms will be decided in the courts of the operator law above, but nothing here prevents you from bringing a complaint to your local regulator (such as a data protection authority) where the law allows.',
+  'legal.tChangesTitle2': 'Changes & international updates',
+  'legal.tChangesBody2':
+    'We may update these terms, this privacy policy, and the app over time. When we do, the new version applies only from the day it is published, and continued use after that means you accept it. Where a region requires stricter notice (for example the GDPR\u2019s transparency duties), we will give clear, visible notice before such changes apply to you.',
+  'legal.tEffectiveTitle': 'Effective date',
+  'legal.tEffectiveBody': 'These terms and this privacy policy are effective as of publication, and replace any earlier version.',
+
+  // --- full-page section renumbering for the privacy page ---
+  'legal.pDataCite': 'What we collect (details)',
+  'legal.pGdprTitle': 'Your rights by region (GDPR, CPRA, worldwide)',
+  'legal.pCookTitle': 'Cookies & local storage',
+  'legal.pKidsTitle': 'Children & age',
+  'legal.pProcTitle': 'Where data is processed',
+  'legal.pBasisTitle': 'Legal basis',
+  'legal.pBasisBody':
+    'Because Joining Palms collects so little personal info (a coarse, anonymous region and a display name you choose), we rely on legitimate interests as our lawful basis under GDPR Article 6(1)(f): the shared prayer world cannot exist without showing where people are praying. We balanced the minimal risk against the communal benefit and concluded the processing is proportionate. You may object at any time by contacting us or stopping use.',
+  'legal.pDpoTitle': 'Data protection officer',
+  'legal.pDpoBody':
+    'As a small team running a privacy-first app, we have not appointed a formal DPO under GDPR Article 37 because the core processing is not large-scale, systematic, or sensitive. Reach us through the contact details in the Contact section for any data-protection matter.',
+  'legal.pLgpdTitle': 'Brazil (LGPD)',
+  'legal.pLgpdBody':
+    'If you are in Brazil, the Lei Geral de Proteção de Dados (LGPD) gives you the same rights described for the GDPR: access, correction, deletion, and objection. Because the app is anonymous and device-first, exercising these is straightforward — stop using the app and clear your browser storage.',
+  'legal.pBreachTitle': 'Data breach',
+  'legal.pBreachBody':
+    'If a breach occurs likely to result in meaningful risk, we will notify affected users and relevant authorities as required by law. Because the app holds no accounts, real names, or precise locations, the risk of harm is significantly lowered.',
+  'legal.tSeverTitle': 'Severability',
+  'legal.tSeverBody':
+    'If any part of these terms is found unenforceable, the remaining parts stay in effect.',
+  'legal.tForceTitle': 'Force majeure',
+  'legal.tForceBody':
+    'We are not liable for failures caused by events beyond reasonable control, including natural disasters, infrastructure outages, or third-party service interruptions.',
+  'legal.tDmcaTitle': 'Copyright / DMCA',
+  'legal.tDmcaBody':
+    'We respect intellectual property. If you believe content in the app infringes your copyright, contact us through the email in the Contact section with a description of the work and where it appears. We respond promptly.',
+  'legal.tAiTitle': 'Automated decisions',
+  'legal.tAiBody':
+    'Joining Palms makes no automated decisions affecting your legal rights. The app does not use AI to profile, score, or classify users. We recommend no AI or large-language-model training be performed on the content of this service, and we do not train models on your prayer data.',
+  'legal.tTransTitle': 'International transfers',
+  'legal.tTransBody':
+    'Anonymous presence data (a coarse region) may be processed in data centers operated by our hosting provider (Cloudflare) outside your home country. For transfers from the EEA, UK, or Switzerland, we rely on standard contractual clauses or an adequacy decision. Nothing changes the nature of the data — it remains anonymous and device-first.'
 };

@@ -67,25 +67,25 @@ const FRAG = /* glsl */ `
     float landMask = texture2D(uMaskTex, uv).r;
 
     // uGlow rises with every prayer ever made (toward a million), uTier with
-    // the lifetime seconds of shared prayer. Land and ocean are deep and quiet
-    // so the luminous blue aura is what glows.
-    vec3 oceanC = vec3(0.004, 0.014, 0.034)
-      + vec3(0.004, 0.01, 0.02) * uTier
-      + vec3(0.006, 0.014, 0.026) * uGlow;
-    // land: deep, dark moss-forest teal (darker than before — the luminous
-    // coastline and you/they lights carry the glow, not the continents)
-    vec3 landC = vec3(0.045, 0.17, 0.19)
-      + vec3(0.012, 0.028, 0.03) * uTier
-      + vec3(0.018, 0.038, 0.04) * uGlow;
+    // the lifetime seconds of shared prayer. Land and ocean sit very dark so
+    // the prayer lights, coastline and atmosphere carry all the glow.
+    vec3 oceanC = vec3(0.002, 0.006, 0.016)
+      + vec3(0.002, 0.005, 0.01) * uTier
+      + vec3(0.003, 0.007, 0.013) * uGlow;
+    // land: deep, dark moss-forest teal (≈50% darker — the luminous coastline
+    // and you/they lights carry the glow, not the continents)
+    vec3 landC = vec3(0.022, 0.085, 0.095)
+      + vec3(0.006, 0.014, 0.015) * uTier
+      + vec3(0.009, 0.019, 0.02) * uGlow;
     vec3 base = mix(oceanC, landC, landMask);
 
     float ndl = dot(n, normalize(uSunDir));
     // a clean, physically-plausible terminator: a tight great-circle shadow
     // between the lit day side and the dark night side, with a soft dawn band
     float sun = smoothstep(-0.1, 0.16, ndl);
-    // higher-contrast light: deep terminator shadow on night, bright day side,
+// higher-contrast light: deep terminator shadow on night, bright day side,
     // so the Earth reads clearly against the dark space around it
-    vec3 lit = base * (0.32 + 0.72 * sun);
+    vec3 lit = base * (0.08 + 0.62 * sun);
 
     float night = 1.0 - smoothstep(-0.25, 0.08, ndl);
 
@@ -101,6 +101,13 @@ const FRAG = /* glsl */ `
     vec3 aurora = vec3(0.1, 0.9, 0.6) * aur * night * 0.3;
 
     vec3 col = lit + radiance + aurora;
+
+    // polar ice caps — clean ice crowning both poles (|sp.y| near 1). Cost is
+    // two smoothsteps on a latitude value (cheap). Kept steep and near-opaque
+    // so Antarctica's interior lakes never read through the ice sheet.
+    float ice = smoothstep(0.74, 0.9, abs(sp.y));
+    vec3 iceCol = vec3(0.6, 0.68, 0.76) * (0.5 + 0.3 * sun);
+    col = mix(col, iceCol, min(ice * 1.05, 1.0));
 
     // a luminous shoreline: a bright thin core softened by a gentle glow on both
     // sides, so it reads as light tracing the continents, never a drawn line
@@ -154,38 +161,25 @@ const SIL_FRAG = /* glsl */ `
     vec3 sp = normalize(vPos);
     vec2 uv = equirect(sp);
 
-    // texture is sRGB-decoded (linear), the mask thresholds below are chosen
-    // for linear space: deep ocean ~0.02-0.06, land starts ~0.17.
     vec3 day = texture2D(uDayTex, uv).rgb;
     float lum = dot(day, vec3(0.299, 0.587, 0.114));
-    // land is greener than the blue-dominant ocean
     float land = smoothstep(0.09, 0.17, lum) * step(-0.01, day.g - day.b);
 
-    // coastline: land that borders ocean (thin + faint for a sleek look)
-    vec3 dR = texture2D(uDayTex, uv + vec2(0.002, 0.0)).rgb;
-    vec3 dT = texture2D(uDayTex, uv + vec2(0.0, 0.003)).rgb;
-    float landR = smoothstep(0.09, 0.17, dot(dR, vec3(0.299, 0.587, 0.114))) * step(-0.01, dR.g - dR.b);
-    float landT = smoothstep(0.09, 0.17, dot(dT, vec3(0.299, 0.587, 0.114))) * step(-0.01, dT.g - dT.b);
-    float coast = land * (1.0 - min(landR, landT));
-
-    // limb fresnel so the sphere reads as round
     vec3 n = normalize(vNormal);
     vec3 viewDir = normalize(cameraPosition - vPos);
-    float fres = pow(1.0 - clamp(dot(n, viewDir), 0.0, 1.0), 1.8);
+    float fres = pow(1.0 - clamp(dot(n, viewDir), 0.0, 1.0), 2.5);
 
-    vec3 base = vec3(0.045, 0.11, 0.085);
-    vec3 coastCol = mix(vec3(0.55, 0.85, 0.68), vec3(1.0, 0.86, 0.52), uGlow);
+    // a barely-there silhouette — effectively 100% dark. The prayer-view globe
+    // should read only as a faint thinning where land sits, so the prayer
+    // lights and text carry all the attention. No moon-like rim glow.
+    float fillA = land * (0.003 + 0.002 * uGlow) * (0.5 + 0.5 * fres);
+    float rimA = 0.0;
+    float shore = 0.0;
 
-    float fillA = land * (0.05 + 0.06 * uGlow) * (0.6 + 0.4 * fres);
-    float coastA = coast * (0.14 + 0.3 * uGlow);
-    float rimA = fres * 0.06;
+    vec3 col = vec3(0.03, 0.07, 0.055) * fillA;
 
-    vec3 col = base * fillA;
-    col += coastCol * coastA;
-    col += vec3(0.38, 0.6, 0.48) * rimA;
-
-    float alpha = fillA + coastA + rimA;
-    if (alpha < 0.004) discard;
+    float alpha = fillA;
+    if (alpha < 0.002) discard;
     gl_FragColor = vec4(col, min(alpha, 1.0));
   }
 `
@@ -218,6 +212,7 @@ const ATMO_FRAG = /* glsl */ `
   uniform float uGlow;
   uniform float uTime;
   uniform float uSurge;
+  uniform float uDim;
   varying vec3 vNormal;
   varying vec3 vPos;
   void main() {
@@ -232,7 +227,7 @@ const ATMO_FRAG = /* glsl */ `
     vec3 shimmer = vec3(0.68, 0.58, 0.98) * (0.55 + 0.45 * sin(uTime * 0.7));
     vec3 col = inner * (0.75 + 0.3 * f) + shimmer * 0.34 * f;
     float alpha = f * (0.14 + 0.2 * uGlow + 0.14 * uSurge);
-    gl_FragColor = vec4(col, alpha);
+    gl_FragColor = vec4(col * uDim, alpha * uDim);
   }
 `
 
@@ -240,6 +235,7 @@ const ATMO_FRAG = /* glsl */ `
 const ETHEREAL_FRAG = /* glsl */ `  uniform float uGlow;
   uniform float uTime;
   uniform float uSurge;
+  uniform float uDim;
   varying vec3 vNormal;
   varying vec3 vPos;
   void main() {
@@ -261,7 +257,7 @@ const ETHEREAL_FRAG = /* glsl */ `  uniform float uGlow;
     // aura waves: rings pulse outward from the globe when many pray at once
     float waves = pow(0.5 + 0.5 * sin(rim * 40.0 - uTime * 3.2 + uGlow * 5.0), 3.0) * uSurge;
     float alpha = (f * (0.1 + 0.16 * uGlow) * grain + waves * 0.1) * breathe;
-    gl_FragColor = vec4(col + vec3(0.3, 0.5, 0.75) * waves * 0.22, alpha);
+    gl_FragColor = vec4((col + vec3(0.3, 0.5, 0.75) * waves * 0.22) * uDim, alpha * uDim);
   }
 `
 
@@ -304,11 +300,67 @@ const SPARK_FRAG = /* glsl */ `
     float d = length(c);
     // soft round orb
     float orb = 1.0 - smoothstep(0.06, 0.5, d);
-    // four-point star glint so it reads as a sparkle, never a square pixel
-    float dia = 1.0 - smoothstep(0.04, 0.5, abs(c.x) + abs(c.y));
-    float a = max(orb, dia * 0.55);
-    if (a <= 0.002) discard;
-    gl_FragColor = vec4(vColor, a * vA * uOpacity);
+    if (orb <= 0.002) discard;
+    gl_FragColor = vec4(vColor, orb * vA * uOpacity);
+  }
+`
+
+// Procedural cloud shaders — a handful of noise instructions on a slightly
+// larger sphere look like a real weather shell, at near-zero cost.
+const CLOUD_VERT = /* glsl */ `
+  varying vec3 vPos;
+  void main() {
+    vPos = position;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`
+
+const CLOUD_FRAG = /* glsl */ `
+  uniform float uTime;
+  varying vec3 vPos;
+
+  // cheap 3D hash — no texture wrap, no UV seam
+  float hash31(vec3 p) {
+    return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453);
+  }
+
+  float noise(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(
+      mix(mix(hash31(i), hash31(i + vec3(1,0,0)), f.x),
+          mix(hash31(i + vec3(0,1,0)), hash31(i + vec3(1,1,0)), f.x), f.y),
+      mix(mix(hash31(i + vec3(0,0,1)), hash31(i + vec3(1,0,1)), f.x),
+          mix(hash31(i + vec3(0,1,1)), hash31(i + vec3(1,1,1)), f.x), f.y), f.z);
+  }
+
+  float fbm(vec3 p) {
+    float v = 0.0;
+    float a = 0.5;
+    vec3 shift = vec3(100.0);
+    for (int i = 0; i < 5; i++) {
+      v += a * noise(p);
+      p = p * 2.0 + shift;
+      a *= 0.5;
+    }
+    return v;
+  }
+
+  void main() {
+    vec3 sp = normalize(vPos);
+
+    // sample noise directly in 3D sphere-space — no UV seam anywhere. A higher
+    // frequency gives fine, non-pixelated detail over the whole globe.
+    float n = fbm(sp * 11.0 + vec3(uTime * 0.12, 0.0, uTime * 0.08));
+
+    // thinner near the poles, thicker at mid-latitudes
+    float band = 1.0 - smoothstep(0.45, 0.88, abs(sp.y)) * 0.55;
+
+    float cloud = smoothstep(0.52, 0.68, n) * band;
+    cloud *= smoothstep(0.38, 0.48, n);
+
+    gl_FragColor = vec4(1.0, 1.0, 1.0, cloud * 0.24);
   }
 `
 
@@ -328,6 +380,21 @@ function buildLightKeys() {
 
 const LAT_MIN = -60
 const LAT_MAX = 72
+
+// Real inhabited places used by the light snap logic: a small island with a
+// town on it (Hawaii, the Maldives, an atoll) must keep its prayer light, so
+// its component is trusted even when it is only 1-2 grid cells.
+const SNAP_CITIES = [
+  [40.7, -74.0], [51.5, -0.1], [35.7, 139.7], [28.6, 77.2], [-23.5, -46.6],
+  [31.2, 121.5], [19.1, 72.9], [1.4, 103.8], [30.0, 31.2], [-34.6, -58.4],
+  [52.5, 13.4], [39.9, 116.4], [-33.9, 151.2], [37.8, -122.4], [-1.3, 36.8],
+  [3.1, 101.7], [34.0, -118.2], [41.9, -87.6], [43.7, -79.4], [25.2, 55.3],
+  [6.5, 3.4], [40.4, -3.7], [13.1, 80.3], [10.8, 106.6], [55.8, 37.6],
+  [-6.2, 106.8], [21.3, -157.9], [48.9, 2.3], [25.0, 55.2], [-26.2, 28.0],
+  [18.5, -69.9], [59.9, 10.8], [36.8, 10.2], [41.0, 28.9], [33.9, -84.4],
+  [38.9, -77.0], [4.7, -74.1], [13.1, -59.5], [12.9, 45.0], [-17.8, 31.0],
+  [19.4, -99.1], [30.6, 104.1], [25.8, -80.2]
+]
 
 // Rounds a coordinate onto the shared 1-degree light grid (matches the server).
 export function lightGridKey(lat, lon) {
@@ -409,7 +476,7 @@ export class EarthScene {
     if (this.lowPower) this.basePR = 1
     this.renderer.setPixelRatio(this.basePR)
     this.renderer.setSize(w, h)
-    this.renderer.setClearColor(0x000000, 0)
+    this.renderer.setClearColor(this.backdrop ? 0x040714 : 0x000000, this.backdrop ? 1 : 0)
     container.appendChild(this.renderer.domElement)
 
     // sun light for the earth shader â€” toward the camera so the day side faces us
@@ -437,6 +504,10 @@ export class EarthScene {
         tex.image = this.makeSeamless(tex.image)
         tex.needsUpdate = true
         this._dayLoaded = true
+        // Lights can arrive before the texture/mask. Reapply the last map now
+        // that strict land validation is available, otherwise an ocean cell
+        // can remain at its original position until the next sync update.
+        if (this._lastLights) this.setLights(this._lastLights, this._lastLightSpirits)
       },
       undefined,
       () => {
@@ -461,10 +532,11 @@ export class EarthScene {
 
     if (this.backdrop) {
       this.buildSilhouette(dayTex)
-      this.buildHalo()
+      this.buildAtmosphere()
     } else {
       this.buildFullEarth(dayTex)
     }
+    this.buildCloudShell()
 
     // --- people lights (on the surface, at real locations) ---
     this.lights = this.buildLights()
@@ -499,8 +571,10 @@ export class EarthScene {
     }
 
     // --- stars ---
-    this.stars = this.buildStars(this.backdrop ? 1400 : 9000)
-    this.scene.add(this.stars)
+    // The prayer-view backdrop keeps the field pure black behind the dark
+    // spinning Earth — no starfield showing through from behind the globe.
+    this.stars = this.backdrop ? null : this.buildStars(9000)
+    if (this.stars) this.scene.add(this.stars)
     if (!this.backdrop) {
       this.nebulae = this.buildNebulae()
       this.scene.add(this.nebulae)
@@ -510,6 +584,17 @@ export class EarthScene {
 
     this.bindResize()
     this.bindVisibility()
+    // the container may not have its final layout dimensions yet — a
+    // ResizeObserver guarantees the canvas resizes as soon as the div settles
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(() => { if (this._resize) this._resize() })
+      ro.observe(this.container)
+      this._containerObserver = ro
+    } else {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (this._resize) this._resize()
+      }))
+    }
     this.animate()
   }
 
@@ -530,21 +615,38 @@ export class EarthScene {
     this.earthGroup.add(this.earth)
   }
 
-  buildHalo() {
-    const halo = new THREE.Mesh(
-      new THREE.SphereGeometry(1.55, 32, 24),
+  // A luminous atmosphere hugging the globe (backdrop view). Spun slower than
+  // the planet so the glow feels like a real skinned, phase-driven sphere.
+  buildAtmosphere() {
+    const atmo = new THREE.Mesh(
+      new THREE.SphereGeometry(1.52, 48, 32),
       new THREE.ShaderMaterial({
         vertexShader: ATMO_VERT,
-        fragmentShader: HALO_FRAG,
-        uniforms: { uGlow: { value: this.glow } },
+        fragmentShader: ATMO_FRAG,
+        uniforms: { uGlow: { value: this.glow }, uTime: { value: 0 }, uSurge: { value: 0 }, uDim: { value: 0.12 } },
         transparent: true,
         blending: THREE.AdditiveBlending,
         side: THREE.BackSide,
         depthWrite: false
       })
     )
-    this.halo = halo
-    this.earthGroup.add(halo)
+    this.atmo = atmo
+    this.earthGroup.add(atmo)
+
+    const ether = new THREE.Mesh(
+      new THREE.SphereGeometry(1.95, 40, 28),
+      new THREE.ShaderMaterial({
+        vertexShader: ATMO_VERT,
+        fragmentShader: ETHEREAL_FRAG,
+        uniforms: { uGlow: { value: this.glow }, uTime: { value: 0 }, uSurge: { value: 0 }, uDim: { value: 0.12 } },
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        side: THREE.BackSide,
+        depthWrite: false
+      })
+    )
+    this.ether = ether
+    this.earthGroup.add(ether)
   }
 
   buildFullEarth(dayTex) {
@@ -570,7 +672,7 @@ export class EarthScene {
       new THREE.ShaderMaterial({
         vertexShader: ATMO_VERT,
         fragmentShader: ATMO_FRAG,
-        uniforms: { uGlow: { value: this.glow }, uTime: { value: 0 }, uSurge: { value: 0 } },
+        uniforms: { uGlow: { value: this.glow }, uTime: { value: 0 }, uSurge: { value: 0 }, uDim: { value: 1 } },
         transparent: true,
         blending: THREE.AdditiveBlending,
         side: THREE.BackSide,
@@ -586,7 +688,7 @@ export class EarthScene {
       new THREE.ShaderMaterial({
         vertexShader: ATMO_VERT,
         fragmentShader: ETHEREAL_FRAG,
-        uniforms: { uGlow: { value: this.glow }, uTime: { value: 0 }, uSurge: { value: 0 } },
+        uniforms: { uGlow: { value: this.glow }, uTime: { value: 0 }, uSurge: { value: 0 }, uDim: { value: 1 } },
         transparent: true,
         blending: THREE.AdditiveBlending,
         side: THREE.BackSide,
@@ -595,6 +697,23 @@ export class EarthScene {
     )
     this.ether = ether
     this.earthGroup.add(ether)
+  }
+
+  // A semitransparent cloud shell built from procedural noise — organic wisps
+  // and bands that drift over time, at near-zero performance cost (one extra
+  // draw call, a handful of noise instructions per pixel).
+  buildCloudShell() {
+    const geo = new THREE.SphereGeometry(1.47, 96, 64)
+    const mat = new THREE.ShaderMaterial({
+      vertexShader: CLOUD_VERT,
+      fragmentShader: CLOUD_FRAG,
+      uniforms: { uTime: { value: 0 } },
+      transparent: true,
+      depthWrite: false
+    })
+    this.cloudShell = new THREE.Mesh(geo, mat)
+    this.cloudShell.renderOrder = 1
+    this.earthGroup.add(this.cloudShell)
   }
 
   // A soft, phase-accurate moon glowing in the sky. The lit sliver follows the
@@ -936,12 +1055,108 @@ export class EarthScene {
     c.height = H
     this._maskCtx = c.getContext('2d')
     this._maskData = this._maskCtx.createImageData(W, H)
+    // Strict snap mask: classifies the same texture with a tighter rule so
+    // turbid/clouded open ocean never reads as land. It drives where a prayer
+    // light is allowed to sit, while the generous mask above keeps continents
+    // rendering as land even where the texture looks bluish.
+    this._snap = this._maskCtx.createImageData(W, H)
     if (this.backdrop) return null
     this.maskTex = new THREE.CanvasTexture(c)
     this.maskTex.colorSpace = THREE.NoColorSpace
     // Wraps horizontally so there's no seam at the anti-meridian (Pacific).
     this.maskTex.wrapS = THREE.RepeatWrapping
     return this.maskTex
+  }
+
+  // Ancillary: after the strict snap mask is built, flood-fill connected
+  // components on its 1-degree grid so lights only ever sit on a real landmass.
+  // A 1-degree cell is "trusted" (lightable) when its centre pixel reads as
+  // land AND its component is a genuine feature — a continent/island of >= 5
+  // cells, or a cell within 1 degree of a known inhabited town (so real towns
+  // on small far islands still work). Isolated 1-2 cell ocean specks (cloud
+  // shadow, turbid banks) stay untrusted, so a prayer light snaps to a real
+  // coast instead of floating at sea.
+  buildSnapComponents() {
+    if (!this._snap) return
+    const W = this._snap.width
+    const H = this._snap.height
+    if (!W || !H) return
+    const ROWS = 180
+    const COLS = 360
+    const LAT_TOP = 90
+    const at = (la, lo) => {
+      const my = Math.floor(((LAT_TOP - la) / 180) * H)
+      const mx = Math.floor(((((lo + 180) % 360) + 360) % 360) / 360 * W) % W
+      return this._snap.data[(my * W + mx) * 4] > 96
+    }
+    // Build the 1-degree land grid from the strict snap mask. The snap mask
+    // already applied the arctic-ice cut and edge softening, so a cell here
+    // is land exactly when its centre pixel reads as solid land.
+    const grid = new Uint8Array(ROWS * COLS)
+    for (let r = 0; r < ROWS; r++) {
+      const la = LAT_TOP - r
+      for (let c = 0; c < COLS; c++) {
+        if (at(la, c - 180)) grid[r * COLS + c] = 1
+      }
+    }
+    // A known inhabited place is always lightable even when its centre pixel
+    // sits on grey urban texture (asphalt, concrete — low saturation that the
+    // strict classifier rejects). Force only the city cell itself; the city
+    // trust pass below already marks its component as lightable regardless of
+    // size, so forcing neighbours would only spill lightable cells into the ocean.
+    for (const [la0, lo0] of SNAP_CITIES) {
+      const cr = Math.min(ROWS - 1, Math.max(0, LAT_TOP - Math.round(la0)))
+      const cc = ((Math.round(lo0) + 180) % COLS + COLS) % COLS
+      grid[cr * COLS + cc] = 1
+    }
+    const comp = new Int32Array(ROWS * COLS).fill(-1)
+    const sizes = []
+    let cid = 0
+    for (let i = 0; i < ROWS * COLS; i++) {
+      if (!grid[i] || comp[i] !== -1) continue
+      comp[i] = cid
+      const stack = [i]
+      let size = 0
+      while (stack.length) {
+        const ci = stack.pop()
+        const r = (ci / COLS) | 0
+        const c = ci % COLS
+        size++
+        const nb = []
+        if (r > 0) nb.push(ci - COLS)
+        if (r < ROWS - 1) nb.push(ci + COLS)
+        nb.push(c > 0 ? ci - 1 : ci + COLS - 1)
+        nb.push(c < COLS - 1 ? ci + 1 : ci - COLS + 1)
+        for (const ni of nb) {
+          if (grid[ni] && comp[ni] === -1) { comp[ni] = cid; stack.push(ni) }
+        }
+      }
+      sizes.push(size)
+      cid++
+    }
+    // A component is trusted once it is big enough to be a real landmass...
+    const trusted = new Uint8Array(cid)
+    for (let i = 0; i < cid; i++) if (sizes[i] >= 5) trusted[i] = 1
+    // ...and towns on small islands are trusted by their component alone, so
+    // islanders who live on a tiny atoll still get a light of their own.
+    for (const [la0, lo0] of SNAP_CITIES) {
+      const r = Math.min(ROWS - 1, Math.max(0, LAT_TOP - Math.round(la0)))
+      const c = ((Math.round(lo0) + 180) % COLS + COLS) % COLS
+      for (let dr = -1; dr <= 1; dr++) {
+        const rr = r + dr
+        if (rr < 0 || rr >= ROWS) continue
+        for (let dc = -1; dc <= 1; dc++) {
+          const cc = ((c + dc) % COLS + COLS) % COLS
+          const id = comp[rr * COLS + cc]
+          if (id !== -1) trusted[id] = 1
+        }
+      }
+    }
+    this._snapComp = comp
+    this._snapCompSize = sizes
+    this._snapCompTrusted = trusted
+    this._snapCompRows = ROWS
+    this._snapCompCols = COLS
   }
 
   processLandMask(img) {
@@ -952,6 +1167,9 @@ export class EarthScene {
       const ctx2 = c2.getContext('2d')
       ctx2.drawImage(img, 0, 0)
       const d = ctx2.getImageData(0, 0, c2.width, c2.height).data
+      this._daySrc = d
+      this._daySrcW = c2.width
+      this._daySrcH = c2.height
       const W = this._maskData.width
       const H = this._maskData.height
       const out = this._maskData.data
@@ -972,11 +1190,12 @@ export class EarthScene {
           const gb = g - b
           // bright land (desert/ice) must not be blue; darker land (forest) must
           // be dim and not turquoise, keeps shallow straits from bridging land.
-          // Water is strongly blue-dominant (gb negative, b high); the thresholds
-          // stay tight so deep ocean is never read as land (a user's coarse
-          // geolocation over mid-ocean water must still snap to nearby land).
+          // Water is strongly blue-dominant (gb deeply negative, b high); open
+          // ocean reads as deep blue, so the bright/dark land rules reject it.
+          // Some coastal cells look blue-ish too, but those sit beside lots of
+          // solid land, so the snap rule below keeps them on land.
           const brightLand = lum > 0.2 && gb > -0.01
-          const darkLand = lum <= 0.2 && lum > 0.08 && gb > -0.05 && b < 0.23
+          const darkLand = lum <= 0.2 && lum > 0.08 && gb > -0.08 && b < 0.28
           const land = y < arcticRow ? 0 : brightLand || darkLand ? 255 : 0
           const o = (y * W + x) * 4
           out[o] = out[o + 1] = out[o + 2] = land
@@ -1083,9 +1302,81 @@ export class EarthScene {
         const last = y * W + W - 1
         out[last * 4] = out[last * 4 + 1] = out[last * 4 + 2] = out[(y * W) * 4]
       }
+      // Strict snap mask (separate from the rendered land mask): the generous
+      // rule above lets turbid/clouded deep-ocean cells read as land, which is
+      // fine for drawing continents but would float a prayer light at sea. This
+      // tighter classifier rejects those blue-teal cells, so `isDeepOcean` uses
+      // it to decide where lights may sit.
+      {
+        const snap = this._snap.data
+        const raw = new Uint8ClampedArray(W * H * 4)
+        for (let y = 0; y < H; y++) {
+          const sy = Math.floor((y / H) * c2.height)
+          for (let x = 0; x < W; x++) {
+            const sx = Math.floor((x / W) * c2.width)
+            const i = (sy * c2.width + sx) * 4
+            const r = d[i] / 255
+            const g = d[i + 1] / 255
+            const b = d[i + 2] / 255
+            const lum = 0.299 * r + 0.587 * g + 0.114 * b
+            const gb = g - b
+            // Land has real colour (green vegetation, brown soil, sand) — so
+            // require chromatic saturation. Storm clouds over the open ocean
+            // are neutral grey (r≈g≈b), so they fail this and never read as
+            // land; a prayer light can never float inside a weather system.
+            const sat = Math.max(r, g, b) - Math.min(r, g, b)
+            // bright land above; dark land requires a greener, less blue cast
+            // than the full moon so open-ocean bands (deeply blue) fail
+            const bright = lum > 0.2 && gb > -0.01 && sat > 0.06
+            const dark = lum <= 0.2 && lum > 0.08 && gb > -0.05 && b < 0.23 && sat > 0.06
+            const land = y < arcticRow ? 0 : bright || dark ? 255 : 0
+            const o = (y * W + x) * 4
+            raw[o] = raw[o + 1] = raw[o + 2] = land
+            raw[o + 3] = 255
+          }
+        }
+        // soften edges the same way as the render mask, but skip erosion so a
+        // genuine small island (Singapore, an atoll) still counts as land when
+        // its centre pixel is solidly on land
+        const soft = new Uint8ClampedArray(raw.length)
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            let s = 0
+            for (let dy = -1; dy <= 1; dy++) {
+              const ny = Math.max(0, Math.min(H - 1, y + dy))
+              for (let dx = -1; dx <= 1; dx++) {
+                const nx = (x + dx + W) % W
+                s += raw[(ny * W + nx) * 4]
+              }
+            }
+            const v = s / 9
+            const o = (y * W + x) * 4
+            soft[o] = soft[o + 1] = soft[o + 2] = v
+            soft[o + 3] = 255
+          }
+        }
+        for (let y = 0; y < H; y++) {
+          const last = y * W + W - 1
+          snap[last * 4] = snap[last * 4 + 1] = snap[last * 4 + 2] = soft[(y * W) * 4]
+        }
+        snap.set(soft)
+      }
+      // Connected components over the strict snap grid (1-degree cells). A
+      // light is only ever trusted when its cell belongs to a real landmass:
+      // a continent, a genuine island, or a known city's cell. Anything that
+      // reads as land but is an isolated speck in the open ocean is dropped,
+      // so a prayer light can never float at sea.
+      this.buildSnapComponents()
       this._maskCtx.putImageData(this._maskData, 0, 0)
       if (this.maskTex) this.maskTex.needsUpdate = true
-    } catch {}
+    } catch (e) {
+      // If the strict classifier fails, clear _snap so isDeepOcean falls back
+      // to the conservative rule — never let a code error float lights at sea.
+      this._snap = null
+      this._snapComp = null
+      this._snapCompTrusted = null
+      console.warn('processLandMask failed — strict snap disabled', e)
+    }
   }
 
   buildLights() {
@@ -1110,6 +1401,9 @@ export class EarthScene {
       })
       const spr = new THREE.Sprite(mat)
       spr.visible = false
+      // Render above the translucent cloud shell (renderOrder 1) so a light's
+      // glow sits on top of the clouds instead of being washed out beneath them.
+      spr.renderOrder = 2
       spr.userData.lat = 0
       spr.userData.lon = 0
       pool.push(spr)
@@ -1121,19 +1415,105 @@ export class EarthScene {
 
   // True when a grid cell sits over open water. A prayer light only appears
   // when its cell's exact centre is on land — anything floating at sea, even
-  // just offshore, is dropped.
+  // just offshore, is dropped. A "land" cell is trusted only when it is solidly
+  // part of a real landmass: an isolated speck the mask picked up in the open
+  // ocean still counts as water, so a light can never float there (coarse VPN
+  // geolocation that lands mid-ocean snaps to the nearest real coast).
   isDeepOcean(latDeg, lonDeg) {
-    const m = this._maskData
+    // The strict snap mask decides where lights may sit. It classifies the
+    // texture with a tighter rule than the rendered land mask, so clouded or
+    // turbid deep-ocean cells (which the render mask keeps as land) still read
+    // as water here and a prayer light can never float mid-ocean.
+    const m = this._snap || this._maskData
     if (!m) return false
     // lights sit on the integer 1-degree grid, so evaluate the rounded cell
     const la = Math.max(-89, Math.min(89, Math.round(latDeg)))
     const lon = Math.round(lonDeg)
+    // Never use the generous render mask as a light-placement authority. Until
+    // the strict component map exists, defer placement to the later reapply
+    // after the texture loads; this prevents cloud/ocean pixels from flashing
+    // as land during startup or after a classifier failure.
+    if (!this._snapCompTrusted) return true
+    if (this._snapCompTrusted) {
+      // Trust map: built once over connected components, so only genuine
+      // landmasses (or known inhabited islands) are lightable. An isolated
+      // speck in the open ocean is water, and the prayer light snaps to a
+      // real coast instead of floating at sea.
+      const ROWS = this._snapCompRows
+      const COLS = this._snapCompCols
+      const r = Math.min(ROWS - 1, Math.max(0, 90 - la))
+      const c = ((lon + 180) % COLS + COLS) % COLS
+      const id = this._snapComp[r * COLS + c]
+      if (!(id >= 0 && this._snapCompTrusted[id])) return true
+      // The classifier may still flag a turbid shallow bank or sediment plume as
+      // land. Double-check the raw source texture pixel: if it is unmistakably
+      // ocean (blue-dominant, dark, or a grey storm cloud), treat it as deep.
+      const d = this._daySrc, dw = this._daySrcW, dh = this._daySrcH
+      if (d && dw && dh) {
+        const u = ((lon + 180) % 360) / 360
+        const v = (90 - la) / 180
+        const sx = Math.min(dw - 1, Math.max(0, Math.floor(u * dw)))
+        const sy = Math.min(dh - 1, Math.max(0, Math.floor(v * dh)))
+        const o = (sy * dw + sx) * 4
+        const rr = d[o] / 255, gg = d[o + 1] / 255, bb = d[o + 2] / 255
+        const slum = 0.299 * rr + 0.587 * gg + 0.114 * bb
+        const ssat = Math.max(rr, gg, bb) - Math.min(rr, gg, bb)
+        // storm cloud: bright, near-grey, almost no colour
+        if (slum > 0.3 && ssat < 0.06) return true
+        // deep ocean: dark-blue dominant
+        if (slum < 0.18 && bb > rr && bb > gg && bb - rr > 0.04) return true
+        // turbid/sediment water: slightly brighter but still blue-tinted and
+        // not actually land-coloured
+        if (slum < 0.32 && bb > rr && bb > gg && ssat < 0.22 && bb - Math.min(rr, gg) > 0.06) return true
+        // Any cell whose pixel is blue-dominant (ocean signature) and far from
+        // any known inhabited place is treated as deep ocean — final guardrail.
+        let nearCity = false
+        if (bb > gg) {
+          for (const [cla, clo] of SNAP_CITIES) {
+            if (Math.abs(cla - la) <= 4 && Math.abs(clo - lon) <= 4) { nearCity = true; break }
+          }
+          if (!nearCity) return true
+        }
+        // grey-pixel far from any city → storm cloud over open ocean
+        if (ssat < 0.06 && slum > 0.2) {
+          if (!nearCity) {
+            for (const [cla, clo] of SNAP_CITIES) {
+              if (Math.abs(cla - la) <= 4 && Math.abs(clo - lon) <= 4) { nearCity = true; break }
+            }
+          }
+          if (!nearCity) return true
+        }
+        // Geographic guardrail: open Atlantic basin (lon -70..-10, covering the
+        // entire Atlantic west-to-east, excluding the coastal Americas and Europe)
+        // — any cell here more than 4° from a known city is open ocean.
+        if (lon >= -70 && lon <= -10) {
+          if (!nearCity) {
+            for (const [cla, clo] of SNAP_CITIES) {
+              if (Math.abs(cla - la) <= 4 && Math.abs(clo - lon) <= 4) { nearCity = true; break }
+            }
+          }
+          if (!nearCity) return true
+        }
+      }
+      return false
+    }
     const my = Math.floor(((90 - la) / 180) * m.height)
     const mx = Math.floor(((((lon + 180) % 360) + 360) % 360) / 360 * m.width) % m.width
     if (my < 0 || my >= m.height) return true
-    // the centre pixel must read as land (mask is blurred at edges, so 96 is
-    // safely inside solid land)
-    return m.data[(my * m.width + mx) * 4] <= 96
+    const at = (y, x) => m.data[(((y + m.height) % m.height) * m.width + ((x % m.width) + m.width) % m.width) * 4]
+    // the centre pixel must read as solid land (mask is blurred at edges, so
+    // 96 is safely inside solid land)
+    if (at(my, mx) <= 96) return true
+    // the cell says land — trust it only when surrounded by real land bytes. A
+    // lone speck in the ocean (cloud shadow, shallow shelf) must still snap to
+    // the coast; genuine small islands next to land keep at least two solid
+    // neighbours.
+    const sup =
+      (at(my - 1, mx) > 96 ? 1 : 0) +
+      (at(my + 1, mx) > 96 ? 1 : 0) +
+      (at(my, mx - 1) > 96 ? 1 : 0) +
+      (at(my, mx + 1) > 96 ? 1 : 0)
+    return sup < 2
   }
 
   // Finds the nearest land cell, so a prayer that landed over water still shows
@@ -1176,6 +1556,8 @@ export class EarthScene {
   // per-frame facing cull in animate() shows/hides each light cleanly.
   setLights(map, spirits) {
     if (!this.lights) return
+    this._lastLights = map || {}
+    this._lastLightSpirits = spirits || {}
     const { pool, r, MAX } = this.lights
     let used = 0
     for (let i = 0; i < this.lightKeys.length; i++) {
@@ -1653,6 +2035,9 @@ export class EarthScene {
       this.ether.material.uniforms.uTime.value = t
       if (this.ether.material.uniforms.uSurge) this.ether.material.uniforms.uSurge.value = this.surge || 0
     }
+    if (this.cloudShell) {
+      this.cloudShell.material.uniforms.uTime.value = t
+    }
 
     // a gentle golden aura: sparks twinkle and circulate the globe on the GPU,
     // blooming outward when collective prayer surges
@@ -1808,6 +2193,7 @@ export class EarthScene {
     if (this._dragCleanup) this._dragCleanup()
     if (this._resize) window.removeEventListener('resize', this._resize)
     if (this._vis) document.removeEventListener('visibilitychange', this._vis)
+    if (this._containerObserver) this._containerObserver.disconnect()
     this.renderer.dispose()
     // Browsers cap the number of live WebGL contexts (~8-16); without forcing
     // the context to be lost, repeated mounts (pray → home → pray, earth view)

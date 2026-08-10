@@ -33,18 +33,6 @@ const SIM_PEOPLE = [
   ['nonreligious', 'awe', 37.8, -122.4]
 ]
 
-// Deterministic stand-ins for users who can't share a location, so every
-// light still lands on a real, populated place.
-const FALLBACK_CITIES = [
-  [40.7, -74.0], [51.5, -0.1], [48.9, 2.3], [35.7, 139.7], [28.6, 77.2],
-  [37.8, -122.4], [-33.9, 151.2], [55.8, 37.6], [31.2, 121.5], [-23.5, -46.6],
-  [19.1, 72.9], [1.4, 103.8], [25.2, 55.3], [-6.2, 106.8], [30.0, 31.2],
-  [21.5, 39.2], [52.5, 13.4], [34.0, -118.2], [41.9, -87.6], [39.9, 116.4],
-  [-34.6, -58.4], [10.8, 106.6], [6.5, 3.4], [40.4, -3.7], [43.7, -79.4],
-  [-26.2, 28.0], [4.7, -74.1], [13.1, 80.3], [-1.3, 36.8], [59.9, 10.8],
-  [36.8, 10.2], [41.0, 28.9], [3.1, 101.7], [33.9, -84.4], [38.9, -77.0]
-]
-
 // Same host that served the page. In development the socket lives on 8787
 // (a separate process); in production one process serves both the app and the
 // socket on the same port, so we connect to the page's own origin. Set
@@ -148,14 +136,16 @@ class SyncClient {
   }
 
   fallbackLoc() {
-    // No real position was granted or available. Show a light at a stable
-    // stand-in city (all real, on land) so your prayer still appears on the
-    // Earth — the earth view drops any cell sitting in deep ocean.
-    let h = 0
-    const n = this.name
-    for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) >>> 0
-    const [lat, lon] = FALLBACK_CITIES[h % FALLBACK_CITIES.length]
-    this.loc = { lat, lon }
+    // No GPS? Anchor the personal light at the centre of the browser's IANA
+    // timezone. It is coarse (shared by everyone in the zone), never precise,
+    // and needs no permission — so prayers still land somewhere honest on the
+    // map instead of vanishing or pinning a made-up city.
+    const tz = tzAnchor()
+    if (tz) {
+      this.loc = { lat: tz.lat, lon: tz.lon }
+    } else {
+      this.loc = null
+    }
   }
 
   stop() {
@@ -366,6 +356,68 @@ class SyncClient {
     this.sim = null
     this.simFeed = []
   }
+}
+
+// Map a handful of common IANA zones to a central anchor coordinate. Zones not
+// listed fall back to the UTC offset, which places the anchor on the correct
+// meridian (within ~15°, fine at a continent scale) at a neutral latitude.
+const TZ_ANCHORS = {
+  'America/New_York': { lat: 40.7, lon: -74.0 },
+  'America/Chicago': { lat: 41.9, lon: -87.6 },
+  'America/Denver': { lat: 39.7, lon: -105.0 },
+  'America/Phoenix': { lat: 33.4, lon: -112.1 },
+  'America/Los_Angeles': { lat: 34.1, lon: -118.2 },
+  'America/Anchorage': { lat: 61.2, lon: -149.9 },
+  'Pacific/Honolulu': { lat: 21.3, lon: -157.9 },
+  'America/Toronto': { lat: 43.7, lon: -79.4 },
+  'America/Vancouver': { lat: 49.3, lon: -123.1 },
+  'America/Mexico_City': { lat: 19.4, lon: -99.1 },
+  'America/Bogota': { lat: 4.7, lon: -74.1 },
+  'America/Sao_Paulo': { lat: -23.5, lon: -46.6 },
+  'America/Argentina/Buenos_Aires': { lat: -34.6, lon: -58.4 },
+  'Europe/London': { lat: 51.5, lon: -0.1 },
+  'Europe/Paris': { lat: 48.9, lon: 2.35 },
+  'Europe/Berlin': { lat: 52.5, lon: 13.4 },
+  'Europe/Madrid': { lat: 40.4, lon: -3.7 },
+  'Europe/Rome': { lat: 41.9, lon: 12.5 },
+  'Europe/Amsterdam': { lat: 52.4, lon: 4.9 },
+  'Europe/Stockholm': { lat: 59.3, lon: 18.1 },
+  'Europe/Moscow': { lat: 55.8, lon: 37.6 },
+  'Africa/Cairo': { lat: 30.0, lon: 31.2 },
+  'Africa/Lagos': { lat: 6.5, lon: 3.4 },
+  'Africa/Johannesburg': { lat: -26.2, lon: 28.0 },
+  'Africa/Nairobi': { lat: -1.3, lon: 36.8 },
+  'Asia/Dubai': { lat: 25.2, lon: 55.3 },
+  'Asia/Kolkata': { lat: 22.6, lon: 88.4 },
+  'Asia/Karachi': { lat: 24.9, lon: 67.1 },
+  'Asia/Dhaka': { lat: 23.8, lon: 90.4 },
+  'Asia/Shanghai': { lat: 31.2, lon: 121.5 },
+  'Asia/Hong_Kong': { lat: 22.3, lon: 114.2 },
+  'Asia/Singapore': { lat: 1.35, lon: 103.8 },
+  'Asia/Tokyo': { lat: 35.7, lon: 139.7 },
+  'Asia/Seoul': { lat: 37.5, lon: 127.0 },
+  'Asia/Bangkok': { lat: 13.7, lon: 100.5 },
+  'Asia/Jakarta': { lat: -6.2, lon: 106.8 },
+  'Asia/Manila': { lat: 14.6, lon: 121.0 },
+  'Australia/Sydney': { lat: -33.9, lon: 151.2 },
+  'Australia/Melbourne': { lat: -37.8, lon: 145.0 },
+  'Australia/Perth': { lat: -31.9, lon: 115.9 },
+  'Pacific/Auckland': { lat: -36.8, lon: 174.8 },
+  'UTC': { lat: 0, lon: 0 }
+}
+
+function tzAnchor() {
+  try {
+    let tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    if (tz && TZ_ANCHORS[tz]) return TZ_ANCHORS[tz]
+    if (tz) {
+      // Centered on the zoned date, the anchor drifts to the middle of the
+      // current reference period — not what we want. Use the raw offset:
+      const off = new Date().getTimezoneOffset() // minutes east-of-UTC is negative
+      return { lat: 25, lon: Math.round(-off / 60) * 15 } // one hour ≈ 15°
+    }
+  } catch {}
+  return null
 }
 
 export const syncClient = new SyncClient()

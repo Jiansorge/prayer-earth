@@ -12,10 +12,6 @@ import { EarthScene } from '../three/EarthScene.js'
 // devices the moment play is pressed. The static stars are drawn once onto a
 // plain 2D canvas — no animation loop, no WebGL — so even a slow phone sees a
 // quiet night sky with the earth's glow, just frozen.
-const isLowPower = () =>
-  (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ||
-  (typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4)
-
 // Draw a fixed field of stars (a few warmer ones among cool white) onto a 2D
 // canvas once. Re-drawn only on resize; never animated. Deterministic enough
 // per draw, cheap on every device.
@@ -50,7 +46,6 @@ function drawStaticStars(canvas) {
 
 export default function EarthBackdrop() {
   const mountRef = useRef(null)
-  const staticRef = useRef(null)
   const sceneRef = useRef(null)
   const glow = useStore((s) => s.getGlow())
   const lights = useStore((s) => s.lights)
@@ -60,21 +55,6 @@ export default function EarthBackdrop() {
   const youLoc = useStore((s) => s.youLoc)
 
   useEffect(() => {
-    if (isLowPower()) {
-      const canvas = staticRef.current
-      if (!canvas) return
-      drawStaticStars(canvas)
-      let raf = 0
-      const onResize = () => {
-        cancelAnimationFrame(raf)
-        raf = requestAnimationFrame(() => drawStaticStars(canvas))
-      }
-      window.addEventListener('resize', onResize)
-      return () => {
-        cancelAnimationFrame(raf)
-        window.removeEventListener('resize', onResize)
-      }
-    }
     let scene = null
     try {
       scene = new EarthScene(mountRef.current, { backdrop: true })
@@ -100,7 +80,6 @@ export default function EarthBackdrop() {
 
   return (
     <div className="earth-backdrop" aria-hidden="true">
-      <canvas ref={staticRef} className="earth-backdrop-canvas earth-backdrop-static" />
       <div ref={mountRef} className="earth-backdrop-canvas" />
       <div className="earth-backdrop-scrim" />
     </div>

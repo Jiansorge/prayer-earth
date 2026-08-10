@@ -181,6 +181,22 @@ function drawTemple(ctx, dpr, t, reduced) {
     ctx.fillRect(templeLeft - w * 0.06, sy, templeRight - templeLeft + w * 0.12, h * 0.02)
   }
 
+  // ground beneath the temple — a dark stone floor stretching to the bottom
+  const groundY = baseY + h * 0.06
+  const groundGrad = ctx.createLinearGradient(0, groundY, 0, h)
+  groundGrad.addColorStop(0, 'rgba(16,10,5,0.98)')
+  groundGrad.addColorStop(0.3, 'rgba(12,7,3,0.98)')
+  groundGrad.addColorStop(1, 'rgba(4,2,1,0.99)')
+  ctx.fillStyle = groundGrad
+  ctx.fillRect(0, groundY, w, h - groundY)
+
+  // a subtle reflection / ambient glow rising from the stone
+  const glowFloor = ctx.createRadialGradient(doorX, groundY, 0, doorX, groundY, w * 0.6)
+  glowFloor.addColorStop(0, 'rgba(255,180,100,0.12)')
+  glowFloor.addColorStop(1, 'rgba(0,0,0,0)')
+  ctx.fillStyle = glowFloor
+  ctx.fillRect(0, groundY - h * 0.08, w, h - groundY + h * 0.08)
+
   // the central doorway: a warm arch
   ctx.fillStyle = 'rgba(12,7,3,0.99)'
   ctx.beginPath()

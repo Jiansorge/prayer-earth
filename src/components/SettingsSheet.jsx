@@ -172,36 +172,6 @@ export default function SettingsSheet() {
 
         <label className="field-label section">{t('settings.secPraying')}</label>
 
-        <label className="field-label" htmlFor="voice-picker">{t('settings.voiceLabel')}</label>
-        <div className="field-hint">
-          {t('settings.voiceHint')}
-        </div>
-        <select
-          id="voice-picker"
-          className="field-select"
-          value={voiceURI || ''}
-          onChange={(e) => setVoiceURI(e.target.value || null)}
-        >
-          <option value="">{t('settings.automatic')}</option>
-          <option value={CHANT_VOICE}>{t('settings.softChant')}</option>
-          {grouped.map((v) => (
-            <option key={v.voiceURI} value={v.voiceURI}>
-              {v.name} ({v.lang})
-            </option>
-          ))}
-        </select>
-        {voiceURI ? null : <div className="field-hint">{t('settings.automaticHint')}</div>}
-        {grouped.length === 0 && (
-          <div className="field-hint">{t('settings.noVoices')}</div>
-        )}
-        <button
-          className="field-preview"
-          onClick={preview}
-          aria-label={t('settings.hearSample')}
-        >
-          {previewing ? t('settings.listening') : t('settings.hearSample')}
-        </button>
-
         <label className="field-label" htmlFor="rate-range">{t('settings.speedLabel')}</label>
         <input
           id="rate-range"
@@ -276,6 +246,36 @@ export default function SettingsSheet() {
             </option>
           ))}
         </select>
+
+        <label className="field-label" htmlFor="voice-picker">{t('settings.voiceLabel')}</label>
+        <div className="field-hint">
+          {t('settings.voiceHint')}
+        </div>
+        <select
+          id="voice-picker"
+          className="field-select"
+          value={voiceURI || ''}
+          onChange={(e) => setVoiceURI(e.target.value || null)}
+        >
+          <option value="">{t('settings.automatic')}</option>
+          <option value={CHANT_VOICE}>{t('settings.softChant')}</option>
+          {grouped.map((v) => (
+            <option key={v.voiceURI} value={v.voiceURI}>
+              {v.name} ({v.lang})
+            </option>
+          ))}
+        </select>
+        {voiceURI ? null : <div className="field-hint">{t('settings.automaticHint')}</div>}
+        {grouped.length === 0 && (
+          <div className="field-hint">{t('settings.noVoices')}</div>
+        )}
+        <button
+          className="field-preview"
+          onClick={preview}
+          aria-label={t('settings.hearSample')}
+        >
+          {previewing ? t('settings.listening') : t('settings.hearSample')}
+        </button>
 
         <div className="field-divider" />
 

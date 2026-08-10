@@ -16,30 +16,38 @@ function mulberry(seed) {
 }
 
 const rnd = mulberry(888)
-const sparks = Array.from({ length: 40 }, () => ({
+const sparks = Array.from({ length: 70 }, () => ({
   x: rnd(),
   y: rnd(),
-  r: 0.5 + rnd() * 1.4,
+  r: 0.5 + rnd() * 1.6,
   vy: 0.006 + rnd() * 0.02,
   ph: rnd() * Math.PI * 2
 }))
-const bubbles = Array.from({ length: 18 }, () => ({
+const bubbles = Array.from({ length: 28 }, () => ({
   x: rnd(),
   y: rnd(),
-  r: 1 + rnd() * 2.5,
-  vy: 0.01 + rnd() * 0.03
+  r: 1 + rnd() * 2.8,
+  vy: 0.01 + rnd() * 0.035
 }))
-const rays = Array.from({ length: 5 }, () => ({
+const rays = Array.from({ length: 7 }, () => ({
   x: rnd(),
-  w: 0.05 + rnd() * 0.07,
+  w: 0.05 + rnd() * 0.08,
   tilt: -0.25 + rnd() * 0.5
 }))
-const fish = Array.from({ length: 6 }, () => ({
+const fish = Array.from({ length: 8 }, () => ({
   x: rnd(),
   y: 0.4 + rnd() * 0.4,
   v: 0.006 + rnd() * 0.012,
   s: 0.5 + rnd() * 0.8,
   ph: rnd() * Math.PI * 2
+}))
+const rnd2 = mulberry(4321)
+const deep = Array.from({ length: 5 }, () => ({
+  x: rnd2(),
+  y: 0.2 + rnd2() * 0.6,
+  r: 0.2 + rnd2() * 0.3,
+  hue: rnd2() < 0.5 ? '80,200,255' : '60,255,210',
+  ph: rnd2() * Math.PI * 2
 }))
 
 function drawOcean(ctx, dpr, t, reduced) {
@@ -54,11 +62,25 @@ function drawOcean(ctx, dpr, t, reduced) {
   ctx.clearRect(0, 0, w, h)
 
   const g = ctx.createLinearGradient(0, 0, 0, h)
-  g.addColorStop(0, '#061a2e')
-  g.addColorStop(0.5, '#0a2c44')
-  g.addColorStop(1, '#0d3b4f')
+  g.addColorStop(0, '#041523')
+  g.addColorStop(0.45, '#082b42')
+  g.addColorStop(1, '#0c3c50')
   ctx.fillStyle = g
   ctx.fillRect(0, 0, w, h)
+
+  // drifting deep-water bioluminescent glows for richness
+  ctx.globalCompositeOperation = 'screen'
+  for (const d of deep) {
+    const dx = (d.x + Math.sin(t * 0.02 + d.ph) * 0.02) * w
+    const dy = d.y * h
+    const dr = d.r * Math.min(w, h)
+    const dg = ctx.createRadialGradient(dx, dy, 0, dx, dy, dr)
+    dg.addColorStop(0, `rgba(${d.hue},0.07)`)
+    dg.addColorStop(1, 'rgba(0,0,0,0)')
+    ctx.fillStyle = dg
+    ctx.fillRect(0, 0, w, h)
+  }
+  ctx.globalCompositeOperation = 'source-over'
 
   // a soft moon with a wide pale halo above the water
   const mx = w * 0.28

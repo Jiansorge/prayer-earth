@@ -133,6 +133,23 @@ function drawScene(ctx, w, h, scene, t = 0) {
     ctx.beginPath()
     ctx.arc(ox, oy, or, 0, Math.PI * 2)
     ctx.fill()
+
+    // soft rays fanning from the orb when it's a sun (not the moon)
+    if (P.sun) {
+      ctx.globalCompositeOperation = 'screen'
+      ctx.fillStyle = 'rgba(255,240,205,0.05)'
+      for (let i = 0; i < 8; i++) {
+        const ang = -1.0 + i * 0.25
+        const spread = 0.1 + (i % 3) * 0.02
+        ctx.beginPath()
+        ctx.moveTo(ox, oy)
+        ctx.lineTo(ox + Math.cos(ang - spread) * w, oy + Math.sin(ang - spread) * h)
+        ctx.lineTo(ox + Math.cos(ang + spread) * w, oy + Math.sin(ang + spread) * h)
+        ctx.closePath()
+        ctx.fill()
+      }
+      ctx.globalCompositeOperation = 'source-over'
+    }
   }
 
   // a few birds gliding across the sky

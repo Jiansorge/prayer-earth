@@ -1116,6 +1116,20 @@ export const SPIRITUALITIES = [
           { t: 'नमो तस्स भगवतो अरहतो सम्मासम्बुद्धस्स', s: 'Namo tassa bhagavato arahato sammāsambuddhassa', e: 'Homage to the Blessed One, the worthy one, the fully awakened.' }
         ],
         translation: 'The ancient homage recited before the Buddha\u2019s teachings, a bow of gratitude for the awakening path.'
+      },
+      {
+        id: '21-taras',
+        title: 'The Twenty-One Taras',
+        lang: 'bo',
+        langLabel: 'བོད་སྐད · Tibetan · repeated',
+        loop: true,
+        phrases: [
+          { t: 'ཨོཾ་ཇེ་ཙུན་དཔལ་མོ་སྒྲོལ་མ་ལ་ཕྱག་འཚལ།', s: 'Oṃ Tāre Tuttāre Ture Svāhā', e: 'Homage to Tara, the swift liberator, embodiment of compassion and courage.' },
+          { t: 'ཨོཾ་ཏཱ་རེ་ཏུཏྟཱ་རེ་ཏུ་རེ་སྭཱ་ཧཱ།', s: 'Oṃ Tāre Tuttāre Ture Svāhā', e: 'Oṃ, homage to the shining mother who rescues from fear and grants protection.' },
+          { t: 'ཨོཾ་ཏཱ་རེ་ཏུཏྟཱ་རེ་ཏུ་རེ་སྭཱ་ཧཱ།', s: 'Oṃ Tāre Tuttāre Ture Svāhā', e: 'Oṃ, to the lady who quells obstacles and leads beings to the other shore.' },
+          { t: 'ཨོཾ་ཏཱ་རེ་ཏུཏྟཱ་རེ་ཏུ་རེ་སྭཱ་ཧཱ།', s: 'Oṃ Tāre Tuttāre Ture Svāhā', e: 'Oṃ, the liberator of the twenty-one forms, who grants all blessings.' }
+        ],
+        translation: 'The homage to the Twenty-One Taras, the female Buddhas of swift compassionate action, called upon for fearlessness, protection, and the removal of obstacles.'
       }
     ]
   },

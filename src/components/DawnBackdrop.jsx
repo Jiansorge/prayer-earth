@@ -78,6 +78,22 @@ function drawDawn(ctx, dpr, t, reduced) {
   ctx.arc(sx, sy, sr * pulse, 0, Math.PI * 2)
   ctx.fill()
 
+  // gentle god-rays fanning from the rising sun
+  ctx.globalCompositeOperation = 'screen'
+  const rayA = reduced ? 0.05 : 0.07 + 0.04 * Math.sin(t * 0.6)
+  ctx.fillStyle = `rgba(255,240,205,${rayA})`
+  for (let i = 0; i < 7; i++) {
+    const ang = -0.6 + i * 0.2
+    const spread = 0.16
+    ctx.beginPath()
+    ctx.moveTo(sx, sy)
+    ctx.lineTo(sx + Math.cos(ang - spread) * w, sy + Math.sin(ang - spread) * h)
+    ctx.lineTo(sx + Math.cos(ang + spread) * w, sy + Math.sin(ang + spread) * h)
+    ctx.closePath()
+    ctx.fill()
+  }
+  ctx.globalCompositeOperation = 'source-over'
+
   // drifting clouds, warm-tinted near the horizon
   for (const c of clouds) {
     const cx = ((c.x + t * c.v) % 1.3 - 0.15) * w

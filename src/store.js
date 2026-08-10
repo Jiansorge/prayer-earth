@@ -99,7 +99,7 @@ export const useStore = create(
       muted: false,
       lastVolume: 0.5,
       locale: 'en',
-      theme: 'mystic',
+      theme: 'space',
 
       // collective all-time totals (from the server)
       prayerTotals: {},

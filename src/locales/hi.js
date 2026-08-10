@@ -61,6 +61,12 @@ export default {
   'settings.ambientHigh': 'दिल',
   'settings.languageLabel': 'भाषा',
   'settings.automatic': 'स्वचालित',
+  'settings.automaticHint': 'ऐप को प्रत्येक प्रार्थना के लिए सर्वोत्तम आवाज़ चुनने दें।',
+  'settings.secPraying': 'प्रार्थना की ध्वनि',
+  'settings.secLook': 'रूप और भाषा',
+  'settings.secShare': 'साझा करें',
+  'settings.secAbout': 'परिचय',
+  'settings.legal': 'गोपनीयता और देखभाल',
   'settings.sharePrayerLabel': 'प्रार्थना साझा करें',
   'settings.sharePrayerHint':
     '"{title}" के लिए एक कार्ड बनाएँ ताकि कोई उसे स्कैन करके जुड़ सके।',

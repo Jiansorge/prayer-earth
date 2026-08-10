@@ -5,7 +5,7 @@ import { speech } from '../audio/speech.js'
 import { ambient } from '../audio/ambience.js'
 import { syncClient } from '../sync/client.js'
 import { useT } from '../i18n.js'
-import { tPrayer } from '../i18n/prayerL10n.js'
+import { tPrayer, tPhrase } from '../i18n/prayerL10n.js'
 import PrayerStats from '../components/PrayerStats.jsx'
 import Sparkles from '../components/Sparkles.jsx'
 import { stopPlayback } from '../playback.js'
@@ -603,7 +603,7 @@ export default function PrayerPage() {
               )}
               {ph.e && (
                 <span className="en">
-                  {ph.e}
+                  {tPhrase(ph.e, locale)}
                 </span>
               )}
             </div>

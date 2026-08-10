@@ -45,9 +45,12 @@ export default function HomePage() {
       <Sparkles count={18} />
       <div className="row" style={{ marginTop: 4 }}>
         <div>
-          <h1 className="page-title">
-            {t('home.title')}
-          </h1>
+          <div className="home-title">
+            <img className="home-title-icon" src="/icons/icon-prayer.webp" alt="" />
+            <h1 className="page-title">
+              {t('home.title')}
+            </h1>
+          </div>
           <p className="subtitle" style={{ marginTop: 10 }}>
             {t('home.sub')}
           </p>

@@ -37,7 +37,8 @@ export const LOCALES = [
   { code: 'ar', label: 'العربية' },
   { code: 'ja', label: '日本語' },
   { code: 'ko', label: '한국어' },
-  { code: 'hi', label: 'हिन्दी' }
+  { code: 'hi', label: 'हिन्दी' },
+  { code: 'bo', label: 'བོད་སྐད' }
 ]
 
 // Locales whose interface should flow right-to-left.

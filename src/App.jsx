@@ -342,7 +342,7 @@ export default function App() {
             fallback={
               <div className="view earth-loading">
                 <div className="earth-loading-inner">
-                  <img className="earth-loading-icon" src="/icons/icon-512.png" alt="" />
+                  <img className="earth-loading-icon" src="/icons/icon-prayer.webp" alt="" />
                   <p className="subtitle">{t('earth.loading')}</p>
                 </div>
               </div>
