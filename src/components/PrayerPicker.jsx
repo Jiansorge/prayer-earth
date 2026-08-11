@@ -58,6 +58,7 @@ function PickerRow({ p, i, spirit, openPrayer, close, t }) {
     </div>
   )
 }
+const PickerRowMemo = React.memo(PickerRow)
 
 export default function PrayerPicker() {
   const spiritId = useStore((s) => s.prayerPickerSpiritId)
@@ -154,7 +155,7 @@ export default function PrayerPicker() {
           {shown.length === 0 && (
             <div className="picker-empty">{t('picker.none')}</div>          )}
           {shown.map((p, i) => (
-            <PickerRow key={p.id} p={p} i={i} spirit={spirit} openPrayer={openPrayer} close={close} t={t} />
+            <PickerRowMemo key={p.id} p={p} i={i} spirit={spirit} openPrayer={openPrayer} close={close} t={t} />
           ))}
         </div>
       </div>

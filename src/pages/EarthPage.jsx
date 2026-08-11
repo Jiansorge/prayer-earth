@@ -18,7 +18,6 @@ export default function EarthPage() {
   const lights = useStore((s) => s.lights)
   const lightSpirits = useStore((s) => s.lightSpirits)
   const youLoc = useStore((s) => s.youLoc)
-  const [, force] = useState(0)
   const t = useT()
 
   useEffect(() => {
@@ -36,11 +35,6 @@ export default function EarthPage() {
       if (scene) scene.dispose()
       sceneRef.current = null
     }
-  }, [])
-
-  useEffect(() => {
-    const t = setInterval(() => force((x) => x + 1), 800)
-    return () => clearInterval(t)
   }, [])
 
   useEffect(() => {

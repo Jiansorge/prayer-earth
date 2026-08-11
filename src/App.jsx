@@ -4,37 +4,30 @@ import { syncClient } from './sync/client.js'
 import { ambient } from './audio/ambience.js'
 import { speech } from './audio/speech.js'
 import HomePage from './pages/HomePage.jsx'
-import PrayerPage from './pages/PrayerPage.jsx'
-import LegalPage from './pages/LegalPage.jsx'
 import Nav from './components/Nav.jsx'
 import SettingsSheet from './components/SettingsSheet.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import PrayerPicker from './components/PrayerPicker.jsx'
 import { getScene } from './components/Scenery.jsx'
-import NatureBackdrop from './components/NatureBackdrop.jsx'
-import MysticBackdrop from './components/MysticBackdrop.jsx'
-import SpaceBackdrop from './components/SpaceBackdrop.jsx'
-import TempleBackdrop from './components/TempleBackdrop.jsx'
-import OceanBackdrop from './components/OceanBackdrop.jsx'
-import DawnBackdrop from './components/DawnBackdrop.jsx'
 import CelebrateToast from './components/CelebrateToast.jsx'
 import KeyboardHelp from './components/KeyboardHelp.jsx'
 
-// The home backdrop each theme draws on.
-const THEME_BACKDROPS = {
-  mystic: MysticBackdrop,
-  nature: NatureBackdrop,
-  space: SpaceBackdrop,
-  temple: TempleBackdrop,
-  ocean: OceanBackdrop,
-  dawn: DawnBackdrop
-}
-import { useT, RTL_LOCALES } from './i18n.js'
-
-// The 3D Earth (three.js) is heavy, load it only when the Earth view opens.
+const PrayerPage = lazy(() => import('./pages/PrayerPage.jsx'))
+const LegalPage = lazy(() => import('./pages/LegalPage.jsx'))
 const EarthPage = lazy(() => import('./pages/EarthPage.jsx'))
-// The quiet Earth that sits behind the prayer view shares that same chunk.
 const EarthBackdrop = lazy(() => import('./components/EarthBackdrop.jsx'))
+
+// Each theme backdrop loads only when that theme is selected.
+const THEME_BACKDROPS = {
+  mystic: lazy(() => import('./components/MysticBackdrop.jsx')),
+  nature: lazy(() => import('./components/NatureBackdrop.jsx')),
+  space: lazy(() => import('./components/SpaceBackdrop.jsx')),
+  temple: lazy(() => import('./components/TempleBackdrop.jsx')),
+  ocean: lazy(() => import('./components/OceanBackdrop.jsx')),
+  dawn: lazy(() => import('./components/DawnBackdrop.jsx'))
+}
+
+import { useT, RTL_LOCALES } from './i18n.js'
 
 class Boundary extends Component {
   constructor(props) {
@@ -88,7 +81,7 @@ export default function App() {
   const view = useStore((s) => s.view)
   const theme = useStore((s) => s.theme)
   const syncNotice = useStore((s) => s.syncNotice)
-  const Backdrop = THEME_BACKDROPS[theme] || MysticBackdrop
+  const Backdrop = THEME_BACKDROPS[theme] || THEME_BACKDROPS.mystic
   const glowRef = useRef(0)
   const t = useT()
 
@@ -318,9 +311,24 @@ export default function App() {
             <EarthBackdrop />
           </Suspense>
         )}
+        {view === 'home' && (
+          <Suspense fallback={null}>
+            <Backdrop />
+          </Suspense>
+        )}
         {view === 'home' && <HomePage key="home" />}
-        {view === 'prayer' && <PrayerPage key="prayer" />}
-        {view === 'legal' && <LegalPage key="legal" />}
+        {view === 'prayer' && (
+          <Suspense fallback={
+            <div className="view"><div className="subtitle">&nbsp;</div></div>
+          }>
+            <PrayerPage key="prayer" />
+          </Suspense>
+        )}
+        {view === 'legal' && (
+          <Suspense fallback={null}>
+            <LegalPage key="legal" />
+          </Suspense>
+        )}
         {view === 'earth' && (
           <Suspense
             fallback={

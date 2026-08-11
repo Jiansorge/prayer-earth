@@ -1381,6 +1381,7 @@ const arcticRow = Math.floor((H * 5) / 180)
 
   buildLights() {
     const glow = this.buildLightGlowTexture()
+    this.lightGlowTex = glow
     this.lightKeys = buildLightKeys()
     // Float clearly above the surface so a light's glow is never clipped by the
     // sphere as it rounds the limb — it fades out smoothly instead of losing a
@@ -2194,33 +2195,45 @@ const arcticRow = Math.floor((H * 5) / 180)
     if (this._resize) window.removeEventListener('resize', this._resize)
     if (this._vis) document.removeEventListener('visibilitychange', this._vis)
     if (this._containerObserver) this._containerObserver.disconnect()
-    this.renderer.dispose()
-    // Browsers cap the number of live WebGL contexts (~8-16); without forcing
-    // the context to be lost, repeated mounts (pray → home → pray, earth view)
-    // leak contexts until WebGL stops working and the earth "crashes".
-    try {
-      this.renderer.forceContextLoss()
-    } catch {}
-    this.renderer.domElement.width = 0
-    this.renderer.domElement.height = 0
+
+    // Recursively free every GPU resource in a subtree, skipping shared
+    // textures that are explicitly disposed below (dayTex is shared across
+    // uniforms and handled separately).
+    const free = (obj) => {
+      if (!obj) return
+      if (obj.geometry) obj.geometry.dispose()
+      if (obj.material) {
+        if (Array.isArray(obj.material)) {
+          for (const m of obj.material) {
+            if (m.map && m.map !== this.dayTex) m.map.dispose()
+            m.dispose()
+          }
+        } else {
+          if (obj.material.map && obj.material.map !== this.dayTex) obj.material.map.dispose()
+          obj.material.dispose()
+        }
+      }
+      if (obj.children) for (const c of obj.children) free(c)
+    }
+    free(this.earthGroup)
+    free(this.scene)
+
+    // Standalone objects not reached by scene traversal
+    if (this.maskTex) this.maskTex.dispose()
+    if (this.lightGlowTex) this.lightGlowTex.dispose()
+    if (this.earthMat) this.earthMat.dispose()
     if (this.dayTex) this.dayTex.dispose()
     if (this.nightTex) this.nightTex.dispose()
     if (this._readyTimer) clearTimeout(this._readyTimer)
-    if (this.coronaSpr) {
-      if (this.coronaSpr.material?.map) this.coronaSpr.material.map.dispose()
-      this.coronaSpr.material.dispose()
-    }
-    if (this.wispPts) {
-      this.wispPts.geometry.dispose()
-      this.wispMat.dispose()
-    }
-    if (this.lights) {
-      const mat = this.lights.pool[0]?.material
-      if (mat?.map) mat.map.dispose()
-      for (const spr of this.lights.pool) spr.material.dispose()
-    }
+
+    this.renderer.dispose()
+    try { this.renderer.forceContextLoss() } catch {}
+    this.renderer.domElement.width = 0
+    this.renderer.domElement.height = 0
     if (this.renderer.domElement.parentNode) {
       this.renderer.domElement.parentNode.removeChild(this.renderer.domElement)
     }
+    this.renderer = null
+    this.scene = null
   }
 }

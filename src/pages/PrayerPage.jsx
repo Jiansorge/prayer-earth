@@ -47,8 +47,10 @@ export default function PrayerPage() {
   const volume = useStore((s) => s.volume)
   const setVolume = useStore((s) => s.setVolume)
   const people = useStore((s) => s.peoplePraying)
+  const prayerCount = useStore((s) => (prayerId ? s.prayerCounts[prayerId] || 0 : 0))
+  const spiritCount = useStore((s) => (spiritId ? s.spiritCounts[spiritId] || 0 : 0))
+  // Read the full objects once for the chooser chip loop (not reactive)
   const prayerCounts = useStore((s) => s.prayerCounts)
-  const spiritCounts = useStore((s) => s.spiritCounts)
 
   const spirit = SPIRITUALITY_BY_ID[spiritId]
   const [active, setActive] = useState(null)
@@ -561,19 +563,19 @@ export default function PrayerPage() {
           {playing && active != null && phrases[active] ? phrases[active].t : ''}
         </span>
 
-        <div className={`praying-now ${prayerCounts[prayer.id] ? 'together' : ''}`} title={t('prayer.prayingNowTitle')}>
+        <div className={`praying-now ${prayerCount ? 'together' : ''}`} title={t('prayer.prayingNowTitle')}>
           <span className="pulse-dot" />
           <b
             style={{
-              textShadow: `0 0 ${6 + Math.min(1, Math.log10((prayerCounts[prayer.id] || 0) + 2) / 4) * 16}px rgba(232,196,122,${0.3 + Math.min(1, Math.log10((prayerCounts[prayer.id] || 0) + 2) / 4) * 0.7})`
+              textShadow: `0 0 ${6 + Math.min(1, Math.log10((prayerCount || 0) + 2) / 4) * 16}px rgba(232,196,122,${0.3 + Math.min(1, Math.log10((prayerCount || 0) + 2) / 4) * 0.7})`
             }}
           >
-            {prayerCounts[prayer.id] || 0}
+            {prayerCount || 0}
           </b>{' '}
           <span className="praying-now-rest">
             {t('prayer.prayingNowRest')}
             <span className="praying-now-sub">
-              {t('prayer.across', { n: spiritCounts[spiritId] || 0, name: spirit.name })}
+              {t('prayer.across', { n: spiritCount || 0, name: spirit.name })}
             </span>
           </span>
           <span

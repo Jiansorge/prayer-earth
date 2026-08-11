@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useStore } from '../store.js'
 import { useT } from '../i18n.js'
 
@@ -8,17 +8,11 @@ export default function WorldMeter() {
   const usersToday = useStore((s) => s.usersToday)
   const usersWeek = useStore((s) => s.usersWeek)
   const glowPct = useStore((s) => s.getGlowPercent())
-  const [, force] = useState(0)
   const t = useT()
 
   // the honest % of a million prayers; keep a few decimals when it's still tiny
   const fmtPct = (p) =>
     p >= 1 ? Math.round(p) : p >= 0.1 ? p.toFixed(1) : p.toFixed(2)
-
-  useEffect(() => {
-    const t = setInterval(() => force((x) => x + 1), 1000)
-    return () => clearInterval(t)
-  }, [])
 
   // numbers glow more as they grow (a soft gold halo scaled by magnitude)
   const glow = (n) => {
