@@ -7,6 +7,7 @@ import { useT, LOCALES, prayerTitle } from '../i18n.js'
 import { sanitizeName } from '../shared/profanity.js'
 import QRCard from './QRCard.jsx'
 import LegalSheet from './LegalSheet.jsx'
+import { canInstall, promptInstall } from '../shared/installPrompt.js'
 
 const isInstalled = () =>
   window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone
@@ -45,6 +46,8 @@ export default function SettingsSheet() {
   const [legalOpen, setLegalOpen] = useState(false)
   const [previewing, setPreviewing] = useState(false)
   const [appCopied, setAppCopied] = useState(false)
+  const [installed, setInstalled] = useState(false)
+  const [showIosTip, setShowIosTip] = useState(false)
   const previewTimer = useRef(null)
   const sheetRef = useRef(null)
 
@@ -302,6 +305,39 @@ export default function SettingsSheet() {
         <button className="field-btn" onClick={shareApp}>
           {appCopied ? t('settings.copied') : t('settings.shareApp')}
         </button>
+
+        {!isInstalled() && isMobile() && (
+          <>
+            <div className="field-divider" />
+
+            <label className="field-label section">{t('settings.installApp')}</label>
+
+            {canInstall() ? (
+              <>
+                <div className="field-hint">{t('settings.installHint')}</div>
+                <button
+                  className="field-btn"
+                  onClick={async () => {
+                    const ok = await promptInstall()
+                    if (ok) setInstalled(true)
+                  }}
+                >
+                  {installed ? t('settings.done') : t('settings.installApp')}
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="field-hint">{t('settings.installHintIos')}</div>
+                <button
+                  className="field-btn"
+                  onClick={() => setShowIosTip(!showIosTip)}
+                >
+                  {showIosTip ? t('settings.done') : t('settings.installApp')}
+                </button>
+              </>
+            )}
+          </>
+        )}
 
         <div className="field-divider" />
 

@@ -44,7 +44,7 @@ const FRAG = /* glsl */ `
 
   vec2 equirect(vec3 p) {
     return vec2(
-      0.5 + atan(p.z, p.x) / 6.2831853,
+      0.5 - atan(p.z, p.x) / 6.2831853,
       0.5 + asin(clamp(p.y, -1.0, 1.0)) / 3.14159265
     );
   }
@@ -152,7 +152,7 @@ const SIL_FRAG = /* glsl */ `
 
   vec2 equirect(vec3 p) {
     return vec2(
-      0.5 + atan(p.z, p.x) / 6.2831853,
+      0.5 - atan(p.z, p.x) / 6.2831853,
       0.5 + asin(clamp(p.y, -1.0, 1.0)) / 3.14159265
     );
   }
@@ -1173,11 +1173,11 @@ export class EarthScene {
       const W = this._maskData.width
       const H = this._maskData.height
       const out = this._maskData.data
-      // Treat the frozen Arctic Ocean (the polar ice cap, ~north of 82N) as
-      // ocean, not land — its bright ice would otherwise read as a huge arctic
-      // landmass. Real northern land (Siberia, Canada, Greenland) sits south
-      // of this band and stays.
-      const arcticRow = Math.floor((H * 10) / 180)
+// Treat the frozen Arctic Ocean (the polar ice cap, ~north of 87N) as
+// ocean, not land — its bright ice would otherwise read as a huge arctic
+// landmass. Real northern land (Siberia, Canada, Greenland) sits south
+// of this narrow band and stays intact.
+const arcticRow = Math.floor((H * 5) / 180)
       for (let y = 0; y < H; y++) {
         const sy = Math.floor((y / H) * c2.height)
         for (let x = 0; x < W; x++) {
@@ -1289,7 +1289,7 @@ export class EarthScene {
               }
             }
             const o = (y * W + x) * 4
-            const isLand = s >= 5
+            const isLand = s >= 3
             er[o] = er[o + 1] = er[o + 2] = isLand ? 255 : 0
             er[o + 3] = 255
           }
