@@ -154,23 +154,7 @@ export default function App() {
     return () => window.removeEventListener('pointermove', move)
   }, [])
 
-  // If the whole browser tab is hidden, a prayer playing in the background
-  // (Home/Earth/Prayer) pauses quietly, and resumes where it left off when the
-  // person returns. This lives here (not on the prayer page) so it works even
-  // when the prayer keeps playing on another view.
-  useEffect(() => {
-    const onVis = () => {
-      if (!document.hidden) return
-      const s = useStore.getState()
-      if (s.playing && !s.paused) {
-        speech.pause()
-        useStore.setState({ paused: true, praying: false })
-        syncClient.presenceNow()
-      }
-    }
-    document.addEventListener('visibilitychange', onVis)
-    return () => document.removeEventListener('visibilitychange', onVis)
-  }, [])
+
 
   // Keyboard navigation between the main tabs: 1 = Home, 2 = Pray, 3 = Earth,
   // and ? opens the keyboard-help sheet.

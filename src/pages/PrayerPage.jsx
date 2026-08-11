@@ -121,8 +121,8 @@ export default function PrayerPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingPlay])
 
-  // Pausing when the whole browser tab is hidden is handled globally in App.jsx,
-  // so it also works while the prayer plays in the background on Home/Earth.
+  // Prayer keeps playing in the background even when the tab is hidden or the
+  // user navigates to Home/Earth — no global pause on visibilitychange.
   useEffect(() => {
     // Reset only this page's view state when a different prayer is shown; a
     // prayer already playing in the background keeps playing (see togglePlay).
