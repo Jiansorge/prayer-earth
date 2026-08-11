@@ -1,0 +1,9 @@
+{
+  "appId": "app.joiningpalms",
+  "appName": "Joining Palms",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "capacitor",
+    "iosScheme": "capacitor"
+  }
+}
