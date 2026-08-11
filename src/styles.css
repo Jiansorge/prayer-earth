@@ -2499,6 +2499,15 @@ html[dir='rtl'] .chooser-arrow.right {
   text-align: start;
 }
 
+.onboard-language {
+  margin-top: 20px;
+  text-align: start;
+}
+
+.onboard-language .field-select {
+  margin-top: 8px;
+}
+
 .onboard-profile .field-input {
   margin-top: 8px;
 }

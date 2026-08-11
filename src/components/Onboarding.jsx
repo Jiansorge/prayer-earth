@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useStore } from '../store.js'
-import { useT } from '../i18n.js'
+import { useT, LOCALES } from '../i18n.js'
 
 const KEY = 'pe-onboarded'
 
@@ -11,6 +11,8 @@ export default function Onboarding() {
   const view = useStore((s) => s.view)
   const profile = useStore((s) => s.profile)
   const setProfile = useStore((s) => s.setProfile)
+  const locale = useStore((s) => s.locale)
+  const setLocale = useStore((s) => s.setLocale)
   const t = useT()
   const [shown, setShown] = useState(() => {
     try {
@@ -51,6 +53,22 @@ export default function Onboarding() {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="onboard-language">
+          <div className="onboard-step-title">{t('settings.languageLabel')}</div>
+          <select
+            id="onboard-locale"
+            className="field-select"
+            value={locale}
+            onChange={(e) => setLocale(e.target.value)}
+          >
+            {LOCALES.map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="onboard-profile">
