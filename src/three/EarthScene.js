@@ -35,10 +35,9 @@ const FRAG = /* glsl */ `
   uniform float uGlow;
   uniform vec3 uSunDir;
   uniform sampler2D uDayTex;
-  uniform sampler2D uNightTex;
+  uniform float uTier;
   uniform sampler2D uMaskTex;
   uniform float uSurge;
-  uniform float uTier;
   varying vec3 vNormal;
   varying vec3 vPos;
 
@@ -48,11 +47,6 @@ const FRAG = /* glsl */ `
       0.5 + asin(clamp(p.y, -1.0, 1.0)) / 3.14159265
     );
   }
-
-  // The textures are uploaded as sRGB, so sampling yields linear (dark)
-  // values; lift them back to display space for the few places the map is
-  // sampled.
-  vec3 srgb(vec3 c) { return pow(max(c, vec3(0.0)), vec3(1.0 / 2.2)); }
 
   void main() {
     vec3 n = normalize(vNormal);
