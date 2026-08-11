@@ -13,6 +13,13 @@ import { C_PING, E_PONG } from './protocol.js'
 const PING_EVERY_MS = 20000
 const STALE_AFTER_MS = 60000
 
+// Cap on a single inbound frame. The engine never sends anything close to
+// this (its own limits keep feeds bounded and syncs tiny), so a frame this
+// big is hostile (or a broken/mitm'd server) — the client drops it rather
+// than JSON.parse it into unbounded work. 256 KB is generous for any legit
+// state/feed/sync payload at any scale.
+const MAX_FRAME = 256 * 1024
+
 export class SyncEngine {
   constructor() {
     this.sock = null
@@ -28,6 +35,9 @@ export class SyncEngine {
       this.sock = new WebSocket(url || `${proto}://${window.location.host}`)
       this.sock.onmessage = (ev) => {
         try {
+          // Reject oversized frames before any parsing — a hostile or mitm'd
+          // server must not be able to push unbounded data into the tab.
+          if (typeof ev.data === 'string' && ev.data.length > MAX_FRAME) return
           const msg = JSON.parse(ev.data)
           // Engine-level liveness: consume pongs here, never forward them.
           if (msg.type === E_PONG) {

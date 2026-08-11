@@ -16,6 +16,39 @@ import { C_PRESENCE, C_SYNC } from './protocol.js'
 const PING_MS = 30000
 const RETRY_MS = 10000
 
+// Shape-guard + coerce the engine's inbound state/feed payloads before they
+// reach the store. The engine is trusted, but a bug or a hostile/mitm'd
+// source must never be able to crash the render tree (e.g. a non-array feed
+// or a non-string cell). Everything unknown is coerced to a safe default.
+const toCount = (v) => (Number.isFinite(v) ? v : Number.isFinite(Number(v)) ? Number(v) : 0)
+const toCell = (v) =>
+  typeof v === 'string' && /^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(v) ? v : ''
+const cleanFeed = (f) =>
+  Array.isArray(f)
+    ? f
+        .filter((e) => e && typeof e === 'object' && typeof e.id === 'number')
+        .slice(-MAX_FEED_ITEMS)
+        .map((e) => ({
+          id: e.id,
+          t: typeof e.t === 'number' ? e.t : 0,
+          name: typeof e.name === 'string' ? e.name.slice(0, 30) : '',
+          spiritId: typeof e.spiritId === 'string' ? e.spiritId.slice(0, 60) : null,
+          prayerId: typeof e.prayerId === 'string' ? e.prayerId.slice(0, 60) : null,
+          cell: toCell(e.cell)
+        }))
+    : []
+const cleanCountMap = (m) => {
+  if (!m || typeof m !== 'object' || Array.isArray(m)) return {}
+  const out = {}
+  for (const [k, v] of Object.entries(m)) {
+    if (['__proto__', 'constructor', 'prototype'].includes(k)) continue
+    const n = toCount(v)
+    if (n > 0) out[k] = n
+  }
+  return out
+}
+const MAX_FEED_ITEMS = 100
+
 // A gentle crowd for when the shared server can't be reached, so the world
 // never looks empty. The user's own prayer is always added on top so their
 // path's count is never less than 1 while they pray.
@@ -165,30 +198,34 @@ class SyncClient {
       this.engine.onMessage = (msg) => {
         try {
           if (msg.type === 'state') {
-            useStore.getState().setPeoplePraying(msg.people || 0)
-            useStore.getState().setTotalPrayerSeconds(msg.totalPrayerSeconds || 0)
-            useStore.getState().setPrayerCounts(msg.prayers || {})
-            useStore.getState().setSpiritCounts(msg.spirits || {})
-            if (msg.usersToday != null && msg.usersWeek != null) {
-              useStore.getState().setUsersActivity(msg.usersToday, msg.usersWeek)
+            useStore.getState().setPeoplePraying(toCount(msg.people))
+            useStore.getState().setTotalPrayerSeconds(toCount(msg.totalPrayerSeconds))
+            useStore.getState().setPrayerCounts(cleanCountMap(msg.prayers))
+            useStore.getState().setSpiritCounts(cleanCountMap(msg.spirits))
+            const today = toCount(msg.usersToday)
+            const week = toCount(msg.usersWeek)
+            if (today > 0 || week > 0) {
+              useStore.getState().setUsersActivity(today, week)
             }
-            if (msg.startedAt != null) {
-              useStore.getState().setStartedAt(msg.startedAt)
-            }
-            if (msg.lights) useStore.getState().setLights(msg.lights)
-            if (msg.lightSpirits) useStore.getState().setLightSpirits(msg.lightSpirits)
-            if (msg.totals) {
-              useStore.getState().setPrayerTotals(msg.totals.prayers || {})
-              useStore.getState().setSpiritTotals(msg.totals.spirits || {})
+            const startedAt = toCount(msg.startedAt)
+            if (startedAt > 0) useStore.getState().setStartedAt(startedAt)
+            const lights = cleanCountMap(msg.lights)
+            const lightSpirits = cleanCountMap(msg.lightSpirits)
+            if (Object.keys(lights).length) useStore.getState().setLights(lights)
+            if (Object.keys(lightSpirits).length) useStore.getState().setLightSpirits(lightSpirits)
+            if (msg.totals && typeof msg.totals === 'object' && !Array.isArray(msg.totals)) {
+              useStore.getState().setPrayerTotals(cleanCountMap(msg.totals.prayers))
+              useStore.getState().setSpiritTotals(cleanCountMap(msg.totals.spirits))
             }
           } else if (msg.type === 'feed') {
-            useStore.getState().setFeed(msg.feed || [])
-          } else if (msg.type === 'sync' && msg.stats) {
+            useStore.getState().setFeed(cleanFeed(msg.feed))
+          } else if (msg.type === 'sync' && msg.stats && typeof msg.stats === 'object') {
             useStore.getState().mergeSyncStats(msg.stats)
           } else if (msg.type === 'error') {
             // The engine told us why it is closing (e.g. rate-limited). Surface
             // it so the UI can show a gentle, non-alarming notice.
-            useStore.getState().setSyncNotice(msg.code || 'error')
+            const code = typeof msg.code === 'string' ? msg.code.slice(0, 40) : 'error'
+            useStore.getState().setSyncNotice(code)
           }
         } catch {}
       }

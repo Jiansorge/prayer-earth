@@ -19,6 +19,7 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Joining Palms" />
+    <meta property="og:url" content="https://joining-palms.app/" />
     <meta property="og:locale" content="en" />
     <meta property="og:locale:alternate" content="es" />
     <meta property="og:locale:alternate" content="fr" />
@@ -39,7 +40,7 @@
       property="og:description"
       content="Choose a sacred prayer from fifteen traditions and pray together with the world. Watch the Earth glow as prayer spreads."
     />
-    <meta property="og:image" content="/icons/og-card.png" />
+    <meta property="og:image" content="https://joining-palms.app/icons/og-card.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Joining Palms, a glowing globe lit by the world's prayers" />
@@ -51,7 +52,7 @@
       name="twitter:description"
       content="Choose a sacred prayer from fifteen traditions and pray together with the world."
     />
-    <meta name="twitter:image" content="/icons/og-card.png" />
+    <meta name="twitter:image" content="https://joining-palms.app/icons/og-card.png" />
 
     <!-- Structured data -->
     <script type="application/ld+json">
@@ -68,31 +69,9 @@
     </script>
 
     <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="canonical" href="https://joining-palms.app/" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <script>
-      // Fill in the canonical/OG URLs once the deployed origin is known. Social
-      // scrapers need ABSOLUTE image URLs, so og:image/twitter:image get the
-      // origin prefix here too (the static markup keeps them relative for dev).
-      try {
-        const origin = window.location.origin
-        const link = document.createElement('link')
-        link.rel = 'canonical'
-        link.href = origin + '/'
-        document.head.appendChild(link)
-        for (const prop of ['og:url']) {
-          const m = document.createElement('meta')
-          m.setAttribute('property', prop)
-          m.setAttribute('content', origin + '/')
-          document.head.appendChild(m)
-        }
-        for (const prop of ['og:image', 'twitter:image']) {
-          // og:image uses property=, twitter:image uses name= — match either.
-          const existing = document.querySelector(`meta[property="${prop}"], meta[name="${prop}"]`)
-          if (existing) existing.setAttribute('content', origin + '/icons/og-card.png')
-        }
-      } catch {}
-    </script>
     <style>
       /* Boot splash: shown the instant the page paints, faded out by React. */
       #boot {

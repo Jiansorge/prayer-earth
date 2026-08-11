@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { useT, LOCALES } from '../i18n.js'
+import { sanitizeName } from '../shared/profanity.js'
 
 const KEY = 'pe-onboarded'
 
@@ -106,7 +107,12 @@ export default function Onboarding() {
             maxLength={20}
             value={profile.name}
             placeholder={t('profile.namePlaceholder')}
-            onChange={(e) => setProfile({ name: e.target.value })}
+            onChange={(e) => {
+              const v = e.target.value
+              // block vulgar or profane display names (matches SettingsSheet)
+              if (sanitizeName(v) === '' && v.trim() !== '') return
+              setProfile({ name: v.slice(0, 20) })
+            }}
           />
           <div className="avatar-grid">
             {AVATARS.map((a) => (

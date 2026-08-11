@@ -178,7 +178,7 @@ await c.eval(`document.querySelector('.gear-btn').click()`)
 await c.waitFor(`!!document.querySelector('#locale-picker')`)
 ok(
   'language picker offers 12 locales',
-  (await c.eval(`document.querySelectorAll('#locale-picker option').length`)) === 12,
+  (await c.eval(`document.querySelectorAll('#locale-picker option').length`)) === 15,
   `opts=${await c.eval(`document.querySelectorAll('#locale-picker option').length`)}`
 )
 await c.eval(`(() => { const s = document.querySelector('#locale-picker'); s.value = 'es'; s.dispatchEvent(new Event('change', { bubbles: true })) })()`)
@@ -269,7 +269,7 @@ ok(
 )
 ok(
   'this-week stats title shown',
-  await c.waitFor(`/this week/i.test(document.body.innerText)`)
+  await c.waitFor(`/your week/i.test(document.body.innerText)`)
 )
 
 // --- regression: playback must survive well past the old 2.2s watchdog
@@ -328,7 +328,7 @@ ok('no footer meter on prayer page', (await c.eval(`!document.querySelector('.pr
 
 // --- switch prayer via chip ---
 const chips = await c.eval(`document.querySelectorAll('.chooser .chip:not(.chip-all)').length`)
-ok('Buddhism lists all its prayers as chips', chips === 25, `chips=${chips}`)
+ok('Buddhism lists all its prayers as chips', chips === 26, `chips=${chips}`)
 await c.eval(`document.querySelectorAll('.chooser .chip')[1].click()`)
 ok('switching prayer updates stage', await c.waitFor(`document.querySelectorAll('.prayer-line').length >= 2`))
 await c.eval(`document.querySelector('.ctrl-btn.stop').click()`)
