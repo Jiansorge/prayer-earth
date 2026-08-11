@@ -39,6 +39,7 @@ export const LOCALES = [
   { code: 'ko', label: '한국어' },
   { code: 'hi', label: 'हिन्दी' },
   { code: 'vi', label: 'Tiếng Việt' },
+  { code: 'tl', label: 'Tagalog' },
   { code: 'bo', label: 'བོད་སྐད' }
 ]
 

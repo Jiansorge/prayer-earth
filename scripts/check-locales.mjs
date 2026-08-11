@@ -10,7 +10,7 @@ function keys(p) {
 }
 
 const en = keys('src/locales/en.js')
-for (const f of ['ar', 'bo', 'de', 'es', 'fr', 'hi', 'it', 'ja', 'ko', 'pt', 'ru', 'vi', 'zh']) {
+for (const f of ['ar', 'bo', 'de', 'es', 'fr', 'hi', 'it', 'ja', 'ko', 'pt', 'ru', 'tl', 'vi', 'zh']) {
   const k = keys(`src/locales/${f}.js`)
   const miss = [...en].filter((x) => !k.has(x))
   const nonLegal = miss.filter((x) => !x.startsWith('legal.'))
