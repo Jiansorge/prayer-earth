@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { useT, LOCALES } from '../i18n.js'
 
@@ -14,6 +14,7 @@ export default function Onboarding() {
   const locale = useStore((s) => s.locale)
   const setLocale = useStore((s) => s.setLocale)
   const t = useT()
+  const cardRef = useRef(null)
   const [shown, setShown] = useState(() => {
     try {
       return !localStorage.getItem(KEY)
@@ -21,6 +22,24 @@ export default function Onboarding() {
       return false
     }
   })
+
+  // Bring keyboard focus into the dialog the moment it appears and let Escape
+  // close it, matching the picker sheet and settings dialog.
+  useEffect(() => {
+    if (!shown) return
+    const t = requestAnimationFrame(() => {
+      cardRef.current && cardRef.current.focus()
+    })
+    const onKey = (e) => {
+      if (e.key === 'Escape') done()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      cancelAnimationFrame(t)
+      window.removeEventListener('keydown', onKey)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shown])
 
   if (view !== 'home' || !shown) return null
 
@@ -39,9 +58,16 @@ export default function Onboarding() {
 
   return (
     <div className="onboard-backdrop">
-      <div className="onboard-card">
+      <div
+        className="onboard-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="onboard-title"
+        tabIndex={-1}
+        ref={cardRef}
+      >
         <div className="onboard-logo">🌿</div>
-        <h1 className="onboard-title">{t('onboard.title')}</h1>
+        <h1 id="onboard-title" className="onboard-title">{t('onboard.title')}</h1>
         <p className="onboard-sub">{t('onboard.sub')}</p>
         <div className="onboard-steps">
           {steps.map((s, i) => (
@@ -56,7 +82,7 @@ export default function Onboarding() {
         </div>
 
         <div className="onboard-language">
-          <div className="onboard-step-title">{t('settings.languageLabel')}</div>
+          <label className="onboard-step-title" htmlFor="onboard-locale">{t('settings.languageLabel')}</label>
           <select
             id="onboard-locale"
             className="field-select"
@@ -72,7 +98,7 @@ export default function Onboarding() {
         </div>
 
         <div className="onboard-profile">
-          <div className="onboard-step-title">{t('profile.title')}</div>
+          <label className="onboard-step-title" htmlFor="onboard-name">{t('profile.title')}</label>
           <div className="onboard-step-body">{t('profile.nameHint')}</div>
           <input
             id="onboard-name"
@@ -88,6 +114,8 @@ export default function Onboarding() {
                 key={a}
                 type="button"
                 className={`avatar-btn ${profile.avatar === a ? 'on' : ''}`}
+                aria-pressed={profile.avatar === a}
+                aria-label={`${t('profile.title')} ${a}`}
                 onClick={() => setProfile({ avatar: a })}
               >
                 {a}

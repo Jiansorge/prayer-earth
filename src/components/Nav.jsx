@@ -43,6 +43,7 @@ export default function Nav() {
               className={view === item.id ? 'active' : ''}
               onClick={() => onTap(item.id)}
               aria-label={label}
+              aria-current={view === item.id ? 'page' : undefined}
             >
               <span className="nav-icon">{item.icon}</span>
               <span className="nav-label">

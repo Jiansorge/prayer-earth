@@ -106,13 +106,13 @@ export default function PrayerPicker() {
     : spirit.prayers
 
   return (
-    <div className="picker-overlay" onClick={close} role="dialog" aria-modal="true">
+    <div className="picker-overlay" onClick={close} role="dialog" aria-modal="true" aria-labelledby="picker-title">
       <div className="picker-sheet" onClick={(e) => e.stopPropagation()} tabIndex={-1} ref={sheetRef}>
         <Sparkles count={10} />
         <div className="picker-head">
           <span className="picker-emoji">{spirit.emoji}</span>
           <div>
-            <div className="picker-title">{t('picker.title')}</div>
+            <div id="picker-title" className="picker-title">{t('picker.title')}</div>
             <div className="picker-sub">{t(`trad.${spirit.id}.name`)} · {t(`trad.${spirit.id}.tagline`)}</div>
           </div>
           <button className="picker-x" onClick={close} aria-label={t('picker.close')}>
