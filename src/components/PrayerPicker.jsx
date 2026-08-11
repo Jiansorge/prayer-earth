@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
-import { useT } from '../i18n.js'
+import { useT, prayerTitle } from '../i18n.js'
 import { stopPlayback } from '../playback.js'
 import Sparkles from './Sparkles.jsx'
 
@@ -36,7 +36,7 @@ function PickerRow({ p, i, spirit, openPrayer, close, t }) {
     >
       <span className="picker-num">{i + 1}</span>
       <span className="picker-main">
-        <span className="picker-row-title">{p.title}</span>
+        <span className="picker-row-title">{prayerTitle(t, p.id, p.title)}</span>
         <span className="picker-row-sub">{p.langLabel}</span>
       </span>
       <span className="picker-meta">
@@ -145,7 +145,7 @@ export default function PrayerPicker() {
                     close()
                   }}
                 >
-                  ★ {p.title.split(',')[0]}
+                  ★ {prayerTitle(t, p.id, p.title).split(',')[0]}
                 </button>
               ))}
           </div>

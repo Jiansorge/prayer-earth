@@ -4,7 +4,7 @@ import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
 import { speech } from '../audio/speech.js'
 import { ambient } from '../audio/ambience.js'
 import { syncClient } from '../sync/client.js'
-import { useT } from '../i18n.js'
+import { useT, prayerTitle } from '../i18n.js'
 import { tPrayer, tPhrase } from '../i18n/prayerL10n.js'
 import PrayerStats from '../components/PrayerStats.jsx'
 import Sparkles from '../components/Sparkles.jsx'
@@ -440,7 +440,7 @@ export default function PrayerPage() {
 
   const share = async () => {
     const url = `${window.location.origin}/#/pray/${spiritId}/${prayerId}`
-    const text = `${prayer.title} · ${spirit.name}. Pray with the world: ${url}`
+    const text = `${prayerTitle(t, prayer.id, prayer.title)} · ${spirit.name}. Pray with the world: ${url}`
     try {
       if (navigator.share) {
         await navigator.share({ title: 'Joining Palms', text, url })
@@ -519,7 +519,7 @@ export default function PrayerPage() {
                 openPrayer(spiritId, p.id)
               }}
             >
-              {p.title}
+              {prayerTitle(t, p.id, p.title)}
               <span className={`chip-count ${p.id === prayerId ? 'on' : ''}`}>
                 {prayerCounts[p.id] || 0}
               </span>
@@ -548,7 +548,7 @@ export default function PrayerPage() {
           </div>
         )}
 
-        <h1 className="prayer-title">{prayer.title}</h1>
+        <h1 className="prayer-title">{prayerTitle(t, prayer.id, prayer.title)}</h1>
         <div className="prayer-sub">
           <span className="prayer-lang-badge">
             {String(prayer.langLabel || '').split(' · ').slice(0, 2).join(' · ')}

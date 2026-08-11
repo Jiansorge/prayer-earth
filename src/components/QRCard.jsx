@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useT } from '../i18n.js'
+import { useT, prayerTitle } from '../i18n.js'
 
 export default function QRCard({ spirit, prayer, onClose }) {
   const canvasRef = useRef(null)
@@ -54,7 +54,7 @@ export default function QRCard({ spirit, prayer, onClose }) {
           ✕
         </button>
         <div className="qr-emoji">{spirit.emoji}</div>
-        <div className="qr-title">{prayer.title}</div>
+        <div className="qr-title">{prayerTitle(t, prayer.id, prayer.title)}</div>
         <div className="qr-sub">
           {spirit.name} · {t('qr.prayWithWorld')}
         </div>

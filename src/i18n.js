@@ -66,3 +66,11 @@ export function useT() {
   }, [locale])
   return translate
 }
+
+// Localized title for a prayer, falling back to its original title in the
+// data. Only prayers that opt in (currently the original nonreligious ones)
+// have `ptitle.*` keys; everything else keeps its original name.
+export function prayerTitle(t, prayerId, fallback) {
+  const v = t(`ptitle.${prayerId}`)
+  return v === `ptitle.${prayerId}` ? fallback : v
+}

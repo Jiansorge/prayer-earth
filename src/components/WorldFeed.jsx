@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITIES } from '../data/prayers.js'
 import { nearestPlace } from '../data/places.js'
-import { useT } from '../i18n.js'
+import { useT, prayerTitle } from '../i18n.js'
 
 const SPIRIT = Object.fromEntries(SPIRITUALITIES.map((s) => [s.id, s]))
 const SHORT = {}
@@ -11,6 +11,9 @@ for (const s of SPIRITUALITIES) {
     SHORT[p.id] = p.title.split(',')[0].trim()
   }
 }
+const PRAYER_OF = Object.fromEntries(
+  SPIRITUALITIES.flatMap((s) => s.prayers.map((p) => [p.id, p]))
+)
 
 const ago = (t, tFn) => {
   const s = Math.floor((Date.now() - t) / 1000)
@@ -49,7 +52,9 @@ export default function WorldFeed({ limit = 10, compact = false }) {
             <span key={e.id} className="feed-pill">
               <span className="feed-emoji">{SPIRIT[e.spiritId]?.emoji || '🕯️'}</span>
               <b>{e.name}</b>
-              <span className="feed-prayer">{SHORT[e.prayerId] || 'a prayer'}</span>
+              <span className="feed-prayer">
+                {prayerTitle(t, e.prayerId, SHORT[e.prayerId] || 'a prayer').split(',')[0].trim()}
+              </span>
               {place && <span className="feed-place">· {t('feed.near', { place })}</span>}
               <span className="feed-ago">{ago(e.t, t)}</span>
             </span>

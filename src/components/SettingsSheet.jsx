@@ -3,7 +3,7 @@ import { useStore } from '../store.js'
 import { speech, CHANT_VOICE } from '../audio/speech.js'
 import { ambient } from '../audio/ambience.js'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
-import { useT, LOCALES } from '../i18n.js'
+import { useT, LOCALES, prayerTitle } from '../i18n.js'
 import { sanitizeName } from '../shared/profanity.js'
 import QRCard from './QRCard.jsx'
 import LegalSheet from './LegalSheet.jsx'
@@ -284,7 +284,7 @@ export default function SettingsSheet() {
         <label className="field-label">{t('settings.sharePrayerLabel')}</label>
         <div className="field-hint">
           {prayer
-            ? t('settings.sharePrayerHint', { title: prayer.title })
+            ? t('settings.sharePrayerHint', { title: prayerTitle(t, prayer.id, prayer.title) })
             : t('settings.sharePrayerHintNone')}
         </div>
         <button
