@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITIES } from '../data/prayers.js'
 import { nearestPlace } from '../data/places.js'
@@ -24,7 +24,7 @@ const ago = (t, tFn) => {
   return `${h}h`
 }
 
-export default function WorldFeed({ limit = 10, compact = false }) {
+function WorldFeed({ limit = 10, compact = false }) {
   const feed = useStore((s) => s.feed)
   const [, force] = useState(0)
   const t = useT()
@@ -36,7 +36,7 @@ export default function WorldFeed({ limit = 10, compact = false }) {
 
   if (!feed || feed.length === 0) return null
 
-  const items = feed.slice(-limit).reverse()
+  const items = useMemo(() => feed.slice(-limit).reverse(), [feed, limit])
 
   return (
     <div className={`world-feed ${compact ? 'compact' : ''}`}>
@@ -64,3 +64,5 @@ export default function WorldFeed({ limit = 10, compact = false }) {
     </div>
   )
 }
+
+export default React.memo(WorldFeed)

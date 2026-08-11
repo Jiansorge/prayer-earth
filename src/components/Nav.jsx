@@ -10,7 +10,7 @@ const ITEMS = [
   { id: 'earth', icon: '🌍', labelKey: 'nav.earth' }
 ]
 
-export default function Nav() {
+function Nav() {
   const view = useStore((s) => s.view)
   const go = useStore((s) => s.go)
   const openPrayer = useStore((s) => s.openPrayer)
@@ -78,3 +78,5 @@ export default function Nav() {
     </nav>
   )
 }
+
+export default React.memo(Nav)

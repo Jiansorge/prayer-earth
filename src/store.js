@@ -4,6 +4,26 @@ import { prayerBaseTotals, spiritBaseTotals } from './data/totals.js'
 import { SPIRITUALITY_BY_ID } from './data/prayers.js'
 import { mergeStats } from './shared/stats.js'
 
+// Cheap shallow equality for objects/arrays — skips Zustand subscriber
+// notifications when the values haven't actually changed. Used on the
+// high-frequency sync setters so presence ticks that carry unchanged
+// counts don't trigger cascading re-renders across every subscriber.
+const eq = (a, b) => {
+  if (a === b) return true
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false
+  if (Array.isArray(a) !== Array.isArray(b)) return false
+  if (Array.isArray(a)) {
+    if (a.length !== b.length) return false
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false
+    return true
+  }
+  const ka = Object.keys(a)
+  const kb = Object.keys(b)
+  if (ka.length !== kb.length) return false
+  for (const k of ka) if (a[k] !== b[k]) return false
+  return true
+}
+
 // Storage that can never break the app. In private modes, sandboxed iframes,
 // or when a quota is exceeded, localStorage access throws, and prayer state
 // (especially the per-second counters) writes constantly. Swallow those errors
@@ -213,13 +233,19 @@ export const useStore = create(
       // a connection (e.g. 'rate'). Null when all is well.
       setSyncNotice: (syncNotice) => set({ syncNotice }),
       setPeoplePraying: (peoplePraying) => set({ peoplePraying }),
-      setPrayerCounts: (prayerCounts) => set({ prayerCounts }),
-      setSpiritCounts: (spiritCounts) => set({ spiritCounts }),
-      setLights: (lights) => set({ lights }),
-      setLightSpirits: (lightSpirits) => set({ lightSpirits }),
+      setPrayerCounts: (prayerCounts) =>
+        set((s) => eq(s.prayerCounts, prayerCounts) ? {} : { prayerCounts }),
+      setSpiritCounts: (spiritCounts) =>
+        set((s) => eq(s.spiritCounts, spiritCounts) ? {} : { spiritCounts }),
+      setLights: (lights) =>
+        set((s) => eq(s.lights, lights) ? {} : { lights }),
+      setLightSpirits: (lightSpirits) =>
+        set((s) => eq(s.lightSpirits, lightSpirits) ? {} : { lightSpirits }),
       setProfile: (patch) => set((s) => ({ profile: { ...s.profile, ...patch } })),
-      setPrayerTotals: (prayerTotals) => set({ prayerTotals }),
-      setSpiritTotals: (spiritTotals) => set({ spiritTotals }),
+      setPrayerTotals: (prayerTotals) =>
+        set((s) => eq(s.prayerTotals, prayerTotals) ? {} : { prayerTotals }),
+      setSpiritTotals: (spiritTotals) =>
+        set((s) => eq(s.spiritTotals, spiritTotals) ? {} : { spiritTotals }),
       setFeed: (feed) => set({ feed }),
       setYouLoc: (youLoc) => set({ youLoc }),
       setUsersActivity: (usersToday, usersWeek) => set({ usersToday, usersWeek }),

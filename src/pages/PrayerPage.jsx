@@ -284,31 +284,40 @@ export default function PrayerPage() {
   }, [tuning])
 
   // Keyboard controls: Space play/pause, ↑/↓ volume, M mute, R repeat, S stop.
+  // Handlers reference refs to avoid detaching/re-attaching on every volume
+  // change or play-state toggle, which previously happened on every slider drag.
+  const keysRef = useRef({})
+  keysRef.current.togglePlay = togglePlay
+  keysRef.current.toggleMute = toggleMute
+  keysRef.current.toggleLoop = toggleLoop
+  keysRef.current.stopJob = stopJob
+  keysRef.current.setLiveVolume = setLiveVolume
   useEffect(() => {
     const onKey = (e) => {
       const tag = e.target && e.target.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
       if (e.code === 'Space') {
         e.preventDefault()
-        togglePlay()
+        keysRef.current.togglePlay()
       } else if (e.key === 'ArrowUp') {
         e.preventDefault()
-        setLiveVolume(Math.min(1, Math.round((volume + 0.08) * 100) / 100))
+        const s = useStore.getState()
+        keysRef.current.setLiveVolume(Math.min(1, Math.round((s.volume + 0.08) * 100) / 100))
       } else if (e.key === 'ArrowDown') {
         e.preventDefault()
-        setLiveVolume(Math.max(0, Math.round((volume - 0.08) * 100) / 100))
+        const s = useStore.getState()
+        keysRef.current.setLiveVolume(Math.max(0, Math.round((s.volume - 0.08) * 100) / 100))
       } else if (e.key === 'm' || e.key === 'M') {
-        toggleMute()
+        keysRef.current.toggleMute()
       } else if (e.key === 'r' || e.key === 'R') {
-        toggleLoop()
+        keysRef.current.toggleLoop()
       } else if (e.key === 's' || e.key === 'S') {
-        stopJob()
+        keysRef.current.stopJob()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing, paused, volume, muted, loopOn, tuning])
+  }, [])
   useEffect(() => {
     const el = chooserRef.current
     if (!el) return

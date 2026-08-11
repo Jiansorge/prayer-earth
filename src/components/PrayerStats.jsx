@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useStore } from '../store.js'
 import { useT } from '../i18n.js'
 
@@ -23,9 +23,19 @@ const PAD_B = 16
 const PAD_T = 12
 
 export default function PrayerStats({ prayerId }) {
-  const stats = useStore((s) => s.prayerDayStats)
   const total = useStore((s) => s.getPrayerTotal(prayerId))
   const t = useT()
+  const [stats, setStats] = useState({})
+
+  // Snapshot the prayer day stats every 10 s instead of subscribing
+  // reactively — it ticks every second while a prayer plays and the
+  // per-second precision is irrelevant for a 7-day chart.
+  useEffect(() => {
+    const snap = () => setStats(useStore.getState().prayerDayStats)
+    snap()
+    const iv = setInterval(snap, 10000)
+    return () => clearInterval(iv)
+  }, [prayerId])
 
   const days = []
   for (let i = 6; i >= 0; i--) {
