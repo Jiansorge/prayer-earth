@@ -33,6 +33,46 @@ const dayKey = (t) =>
     t.getUTCDate()
   ).padStart(2, '0')}`
 
+// Locale codes the app ships, in the same order as src/i18n.js LOCALES. Kept
+// here (instead of imported) because i18n.js imports this store — a circular
+// import — and only the codes are needed for matching the browser language.
+const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'de', 'pt', 'it', 'ru', 'zh', 'ar', 'ja', 'ko', 'hi', 'vi', 'tl', 'bo']
+
+// Map browser language tags that don't use our base code to the closest locale
+// (Filipino→tl, zh variants→zh, pt-BR/pt-PT→pt). Anything else matches by its
+// first subtag (es-MX→es, fr-CA→fr, hi-IN→hi).
+const LOCALE_ALIASES = {
+  'fil': 'tl',
+  'fil-ph': 'tl',
+  'tag': 'tl',
+  'zh-hans': 'zh',
+  'zh-hant': 'zh',
+  'zh-cn': 'zh',
+  'zh-tw': 'zh',
+  'zh-hk': 'zh',
+  'zh-sg': 'zh',
+  'pt-br': 'pt',
+  'pt-pt': 'pt',
+  'pt-ao': 'pt',
+  'pt-mz': 'pt'
+}
+
+// Starting language for the very first run, before any manual choice exists:
+// match the browser's preferred languages to a supported locale, falling back
+// to English. A returning user keeps their pick because the persisted store
+// overwrites this initial value when it hydrates.
+function detectInitialLocale() {
+  if (typeof navigator === 'undefined') return 'en'
+  const preferred = navigator.languages?.length ? navigator.languages : [navigator.language || 'en']
+  for (let raw of preferred) {
+    const tag = String(raw).toLowerCase().replace('_', '-')
+    if (LOCALE_ALIASES[tag]) return LOCALE_ALIASES[tag]
+    const base = tag.split('-')[0]
+    if (SUPPORTED_LOCALES.includes(base)) return base
+  }
+  return 'en'
+}
+
 export const useStore = create(
   persist(
     (set, get) => ({
@@ -98,7 +138,7 @@ export const useStore = create(
       volume: 0.5,
       muted: false,
       lastVolume: 0.5,
-      locale: 'en',
+      locale: detectInitialLocale(),
       theme: 'space',
 
       // collective all-time totals (from the server)
