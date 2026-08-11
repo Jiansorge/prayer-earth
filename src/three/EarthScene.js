@@ -1581,6 +1581,10 @@ const arcticRow = Math.floor((H * 5) / 180)
         r * Math.sin(lat),
         r * Math.cos(lat) * Math.sin(lon)
       )
+      // Precompute the normalised local-space direction once so the per-frame
+      // animate loop can compare against a rotated camera instead of computing
+      // the full world matrix for every light every frame.
+      spr.userData.localDir = spr.position.clone().normalize()
       spr.userData.baseOpacity = Math.min(0.9, 0.6 + n * 0.05)
       const s = 0.2 + Math.min(n, 8) * 0.03
       spr.scale.set(s, s, s)
@@ -2096,12 +2100,18 @@ const arcticRow = Math.floor((H * 5) / 180)
     // (Depth test is off for these sprites, so facing is what hides them —
     // this is what keeps a glow from being clipped into a "missing piece".)
     if (this.lights) {
-      const camDir = this._lightCamPos.copy(this.camera.position).normalize()
+      // Rotate the camera direction into the earthGroup's local space once
+      // per frame, then dot against each light's precomputed localDir —
+      // avoids 256 updateWorldMatrix calls (~1-2ms CPU per frame).
+      const camDirLocal = this._lightCamPos
+        .copy(this.camera.position)
+        .applyQuaternion(this.earthGroup.quaternion.clone().invert())
+        .normalize()
       for (const spr of this.lights.pool) {
         if (!spr.userData.active) continue
-        spr.updateWorldMatrix(true, false)
-        const wp = this._lightWorldPos.setFromMatrixPosition(spr.matrixWorld).normalize()
-        const facing = wp.dot(camDir)
+        const ld = spr.userData.localDir
+        if (!ld) continue
+        const facing = ld.dot(camDirLocal)
         if (facing < -0.05) {
           spr.visible = false
           continue
