@@ -2,7 +2,6 @@ import React, { Component, Suspense, lazy, useEffect, useRef, useState } from 'r
 import { useStore } from './store.js'
 import { syncClient } from './sync/client.js'
 import { ambient } from './audio/ambience.js'
-import { speech } from './audio/speech.js'
 import HomePage from './pages/HomePage.jsx'
 import Nav from './components/Nav.jsx'
 import SettingsSheet from './components/SettingsSheet.jsx'

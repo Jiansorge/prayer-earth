@@ -448,11 +448,12 @@ export class EarthScene {
     this.frameMs = this.backdrop ? 42 : 0 // backdrop renders ~24fps, Earth view full speed
     this.peopleTarget = 0
 
-    // Low-power devices (or anyone who prefers stillness) get a lighter scene:
-    // fewer sphere segments, capped resolution, and a leaner aura. This is the
-    // biggest smoothness lever on budget phones.
-    const reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-    this.lowPower = reducedMotion || (typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4)
+    // Hardware-limited devices get fewer segments, no antialias, and
+    // lower resolution so the scene stays smooth on budget phones.
+    // prefers-reduced-motion is a separate flag: it only stops animation
+    // (auto-rotation, twinkle, aurora) without degrading visual quality.
+    this.reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+    this.lowPower = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4
     this.seg = this.lowPower ? 96 : 128 // sphere segments (was 192)
 
     const w = container.clientWidth || 1
@@ -1929,10 +1930,8 @@ const arcticRow = Math.floor((H * 10) / 180)
     const up = () => {
       dragging = false
       setRes(this.basePR)
-      this.autoRotate = true
-      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        this.autoRotate = false // don't spin the globe for users who prefer stillness
-      }
+this.autoRotate = !this.reducedMotion
+      this.autoRotate = this.reducedMotion ? false : true
     }
     el.addEventListener('pointerdown', down)
     window.addEventListener('pointermove', move)
@@ -2013,7 +2012,7 @@ const arcticRow = Math.floor((H * 10) / 180)
     }
     this.earthGroup.rotation.y += this.rotVel
 
-    if (!this.backdrop) {
+    if (!this.backdrop && !this.reducedMotion) {
       // gentle drifting camera, like watching from a slow orbit
       this.camera.position.x = Math.sin(t * 0.08) * 0.22
       this.camera.position.y = 0.55 + Math.cos(t * 0.11) * 0.14
