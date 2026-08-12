@@ -22,9 +22,10 @@ function Nav() {
   const onTap = (id) => {
     if (id === 'prayer') {
       const s = useStore.getState()
-      if (!s.spiritId) {
-        // Nothing chosen yet, open the first path so the view never crashes.
-        openPrayer(SPIRITUALITIES[0].id, SPIRITUALITIES[0].prayers[0].id)
+if (!s.spiritId) {
+          // No tradition chosen yet — open the first one (christianity/lords-prayer).
+          // Prayer texts are loaded lazily per spirit, but the IDs are always available.
+          openPrayer(SPIRITUALITIES[0].id, 'lords-prayer')
       } else {
         go('prayer')
       }

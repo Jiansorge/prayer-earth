@@ -424,7 +424,7 @@ export const useStore = create(
         let local = 0
         const spirit = SPIRITUALITY_BY_ID[spiritId]
         if (spirit) {
-          for (const p of spirit.prayers) local += s.prayerCompletions[p.id] || 0
+          for (const p of spirit.prayers || []) local += s.prayerCompletions[p.id] || 0
         }
         return (spiritBaseTotals[spiritId] || 0) + (s.spiritTotals[spiritId] || 0) + local
       }

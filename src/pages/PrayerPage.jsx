@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
-import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
+import { SPIRITUALITY_BY_ID, loadSpirit } from '../data/prayers.js'
 import { speech } from '../audio/speech.js'
 import { ambient } from '../audio/ambience.js'
 import { syncClient } from '../sync/client.js'
@@ -67,7 +67,12 @@ export default function PrayerPage() {
   const startingRef = useRef(false)
   const [celebration, setCelebration] = useState(0)
   const celebrationTimer = useRef(null)
-  const prayer = spirit ? spirit.prayers.find((p) => p.id === prayerId) : null
+  const prayer = spirit ? (spirit.prayers || []).find((p) => p.id === prayerId) : null
+  const [spiritLoaded, setSpiritLoaded] = useState(false)
+  useEffect(() => {
+    if (spiritId && !spirit?.prayers) loadSpirit(spiritId).then(() => setSpiritLoaded(true))
+    else setSpiritLoaded(true)
+  }, [spiritId])
   const rtl = RTL_LANGS.has(prayer?.lang)
   const phrases = prayer ? prayer.phrases : []
   const locale = useStore((s) => s.locale)
@@ -77,12 +82,12 @@ export default function PrayerPage() {
   useEffect(() => {
     if (!spirit) {
       useStore.getState().go('home')
-    } else if (!prayer) {
+    } else if (!prayer && spiritLoaded) {
       // Unknown prayer id in a valid tradition: fall back to its first prayer
       // instead of rendering with an undefined prayer.
-      useStore.getState().openPrayer(spirit.id, spirit.prayers[0].id)
+      useStore.getState().openPrayer(spirit.id, (spirit.prayers || [])[0]?.id)
     }
-  }, [spirit, prayer])
+  }, [spirit, prayer, spiritLoaded])
 
   // One prayer at a time per browser: another tab starting playback pauses us.
   // BroadcastChannel also delivers to this same tab, so each message carries its
@@ -520,7 +525,7 @@ export default function PrayerPage() {
           >
             ☰ <span className="chip-all-label">{t('picker.all')}</span>
           </button>
-          {spirit.prayers.map((p) => (
+          {(spirit.prayers || []).map((p) => (
             <button
               key={p.id}
               className={`chip ${p.id === prayerId ? 'on' : ''}`}

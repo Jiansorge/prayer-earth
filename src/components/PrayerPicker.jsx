@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
-import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
+import { SPIRITUALITY_BY_ID, loadSpirit } from '../data/prayers.js'
 import { useT, prayerTitle } from '../i18n.js'
 import { stopPlayback } from '../playback.js'
 import Sparkles from './Sparkles.jsx'
@@ -73,6 +73,8 @@ export default function PrayerPicker() {
     if (!spiritId) return
     // Start each tradition with an empty search.
     setQuery('')
+    // Load prayer texts for this spirit if not already loaded.
+    if (!SPIRITUALITY_BY_ID[spiritId]?.prayers) loadSpirit(spiritId)
     const onKey = (e) => {
       if (e.key === 'Escape') close()
     }
@@ -97,14 +99,15 @@ export default function PrayerPicker() {
       .toLowerCase()
 
   const q = norm(query)
+  const prayers = spirit.prayers || []
   const shown = q
-    ? spirit.prayers.filter(
+    ? prayers.filter(
         (p) =>
           norm(p.title).includes(q) ||
           norm(p.langLabel || '').includes(q) ||
           norm(p.translation || '').includes(q)
       )
-    : spirit.prayers
+    : prayers
 
   return (
     <div className="picker-overlay" onClick={close} role="dialog" aria-modal="true" aria-labelledby="picker-title">
@@ -120,7 +123,7 @@ export default function PrayerPicker() {
             ✕
           </button>
         </div>
-        {spirit.prayers.length > 8 && (
+        {prayers.length > 8 && (
           <div className="picker-search">
             <input
               type="search"
@@ -131,9 +134,9 @@ export default function PrayerPicker() {
             />
           </div>
         )}
-        {!q && spirit.prayers.some((p) => favorites.includes(p.id)) && (
+        {!q && prayers.some((p) => favorites.includes(p.id)) && (
           <div className="picker-favs">
-            {spirit.prayers
+            {prayers
               .filter((p) => favorites.includes(p.id))
               .map((p) => (
                 <button

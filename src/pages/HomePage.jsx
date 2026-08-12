@@ -133,8 +133,8 @@ export default function HomePage() {
             <span className="tile-name">{t(`trad.${s.id}.name`)}</span>
             <span className="tile-tagline">{t(`trad.${s.id}.tagline`)}</span>
             <span className="tile-prayers">
-              {t(s.prayers.length === 1 ? 'home.prayers.one' : 'home.prayers.other', {
-                n: s.prayers.length
+              {t(s.prayerCount === 1 ? 'home.prayers.one' : 'home.prayers.other', {
+                n: s.prayerCount || 0
               })}
             </span>
             <span className="tile-praying">

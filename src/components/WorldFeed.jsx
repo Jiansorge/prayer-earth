@@ -7,12 +7,12 @@ import { useT, prayerTitle } from '../i18n.js'
 const SPIRIT = Object.fromEntries(SPIRITUALITIES.map((s) => [s.id, s]))
 const SHORT = {}
 for (const s of SPIRITUALITIES) {
-  for (const p of s.prayers) {
+  for (const p of s.prayers || []) {
     SHORT[p.id] = p.title.split(',')[0].trim()
   }
 }
 const PRAYER_OF = Object.fromEntries(
-  SPIRITUALITIES.flatMap((s) => s.prayers.map((p) => [p.id, p]))
+  SPIRITUALITIES.flatMap((s) => (s.prayers || []).map((p) => [p.id, p]))
 )
 
 const ago = (t, tFn) => {

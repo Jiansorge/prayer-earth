@@ -52,7 +52,7 @@ export default function SettingsSheet() {
   const sheetRef = useRef(null)
 
   const spirit = SPIRITUALITY_BY_ID[spiritId]
-  const prayer = spirit?.prayers.find((p) => p.id === prayerId) || null
+  const prayer = spirit?.prayers?.find((p) => p.id === prayerId) || null
 
   const preview = () => {
     speech.preview()
