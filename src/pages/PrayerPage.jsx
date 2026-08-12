@@ -288,13 +288,15 @@ export default function PrayerPage() {
   // Keyboard controls: Space play/pause, ↑/↓ volume, M mute, R repeat, S stop.
   // Handlers reference refs to avoid detaching/re-attaching on every volume
   // change or play-state toggle, which previously happened on every slider drag.
+  // Ref assignments live inside the effect so they can reference functions
+  // declared later in the component body (no TDZ in the minified bundle).
   const keysRef = useRef({})
-  keysRef.current.togglePlay = togglePlay
-  keysRef.current.toggleMute = toggleMute
-  keysRef.current.toggleLoop = toggleLoop
-  keysRef.current.stopJob = stopJob
-  keysRef.current.setLiveVolume = setLiveVolume
   useEffect(() => {
+    keysRef.current.togglePlay = togglePlay
+    keysRef.current.toggleMute = toggleMute
+    keysRef.current.toggleLoop = toggleLoop
+    keysRef.current.stopJob = stopJob
+    keysRef.current.setLiveVolume = setLiveVolume
     const onKey = (e) => {
       const tag = e.target && e.target.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
