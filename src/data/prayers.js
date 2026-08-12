@@ -55,11 +55,13 @@ export async function loadSpirit(id) {
   if (!loader) return SPIRITUALITY_BY_ID[id]
   const mod = await loader()
   const spirit = mod.default
-  Object.assign(SPIRITUALITY_BY_ID[id], spirit)
+  // Replace the meta entry with a new object so React detects the change.
+  const full = { ...SPIRITUALITY_BY_ID[id], ...spirit }
+  SPIRITUALITY_BY_ID[id] = full
   const idx = SPIRITUALITIES.findIndex((s) => s.id === id)
-  if (idx !== -1) SPIRITUALITIES[idx] = SPIRITUALITY_BY_ID[id]
+  if (idx !== -1) SPIRITUALITIES[idx] = full
   _loaded.add(id)
-  return SPIRITUALITY_BY_ID[id]
+  return full
 }
 
 export function isLoaded(id) {

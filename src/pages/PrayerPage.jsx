@@ -68,10 +68,9 @@ export default function PrayerPage() {
   const [celebration, setCelebration] = useState(0)
   const celebrationTimer = useRef(null)
   const prayer = spirit ? (spirit.prayers || []).find((p) => p.id === prayerId) : null
-  const [spiritLoaded, setSpiritLoaded] = useState(false)
+  const [, reload] = useState(0)
   useEffect(() => {
-    if (spiritId && !spirit?.prayers) loadSpirit(spiritId).then(() => setSpiritLoaded(true))
-    else setSpiritLoaded(true)
+    if (spiritId && !spirit?.prayers) loadSpirit(spiritId).then(() => reload((x) => x + 1))
   }, [spiritId])
   const rtl = RTL_LANGS.has(prayer?.lang)
   const phrases = prayer ? prayer.phrases : []
@@ -82,12 +81,10 @@ export default function PrayerPage() {
   useEffect(() => {
     if (!spirit) {
       useStore.getState().go('home')
-    } else if (!prayer && spiritLoaded) {
-      // Unknown prayer id in a valid tradition: fall back to its first prayer
-      // instead of rendering with an undefined prayer.
-      useStore.getState().openPrayer(spirit.id, (spirit.prayers || [])[0]?.id)
+    } else if (!prayer) {
+      // Prayer texts may still be loading — no fallback yet.
     }
-  }, [spirit, prayer, spiritLoaded])
+  }, [spirit, prayer])
 
   // One prayer at a time per browser: another tab starting playback pauses us.
   // BroadcastChannel also delivers to this same tab, so each message carries its
