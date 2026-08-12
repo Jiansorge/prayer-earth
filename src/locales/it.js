@@ -7,6 +7,7 @@ export default {
   'sync.noticeRate': 'Stai andando un po’ veloce, abbiamo rallentato la connessione per un attimo.',
   'sync.noticeError': 'La connessione ha avuto un intoppo, stiamo riconnettendo.',
   'picker.search': 'Cerca preghiere',
+  'picker.loading': 'Caricamento preghiere…',
   'picker.none': 'Nessuna preghiera corrisponde, prova una ricerca più corta.',
   'nav.home': 'Home', 'nav.pray': 'Prega', 'nav.earth': 'Terra',
   'home.title': 'Prega con tutto il mondo.',

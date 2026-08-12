@@ -7,6 +7,7 @@ export default {
   'sync.noticeRate': 'Vous allez un peu vite, nous avons adouci la connexion un instant.',
   'sync.noticeError': 'La connexion a eu un hoquet, nous reconnectons.',
   'picker.search': 'Rechercher des prières',
+  'picker.loading': 'Chargement des prières…',
   'picker.none': 'Aucune prière ne correspond, essayez une recherche plus courte.',
   'nav.home': 'Accueil',
   'nav.pray': 'Prier',

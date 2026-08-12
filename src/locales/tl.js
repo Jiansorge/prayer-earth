@@ -157,6 +157,7 @@ export default {
   'picker.all': 'Lahat',
   'picker.close': 'Isara',
   'picker.search': 'Maghanap ng mga panalangin',
+  'picker.loading': 'Naglo-load ng mga panalangin…',
   'picker.none': 'Walang katugmang panalangin, subukan ang mas maikling paghahanap.',
   'trad.christianity.name': 'Kristiyanismo',
   'trad.christianity.tagline': 'Biyaya, pag-ibig, at ang tahimik na maliit na tinig.',

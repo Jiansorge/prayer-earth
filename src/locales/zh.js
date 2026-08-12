@@ -7,6 +7,7 @@ export default {
   'sync.noticeRate': '你稍微有点快，我们暂时放缓了连接。',
   'sync.noticeError': '连接出现了一点问题，我们正在重新连接。',
   'picker.search': '搜索祈祷',
+  'picker.loading': '正在加载祷告…',
   'picker.none': '没有匹配的祈祷，试试更短的搜索。',
   'nav.home': '首页', 'nav.pray': '祈祷', 'nav.earth': '地球',
   'home.title': '与整个世界一起祈祷。',

@@ -7,6 +7,7 @@ export default {
   'sync.noticeRate': 'Vas un poco rápido, suavizamos la conexión por un momento.',
   'sync.noticeError': 'La conexión tuvo un contratiempo, estamos reconectando.',
   'picker.search': 'Buscar oraciones',
+  'picker.loading': 'Cargando oraciones…',
   'picker.none': 'Ninguna oración coincide, prueba una búsqueda más corta.',
   'nav.home': 'Inicio',
   'nav.pray': 'Rezar',

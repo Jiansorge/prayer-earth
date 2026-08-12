@@ -158,6 +158,7 @@ export default {
   'picker.all': 'ཡོངས།',
   'picker.close': 'ཁེ་རུམ།',
   'picker.search': 'གསོལ་བ་བཙལ།',
+  'picker.loading': 'སྨོད་དེབ་སྡུབ་བཟོད།',
   'picker.none': 'གསོལ་བ་མ་རྙེད། ཐུང་ངུའི་བཙལ་སྟངས་ཤིག་བེད་སྤྱོད་བྱེད་རོགས།',
   'trad.christianity.name': 'ཡེ་ཤུ་ཆོས་ལུགས།',
   'trad.christianity.tagline': 'བྱིན་ཆེར་དང་། བརྩེ་བ་། རྗེད་ཆུང་གི་སྒྲ།',

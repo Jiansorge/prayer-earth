@@ -7,6 +7,7 @@ export default {
   'sync.noticeRate': 'أنت أسرع قليلًا، خففنا الاتصال للحظة.',
   'sync.noticeError': 'حصل عطل بسيط في الاتصال، نعيد الاتصال.',
   'picker.search': 'ابحث عن الصلوات',
+  'picker.loading': 'جارٍ تحميل الصلوات…',
   'picker.none': 'لا توجد صلوات مطابقة، جرب بحثًا أقصر.',
   'nav.home': 'الرئيسية', 'nav.pray': 'صَلِّ', 'nav.earth': 'الأرض',
   'home.title': 'صَلِّ مع العالم كلّه.',

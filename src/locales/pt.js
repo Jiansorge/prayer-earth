@@ -7,6 +7,7 @@ export default {
   'sync.noticeRate': 'Você está um pouco rápido, suavizamos a conexão por um momento.',
   'sync.noticeError': 'A conexão falhou um pouco, estamos reconectando.',
   'picker.search': 'Buscar orações',
+  'picker.loading': 'Carregando orações…',
   'picker.none': 'Nenhuma oração corresponde, tente uma busca mais curta.',
   'nav.home': 'Início', 'nav.pray': 'Rezar', 'nav.earth': 'Terra',
   'home.title': 'Reze com o mundo inteiro.',

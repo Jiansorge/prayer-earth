@@ -68,13 +68,14 @@ export default function PrayerPicker() {
   const sheetRef = useRef(null)
   const t = useT()
   const [query, setQuery] = useState('')
+  const [, reload] = useState(0)
 
   useEffect(() => {
     if (!spiritId) return
     // Start each tradition with an empty search.
     setQuery('')
     // Load prayer texts for this spirit if not already loaded.
-    if (!SPIRITUALITY_BY_ID[spiritId]?.prayers) loadSpirit(spiritId)
+    if (!SPIRITUALITY_BY_ID[spiritId]?.prayers) loadSpirit(spiritId).then(() => reload((x) => x + 1))
     const onKey = (e) => {
       if (e.key === 'Escape') close()
     }

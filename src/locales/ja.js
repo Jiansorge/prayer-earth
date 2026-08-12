@@ -7,6 +7,7 @@ export default {
   'sync.noticeRate': '少し速いようです、一時的に接続を緩めました。',
   'sync.noticeError': '接続に少し問題があり、再接続しています。',
   'picker.search': '祈りを検索',
+  'picker.loading': 'お祈りを読み込み中…',
   'picker.none': '一致する祈りがありません。もっと短く検索してください。',
   'nav.home': 'ホーム', 'nav.pray': '祈る', 'nav.earth': '地球',
   'home.title': '世界とともに祈りましょう。',

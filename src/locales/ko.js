@@ -7,6 +7,7 @@ export default {
   'sync.noticeRate': '조금 빠르게 진행 중이에요, 잠시 연결을 부드럽게 했습니다.',
   'sync.noticeError': '연결에 문제가 생겨 다시 연결 중입니다.',
   'picker.search': '기도 검색',
+  'picker.loading': '기도문 불러오는 중…',
   'picker.none': '일치하는 기도가 없습니다, 더 짧게 검색해 보세요.',
   'nav.home': '홈', 'nav.pray': '기도', 'nav.earth': '지구',
   'home.title': '온 세상과 함께 기도하세요.',

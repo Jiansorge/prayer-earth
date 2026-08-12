@@ -1,19 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useStore } from '../store.js'
-import { SPIRITUALITIES } from '../data/prayers.js'
+import { SPIRITUALITIES, getPrayerById } from '../data/prayers.js'
 import { nearestPlace } from '../data/places.js'
 import { useT, prayerTitle } from '../i18n.js'
 
 const SPIRIT = Object.fromEntries(SPIRITUALITIES.map((s) => [s.id, s]))
-const SHORT = {}
-for (const s of SPIRITUALITIES) {
-  for (const p of s.prayers || []) {
-    SHORT[p.id] = p.title.split(',')[0].trim()
-  }
+
+const shortTitle = (prayerId) => {
+  const p = getPrayerById(prayerId)
+  return p ? p.title.split(',')[0].trim() : 'a prayer'
 }
-const PRAYER_OF = Object.fromEntries(
-  SPIRITUALITIES.flatMap((s) => (s.prayers || []).map((p) => [p.id, p]))
-)
 
 const ago = (t, tFn) => {
   const s = Math.floor((Date.now() - t) / 1000)
@@ -53,7 +49,7 @@ function WorldFeed({ limit = 10, compact = false }) {
               <span className="feed-emoji">{SPIRIT[e.spiritId]?.emoji || '🕯️'}</span>
               <b>{e.name}</b>
               <span className="feed-prayer">
-                {prayerTitle(t, e.prayerId, SHORT[e.prayerId] || 'a prayer').split(',')[0].trim()}
+                {prayerTitle(t, e.prayerId, shortTitle(e.prayerId)).split(',')[0].trim()}
               </span>
               {place && <span className="feed-place">· {t('feed.near', { place })}</span>}
               <span className="feed-ago">{ago(e.t, t)}</span>

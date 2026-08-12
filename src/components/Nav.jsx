@@ -23,9 +23,8 @@ function Nav() {
     if (id === 'prayer') {
       const s = useStore.getState()
 if (!s.spiritId) {
-          // No tradition chosen yet — open the first one (christianity/lords-prayer).
-          // Prayer texts are loaded lazily per spirit, but the IDs are always available.
-          openPrayer(SPIRITUALITIES[0].id, 'lords-prayer')
+          // No tradition chosen yet — open the first one.
+          openPrayer('christianity', 'lords-prayer')
       } else {
         go('prayer')
       }

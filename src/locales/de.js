@@ -7,6 +7,7 @@ export default {
   'sync.noticeRate': 'Du bist etwas schnell, wir haben die Verbindung kurz gedrosselt.',
   'sync.noticeError': 'Die Verbindung hat kurz gehakt, wir verbinden neu.',
   'picker.search': 'Gebete suchen',
+  'picker.loading': 'Gebete werden geladen…',
   'picker.none': 'Keine Gebete gefunden, versuche eine kürzere Suche.',
   'nav.home': 'Start',
   'nav.pray': 'Beten',

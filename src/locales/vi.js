@@ -157,6 +157,7 @@ export default {
   'picker.all': 'Tất cả',
   'picker.close': 'Đóng',
   'picker.search': 'Tìm lời cầu nguyện',
+  'picker.loading': 'Đang tải lời cầu nguyện…',
   'picker.none': 'Không tìm thấy lời cầu nguyện nào, thử tìm ngắn hơn.',
   'trad.christianity.name': 'Cơ Đốc giáo',
   'trad.christianity.tagline': 'Ân sủng, tình yêu, và tiếng nói nhỏ bé lặng lẽ.',
