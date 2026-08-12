@@ -489,13 +489,17 @@ export class EarthScene {
     // too (it never uploads a texture) so its lights snap onto land the same
     // way — building only the tiny grid is fast and never froze slow devices.
     this.maskTex = this.buildLandMaskCanvas()
+    // Try a dedicated land/ocean mask first; if it's not shipped, fall back to
+    // classifying the day photo when it loads.
+    this._maskPromise = this.loadLandMask()
     // The prayer backdrop only reads luminance from the map (land/coast
     // classification), so it gets a half-res texture — 70 KB instead of 501 KB
     // on every prayer view. The full-resolution map stays on the Earth view.
     const dayTex = loader.load(
       this.backdrop ? dayUrlSmall : dayUrl,
-      (tex) => {
-        this.processLandMask(tex.image)
+      async (tex) => {
+        const usedMask = await this._maskPromise
+        if (!usedMask) this.processLandMask(tex.image)
         tex.image = this.makeSeamless(tex.image)
         tex.needsUpdate = true
         this._dayLoaded = true
@@ -1062,6 +1066,45 @@ export class EarthScene {
     // Wraps horizontally so there's no seam at the anti-meridian (Pacific).
     this.maskTex.wrapS = THREE.RepeatWrapping
     return this.maskTex
+  }
+
+  // A dedicated land/ocean mask texture (white=land, black=ocean) shipped at
+  // /land-mask.png. When present it replaces the fragile RGB classification of
+  // the day photo — clouds, sediment-laden shallow seas, and snow no longer
+  // confuse the coastline. Falls back to processLandMask() when absent.
+  loadLandMask() {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        try {
+          this.fillMaskFromImage(img)
+          resolve(true)
+        } catch (e) {
+          console.warn('land-mask decode failed — falling back to RGB', e)
+          resolve(false)
+        }
+      }
+      img.onerror = () => resolve(false)
+      img.src = '/land-mask.png'
+    })
+  }
+
+  // Scales a land/ocean mask image to the working resolution, fills both the
+  // render mask and the strict snap mask, then rebuilds the light-snap grid.
+  fillMaskFromImage(img) {
+    const W = this._maskData.width
+    const H = this._maskData.height
+    const c = document.createElement('canvas')
+    c.width = W
+    c.height = H
+    const ctx = c.getContext('2d')
+    ctx.drawImage(img, 0, 0, W, H)
+    const id = ctx.getImageData(0, 0, W, H)
+    this._maskData.data.set(id.data)
+    this._snap.data.set(id.data)
+    this.buildSnapComponents()
+    this._maskCtx.putImageData(this._maskData, 0, 0)
+    if (this.maskTex) this.maskTex.needsUpdate = true
   }
 
   // Ancillary: after the strict snap mask is built, flood-fill connected
