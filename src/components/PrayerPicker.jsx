@@ -109,6 +109,8 @@ export default function PrayerPicker() {
       )
     : prayers
 
+  const loading = !spirit.prayers
+
   return (
     <div className="picker-overlay" onClick={close} role="dialog" aria-modal="true" aria-labelledby="picker-title">
       <div className="picker-sheet" onClick={(e) => e.stopPropagation()} tabIndex={-1} ref={sheetRef}>
@@ -123,6 +125,12 @@ export default function PrayerPicker() {
             ✕
           </button>
         </div>
+        {loading ? (
+          <div className="picker-loading">
+            <span className="play-spinner" aria-hidden="true" />&ensp;{t('picker.loading')}
+          </div>
+        ) : (
+          <>
         {prayers.length > 8 && (
           <div className="picker-search">
             <input
@@ -161,6 +169,8 @@ export default function PrayerPicker() {
             <PickerRowMemo key={p.id} p={p} i={i} spirit={spirit} openPrayer={openPrayer} close={close} t={t} />
           ))}
         </div>
+          </>
+        )}
       </div>
     </div>
   )

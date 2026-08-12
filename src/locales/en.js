@@ -161,6 +161,7 @@ export default {
   'picker.close': 'Close',
   'picker.search': 'Search prayers',
   'picker.none': 'No prayers match, try a shorter search.',
+  'picker.loading': 'Loading prayers…',
   'trad.christianity.name': 'Christianity',
   'trad.christianity.tagline': 'Grace, love, and the still small voice.',
   'trad.islam.name': 'Islam',
