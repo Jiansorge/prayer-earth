@@ -333,16 +333,7 @@ export default function App() {
           </Suspense>
         )}
         {view === 'earth' && (
-          <Suspense
-            fallback={
-              <div className="view earth-loading">
-                <div className="earth-loading-inner">
-                  <img className="earth-loading-icon" src="/icons/icon-prayer.webp" alt="" />
-                  <p className="subtitle">{t('earth.loading')}</p>
-                </div>
-              </div>
-            }
-          >
+          <Suspense fallback={null}>
             <EarthPage key="earth" />
           </Suspense>
         )}

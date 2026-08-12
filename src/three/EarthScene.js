@@ -994,6 +994,7 @@ export class EarthScene {
     const ctx = c.getContext('2d')
     const g = ctx.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2)
     g.addColorStop(0, 'rgba(255, 255, 255, 1)')
+    g.addColorStop(0.06, 'rgba(255, 255, 255, 1)')
     g.addColorStop(0.22, 'rgba(255, 255, 255, 0.85)')
     g.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)')
     g.addColorStop(1, 'rgba(255, 255, 255, 0)')
@@ -1189,9 +1190,8 @@ const arcticRow = Math.floor((H * 10) / 180)
           // ocean reads as deep blue, so the bright/dark land rules reject it.
           // Some coastal cells look blue-ish too, but those sit beside lots of
           // solid land, so the snap rule below keeps them on land.
-          const sat = Math.max(r, g, b) - Math.min(r, g, b)
-          const brightLand = lum > 0.2 && gb > -0.01 && sat > 0.04
-          const darkLand = lum <= 0.2 && lum > 0.08 && gb > -0.08 && b < 0.28 && sat > 0.04
+          const brightLand = lum > 0.2 && gb > -0.01
+          const darkLand = lum <= 0.2 && lum > 0.08 && gb > -0.08 && b < 0.28
           const land = y < arcticRow ? 0 : brightLand || darkLand ? 255 : 0
           const o = (y * W + x) * 4
           out[o] = out[o + 1] = out[o + 2] = land
