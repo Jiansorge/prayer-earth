@@ -1186,11 +1186,10 @@ const arcticRow = Math.floor((H * 10) / 180)
           const gb = g - b
           // bright land (desert/ice) must not be blue; darker land (forest) must
           // be dim and not turquoise, keeps shallow straits from bridging land.
-          // Water is strongly blue-dominant (gb deeply negative, b high); open
-          // ocean reads as deep blue, so the bright/dark land rules reject it.
-          // Some coastal cells look blue-ish too, but those sit beside lots of
-          // solid land, so the snap rule below keeps them on land.
-          const brightLand = lum > 0.2 && gb > -0.01
+          // Water (ocean, and shallow seas like the Persian Gulf) always has
+          // more blue than red, while desert/sand has red > blue — so requiring
+          // b < r rejects bright water and gray clouds without erasing deserts.
+          const brightLand = lum > 0.2 && gb > -0.01 && b < r
           const darkLand = lum <= 0.2 && lum > 0.08 && gb > -0.08 && b < 0.28
           const land = y < arcticRow ? 0 : brightLand || darkLand ? 255 : 0
           const o = (y * W + x) * 4

@@ -114,7 +114,7 @@ export default function PrayerPage() {
   // (e.g. after picking a prayer). Delayed a moment so React StrictMode's dev
   // remount (mount → unmount → mount) settles before starting.
   useEffect(() => {
-    if (!pendingPlay) return
+    if (!pendingPlay || !prayer) return
     const t = setTimeout(() => {
       if (useStore.getState().pendingPlay) {
         useStore.getState().setPendingPlay(false)
@@ -123,7 +123,7 @@ export default function PrayerPage() {
     }, 60)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingPlay])
+  }, [pendingPlay, prayer])
 
   // Prayer keeps playing in the background even when the tab is hidden or the
   // user navigates to Home/Earth — no global pause on visibilitychange.
