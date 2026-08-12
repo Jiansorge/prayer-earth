@@ -421,6 +421,14 @@ function ladderState(prayers) {
   return { level, t, progress: (level + t) / SURGE_LEVELS.length }
 }
 
+// Module-level cache for the dedicated land/ocean mask and its derived
+// light-snap grid. These are identical for every EarthScene instance, so they
+// are decoded and flood-filled ONCE instead of on every prayer<->earth remount.
+let _maskImg = null // decoded <img> element
+let _maskImgFailed = false
+let _maskImgPromise = null
+let _snapGridCache = null // { comp, sizes, trusted, rows, cols }
+
 export class EarthScene {
   constructor(container, options = {}) {
     this.container = container
@@ -499,7 +507,11 @@ export class EarthScene {
       this.backdrop ? dayUrlSmall : dayUrl,
       async (tex) => {
         const usedMask = await this._maskPromise
-        if (!usedMask) this.processLandMask(tex.image)
+        if (usedMask) {
+          this.fillMaskFromImage(_maskImg)
+        } else {
+          this.processLandMask(tex.image)
+        }
         tex.image = this.makeSeamless(tex.image)
         tex.needsUpdate = true
         this._dayLoaded = true
@@ -1073,20 +1085,20 @@ export class EarthScene {
   // the day photo — clouds, sediment-laden shallow seas, and snow no longer
   // confuse the coastline. Falls back to processLandMask() when absent.
   loadLandMask() {
-    return new Promise((resolve) => {
+    if (_maskImgPromise) return _maskImgPromise
+    _maskImgPromise = new Promise((resolve) => {
       const img = new Image()
       img.onload = () => {
-        try {
-          this.fillMaskFromImage(img)
-          resolve(true)
-        } catch (e) {
-          console.warn('land-mask decode failed — falling back to RGB', e)
-          resolve(false)
-        }
+        _maskImg = img
+        resolve(true)
       }
-      img.onerror = () => resolve(false)
+      img.onerror = () => {
+        _maskImgFailed = true
+        resolve(false)
+      }
       img.src = '/land-mask.png'
     })
+    return _maskImgPromise
   }
 
   // Scales a land/ocean mask image to the working resolution, fills both the
@@ -1117,6 +1129,17 @@ export class EarthScene {
   // coast instead of floating at sea.
   buildSnapComponents() {
     if (!this._snap) return
+    // Reuse the module-level cache — the 1-degree grid is identical for every
+    // instance (same land/ocean pattern), so the 64,800-cell flood-fill runs
+    // only once across all EarthScene mounts.
+    if (_snapGridCache) {
+      this._snapComp = _snapGridCache.comp
+      this._snapCompSize = _snapGridCache.sizes
+      this._snapCompTrusted = _snapGridCache.trusted
+      this._snapCompRows = _snapGridCache.rows
+      this._snapCompCols = _snapGridCache.cols
+      return
+    }
     const W = this._snap.width
     const H = this._snap.height
     if (!W || !H) return
@@ -1196,6 +1219,7 @@ export class EarthScene {
     this._snapCompTrusted = trusted
     this._snapCompRows = ROWS
     this._snapCompCols = COLS
+    _snapGridCache = { comp, sizes, trusted, rows: ROWS, cols: COLS }
   }
 
   processLandMask(img) {

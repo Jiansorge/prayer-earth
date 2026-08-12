@@ -4,17 +4,17 @@ import { syncClient } from './sync/client.js'
 import { ambient } from './audio/ambience.js'
 import HomePage from './pages/HomePage.jsx'
 import Nav from './components/Nav.jsx'
-import SettingsSheet from './components/SettingsSheet.jsx'
-import Onboarding from './components/Onboarding.jsx'
-import PrayerPicker from './components/PrayerPicker.jsx'
 import { getScene } from './components/Scenery.jsx'
-import CelebrateToast from './components/CelebrateToast.jsx'
-import KeyboardHelp from './components/KeyboardHelp.jsx'
 
 const PrayerPage = lazy(() => import('./pages/PrayerPage.jsx'))
 const LegalPage = lazy(() => import('./pages/LegalPage.jsx'))
 const EarthPage = lazy(() => import('./pages/EarthPage.jsx'))
 const EarthBackdrop = lazy(() => import('./components/EarthBackdrop.jsx'))
+const SettingsSheet = lazy(() => import('./components/SettingsSheet.jsx'))
+const Onboarding = lazy(() => import('./components/Onboarding.jsx'))
+const PrayerPicker = lazy(() => import('./components/PrayerPicker.jsx'))
+const CelebrateToast = lazy(() => import('./components/CelebrateToast.jsx'))
+const KeyboardHelp = lazy(() => import('./components/KeyboardHelp.jsx'))
 
 // Each theme backdrop loads only when that theme is selected.
 const THEME_BACKDROPS = {
@@ -227,8 +227,10 @@ export default function App() {
     <div className="app" data-scene={view === 'home' && theme === 'nature' ? scene : undefined} data-theme={theme}>
       <div className="sky" />
       {view === 'home' && <Backdrop />}
-      <CelebrateToast />
-      <KeyboardHelp />
+      <Suspense fallback={null}>
+        <CelebrateToast />
+        <KeyboardHelp />
+      </Suspense>
       {syncNotice && (
         <div
           className="sync-notice"
@@ -340,9 +342,11 @@ export default function App() {
       </Boundary>
 
       <Nav />
-      <SettingsSheet />
-      <Onboarding />
-      <PrayerPicker />
+      <Suspense fallback={null}>
+        <SettingsSheet />
+        <Onboarding />
+        <PrayerPicker />
+      </Suspense>
     </div>
     </>
   )

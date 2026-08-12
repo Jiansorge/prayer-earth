@@ -18,7 +18,7 @@ const H = 1024
 
 const args = process.argv.slice(2)
 const srcIdx = args.indexOf('--source')
-const source = srcIdx >= 0 ? args[srcIdx + 1] : 'src/assets/textures/earth_atmos.jpg'
+const source = srcIdx >= 0 ? args[srcIdx + 1] : 'src/assets/textures/earth_atmos_medium.jpg'
 
 if (srcIdx >= 0) {
   await sharp(source).resize(W, H, { fit: 'fill' }).grayscale().normalise().toFile(OUT)
