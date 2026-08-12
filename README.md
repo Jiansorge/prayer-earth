@@ -72,6 +72,24 @@ rollback backup), and deploys to `joining-palms.app`. Audio rides along; after
 changing the MP3 library, bump `public/sw.js`'s cache version and purge the
 Cloudflare `/audio/*` cache (see `sync-engine/docs/DEPLOYMENT.md`).
 
+## Security & privacy
+
+The app is privacy-first and hardened by default:
+
+- **No accounts, no personal data** — only a coarse 1° location cell and
+  anonymous counters ever leave a device; raw IPs are never logged.
+- **Strict Content Security Policy** on the app shell (no inline scripts,
+  no `unsafe-inline`/`unsafe-eval`), plus `nosniff`, `DENY` framing, and a
+  referrer policy.
+- **XSS-safe by construction** — all user/feed content renders through React's
+  escaping (no `dangerouslySetInnerHTML`); display names are sanitized.
+- **Server-side hardening** lives in the sync engine (origin checks, rate
+  limiting, prototype-pollution stripping, constant-time secrets) — see
+  [`sync-engine/docs/SECURITY.md`](https://github.com/Jiansorge/sync-engine/blob/main/docs/SECURITY.md).
+
+See [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md) for how the app stays fast,
+including code-splitting, caching, and slow-device handling.
+
 ## License
 
 App code is open source; prayer texts are public domain or original.
