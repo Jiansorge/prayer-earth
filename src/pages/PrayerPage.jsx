@@ -472,7 +472,14 @@ export default function PrayerPage() {
   // Never render with an unresolved prayer: the guard effect above redirects,
   // but this avoids one crashing frame (e.g. a bad deep link with a valid
   // spirit but unknown prayer id).
-  if (!prayer) return null
+  if (!prayer) return (
+    <div className="view" style={{ display: 'grid', placeItems: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
+        <span className="play-spinner" aria-hidden="true" style={{ fontSize: 32, marginBottom: 16 }} />
+        <p className="subtitle">{t('picker.loading')}</p>
+      </div>
+    </div>
+  )
 
   return (
     <div className="view prayer-page">
