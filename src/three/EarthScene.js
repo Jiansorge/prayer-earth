@@ -1249,6 +1249,32 @@ const arcticRow = Math.floor((H * 10) / 180)
           }
         }
       }
+      // light erosion on the BINARY mask: a pixel stays land only when most
+      // of its neighbours are land. Eroding here (before softening) preserves
+      // narrow water bodies like the Persian Gulf and Red Sea — if we softened
+      // first, land would blur INTO the gulf and the erosion would fill it.
+      // Threshold 7 of 9 keeps narrow seas as water while still removing
+      // thin spits and isolated false blobs from the open ocean.
+      {
+        const er = new Uint8ClampedArray(out.length)
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            let s = 0
+            for (let dy = -1; dy <= 1; dy++) {
+              const ny = Math.max(0, Math.min(H - 1, y + dy))
+              for (let dx = -1; dx <= 1; dx++) {
+                const nx = (x + dx + W) % W
+                if (out[(ny * W + nx) * 4] > 128) s++
+              }
+            }
+            const o = (y * W + x) * 4
+            const isLand = s >= 7
+            er[o] = er[o + 1] = er[o + 2] = isLand ? 255 : 0
+            er[o + 3] = 255
+          }
+        }
+        out.set(er)
+      }
       // soften the mask edges so coastlines render smooth instead of blocky
       const soft = new Uint8ClampedArray(out.length)
       for (let y = 0; y < H; y++) {
@@ -1268,29 +1294,6 @@ const arcticRow = Math.floor((H * 10) / 180)
         }
       }
       out.set(soft)
-      // light erosion: a pixel stays land only when it is solidly inside land,
-      // which pulls thin spits + false blobs out of the open ocean so a prayer
-      // light can never sit at sea
-      {
-        const er = new Uint8ClampedArray(out.length)
-        for (let y = 0; y < H; y++) {
-          for (let x = 0; x < W; x++) {
-            let s = 0
-            for (let dy = -1; dy <= 1; dy++) {
-              const ny = Math.max(0, Math.min(H - 1, y + dy))
-              for (let dx = -1; dx <= 1; dx++) {
-                const nx = (x + dx + W) % W
-                if (out[(ny * W + nx) * 4] > 128) s++
-              }
-            }
-            const o = (y * W + x) * 4
-            const isLand = s >= 5
-            er[o] = er[o + 1] = er[o + 2] = isLand ? 255 : 0
-            er[o + 3] = 255
-          }
-        }
-        out.set(er)
-      }
       // make the wrap seam exact: the first and last columns must match so no
       // vertical line appears where the map wraps around the Pacific
       for (let y = 0; y < H; y++) {
