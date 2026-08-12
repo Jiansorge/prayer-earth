@@ -1186,10 +1186,9 @@ const arcticRow = Math.floor((H * 10) / 180)
           const gb = g - b
           // bright land (desert/ice) must not be blue; darker land (forest) must
           // be dim and not turquoise, keeps shallow straits from bridging land.
-          // Water (ocean, and shallow seas like the Persian Gulf) always has
-          // more blue than red, while desert/sand has red > blue — so requiring
-          // b < r rejects bright water and gray clouds without erasing deserts.
-          const brightLand = lum > 0.2 && gb > -0.01 && b < r
+          // Water is strongly blue-dominant (gb deeply negative, b high); open
+          // ocean reads as deep blue, so the bright/dark land rules reject it.
+          const brightLand = lum > 0.2 && gb > -0.01
           const darkLand = lum <= 0.2 && lum > 0.08 && gb > -0.08 && b < 0.28
           const land = y < arcticRow ? 0 : brightLand || darkLand ? 255 : 0
           const o = (y * W + x) * 4
@@ -1249,32 +1248,6 @@ const arcticRow = Math.floor((H * 10) / 180)
           }
         }
       }
-      // light erosion on the BINARY mask: a pixel stays land only when most
-      // of its neighbours are land. Eroding here (before softening) preserves
-      // narrow water bodies like the Persian Gulf and Red Sea — if we softened
-      // first, land would blur INTO the gulf and the erosion would fill it.
-      // Threshold 7 of 9 keeps narrow seas as water while still removing
-      // thin spits and isolated false blobs from the open ocean.
-      {
-        const er = new Uint8ClampedArray(out.length)
-        for (let y = 0; y < H; y++) {
-          for (let x = 0; x < W; x++) {
-            let s = 0
-            for (let dy = -1; dy <= 1; dy++) {
-              const ny = Math.max(0, Math.min(H - 1, y + dy))
-              for (let dx = -1; dx <= 1; dx++) {
-                const nx = (x + dx + W) % W
-                if (out[(ny * W + nx) * 4] > 128) s++
-              }
-            }
-            const o = (y * W + x) * 4
-            const isLand = s >= 7
-            er[o] = er[o + 1] = er[o + 2] = isLand ? 255 : 0
-            er[o + 3] = 255
-          }
-        }
-        out.set(er)
-      }
       // soften the mask edges so coastlines render smooth instead of blocky
       const soft = new Uint8ClampedArray(out.length)
       for (let y = 0; y < H; y++) {
@@ -1294,6 +1267,29 @@ const arcticRow = Math.floor((H * 10) / 180)
         }
       }
       out.set(soft)
+      // light erosion: a pixel stays land only when it is solidly inside land,
+      // which pulls thin spits + false blobs out of the open ocean so a prayer
+      // light can never sit at sea
+      {
+        const er = new Uint8ClampedArray(out.length)
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            let s = 0
+            for (let dy = -1; dy <= 1; dy++) {
+              const ny = Math.max(0, Math.min(H - 1, y + dy))
+              for (let dx = -1; dx <= 1; dx++) {
+                const nx = (x + dx + W) % W
+                if (out[(ny * W + nx) * 4] > 128) s++
+              }
+            }
+            const o = (y * W + x) * 4
+            const isLand = s >= 5
+            er[o] = er[o + 1] = er[o + 2] = isLand ? 255 : 0
+            er[o + 3] = 255
+          }
+        }
+        out.set(er)
+      }
       // make the wrap seam exact: the first and last columns must match so no
       // vertical line appears where the map wraps around the Pacific
       for (let y = 0; y < H; y++) {
