@@ -473,10 +473,10 @@ export default function PrayerPage() {
   // but this avoids one crashing frame (e.g. a bad deep link with a valid
   // spirit but unknown prayer id).
   if (!prayer) return (
-    <div className="view" style={{ display: 'grid', placeItems: 'center' }}>
-      <div style={{ textAlign: 'center' }}>
-        <span className="play-spinner" aria-hidden="true" style={{ fontSize: 32, marginBottom: 16 }} />
-        <p className="subtitle">{t('picker.loading')}</p>
+    <div className="view" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+      <div className="earth-loading-inner">
+        <img className="earth-loading-icon" src="/icons/icon-prayer.webp" alt="" />
+        <p className="subtitle" style={{ marginTop: 16 }}>{t('picker.loading')}</p>
       </div>
     </div>
   )
