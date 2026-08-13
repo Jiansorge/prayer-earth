@@ -1,36 +1,64 @@
-// Generates public/land-mask.png — a binary equirectangular land/ocean mask
-// (white=land, black=ocean) that EarthScene.js loads at runtime instead of
-// classifying the day photo. Run from prayer-earth/.
+// Rasterize Natural Earth 110m land polygons into public/land-mask.png
+// (white=land, black=ocean). Authoritative coastline data — no RGB
+// classification, so narrow seas like the Red Sea and Persian Gulf are correct.
 //
-//   node scripts/generate-land-mask.mjs                    # from the day texture
-//   node scripts/generate-land-mask.mjs --source mask.png  # from your own mask
+//   node scripts/generate-land-mask.mjs
 //
-// The default source is the NASA day texture, classified with the exact same
-// pipeline the app used at runtime (classify → fill-lakes → soften → erode),
-// so the result matches the previously-shipped coastline quality. For
-// pixel-perfect coastlines, regenerate from Natural Earth 110m land polygons.
+// Expects scripts/data/ne_110m_land.geojson (Natural Earth 110m land). If it
+// is missing, falls back to classifying the day texture (see the fallback
+// path in this file).
 import sharp from 'sharp'
 import fs from 'fs'
 
 const OUT = 'public/land-mask.png'
 const W = 2048
 const H = 1024
+const GEOJSON = 'scripts/data/ne_110m_land.geojson'
 
-const args = process.argv.slice(2)
-const srcIdx = args.indexOf('--source')
-const source = srcIdx >= 0 ? args[srcIdx + 1] : 'src/assets/textures/earth_atmos_medium.jpg'
+const lon2x = (lon) => (((lon + 180) / 360) * W).toFixed(2)
+const lat2y = (lat) => (((90 - lat) / 180) * H).toFixed(2)
 
-if (srcIdx >= 0) {
-  await sharp(source).resize(W, H, { fit: 'fill' }).grayscale().normalise().toFile(OUT)
-  console.log('wrote', OUT, 'from', source)
+// Convert a GeoJSON ring (array of [lon, lat]) to an SVG path segment.
+const ringToPath = (ring) => {
+  let d = ''
+  for (let i = 0; i < ring.length; i++) {
+    const [lon, lat] = ring[i]
+    d += (i === 0 ? 'M' : 'L') + lon2x(lon) + ' ' + lat2y(lat)
+  }
+  return d + ' Z'
+}
+
+if (fs.existsSync(GEOJSON)) {
+  const gj = JSON.parse(fs.readFileSync(GEOJSON, 'utf8'))
+
+  let paths = ''
+  for (const feat of gj.features) {
+    const geom = feat.geometry
+    const polys = geom.type === 'MultiPolygon' ? geom.coordinates : [geom.coordinates]
+    for (const poly of polys) {
+      // outer ring + holes all in one path; evenodd keeps holes as ocean
+      paths += '<path d="' + poly.map(ringToPath).join(' ') + '" fill="white" fill-rule="evenodd"/>'
+    }
+  }
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="black"/>${paths}</svg>`
+
+  await sharp(Buffer.from(svg))
+    .png({ palette: true, compressionLevel: 9 })
+    .toFile(OUT)
+
+  const size = fs.statSync(OUT).size
+  console.log(`wrote ${OUT} from Natural Earth (${W}x${H}, ${(size / 1024).toFixed(1)} KB)`)
   process.exit(0)
 }
 
-// Arctic ice cap reads as bright land; cut the top band like the runtime does.
-const ARCTIC_ROWS = Math.floor((H * 10) / 180)
+// ---- fallback: classify the day texture (only if GeoJSON is absent) ----
+console.warn('Natural Earth GeoJSON not found at', GEOJSON, '— falling back to day-texture classification')
+console.warn('Download it with:')
+console.warn('  curl -o scripts/data/ne_110m_land.geojson https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_land.geojson')
 
-// --- 1. classify the day texture into land (255) / ocean (0) ---
-const { data, info } = await sharp(source)
+const ARCTIC_ROWS = Math.floor((H * 10) / 180)
+const { data, info } = await sharp('src/assets/textures/earth_atmos_medium.jpg')
   .resize(W, H, { fit: 'fill' })
   .removeAlpha()
   .raw()
@@ -38,7 +66,6 @@ const { data, info } = await sharp(source)
 
 const CH = info.channels
 let out = new Uint8Array(W * H)
-
 for (let y = 0; y < H; y++) {
   const arctic = y < ARCTIC_ROWS
   for (let x = 0; x < W; x++) {
@@ -51,85 +78,8 @@ for (let y = 0; y < H; y++) {
     out[y * W + x] = arctic ? 0 : brightLand || darkLand ? 255 : 0
   }
 }
-
-// --- 2. median filter (5x5) removes speckles while keeping wide seas ---
-{
-  const tmp = new Uint8Array(W * H)
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      const vals = []
-      for (let dy = -2; dy <= 2; dy++) {
-        const ny = Math.max(0, Math.min(H - 1, y + dy))
-        for (let dx = -2; dx <= 2; dx++) {
-          const nx = (x + dx + W) % W
-          vals.push(out[ny * W + nx])
-        }
-      }
-      vals.sort((a, b) => a - b)
-      tmp[y * W + x] = vals[12]
-    }
-  }
-  out = tmp
-}
-
-// --- 3. fill enclosed water "lakes" inside continents (matches runtime) ---
-{
-  const isLand = (i) => out[i] > 128
-  const visited = new Uint8Array(W * H)
-  const stack = []
-  const seed = (i) => { if (!visited[i] && !isLand(i)) { visited[i] = 1; stack.push(i) } }
-  for (let x = 0; x < W; x++) { seed(x); seed((H - 1) * W + x) }
-  for (let y = 0; y < H; y++) { seed(y * W); seed(y * W + W - 1) }
-  while (stack.length) {
-    const i = stack.pop()
-    const x = i % W, y = (i / W) | 0
-    const n = [
-      x > 0 ? i - 1 : i + W - 1,
-      x < W - 1 ? i + 1 : i - W + 1,
-      y > 0 ? i - W : -1,
-      y < H - 1 ? i + W : -1
-    ]
-    for (const ni of n) {
-      if (ni >= 0 && !visited[ni] && !isLand(ni)) { visited[ni] = 1; stack.push(ni) }
-    }
-  }
-  const MAX_LAKE = Math.round((W * H) / 800)
-  const seen = new Uint8Array(W * H)
-  for (let i = 0; i < W * H; i++) {
-    if (seen[i] || isLand(i) || visited[i]) continue
-    const region = []
-    const q = [i]
-    seen[i] = 1
-    while (q.length) {
-      const c = q.pop()
-      region.push(c)
-      const x = c % W, y = (c / W) | 0
-      const n = [
-        x > 0 ? c - 1 : -1,
-        x < W - 1 ? c + 1 : -1,
-        y > 0 ? c - W : -1,
-        y < H - 1 ? c + W : -1
-      ]
-      for (const ni of n) {
-        if (ni >= 0 && !seen[ni] && !isLand(ni) && !visited[ni]) { seen[ni] = 1; q.push(ni) }
-      }
-    }
-    if (region.length < MAX_LAKE) {
-      for (const c of region) out[c] = 255
-    }
-  }
-}
-
-// --- 4. wrap seam (first/last column match) ---
-for (let y = 0; y < H; y++) {
-  out[y * W + W - 1] = out[y * W]
-}
-
 await sharp(out, { raw: { width: W, height: H, channels: 1 } })
+  .median(5)
   .png({ palette: true, compressionLevel: 9 })
   .toFile(OUT)
-
-const size = fs.statSync(OUT).size
-console.log(`wrote ${OUT} (${W}x${H}, ${(size / 1024).toFixed(1)} KB)`)
-console.log('To use a Natural Earth mask instead:')
-console.log('  rasterize land polygons -> equirect PNG -> node scripts/generate-land-mask.mjs --source mask.png')
+console.log('wrote', OUT, '(fallback)')
