@@ -30,9 +30,12 @@ function WorldFeed({ limit = 10, compact = false }) {
     return () => clearInterval(timer)
   }, [])
 
-  if (!feed || feed.length === 0) return null
+  const items = useMemo(
+    () => (feed && feed.length ? feed.slice(-limit).reverse() : []),
+    [feed, limit]
+  )
 
-  const items = useMemo(() => feed.slice(-limit).reverse(), [feed, limit])
+  if (!items.length) return null
 
   return (
     <div className={`world-feed ${compact ? 'compact' : ''}`}>

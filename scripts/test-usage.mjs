@@ -173,6 +173,19 @@ ok(
 await c.eval(`document.querySelector('.sheet-close').click()`)
 ok('settings sheet closes', await c.waitFor(`!document.querySelector('.sheet')`))
 
+// --- theme switching: every home theme must mount without killing the app ---
+// (regression: the lazy backdrop used to suspend with no Suspense boundary /
+// while WorldFeed had a conditional hook — both blanked the app)
+await c.eval(`document.querySelector('.gear-btn').click()`)
+await c.waitFor(`!!document.querySelectorAll('.theme-opt').length`)
+for (const [i, th] of ['mystic', 'nature', 'space', 'temple', 'ocean', 'dawn'].entries()) {
+  await c.eval(`document.querySelectorAll('.theme-opt')[${i}].click()`)
+  const okCanvas = await c.waitFor(`document.querySelectorAll('canvas.${th}-backdrop').length === 1`, 6000)
+  ok(`theme ${th} mounts its backdrop`, okCanvas)
+}
+ok('app alive after cycling every theme', await c.eval(`!!document.querySelector('.app') && !document.body.innerText.includes('A little light flickered')`))
+await c.eval(`document.querySelector('.sheet-close').click()`)
+
 // --- language picker: switching locale relabels the app, then restore en ---
 await c.eval(`document.querySelector('.gear-btn').click()`)
 await c.waitFor(`!!document.querySelector('#locale-picker')`)

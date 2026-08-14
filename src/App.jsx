@@ -1,4 +1,4 @@
-import React, { Component, Suspense, lazy, useEffect, useRef, useState } from 'react'
+import React, { Component, Suspense, lazy, startTransition, useEffect, useRef, useState } from 'react'
 import { useStore } from './store.js'
 import { syncClient } from './sync/client.js'
 import { ambient } from './audio/ambience.js'
@@ -189,12 +189,18 @@ export default function App() {
   }, [])
 
   // Warm the prayer-view bundle (three.js + the earth backdrop + PrayerPage)
-  // on the first interaction, so opening a prayer doesn't stall on a lazy
-  // chunk download.
+  // and every home theme on the first interaction, so opening a prayer or
+  // switching theme doesn't stall on a lazy chunk download.
   useEffect(() => {
     const warm = () => {
       import('./components/EarthBackdrop.jsx').catch(() => {})
       import('./pages/PrayerPage.jsx').catch(() => {})
+      import('./components/MysticBackdrop.jsx').catch(() => {})
+      import('./components/NatureBackdrop.jsx').catch(() => {})
+      import('./components/SpaceBackdrop.jsx').catch(() => {})
+      import('./components/TempleBackdrop.jsx').catch(() => {})
+      import('./components/OceanBackdrop.jsx').catch(() => {})
+      import('./components/DawnBackdrop.jsx').catch(() => {})
     }
     window.addEventListener('pointerdown', warm, { once: true, passive: true })
     return () => window.removeEventListener('pointerdown', warm)
@@ -226,7 +232,11 @@ export default function App() {
     <a href="#main" className="skip-link">{t('a11y.skip')}</a>
     <div className="app" data-scene={view === 'home' && theme === 'nature' ? scene : undefined} data-theme={theme}>
       <div className="sky" />
-      {view === 'home' && <Backdrop />}
+      {view === 'home' && (
+        <Suspense fallback={null}>
+          <Backdrop />
+        </Suspense>
+      )}
       <Suspense fallback={null}>
         <CelebrateToast />
         <KeyboardHelp />
@@ -314,11 +324,6 @@ export default function App() {
         {view === 'prayer' && (
           <Suspense fallback={null}>
             <EarthBackdrop />
-          </Suspense>
-        )}
-        {view === 'home' && (
-          <Suspense fallback={null}>
-            <Backdrop />
           </Suspense>
         )}
         {view === 'home' && <HomePage key="home" />}

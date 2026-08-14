@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react'
+﻿import React, { startTransition, useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { speech, CHANT_VOICE } from '../audio/speech.js'
 import { ambient } from '../audio/ambience.js'
@@ -227,7 +227,7 @@ export default function SettingsSheet() {
               key={th.id}
               type="button"
               className={`theme-opt ${theme === th.id ? 'on' : ''}`}
-              onClick={() => setTheme(th.id)}
+              onClick={() => startTransition(() => setTheme(th.id))}
               aria-pressed={theme === th.id}
             >
               <span className="theme-emoji">{th.emoji}</span>
