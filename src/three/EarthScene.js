@@ -43,7 +43,7 @@ const FRAG = /* glsl */ `
 
   vec2 equirect(vec3 p) {
     return vec2(
-      0.5 - atan(p.z, p.x) / 6.2831853,
+      0.5 + atan(p.z, p.x) / 6.2831853,
       0.5 + asin(clamp(p.y, -1.0, 1.0)) / 3.14159265
     );
   }
@@ -146,7 +146,7 @@ const SIL_FRAG = /* glsl */ `
 
   vec2 equirect(vec3 p) {
     return vec2(
-      0.5 - atan(p.z, p.x) / 6.2831853,
+      0.5 + atan(p.z, p.x) / 6.2831853,
       0.5 + asin(clamp(p.y, -1.0, 1.0)) / 3.14159265
     );
   }
