@@ -489,7 +489,7 @@ export class EarthScene {
     this.rotVel = this.backdrop ? 0.004 : 0.0016
 
     // start facing Europe/Africa so recognizable geography greets the viewer
-    this.earthGroupRotation = 1.25
+    this.earthGroupRotation = -1.25
 
     const loader = new THREE.TextureLoader()
     // The land mask is read by the full Earth shader and by the grid used to
