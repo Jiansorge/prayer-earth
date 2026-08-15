@@ -43,7 +43,7 @@ const FRAG = /* glsl */ `
 
   vec2 equirect(vec3 p) {
     return vec2(
-      0.5 + atan(p.z, p.x) / 6.2831853,
+      0.5 - atan(p.z, p.x) / 6.2831853,
       0.5 + asin(clamp(p.y, -1.0, 1.0)) / 3.14159265
     );
   }
@@ -146,7 +146,7 @@ const SIL_FRAG = /* glsl */ `
 
   vec2 equirect(vec3 p) {
     return vec2(
-      0.5 + atan(p.z, p.x) / 6.2831853,
+      0.5 - atan(p.z, p.x) / 6.2831853,
       0.5 + asin(clamp(p.y, -1.0, 1.0)) / 3.14159265
     );
   }
@@ -996,7 +996,7 @@ export class EarthScene {
     this.youMarker.position.set(
       r * Math.cos(lat) * Math.cos(lon),
       r * Math.sin(lat),
-      r * Math.cos(lat) * Math.sin(lon)
+      -r * Math.cos(lat) * Math.sin(lon)
     )
     this.youMarker.visible = true
   }
@@ -1646,7 +1646,7 @@ const arcticRow = Math.floor((H * 10) / 180)
       spr.position.set(
         r * Math.cos(lat) * Math.cos(lon),
         r * Math.sin(lat),
-        r * Math.cos(lat) * Math.sin(lon)
+        -r * Math.cos(lat) * Math.sin(lon)
       )
       // Precompute the normalised local-space direction once so the per-frame
       // animate loop can compare against a rotated camera instead of computing
