@@ -65,6 +65,7 @@ export default function PrayerPage() {
   const [starting, setStarting] = useState(false)
   const startAt = useRef(0)
   const startingRef = useRef(false)
+  const startingWatchdog = useRef(null)
   const [celebration, setCelebration] = useState(0)
   const celebrationTimer = useRef(null)
   const prayer = spirit ? (spirit.prayers || []).find((p) => p.id === prayerId) : null
@@ -167,6 +168,16 @@ export default function PrayerPage() {
     stopJob()
     startAt.current = Date.now()
     startingRef.current = true
+    // A start must never silently deadlock the play button: if the engine
+    // never engages (voices stuck, an exception in speech.start), clear the
+    // "starting" guard so the next tap can try again.
+    clearTimeout(startingWatchdog.current)
+    startingWatchdog.current = setTimeout(() => {
+      if (startingRef.current) {
+        startingRef.current = false
+        setStarting(false)
+      }
+    }, 6000)
     setStarting(true)
     setActive(fromIndex)
     setPaused(false)
@@ -198,10 +209,12 @@ export default function PrayerPage() {
         // the tap always gives instant feedback even on fast devices.
         const waited = Date.now() - startAt.current
         if (waited >= 350) {
+          clearTimeout(startingWatchdog.current)
           startingRef.current = false
           setStarting(false)
         } else {
           setTimeout(() => {
+            clearTimeout(startingWatchdog.current)
             startingRef.current = false
             setStarting(false)
           }, 350 - waited)
@@ -367,6 +380,7 @@ export default function PrayerPage() {
 
   const stopJob = () => {
     speech.stop()
+    clearTimeout(startingWatchdog.current)
     startingRef.current = false
     setStarting(false)
     setPlaying(false)

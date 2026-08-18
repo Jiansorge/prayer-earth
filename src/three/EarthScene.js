@@ -2023,9 +2023,42 @@ this.autoRotate = !this.reducedMotion
   bindVisibility() {
     this._vis = () => {
       this.hidden = document.hidden
-      if (!this.hidden) this.lastFrame = 0
+      if (!this.hidden) {
+        this.lastFrame = 0
+        // After a machine sleep / tab downtime the GPU can drop sprites, and a
+        // stale-looking light map lingers. Re-apply the last light state and
+        // force a frame so the world wakes up exactly where it should be.
+        if (this._lastLights) this.setLights(this._lastLights, this._lastLightSpirits)
+      }
     }
     document.addEventListener('visibilitychange', this._vis)
+    this.bindContextLoss()
+  }
+
+  // A computer sleep can kill the WebGL context (GPU resets on wake). THREE
+  // restores the context automatically, but textures and light sprites must be
+  // re-uploaded or the globe wakes up with glitchy / misplaced lights. Re-mark
+  // the shared textures dirty and re-apply lights on restore.
+  bindContextLoss() {
+    const canvas = this.renderer && this.renderer.domElement
+    if (!canvas) return
+    this._ctxLost = (e) => {
+      if (e) e.preventDefault()
+      this.hidden = true
+    }
+    this._ctxRestored = () => {
+      this.hidden = false
+      this.lastFrame = 0
+      const mark = (tex) => {
+        if (tex) tex.needsUpdate = true
+      }
+      mark(this.dayTex)
+      mark(this.nightTex)
+      mark(this.lightGlowTex)
+      if (this._lastLights) this.setLights(this._lastLights, this._lastLightSpirits)
+    }
+    canvas.addEventListener('webglcontextlost', this._ctxLost, false)
+    canvas.addEventListener('webglcontextrestored', this._ctxRestored, false)
   }
 
   setGlow(v) {
@@ -2263,6 +2296,13 @@ this.autoRotate = !this.reducedMotion
     if (this._dragCleanup) this._dragCleanup()
     if (this._resize) window.removeEventListener('resize', this._resize)
     if (this._vis) document.removeEventListener('visibilitychange', this._vis)
+    if (this._ctxLost || this._ctxRestored) {
+      const canvas = this.renderer && this.renderer.domElement
+      if (canvas) {
+        if (this._ctxLost) canvas.removeEventListener('webglcontextlost', this._ctxLost)
+        if (this._ctxRestored) canvas.removeEventListener('webglcontextrestored', this._ctxRestored)
+      }
+    }
     if (this._containerObserver) this._containerObserver.disconnect()
 
     // Recursively free every GPU resource in a subtree, skipping shared

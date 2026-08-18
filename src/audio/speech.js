@@ -70,6 +70,34 @@ class SpeechEngine {
         )
       }
     }
+    // After the machine sleeps / the tab is hidden, a playing element can sit
+    // silent (the OS suspends audio). When the user comes back, restart the
+    // current phrase fresh so sound always returns instead of a dead prayer.
+    this.bindWakeRecovery()
+  }
+
+  // Re-kicks a silently-stalled prayer when the tab becomes visible again (or
+  // the window regains focus after the machine slept). Only acts when a prayer
+  // is meant to be audible: an active, non-paused tts job whose current audio
+  // element is paused/ended (a suspended element) or whose speech engine isn't
+  // actually talking.
+  bindWakeRecovery() {
+    if (this._wakeBound) return
+    this._wakeBound = true
+    this._wake = () => {
+      if (document.hidden) return
+      const j = this.job
+      if (!j || !j.active || j.paused || j.mode !== 'tts') return
+      const el = this.cloudAudio
+      const cloudSilent = el && (el.paused || el.ended)
+      const synthQuiet = this.synth && !this.synth.speaking
+      if (!cloudSilent && !synthQuiet) return
+      try {
+        this.speakIndex(j.index)
+      } catch {}
+    }
+    document.addEventListener('visibilitychange', this._wake)
+    window.addEventListener('focus', this._wake)
   }
 
   // Ask the server whether the Google TTS proxy is available (once).
@@ -524,11 +552,21 @@ class SpeechEngine {
     }
     // Prefer recorded audio — it needs no server or API key. The live Google
     // proxy is a fallback inside speakCloud for prayers without a recording.
-    if (this.cloud || this.hasStaticFor(job)) {
+    // `job.noCloud` is set after repeated cloud/static failures so a dead audio
+    // element (e.g. after a long sleep the element can no longer play) hands
+    // off to browser voices instead of re-entering the cloud path forever.
+    if ((this.cloud || this.hasStaticFor(job)) && !job.noCloud) {
       this.speakCloud(i).then((ok) => {
         const j = this.job
         if (!ok && j && j.active && j === job && j.mode === 'tts' && j.index === i) {
-          this.cloud = false // no recorded audio and the proxy is unusable — browser voices
+          j.cloudFails = (j.cloudFails || 0) + 1
+          if (j.cloudFails >= 2) {
+            // The recorded/proxy audio keeps failing — never spin on it. Block
+            // this job's cloud path so the next call uses browser voices (which
+            // have their own stall/error fallbacks down to the timed chant).
+            j.noCloud = true
+            this.cloud = false
+          }
           this.speakIndex(i)
         }
       })

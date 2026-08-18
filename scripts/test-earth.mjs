@@ -8,8 +8,8 @@ import { inflateSync } from 'node:zlib'
 // Part 1 (earth): the 3D earth view must mount, render a real (non-black)
 // globe, clear its loading overlay, and never throw.
 // Part 2 (tabs): a prayer playing in the background keeps playing while you
-// navigate Home/Earth, auto-PAUSES when the browser tab is hidden, and resumes
-// from the footer when you return.
+// navigate Home/Earth and while the tab is hidden, and recovers via the
+// footer play button after downtime/sleep.
 //
 // Run: node scripts/test-earth.mjs  (dev server on :5173)
 
@@ -184,11 +184,16 @@ const e11land = e11 && e11.land.filter(v => v > 0.5).length
 const e11water = e11 && e11.water.every(v => v < 0.5)
 ok('E11 land mask georeferenced (cities land, ocean water)', !!e11 && e11land >= 6 && e11water, e11 ? `land=${e11land}/8 water=${e11.water.every(v => v < 0.5)}` : 'no mask')
 
-// ---------- PART 2: TAB-SWITCH AUTO-PAUSE ----------
+// ---------- PART 2: BACKGROUND PLAYBACK + WAKE RECOVERY ----------
+// A prayer playing in the background keeps playing while you navigate
+// Home/Earth and while the tab is hidden (no global pause on visibilitychange).
+// After downtime it must always come back: play resumes from the footer.
 await send('Page.navigate', { url: `${APP}/#/pray/buddhism/mani` })
 await waitFor(`!!window.__store`)
 await evaljs(`(() => { const b = document.querySelector('.onboard-begin, .onboard-skip'); if (b) b.click() })()`)
-await sleep(300)
+// PrayerPage is a lazy chunk — wait for its play button to actually exist
+// before clicking, otherwise the tap is a silent no-op ("nothing happens").
+await waitFor(`!!document.querySelector('.ctrl-btn.play')`, 15000)
 await evaljs(`document.querySelector('.ctrl-btn.play').click()`)
 await waitFor(`window.__store.getState().playing === true`, 8000)
 ok('T1 prayer starts', await evaljs(`window.__store.getState().playing === true`))
@@ -198,17 +203,23 @@ await waitFor(`window.__store.getState().view === 'earth'`)
 await sleep(600)
 let s = await evaljs(`(() => { const g = window.__store.getState(); return { playing: g.playing, paused: g.paused, view: g.view } })()`)
 ok('T2 prayer keeps playing on Earth (background)', s.playing && !s.paused, JSON.stringify(s))
-// simulate the browser tab being hidden -> auto-pause
+// simulate the browser tab being hidden -> prayer keeps playing in background
+// (the design deliberately has no global pause on visibilitychange)
 await evaljs(`(() => { try { Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }) } catch {}; document.dispatchEvent(new Event('visibilitychange')); return true })()`)
 await sleep(400)
 s = await evaljs(`(() => { const g = window.__store.getState(); return { playing: g.playing, paused: g.paused } })()`)
-ok('T3 auto-pauses when the browser tab is hidden', s.playing && s.paused, JSON.stringify(s))
-// return to the tab (visible) + press the footer play -> resumes
+ok('T3 prayer keeps playing while the tab is hidden', s.playing && !s.paused, JSON.stringify(s))
+// return to the tab (visible): first footer play toggles to pause, second
+// resumes — the wake-recovery path that must work after downtime/sleep
 await evaljs(`(() => { try { Object.defineProperty(document, 'hidden', { configurable: true, get: () => false }) } catch {}; return true })()`)
+await evaljs(`document.querySelector('.nav-play').click()`)
+await waitFor(`window.__store.getState().paused === true`, 6000)
+s = await evaljs(`(() => { const g = window.__store.getState(); return { playing: g.playing, paused: g.paused } })()`)
+ok('T4 footer play pauses after returning', s.playing && s.paused, JSON.stringify(s))
 await evaljs(`document.querySelector('.nav-play').click()`)
 await waitFor(`window.__store.getState().paused === false`, 6000)
 s = await evaljs(`(() => { const g = window.__store.getState(); return { playing: g.playing, paused: g.paused } })()`)
-ok('T4 footer play resumes after returning', s.playing && !s.paused, JSON.stringify(s))
+ok('T4b footer play resumes after downtime (wake recovery)', s.playing && !s.paused, JSON.stringify(s))
 // navigate Home + then Pray -> still playing; then stop cleanly
 await evaljs(`window.__store.getState().go('home')`)
 await waitFor(`window.__store.getState().view === 'home'`)
