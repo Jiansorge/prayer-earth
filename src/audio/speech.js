@@ -88,10 +88,22 @@ class SpeechEngine {
       if (document.hidden) return
       const j = this.job
       if (!j || !j.active || j.paused || j.mode !== 'tts') return
+      // Only re-kick when the current phrase looks stuck — a healthy phrase
+      // advances near its estimate, so being overdue means the engine is silent
+      // (speechSynthesis reports speaking=true while dead after hibernation).
+      // Restart the phrase fresh so sound returns instead of a dead prayer.
+      const overdue = Date.now() - (j.phraseStart || 0) > (j.phraseHold || 4000)
       const el = this.cloudAudio
       const cloudSilent = el && (el.paused || el.ended)
-      const synthQuiet = this.synth && !this.synth.speaking
-      if (!cloudSilent && !synthQuiet) return
+      if (!overdue && !cloudSilent) return
+      try {
+        this.synth.cancel()
+      } catch {}
+      try {
+        if (this.cloudAudio) this.cloudAudio.pause()
+      } catch {}
+      clearTimeout(j.guard)
+      clearTimeout(j.advTimer)
       try {
         this.speakIndex(j.index)
       } catch {}
@@ -649,20 +661,16 @@ class SpeechEngine {
     const takeover = () => {
       const j = this.job
       if (!j || !j.active || j !== job) return
-      if (job.index !== i || this.synth.speaking) return
-      const hasVoices = this.voices.length > 0
-      const tries = job.stalls || 0
-      if (hasVoices && !job.warm && tries < 1) {
-        // Engine exists but is slow to produce sound — one more long chance
-        // before we fall back to the chant.
-        job.stalls = tries + 1
-        job.guard = setTimeout(takeover, est + 3000)
-        return
-      }
-      if (!hasVoices && tries < 1) {
-        // No voices at all — the engine can't talk; fall back soon.
-        job.stalls = tries + 1
-        job.guard = setTimeout(takeover, est + 1200)
+      if (job.index !== i) return
+      // The phrase has been on screen far longer than its estimate. A healthy
+      // voice advances via onend/advTimer near `phraseHold`, so anything past
+      // ~2x means the engine is silent — speechSynthesis can report
+      // speaking=true while actually dead after a sleep/hibernation, so we must
+      // not trust that flag. Hand off to the timed chant so prayer is still
+      // heard.
+      const elapsed = Date.now() - (j.phraseStart || 0)
+      if (elapsed < (j.phraseHold || 4000) * 2 + 3000) {
+        job.guard = setTimeout(takeover, 3000)
         return
       }
       j.mode = 'timed'
@@ -673,7 +681,7 @@ class SpeechEngine {
       } catch {}
       this.timedLoop(j, true)
     }
-    job.guard = setTimeout(takeover, this.voices.length === 0 ? est + 1200 : est + 3000)
+    job.guard = setTimeout(takeover, (j.phraseHold || 4000) * 2 + 3000)
   }
 
   // Moves on to the next phrase (or loops / finishes). Shared by onend and
@@ -734,6 +742,22 @@ class SpeechEngine {
           }).catch(() => {})
         }
       } catch {}
+      // Watchdog: if a phrase has been on screen far past its estimate with no
+      // advance (speechSynthesis died after sleep but reports speaking=true),
+      // restart the current phrase so the prayer never sits silently dead. This
+      // also covers a foreground sleep that never fires visibilitychange/focus.
+      if (j.mode === 'tts' && !j.paused && !document.hidden) {
+        const elapsed = Date.now() - (j.phraseStart || 0)
+        if (elapsed > (j.phraseHold || 4000) * 2 + 4000) {
+          try {
+            this.synth.cancel()
+          } catch {}
+          try {
+            if (this.cloudAudio) this.cloudAudio.pause()
+          } catch {}
+          this.speakIndex(j.index)
+        }
+      }
     }, 6000)
   }
 
@@ -809,18 +833,24 @@ class SpeechEngine {
     const j = this.job
     if (!j || !j.active) return false
     j.paused = false
-    // After a tab suspension the shared audio element can accept play() and
-    // still sit silent (and speechSynthesis.resume is unreliable too). Restart
-    // the current phrase fresh under this user gesture so sound always comes
-    // back — the safest resume after switching away.
-    if (this.tabPause) {
-      this.tabPause = false
-      if (j.mode === 'tts') {
-        try {
-          this.speakIndex(j.index)
-        } catch {}
-        return true
-      }
+    this.tabPause = false
+    // A dead engine (after sleep/hibernation, or a backgrounded tab) can report
+    // speaking=true while silent, so speechSynthesis.resume() is unreliable.
+    // Always restart the current phrase fresh under this user gesture so sound
+    // always comes back — the safest resume after switching away.
+    if (j.mode === 'tts') {
+      try {
+        this.synth.cancel()
+      } catch {}
+      try {
+        if (this.cloudAudio) this.cloudAudio.pause()
+      } catch {}
+      clearTimeout(j.guard)
+      clearTimeout(j.advTimer)
+      try {
+        this.speakIndex(j.index)
+      } catch {}
+      return true
     }
     if (this.cloudAudio) {
       try {
