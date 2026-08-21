@@ -70,46 +70,32 @@ class SpeechEngine {
         )
       }
     }
-    // After the machine sleeps / the tab is hidden, a playing element can sit
-    // silent (the OS suspends audio). When the user comes back, restart the
-    // current phrase fresh so sound always returns instead of a dead prayer.
-    this.bindWakeRecovery()
+    // After the machine sleeps / the tab is hidden while a prayer is playing,
+    // the audio engine dies silently. We don't auto-restart on return (that
+    // would resume prayer without the user asking) — instead we pause on hide so
+    // the prayer stays silent until they press play, and resume() then revives
+    // the dead engine with a fresh phrase.
+    this.bindVisibility()
   }
 
-  // Re-kicks a silently-stalled prayer when the tab becomes visible again (or
-  // the window regains focus after the machine slept). Only acts when a prayer
-  // is meant to be audible: an active, non-paused tts job whose current audio
-  // element is paused/ended (a suspended element) or whose speech engine isn't
-  // actually talking.
-  bindWakeRecovery() {
-    if (this._wakeBound) return
-    this._wakeBound = true
-    this._wake = () => {
-      if (document.hidden) return
+  // Pause playback when the tab is hidden (sleep / switching away). This keeps
+  // the prayer silent until the user explicitly presses play again, and —
+  // crucially — corrects the state after a sleep so the play button revives the
+  // dead engine instead of doing nothing. Active-play hiccups are still
+  // recovered by the stall guard / kicker watchdog (they only act while not
+  // paused).
+  bindVisibility() {
+    if (this._visBound) return
+    this._visBound = true
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) return
       const j = this.job
-      if (!j || !j.active || j.paused || j.mode !== 'tts') return
-      // Only re-kick when the current phrase looks stuck — a healthy phrase
-      // advances near its estimate, so being overdue means the engine is silent
-      // (speechSynthesis reports speaking=true while dead after hibernation).
-      // Restart the phrase fresh so sound returns instead of a dead prayer.
-      const overdue = Date.now() - (j.phraseStart || 0) > (j.phraseHold || 4000)
-      const el = this.cloudAudio
-      const cloudSilent = el && (el.paused || el.ended)
-      if (!overdue && !cloudSilent) return
-      try {
-        this.synth.cancel()
-      } catch {}
-      try {
-        if (this.cloudAudio) this.cloudAudio.pause()
-      } catch {}
-      clearTimeout(j.guard)
-      clearTimeout(j.advTimer)
-      try {
-        this.speakIndex(j.index)
-      } catch {}
-    }
-    document.addEventListener('visibilitychange', this._wake)
-    window.addEventListener('focus', this._wake)
+      const s = useStore.getState()
+      if (j && j.active && !j.paused && s.playing && !s.paused) {
+        this.pause()
+        useStore.setState({ paused: true, praying: false })
+      }
+    })
   }
 
   // Ask the server whether the Google TTS proxy is available (once).
@@ -822,7 +808,13 @@ class SpeechEngine {
         this.cloudAudio.pause()
       } catch {}
     }
-    if (this.job) this.job.paused = true
+    if (this.job) {
+      this.job.paused = true
+      // Drop any pending stall/advance timers so a paused job can't be revived
+      // by the takeover guard while it's meant to be silent.
+      clearTimeout(this.job.guard)
+      clearTimeout(this.job.advTimer)
+    }
     try {
       this.synth.pause()
     } catch {}
