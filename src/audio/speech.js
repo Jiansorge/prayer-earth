@@ -306,6 +306,12 @@ class SpeechEngine {
         const ns = await this.staticAudioUrl(job, next)
         const nk = ns || `${job.lang}:${job.rate}:${np.t}`
         if (!this.cloudCache.has(nk)) {
+          if (this.cloudCache.size >= 100) {
+            const fk = this.cloudCache.keys().next().value
+            const fv = this.cloudCache.get(fk)
+            if (typeof fv === 'string' && fv.startsWith('blob:')) URL.revokeObjectURL(fv)
+            this.cloudCache.delete(fk)
+          }
           if (ns) {
             this.cloudCache.set(nk, ns)
           } else {
@@ -315,6 +321,12 @@ class SpeechEngine {
               .then((r) => (r.ok ? r.blob() : null))
               .then((b) => {
                 if (b) {
+                  if (this.cloudCache.size >= 100) {
+                    const fk = this.cloudCache.keys().next().value
+                    const fv = this.cloudCache.get(fk)
+                    if (typeof fv === 'string' && fv.startsWith('blob:')) URL.revokeObjectURL(fv)
+                    this.cloudCache.delete(fk)
+                  }
                   const nu = URL.createObjectURL(b)
                   this.cloudCache.set(nk, nu)
                 }

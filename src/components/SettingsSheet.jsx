@@ -8,19 +8,15 @@ import { sanitizeName } from '../shared/profanity.js'
 import QRCard from './QRCard.jsx'
 import LegalSheet from './LegalSheet.jsx'
 import { canInstall, promptInstall } from '../shared/installPrompt.js'
+import { isMobile } from '../shared/mobile.js'
 
 const isInstalled = () =>
   window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone
 
-// Joining Palms is a mobile-first PWA, the install prompt is for phones and
-// tablets only, not desktop browsers.
-const isMobile = () =>
-  /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent) ||
-  (navigator.maxTouchPoints > 0 && window.innerWidth < 900)
-
 // Nature avatars and light colours for your presence on the Earth.
 const AVATARS = ['🌿', '🌙', '🌺', '🕊️', '🌊', '⛰️', '🌾', '🦋', '☀️', '🍃', '🐚', '🌟', '🌸', '🍁', '🪷', '🔥']
 const COLORS = ['#7fc9a0', '#dfb05c', '#7aa2ff', '#ff9e4f', '#ffd166', '#b09dff', '#e8b06f', '#7fd488']
+const DONATE_URL = 'https://ko-fi.com/joiningpalms'
 
 export default function SettingsSheet() {
   const open = useStore((s) => s.settingsOpen)
@@ -338,6 +334,14 @@ export default function SettingsSheet() {
             )}
           </>
         )}
+
+        <div className="field-divider" />
+
+        <label className="field-label section">{t('settings.donateLabel')}</label>
+        <div className="field-hint">{t('settings.donateHint')}</div>
+        <a className="field-btn" href={DONATE_URL} target="_blank" rel="noopener noreferrer">
+          {t('settings.donateButton')}
+        </a>
 
         <div className="field-divider" />
 

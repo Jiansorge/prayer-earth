@@ -51,6 +51,7 @@ export default function PrayerPage() {
   const spiritCount = useStore((s) => (spiritId ? s.spiritCounts[spiritId] || 0 : 0))
   // Read the full objects once for the chooser chip loop (not reactive)
   const prayerCounts = useStore((s) => s.prayerCounts)
+  const yourToday = useStore((s) => s.getYourToday())
 
   const spirit = SPIRITUALITY_BY_ID[spiritId]
   const [active, setActive] = useState(null)
@@ -60,12 +61,19 @@ export default function PrayerPage() {
   const [chantMode, setChantMode] = useState(false)
   const [chantReason, setChantReason] = useState(null)
   const [voiceNote, setVoiceNote] = useState(false)
+  const [joinedToast, setJoinedToast] = useState(false)
+  const [reflection, setReflection] = useState(null)
   const muted = useStore((s) => s.muted)
   const [tuning, setTuning] = useState(false)
   const [starting, setStarting] = useState(false)
-  const startAt = useRef(0)
-  const startingRef = useRef(false)
-  const startingWatchdog = useRef(null)
+const startAt = useRef(0)
+const startingRef = useRef(false)
+const startingWatchdog = useRef(null)
+const joinedTimer = useRef(null)
+const prevCountRef = useRef(null)
+const prevPrayerRef = useRef(null)
+// Counts the person's own recitation once per play session (reset on each start).
+const countedRef = useRef(false)
   const [celebration, setCelebration] = useState(0)
   const celebrationTimer = useRef(null)
   const prayer = spirit ? (spirit.prayers || []).find((p) => p.id === prayerId) : null
@@ -164,8 +172,34 @@ export default function PrayerPage() {
     }
   }, [prayer?.id])
 
+  // A gentle "you're not alone" moment: when someone else joins the same prayer
+  // while you're engaged, surface a brief, quiet notice. Only fires on an
+  // increase above 1 (so your own start never triggers it), and resets cleanly
+  // when you switch prayers.
+  useEffect(() => {
+    const prev = prevCountRef.current
+    const prevPrayer = prevPrayerRef.current
+    prevPrayerRef.current = prayerId
+    prevCountRef.current = prayerCount
+    if (prevPrayer !== prayerId) return
+    if (prev !== null && prayerCount > prev && prev >= 1 && playing && !paused) {
+      setJoinedToast(true)
+      clearTimeout(joinedTimer.current)
+      joinedTimer.current = setTimeout(() => setJoinedToast(false), 4500)
+    }
+  }, [prayerCount, prayerId, playing, paused])
+  useEffect(() => () => clearTimeout(joinedTimer.current), [])
+  const reflectionTimer = useRef(null)
+  useEffect(() => {
+    if (reflectionTimer.current) clearTimeout(reflectionTimer.current)
+    if (reflection !== null) {
+      reflectionTimer.current = setTimeout(() => setReflection(null), 4500)
+    }
+  }, [reflection])
+
   const startJob = (fromIndex = 0) => {
     stopJob()
+    countedRef.current = false
     startAt.current = Date.now()
     startingRef.current = true
     // A start must never silently deadlock the play button: if the engine
@@ -223,8 +257,18 @@ export default function PrayerPage() {
         useStore.getState().setCurrentPhrase(i)
         // Only highlight lines when this prayer is the one actually on screen.
         if (useStore.getState().prayerId === prayer.id) setActive(i)
-        // A repeated mantra is one prayer per recitation, not per cycle.
-        if (prayer.loop) notePrayerComplete(prayer.id)
+        // Count the person's own recitation:
+        //  - a repeating mantra counts once per repetition (each phrase that
+        //    actually speaks), so "today" reflects how many times it was said;
+        //  - a non-loop prayer counts the moment it starts (first phrase), so it
+        //    never reads 0 just because the person paused or stopped early.
+        if (prayer.loop) {
+          notePrayerComplete(prayer.id)
+        } else if (!countedRef.current) {
+          countedRef.current = true
+          useStore.getState().markPrayedToday()
+          notePrayerComplete(prayer.id)
+        }
       },
       onFallback: (reason) => {
         setChantMode(true)
@@ -240,9 +284,9 @@ export default function PrayerPage() {
       },
       onEnd: () => {
         useStore.getState().markPrayedToday()
-        if (!prayer.loop) notePrayerComplete(prayer.id)
         useStore.getState().setCompletedAt(Date.now())
         celebrateStreak()
+        setReflection(yourToday)
         setPlaying(false)
         setPraying(false)
         useStore.getState().setPlayingPrayerId(null)
@@ -498,7 +542,55 @@ export default function PrayerPage() {
   return (
     <div className="view prayer-page">
       <Sparkles count={14} />
-      <div className="back-row">
+      {joinedToast && (
+        <div
+          className="joined-moment join-pulse"
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            bottom: 84,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 55,
+            padding: '9px 16px',
+            borderRadius: 999,
+            background: 'rgba(11, 16, 38, 0.92)',
+            color: '#e8e6df',
+            fontFamily: 'var(--sans)',
+            fontSize: 13,
+            boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
+            pointerEvents: 'none'
+          }}
+         >
+           {t('prayer.joinedYou', { n: prayerCount })}
+         </div>
+       )}
+       {reflection !== null && (
+         <div
+           className="joined-moment join-pulse"
+           role="status"
+           aria-live="polite"
+           style={{
+             position: 'fixed',
+             bottom: 84,
+             left: '50%',
+             transform: 'translateX(-50%)',
+             zIndex: 55,
+             padding: '9px 16px',
+             borderRadius: 999,
+             background: 'rgba(11, 16, 38, 0.92)',
+             color: '#e8e6df',
+             fontFamily: 'var(--sans)',
+             fontSize: 13,
+             boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
+             pointerEvents: 'none'
+           }}
+         >
+           ✶ {reflection} {t('prayer.today')} — your prayer is carried.
+         </div>
+       )}
+       <div className="back-row">
         <button onClick={closePrayer} aria-label={t('prayer.back')}>
           ←
         </button>

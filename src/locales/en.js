@@ -7,6 +7,7 @@ export default {
   'home.sub':
     'Pick a path below. When you join, your prayer joins every other prayer happening right now, and the Earth gently glows a little brighter.',
   'home.carried': 'You have carried {time} of prayer with the world.',
+  'home.yourPrayersToday': '✶ {n} your prayers today',
   'home.sacredWords': 'Sacred words of the world',
   'home.prayers.one': '1 sacred prayer',
   'home.prayers.other': '{n} sacred prayers',
@@ -17,6 +18,7 @@ export default {
   'home.pray': 'Pray →',
   'home.prayStreak': 'Pray to keep your streak',
   'home.hint': 'One Earth. One breath. Prayers in any language count the same.',
+  'home.favorites': 'Your favorites',
   'meter.prayingNow': 'Praying right now',
   'meter.earthAlight': 'Earth alight',
   'meter.prayedToday': 'prayed today',
@@ -102,7 +104,8 @@ export default {
   'prayer.prayingNowRest': 'praying this with you now',
   'prayer.across': '· {n} across {name}',
   'prayer.allTime': '✶ {n} all time',
-  'prayer.today': '✶ {n} today',
+  'prayer.today': '✶ {n} your prayers today',
+  'prayer.todayTitle': 'Your recitations of this prayer today',
   'prayer.recited': 'recited aloud',
   'prayer.repeated': 'repeated in the heart',
   'prayer.doneTitle': 'Your prayer is carried.',
@@ -118,6 +121,7 @@ export default {
   'prayer.share': 'Share this prayer',
   'prayer.favorite': 'Favorite',
   'prayer.peoplePraying': '{n} praying',
+  'prayer.joinedYou': '✶ {n} praying this with you now',
   'prayer.prayingNowTitle': 'People praying this prayer right now',
   'prayer.allTimeTitle': 'All-time prayers ever carried',
   'earth.title': 'Our living Earth',
@@ -143,13 +147,13 @@ export default {
   'install.dismiss': 'Dismiss',
   'onboard.s1': 'Pick a sacred path',
   'onboard.s1b':
-    'Choose a sacred path, from the world\u2019s great faiths, Chinese and indigenous traditions, Zoroastrian flame, Confucian harmony, or the quiet wonder of being alive.',
+     'Choose a sacred path, from the world\u2019s great faiths, Chinese and indigenous traditions, Zoroastrian flame, Confucian harmony, or the quiet wonder of being alive.',
   'onboard.s2': 'Pray together, right now',
   'onboard.s2b':
-    'Your prayer joins everyone else praying this moment. You\u2019ll see them as a gentle world feed.',
+     'Your prayer joins everyone else praying this moment. You\u2019ll see them as a gentle world feed, and the Earth glows a little brighter for every soul that prays.',
   'onboard.s3': 'Watch the Earth glow',
   'onboard.s3b':
-    'Every prayer adds a little light. Together, the world brightens, and your daily flame keeps burning.',
+     'Every prayer adds a little light. \u2728 The glow shows the whole world praying together. \u2705 \u201cYour prayers today\u201d counts your own recitations \u2014 so the glow is partly yours.',
   'qr.prayWithWorld': 'pray with the world',
   'qr.err': 'Couldn\u2019t draw the QR code.',
   'qr.saveCard': 'Save card',
@@ -188,6 +192,14 @@ export default {
   'trad.earthway.tagline': 'All my relations, gratitude to the living world.',
   'trad.zoroastrianism.name': 'Zoroastrianism',
   'trad.zoroastrianism.tagline': 'Good thoughts, good words, good deeds, the flame of truth.',
+  'trad.celtic.name': 'Celtic Spirituality',
+  'trad.celtic.tagline': 'Blessing, the thin places, and the goodness of all creation.',
+  'trad.stoic.name': 'Stoic Reflection',
+  'trad.stoic.tagline': 'Calm, courage, and the discipline of the mind.',
+  'trad.unitarian.name': 'Unitarian',
+  'trad.unitarian.tagline': 'The free search for truth and the worth of every person.',
+  'trad.seasonal.name': 'Seasonal Reflection',
+  'trad.seasonal.tagline': 'The turning of the world — pauses to remember.',
   'trad.confucianism.name': 'Confucianism',
   'trad.confucianism.tagline': 'Ren, ritual, and the harmony of all under heaven.',
   'trad.chinese.name': 'Chinese Spirituality',
@@ -303,5 +315,9 @@ export default {
     'Joining Palms makes no automated decisions affecting your legal rights. The app does not use AI to profile, score, or classify users. We recommend no AI or large-language-model training be performed on the content of this service, and we do not train models on your prayer data.',
   'legal.tTransTitle': 'International transfers',
   'legal.tTransBody':
-    'Anonymous presence data (a coarse region) may be processed in data centers operated by our hosting provider (Cloudflare) outside your home country. For transfers from the EEA, UK, or Switzerland, we rely on standard contractual clauses or an adequacy decision. Nothing changes the nature of the data — it remains anonymous and device-first.'
+     'Anonymous presence data (a coarse region) may be processed in data centers operated by our hosting provider (Cloudflare) outside your home country. For transfers from the EEA, UK, or Switzerland, we rely on standard contractual clauses or an adequacy decision. Nothing changes the nature of the data — it remains anonymous and device-first.',
+
+  'settings.donateLabel': 'Support Joining Palms',
+  'settings.donateHint': 'Every contribution keeps this free, private, and ad-free. No account or email needed.',
+  'settings.donateButton': 'Support Joining Palms',
 };

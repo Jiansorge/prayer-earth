@@ -325,19 +325,34 @@ export default   {
         ],
         translation: 'An Ainu prayer to the kamuy, the spirits of nature, expressing gratitude and the sacred duty to protect the land.'
       },
-      {
-        id: 'mongolian-sky',
-        title: 'The Eternal Blue Sky',
-        lang: 'en',
-        langLabel: 'English \u00b7 from the steppe traditions',
-        phrases: [
-          { t: 'O eternal blue sky, Tengri of our fathers,' },
-          { t: 'we raise our hearts to your endless horizon.' },
-          { t: 'Thank you for the wind, the grass, and the open road.' },
-          { t: 'Grant us the wisdom of the steppe: to move with the seasons,' },
-          { t: 'to honour all beings, and to keep faith with the land.' }
-        ],
-        translation: 'A prayer of the steppe peoples to the eternal blue sky, gratitude for the open land and the wisdom to live within it.'
-      }
-    ]
+       {
+         id: 'mongolian-sky',
+         title: 'The Eternal Blue Sky',
+         lang: 'en',
+         langLabel: 'English \u00b7 from the steppe traditions',
+         phrases: [
+           { t: 'O eternal blue sky, Tengri of our fathers,' },
+           { t: 'we raise our hearts to your endless horizon.' },
+           { t: 'Thank you for the wind, the grass, and the open road.' },
+           { t: 'Grant us the wisdom of the steppe: to move with the seasons,' },
+           { t: 'to honour all beings, and to keep faith with the land.' }
+         ],
+         translation: 'A prayer of the steppe peoples to the eternal blue sky, gratitude for the open land and the wisdom to live within it.'
+       },
+       {
+         id: 'haudenosaunee-thanks',
+         title: 'Ohen:ton Karihwatehkwen',
+         lang: 'en',
+         langLabel: 'English \u00b7 from the Haudenosaunee tradition',
+         phrases: [
+           { t: 'We are all of one mind, one heart.' },
+           { t: 'We are all related, the children of one mind.' },
+           { t: 'We have made you all our relatives,' },
+           { t: 'that you may bring help to us.' },
+           { t: 'It is in our hearts, our one mind, one family.' },
+           { t: 'We are all one, we are all related, we are all relatives.' }
+         ],
+         translation: 'A rendering of the Haudenosaunee Thanksgiving Address, the Ohen:ton Karihwatehkwen — a recognition of the interdependence of all beings, widely shared in public ceremonies and United Nations proceedings.'
+       }
+     ]
   }

@@ -5,6 +5,51 @@ import { useT, prayerTitle } from '../i18n.js'
 import { stopPlayback } from '../playback.js'
 import Sparkles from './Sparkles.jsx'
 
+// Anonymous Gregorian Easter algorithm — exact Easter Sunday for any year >= 1583.
+function easterDate(year) {
+  const a = year % 19
+  const b = Math.floor(year / 100)
+  const c = year % 100
+  const d = Math.floor(b / 4)
+  const e = b % 4
+  const f = Math.floor((b + 8) / 25)
+  const g = Math.floor((b - f + 1) / 3)
+  const h = (19 * a + b - d - g + 15) % 30
+  const i = Math.floor(c / 4)
+  const k = c % 4
+  const l = (32 + 2 * e + 2 * i - h - k) % 7
+  const m = Math.floor((a + 11 * h + 22 * l) / 451)
+  const month = Math.floor((h + l - 7 * m + 114) / 31)
+  const day = ((h + l - 7 * m + 114) % 31) + 1
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+}
+
+// US Thanksgiving: 4th Thursday of November.
+function thanksgivingDate(year) {
+  const d = new Date(year, 10, 1)
+  const weekday = d.getDay()
+  const firstThursday = 1 + (4 - weekday + 7) % 7
+  const fourthThursday = firstThursday + 21
+  return `${year}-11-${String(fourthThursday).padStart(2, '0')}`
+}
+
+function matchesDate(dates, season) {
+  if (season) {
+    const now = new Date()
+    const y = now.getFullYear()
+    const mmdd = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    const ymd = `${y}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    if (season === 'easter' && (ymd === easterDate(y) || ymd === easterDate(y - 1))) return true
+    if (season === 'thanksgiving' && (ymd === thanksgivingDate(y) || ymd === thanksgivingDate(y - 1))) return true
+    return false
+  }
+  if (!dates || !dates.length) return true
+  const now = new Date()
+  const mmdd2 = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const ymd2 = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  return dates.some((d) => d === ymd2 || d === mmdd2)
+}
+
 // A quiet sheet that lists every prayer of a chosen tradition, so a person
 // can see and choose any of them instead of always landing on the first one.
 function PickerRow({ p, i, spirit, openPrayer, close, t }) {
@@ -40,8 +85,8 @@ function PickerRow({ p, i, spirit, openPrayer, close, t }) {
         <span className="picker-row-sub">{p.langLabel}</span>
       </span>
       <span className="picker-meta">
-        <span className="picker-total">{t('prayer.today', { n: today.toLocaleString() })}</span>
-        <span className="picker-now">{t('prayer.peoplePraying', { n: now })}</span>
+        <span className="picker-total" title={t('prayer.todayTitle')}>{t('prayer.today', { n: today.toLocaleString() })}</span>
+        <span className="picker-now" title={t('prayer.prayingNowTitle')}>{t('prayer.peoplePraying', { n: now })}</span>
       </span>
       <button
         className={`picker-fav ${fav ? 'on' : ''}`}
@@ -100,7 +145,7 @@ export default function PrayerPicker() {
       .toLowerCase()
 
   const q = norm(query)
-  const prayers = spirit.prayers || []
+  const prayers = (spirit.prayers || []).filter((p) => matchesDate(p.dates, p.season))
   const shown = q
     ? prayers.filter(
         (p) =>

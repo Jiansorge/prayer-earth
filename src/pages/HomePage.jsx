@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { useStore } from '../store.js'
-import { SPIRITUALITIES } from '../data/prayers.js'
+import { canInstall, promptInstall } from '../shared/installPrompt.js'
+import { isMobile } from '../shared/mobile.js'
+import { SPIRITUALITIES, getPrayerWithSpirit, loadSpirit, isLoaded } from '../data/prayers.js'
 import WorldMeter from '../components/WorldMeter.jsx'
 import WorldFeed from '../components/WorldFeed.jsx'
 import Sparkles from '../components/Sparkles.jsx'
-import { useT } from '../i18n.js'
+import { useT, prayerTitle } from '../i18n.js'
 
 const fmtLife = (s) => {
   const m = Math.floor(s / 60)
@@ -19,6 +21,52 @@ const dayKey = (t) =>
     t.getUTCDate()
   ).padStart(2, '0')}`
 
+function HomeFavs() {
+  const favorites = useStore((s) => s.favorites)
+  const openPrayer = useStore((s) => s.openPrayer)
+  const t = useT()
+  const [, bump] = useState(0)
+
+  useEffect(() => {
+    if (!favorites.length) return
+    const missing = favorites.filter((id) => !getPrayerWithSpirit(id))
+    if (!missing.length) return
+    let dead = false
+    const toLoad = SPIRITUALITIES.filter((s) => !isLoaded(s.id)).map((s) => loadSpirit(s.id))
+    Promise.all(toLoad).then(() => {
+      if (!dead) bump((x) => x + 1)
+    })
+    return () => {
+      dead = true
+    }
+  }, [favorites.join(',')])
+
+  if (!favorites.length) return null
+  const items = favorites.map((id) => getPrayerWithSpirit(id)).filter(Boolean)
+  if (!items.length) return null
+
+  return (
+    <div className="home-favs">
+      <div className="home-favs-head">
+        <span className="home-favs-title">★ {t('home.favorites')}</span>
+      </div>
+      <div className="home-favs-scroll">
+        {items.map(({ prayer, spirit }) => (
+          <button
+            key={prayer.id}
+            className="home-fav-chip"
+            onClick={() => openPrayer(spirit.id, prayer.id)}
+            aria-label={prayerTitle(t, prayer.id, prayer.title)}
+          >
+            <span className="home-fav-emoji" aria-hidden="true">{spirit.emoji}</span>
+            <span className="home-fav-label">{prayerTitle(t, prayer.id, prayer.title).split(',')[0].trim()}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function HomePage() {
   const go = useStore((s) => s.go)
   const openPrayerPicker = useStore((s) => s.openPrayerPicker)
@@ -30,8 +78,10 @@ export default function HomePage() {
   const bestStreak = useStore((s) => s.bestStreak)
   const lastPrayedDay = useStore((s) => s.lastPrayedDay)
   const profile = useStore((s) => s.profile)
+  const yourToday = useStore((s) => s.getYourToday())
   const [, force] = useState(0)
   const t = useT()
+  const [installVisible, setInstallVisible] = useState(() => canInstall() && !localStorage.getItem('pe-install-dismissed'))
 
   useEffect(() => {
     const t = setInterval(() => force((x) => x + 1), 3000)
@@ -69,7 +119,33 @@ export default function HomePage() {
         <WorldMeter />
       </div>
 
+      {yourToday > 0 && (
+        <div className="your-today-line">
+          {t('home.yourPrayersToday', { n: yourToday })}
+        </div>
+      )}
+
+      {installVisible && canInstall() && isMobile() && (
+        <div className="install-banner">
+          <span>{t('install.text')}</span>
+          <button className="field-btn" onClick={async () => {
+            const ok = await promptInstall()
+            if (ok) setInstallVisible(false)
+          }}>
+            {t('install.button')}
+          </button>
+          <button className="install-banner-dismiss" onClick={() => {
+            localStorage.setItem('pe-install-dismissed', '1')
+            setInstallVisible(false)
+          }} aria-label={t('install.dismiss')}>
+            ×
+          </button>
+        </div>
+      )}
+
       <WorldFeed limit={10} />
+
+      <HomeFavs />
 
       <div className="life-card">
         <span className="you-avatar" style={{ borderColor: profile.color }}>

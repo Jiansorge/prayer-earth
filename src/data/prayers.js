@@ -16,8 +16,12 @@ export const SPIRITUALITIES = [
   { id: 'shinto', name: 'Shinto', emoji: '⛩️', glow: 'rgba(255, 150, 120, 0.24)', lightColor: '#ff8f7a', tagline: 'Kami, purity, and gratitude before nature.', prayerCount: 6 },
   { id: 'jainism', name: 'Jainism', emoji: '🪷', glow: 'rgba(255, 210, 200, 0.24)', lightColor: '#ff9fbf', tagline: 'Ahimsa, reverence for all life, and inner freedom.', prayerCount: 6 },
   { id: 'african', name: 'African Traditions', emoji: '🐘', glow: 'rgba(224, 164, 88, 0.26)', lightColor: '#e0a458', tagline: 'Ancestors, the Great Spirit, and the living land.', prayerCount: 10 },
-  { id: 'earthway', name: 'Earthway \u00B7 Indigenous', emoji: '🌿', glow: 'rgba(120, 200, 140, 0.24)', lightColor: '#7fd488', tagline: 'All my relations, gratitude to the living world.', prayerCount: 24 },
+  { id: 'earthway', name: 'Earthway \u00B7 Indigenous', emoji: '🌿', glow: 'rgba(120, 200, 140, 0.24)', lightColor: '#7fd488', tagline: 'All my relations, gratitude to the living world.', prayerCount: 25 },
   { id: 'zoroastrianism', name: 'Zoroastrianism', emoji: '🕯️', glow: 'rgba(255, 190, 90, 0.26)', lightColor: '#ffc46b', tagline: 'Good thoughts, good words, good deeds, the flame of truth.', prayerCount: 5 },
+  { id: 'celtic', name: 'Celtic Spirituality', emoji: '🍀', glow: 'rgba(120, 200, 160, 0.24)', lightColor: '#7fd488', tagline: 'Blessing, the thin places, and the goodness of all creation.', prayerCount: 3 },
+  { id: 'stoic', name: 'Stoic Reflection', emoji: '🏛️', glow: 'rgba(190, 180, 160, 0.24)', lightColor: '#c9bda0', tagline: 'Calm, courage, and the discipline of the mind.', prayerCount: 3 },
+  { id: 'unitarian', name: 'Unitarian', emoji: '⛺', glow: 'rgba(160, 180, 220, 0.26)', lightColor: '#a0b4dc', tagline: 'The free search for truth and the worth of every person.', prayerCount: 3 },
+  { id: 'seasonal', name: 'Seasonal Reflection', emoji: '🌿', glow: 'rgba(180, 170, 120, 0.24)', lightColor: '#d4c9a0', tagline: 'The turning of the world — pauses to remember.', prayerCount: 12 },
 ]
 
 export const SPIRITUALITY_BY_ID = Object.fromEntries(
@@ -47,6 +51,10 @@ const _spiritLoaders = {
   african: () => import('./spirits/african.js'),
   earthway: () => import('./spirits/earthway.js'),
   zoroastrianism: () => import('./spirits/zoroastrianism.js'),
+  celtic: () => import('./spirits/celtic.js'),
+  stoic: () => import('./spirits/stoic.js'),
+  unitarian: () => import('./spirits/unitarian.js'),
+  seasonal: () => import('./spirits/seasonal.js'),
 }
 const _loaded = new Set()
 export async function loadSpirit(id) {
@@ -79,6 +87,15 @@ export function getPrayerById(prayerId) {
     if (!s.prayers) continue
     const p = s.prayers.find((p) => p.id === prayerId)
     if (p) return p
+  }
+  return null
+}
+
+export function getPrayerWithSpirit(prayerId) {
+  for (const s of SPIRITUALITIES) {
+    if (!s.prayers) continue
+    const p = s.prayers.find((p) => p.id === prayerId)
+    if (p) return { prayer: p, spirit: s }
   }
   return null
 }

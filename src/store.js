@@ -419,6 +419,14 @@ export const useStore = create(
         const key = dayKey(new Date())
         return get().prayerDayCompletions[key]?.[prayerId] || 0
       },
+      // Sum of all your recitations today across every prayer.
+      getYourToday: () => {
+        const s = get()
+        const key = dayKey(new Date())
+        const d = s.prayerDayCompletions[key]
+        if (!d) return 0
+        return Object.values(d).reduce((a, b) => a + b, 0)
+      },
       getSpiritTotal: (spiritId) => {
         const s = get()
         let local = 0
