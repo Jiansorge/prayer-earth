@@ -21,7 +21,7 @@ export const SPIRITUALITIES = [
   { id: 'celtic', name: 'Celtic Spirituality', emoji: '🍀', glow: 'rgba(120, 200, 160, 0.24)', lightColor: '#7fd488', tagline: 'Blessing, the thin places, and the goodness of all creation.', prayerCount: 3 },
   { id: 'stoic', name: 'Stoic Reflection', emoji: '🏛️', glow: 'rgba(190, 180, 160, 0.24)', lightColor: '#c9bda0', tagline: 'Calm, courage, and the discipline of the mind.', prayerCount: 3 },
   { id: 'unitarian', name: 'Unitarian', emoji: '⛺', glow: 'rgba(160, 180, 220, 0.26)', lightColor: '#a0b4dc', tagline: 'The free search for truth and the worth of every person.', prayerCount: 3 },
-  { id: 'seasonal', name: 'Seasonal Reflection', emoji: '🌿', glow: 'rgba(180, 170, 120, 0.24)', lightColor: '#d4c9a0', tagline: 'The turning of the world — pauses to remember.', prayerCount: 12 },
+  { id: 'seasonal', name: 'Seasonal Reflection', emoji: '🌿', glow: 'rgba(180, 170, 120, 0.24)', lightColor: '#d4c9a0', tagline: 'The turning of the world — pauses to remember.', prayerCount: 15 },
 ]
 
 export const SPIRITUALITY_BY_ID = Object.fromEntries(

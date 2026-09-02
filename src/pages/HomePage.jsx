@@ -41,9 +41,21 @@ function HomeFavs() {
     }
   }, [favorites.join(',')])
 
-  if (!favorites.length) return null
-  const items = favorites.map((id) => getPrayerWithSpirit(id)).filter(Boolean)
-  if (!items.length) return null
+  const items = favorites.length ? favorites.map((id) => getPrayerWithSpirit(id)).filter(Boolean) : []
+  const hasFavs = items.length > 0
+  const showHint = !favorites.length || (!hasFavs && favorites.length > 0)
+
+  if (showHint) {
+    return (
+      <div className="home-favs home-favs-empty">
+        <div className="home-favs-head">
+          <span className="home-favs-title">☆ {t('home.favorites')}</span>
+        </div>
+        <div className="home-favs-hint">{t('home.favoritesHint')}</div>
+      </div>
+    )
+  }
+  if (!hasFavs) return null
 
   return (
     <div className="home-favs">

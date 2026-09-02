@@ -2767,6 +2767,16 @@ html[dir='rtl'] .chooser-arrow.right {
   border-color: rgba(232, 196, 122, 0.55);
   transform: translateY(-1px);
 }
+.home-favs-empty {
+  opacity: 0.92;
+  border-style: dashed;
+  border-color: rgba(232, 196, 122, 0.28);
+}
+.home-favs-hint {
+  font-size: 12.5px;
+  color: var(--ink-dim);
+  line-height: 1.45;
+}
 .home-fav-chip:active { transform: scale(0.97); }
 .home-fav-emoji { font-size: 14px; line-height: 1; }
 .home-fav-label { max-width: 160px; overflow: hidden; text-overflow: ellipsis; }

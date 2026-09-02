@@ -5,7 +5,7 @@ export default {
   'nav.earth': 'Earth',
   'home.title': 'Pray with the whole world.',
   'home.sub':
-    'Pick a path below. When you join, your prayer joins every other prayer happening right now, and the Earth gently glows a little brighter.',
+    'Pick a path below. When you join, your prayer joins every other prayer happening right now — the Earth glows a little brighter, and divine energy ripples through the multiverse.',
   'home.carried': 'You have carried {time} of prayer with the world.',
   'home.yourPrayersToday': '✶ {n} your prayers today',
   'home.sacredWords': 'Sacred words of the world',
@@ -17,8 +17,9 @@ export default {
     'Your {streak}-day flame is waiting for you today. A few quiet moments will keep it alive.',
   'home.pray': 'Pray →',
   'home.prayStreak': 'Pray to keep your streak',
-  'home.hint': 'One Earth. One breath. Prayers in any language count the same.',
+  'home.hint': 'One Earth. One breath. Prayers in any language count the same — and every prayer sends light through the multiverse.',
   'home.favorites': 'Your favorites',
+  'home.favoritesHint': 'Tap ☆ on any prayer to keep it here — your light, always one tap away.',
   'meter.prayingNow': 'Praying right now',
   'meter.earthAlight': 'Earth alight',
   'meter.prayedToday': 'prayed today',
@@ -153,7 +154,7 @@ export default {
      'Your prayer joins everyone else praying this moment. You\u2019ll see them as a gentle world feed, and the Earth glows a little brighter for every soul that prays.',
   'onboard.s3': 'Watch the Earth glow',
   'onboard.s3b':
-     'Every prayer adds a little light. \u2728 The glow shows the whole world praying together. \u2705 \u201cYour prayers today\u201d counts your own recitations \u2014 so the glow is partly yours.',
+     'Every prayer adds a little light. \u2728 The glow shows the whole world praying together — and the divine energy you manifest ripples across the multiverse. \u2705 \u201cYour prayers today\u201d counts your own recitations \u2014 so the glow is partly yours.',
   'qr.prayWithWorld': 'pray with the world',
   'qr.err': 'Couldn\u2019t draw the QR code.',
   'qr.saveCard': 'Save card',
