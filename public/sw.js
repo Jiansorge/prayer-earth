@@ -6,7 +6,7 @@
 // installs, deletes the old cache in `activate`, and re-caches fresh files. If
 // the app is served through Cloudflare, also purge the CDN cache for /audio/*
 // so the edge stops handing out the old files.
-const CACHE = 'prayer-earth-v16'
+const CACHE = 'prayer-earth-v17'
 const CORE = [
   '/',
   '/index.html',
