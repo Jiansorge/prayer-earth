@@ -7,7 +7,7 @@ export const SPIRITUALITIES = [
   { id: 'islam', name: 'Islam', emoji: '☪️', glow: 'rgba(80, 200, 160, 0.28)', lightColor: '#5fd4a0', tagline: 'Surrender, peace, and the Mercy of God.', prayerCount: 19 },
   { id: 'hinduism', name: 'Hinduism', emoji: '🕉️', glow: 'rgba(255, 170, 110, 0.28)', lightColor: '#ff9e4f', tagline: 'Unity of all, the divine light within.', prayerCount: 18 },
   { id: 'buddhism', name: 'Buddhism', emoji: '☸️', glow: 'rgba(255, 210, 120, 0.26)', lightColor: '#ffd166', tagline: 'Compassion, stillness, and the middle way.', prayerCount: 26 },
-  { id: 'nonreligious', name: 'Agnostic \u00B7 Atheist', emoji: '🌌', glow: 'rgba(150, 170, 255, 0.24)', lightColor: '#a9b0ff', tagline: 'Wonder, kindness, and the cosmos we share.', prayerCount: 22 },
+  { id: 'nonreligious', name: 'Agnostic \u00B7 Atheist', emoji: '🌌', glow: 'rgba(150, 170, 255, 0.24)', lightColor: '#a9b0ff', tagline: 'Wonder, kindness, and the cosmos we share.', prayerCount: 25 },
   { id: 'chinese', name: 'Chinese Spirituality', emoji: '🐉', glow: 'rgba(255, 140, 95, 0.26)', lightColor: '#ff8a5c', tagline: 'Heaven, ancestors, and the spirits of home and land.', prayerCount: 7 },
   { id: 'sikhism', name: 'Sikhism', emoji: '💠', glow: 'rgba(120, 220, 220, 0.26)', lightColor: '#59d8d8', tagline: 'One Creator, truthful living, service to all.', prayerCount: 18 },
   { id: 'judaism', name: 'Judaism', emoji: '✡️', glow: 'rgba(120, 150, 255, 0.28)', lightColor: '#7aa2ff', tagline: 'Covenant, memory, and the Oneness of God.', prayerCount: 19 },
@@ -21,7 +21,7 @@ export const SPIRITUALITIES = [
   { id: 'celtic', name: 'Celtic Spirituality', emoji: '🍀', glow: 'rgba(120, 200, 160, 0.24)', lightColor: '#7fd488', tagline: 'Blessing, the thin places, and the goodness of all creation.', prayerCount: 3 },
   { id: 'stoic', name: 'Stoic Reflection', emoji: '🏛️', glow: 'rgba(190, 180, 160, 0.24)', lightColor: '#c9bda0', tagline: 'Calm, courage, and the discipline of the mind.', prayerCount: 3 },
   { id: 'unitarian', name: 'Unitarian', emoji: '⛺', glow: 'rgba(160, 180, 220, 0.26)', lightColor: '#a0b4dc', tagline: 'The free search for truth and the worth of every person.', prayerCount: 3 },
-  { id: 'seasonal', name: 'Seasonal Reflection', emoji: '🌿', glow: 'rgba(180, 170, 120, 0.24)', lightColor: '#d4c9a0', tagline: 'The turning of the world — pauses to remember.', prayerCount: 15 },
+  { id: 'seasonal', name: 'Seasonal Reflection', emoji: '🌿', glow: 'rgba(180, 170, 120, 0.24)', lightColor: '#d4c9a0', tagline: 'The turning of the world — pauses to remember.', prayerCount: 12 },
 ]
 
 export const SPIRITUALITY_BY_ID = Object.fromEntries(

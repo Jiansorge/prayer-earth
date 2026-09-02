@@ -158,41 +158,5 @@ export default {
             translation: 'A Ramadan reflection: fasting is not deprivation but deepening.',
             dates: ['03-01','03-02','03-03','03-04','03-05','03-06','03-07','03-08','03-09','03-10','03-11','03-12','03-13','03-14','03-15','03-16','03-17','03-18','03-19','03-20','03-21','03-22','03-23','03-24','03-25','03-26','03-27','03-28','03-29','03-30','02-18','02-19','02-20','02-21','02-22','02-23','02-24','02-25','02-26','02-27','02-28','03-01','03-02','03-03','03-04','03-05','03-06','03-07','03-08','03-09','03-10','03-11','03-12','03-13','03-14','03-15','03-16','03-17','03-18','03-19']
         },
-        {
-            id: 'light-for-all-worlds',
-            title: 'Light for All Worlds',
-            lang: 'en',
-            langLabel: 'English',
-            phrases: [
-                { t: 'May the light that kindled the first star kindle us still.' },
-                { t: 'May it move through every world, seen and unseen,' },
-                { t: 'and gather us — one light, many lamps — into the same quiet glow.' }
-            ],
-            translation: 'A multiverse prayer that the same light which lit the cosmos lights every heart.'
-        },
-        {
-            id: 'multiverse-breathes',
-            title: 'The Multiverse Breathes',
-            lang: 'en',
-            langLabel: 'English',
-            phrases: [
-                { t: 'The universe breathes in, and we breathe with it.' },
-                { t: 'The universe breathes out, and we give back what we were given.' },
-                { t: 'In this rhythm, nothing is separate, nothing is alone.' }
-            ],
-            translation: 'A prayer of divine circulation — receiving and returning the energy that moves all worlds.'
-        },
-        {
-            id: 'we-are-the-light',
-            title: 'We Are the Light',
-            lang: 'en',
-            langLabel: 'English',
-            phrases: [
-                { t: 'We are not waiting for the light — we are its keepers.' },
-                { t: 'Each kindness is a photon, each prayer a sun.' },
-                { t: 'Let the multiverse remember itself through us.' }
-            ],
-            translation: 'A prayer of responsibility — we manifest the divine energy by becoming it.'
-        }
     ]
 }

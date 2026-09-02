@@ -319,6 +319,42 @@ export default   {
           { t: 'and all weight is finally carried together.' }
         ],
         translation: 'Comfort for the bereaved: reframing grief as love that has lost its object, and reminding that no one carries it alone.'
+      },
+      {
+        id: 'light-for-all-worlds',
+        title: 'Light for All Worlds',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'May the light that kindled the first star kindle us still.' },
+          { t: 'May it move through every world, seen and unseen,' },
+          { t: 'and gather us — one light, many lamps — into the same quiet glow.' }
+        ],
+        translation: 'A multiverse prayer that the same light which lit the cosmos lights every heart.'
+      },
+      {
+        id: 'multiverse-breathes',
+        title: 'The Multiverse Breathes',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'The universe breathes in, and we breathe with it.' },
+          { t: 'The universe breathes out, and we give back what we were given.' },
+          { t: 'In this rhythm, nothing is separate, nothing is alone.' }
+        ],
+        translation: 'A prayer of divine circulation — receiving and returning the energy that moves all worlds.'
+      },
+      {
+        id: 'we-are-the-light',
+        title: 'We Are the Light',
+        lang: 'en',
+        langLabel: 'English',
+        phrases: [
+          { t: 'We are not waiting for the light — we are its keepers.' },
+          { t: 'Each kindness is a photon, each prayer a sun.' },
+          { t: 'Let the multiverse remember itself through us.' }
+        ],
+        translation: 'A prayer of responsibility — we manifest the divine energy by becoming it.'
       }
     ]
   }
