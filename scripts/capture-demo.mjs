@@ -24,16 +24,25 @@ async function withPlaywright() {
     recordVideo: { dir: 'public', size: { width: 1280, height: 800 } }
   })
   const page = await context.newPage()
+  // Prevent onboarding modal from ever showing
+  await page.addInitScript(() => {
+    try { localStorage.setItem('pe-onboarded', '1') } catch {}
+  })
   await page.goto(url, { waitUntil: 'networkidle' })
-  await page.waitForTimeout(1500)
-  await page.screenshot({ path: outPng, fullPage: true })
-  console.log(`✓ screenshot → ${outPng}`)
-  // Interact a bit for the gif
-  const tile = page.locator('.tile').first()
-  if (await tile.count()) await tile.click().catch(()=>{})
-  await page.waitForTimeout(800)
-  await page.goBack().catch(()=>{})
+  await page.waitForTimeout(1200)
+  const begin = page.locator('.onboard-begin')
+  if (await begin.count()) { await begin.click().catch(()=>{}); await page.waitForTimeout(600) }
   await page.waitForTimeout(500)
+  await page.screenshot({ path: outPng, fullPage: true })
+  console.log(`✓ screenshot → ${outPng} (modal closed)`)
+  // Home -> Prayer -> Earth flow for gif (6-7 sec)
+  const tile = page.locator('.tile').first()
+  if (await tile.count()) { await tile.click().catch(()=>{}); await page.waitForTimeout(1700) }
+  const firstPrayer = page.locator('.picker-row').first()
+  if (await firstPrayer.count()) { await firstPrayer.click().catch(()=>{}); await page.waitForTimeout(1700) }
+  const earthBtn = page.locator('nav button', { hasText: 'Earth' }).first()
+  if (await earthBtn.count()) { await earthBtn.click().catch(()=>{}); await page.waitForTimeout(1800) }
+  else { await page.evaluate(() => { try { window.__store?.getState?.()?.go?.('earth') } catch {} }); await page.waitForTimeout(1500) }
   await context.close()
   await browser.close()
   // Find the recorded webm
