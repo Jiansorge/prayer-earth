@@ -1,8 +1,22 @@
 # Joining Palms
 
+[![CI](https://github.com/Jiansorge/prayer-earth/actions/workflows/test.yml/badge.svg)](https://github.com/Jiansorge/prayer-earth/actions/workflows/test.yml)
+[![Live](https://img.shields.io/badge/live-joining--palms.app-DFB05C)](https://joining-palms.app)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
+
 **Pray with the whole world.** A multilingual, installable PWA where people of
 every tradition pray together on one living Earth — live at
 [`https://joining-palms.app`](https://joining-palms.app).
+
+## Preview
+
+> *Add a 5-sec screen recording to `public/demo.gif` and a screenshot to `public/screenshot.png` — they render here automatically.*
+
+![World view — the Earth glows as the world prays](public/screenshot.png)
+<!-- Demo GIF: capture with `npx cap open` or browser recording, save as public/demo.gif -->
+<!-- ![Demo — praying together](public/demo.gif) -->
+
+*No screenshot yet? The live site is the demo — open `https://joining-palms.app`, pick a tradition, press Pray, and watch the Earth glow.*
 
 - 🌍 A real-time 3D Earth that glows as the world prays (WebGL shaders, prayer
   lights, a twinkling golden aura).
@@ -25,6 +39,29 @@ every tradition pray together on one living Earth — live at
 | Voices | pre-rendered neural MP3s (`public/audio/`, `manifest.json`) + on-device TTS fallback |
 | Install/offline | service worker (`public/sw.js`), Web App Manifest |
 | CI | GitHub Actions: build + server tests + i18n audit on every push |
+
+## Project
+
+**Goal:** Manifest divine energy for the multiverse — a single, privacy-first place where anyone, of any tradition or none, can pray together and *see* the world light up.
+
+* **World view (3D globe):** `three.js` + custom GLSL — equirect 2048×1024 land mask (Natural Earth 110m), correct `lon` chirality, cloud + aurora shaders, 256 instanced prayer lights with precomputed `localDir` (one `drawElements` pass, 60fps). Collective glow = `pow(count/1M, 0.38)` in `src/store.js`. Offline PWA via `public/sw.js`.
+* **Prayers:** 15 traditions → 145+ prayers, code-split per spirit (`src/data/spirits/*.js` lazy via `loadSpirit()`), 12 locales with RTL, no copy-pasted copyrighted texts.
+* **Sync:** App never talks to DB — only to `sync-engine` (Workers + Durable Objects) via tiny `src/sync/` interface. Swap `SyncEngine`→`CfEngine` with no app change.
+
+## Private data
+
+This repo is **public and contains zero secrets** — safe to share for job applications.
+
+| What | How we handle it |
+|---|---|
+| **No accounts, no emails, no names** | Display name is user-chosen, stored only in `localStorage` (`prayer-earth-v1`), never required. |
+| **Location** | Only a coarse **1° grid cell** (`gridKey`) derived from `navigator.geolocation` or timezone fallback; precise lat/lng never leaves device. Raw IPs never logged — upgrade throttle hashes IP with SHA-256. |
+| **Prayer history** | `prayerCompletions`, `prayerDayStats` in `localStorage` only; anonymous counters merged via `mergeStats` (max-merge, no PII) to Durable Objects. |
+| **Network** | Strict CSP (no `unsafe-inline`/`unsafe-eval`), `nosniff`, `DENY` framing, referrer policy; all feed content via React escaping (no `dangerouslySetInnerHTML`). |
+| **Secrets** | None in repo — `VITE_SYNC_URL` is public `wss://joining-palms.app`, `wrangler.toml` vars are non-secret (`PROTOCOL_VERSION`, rate limits). Real tokens (`CF_API_TOKEN`, `ADMIN_KEY`) live in `wrangler secret` / GitHub Secrets, never committed. `.env*` is gitignored. |
+| **Compliance** | GDPR-friendly: data stays on device; anonymous aggregates kept forever in DO storage + optional KV backup `TOTALS_BACKUP` for disaster recovery. See `sync-engine/docs/SECURITY.md`. |
+
+> **For reviewers:** Clone, `npm install`, `npm start` — no keys needed. `npm run build` + `npm test` run fully offline.
 
 ## Development
 
