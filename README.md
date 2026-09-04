@@ -13,10 +13,10 @@ every tradition pray together on one living Earth — live at
 > *Add a 5-sec screen recording to `public/demo.gif` and a screenshot to `public/screenshot.png` — they render here automatically.*
 
 ![World view — the Earth glows as the world prays](public/screenshot.png)
-<!-- Demo GIF: capture with `npx cap open` or browser recording, save as public/demo.gif -->
-<!-- ![Demo — praying together](public/demo.gif) -->
 
-*No screenshot yet? The live site is the demo — open `https://joining-palms.app`, pick a tradition, press Pray, and watch the Earth glow.*
+![Demo — praying together, 5 sec](public/demo.gif)
+
+*Live is the demo — open `https://joining-palms.app`, pick a tradition, press Pray, and watch the Earth glow. Regenerate with `npm run capture:demo`.*
 
 - 🌍 A real-time 3D Earth that glows as the world prays (WebGL shaders, prayer
   lights, a twinkling golden aura).
