@@ -41,16 +41,17 @@ async function withPlaywright() {
   const firstPrayer = page.locator('.picker-row').first()
   if (await firstPrayer.count()) { await firstPrayer.click().catch(()=>{}); await page.waitForTimeout(1700) }
   const earthBtn = page.locator('nav button', { hasText: 'Earth' }).first()
-  if (await earthBtn.count()) { await earthBtn.click().catch(()=>{}); await page.waitForTimeout(1800) }
-  else { await page.evaluate(() => { try { window.__store?.getState?.()?.go?.('earth') } catch {} }); await page.waitForTimeout(1500) }
+  if (await earthBtn.count()) { await earthBtn.click().catch(()=>{}); await page.waitForTimeout(2400) }
+  else { await page.evaluate(() => { try { window.__store?.getState?.()?.go?.('earth') } catch {} }); await page.waitForTimeout(2200) }
   await context.close()
   await browser.close()
+  await new Promise(r => setTimeout(r, 1200))
   // Find the recorded webm
   const vids = readdirSync('public').filter(f => f.endsWith('.webm') && f.includes('page'))
   const webm = vids.length ? `public/${vids.sort().pop()}` : null
   if (webm && existsSync(webm)) {
     try {
-      execSync(`ffmpeg -y -i "${webm}" -t 5 -vf "fps=8,scale=640:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" "${outGif}"`, { stdio: 'inherit' })
+      execSync(`ffmpeg -y -i "${webm}" -t 7 -vf "fps=8,scale=640:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" "${outGif}"`, { stdio: 'inherit' })
       console.log(`✓ gif → ${outGif}`)
       // cleanup webm
       const { unlinkSync } = await import('node:fs')
