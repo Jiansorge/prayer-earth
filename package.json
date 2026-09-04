@@ -23,7 +23,8 @@
     "test:proof2": "node scripts/test-proof-multi.mjs",
     "test:prod": "node scripts/test-prod.mjs",
     "test:live": "node scripts/test-live.mjs",
-    "test:earth": "node scripts/test-earth.mjs"
+    "test:earth": "node scripts/test-earth.mjs",
+    "capture:demo": "node scripts/capture-demo.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.0",
