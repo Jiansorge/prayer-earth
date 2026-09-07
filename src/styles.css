@@ -2085,6 +2085,11 @@ html[dir='rtl'] .chooser-arrow.right {
 .legal-view .legal-page-section {
   margin-top: 22px;
 }
+.legal-view .legal-page-section:last-child {
+  margin-top: 36px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
 
 .legal-view h2,
 .legal-view h3 {
