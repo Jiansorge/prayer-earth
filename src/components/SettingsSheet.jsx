@@ -339,9 +339,14 @@ export default function SettingsSheet() {
 
         <label className="field-label section">{t('settings.donateLabel')}</label>
         <div className="field-hint">{t('settings.donateHint')}</div>
-        <a className="field-btn" href={DONATE_URL} target="_blank" rel="noopener noreferrer">
-          {t('settings.donateButton')}
-        </a>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <a className="field-btn" href={DONATE_URL} target="_blank" rel="noopener noreferrer" style={{ flex: 1 }}>
+            {t('settings.donateButton')}
+          </a>
+          <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Ko-fi — joiningpalms" title="Ko-fi — joiningpalms" style={{ flex: '0 0 auto', display: 'inline-flex' }}>
+            <img src="https://storage.ko-fi.com/cdn/kofi6.png?v=3" alt="Support on Ko-fi" style={{ height: 36, border: 0, display: 'block' }} loading="lazy" />
+          </a>
+        </div>
 
         <div className="field-divider" />
 

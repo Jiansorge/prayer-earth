@@ -87,7 +87,7 @@ export default function LegalPage() {
             <h3>10. {t('legal.pDpoTitle')}</h3>
             <p className="legal-p">{t('legal.pDpoBody')}</p>
           </section>
-          <section className="legal-page-section">
+          <section className="legal-page-section legal-contact">
             <h3>11. {t('legal.pContactTitle')}</h3>
             <p className="legal-p">
               {t('legal.pContactBody')}
