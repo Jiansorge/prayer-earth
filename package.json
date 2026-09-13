@@ -46,6 +46,7 @@
     "msedge-tts": "^2.0.7",
     "playwright": "^1.62.1",
     "pngjs": "^7.0.0",
+    "sharp": "^0.35.4",
     "vite": "^8.2.0"
   },
   "overrides": {
