@@ -355,8 +355,11 @@ const countedRef = useRef(false)
     keysRef.current.stopJob = stopJob
     keysRef.current.setLiveVolume = setLiveVolume
     const onKey = (e) => {
-      const tag = e.target && e.target.tagName
+      const tag = (e.target && e.target.tagName) || ''
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+      // Space must still activate focused buttons/links (share, favorite,
+      // close, …) — only take it over when focus is on the page background.
+      if (e.target && e.target.closest && e.target.closest('button, a, [role="button"]')) return
       if (e.code === 'Space') {
         e.preventDefault()
         keysRef.current.togglePlay()
@@ -625,7 +628,7 @@ const countedRef = useRef(false)
           className={`chooser-arrow left ${canLeft ? '' : 'off'}`}
           onClick={() => scrollChooser(-1)}
           disabled={!canLeft}
-          aria-label={t('prayer.back')}
+aria-label={t('prayer.prev')}
         >
           ‹
         </button>
@@ -658,7 +661,7 @@ const countedRef = useRef(false)
           className={`chooser-arrow right ${canRight ? '' : 'off'}`}
           onClick={() => scrollChooser(1)}
           disabled={!canRight}
-          aria-label={t('prayer.share')}
+          aria-label={t('prayer.next')}
         >
           ›
         </button>

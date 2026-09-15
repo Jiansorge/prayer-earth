@@ -4,7 +4,7 @@
   --bg-2: #13301e;
   --ink: #f1f5e8;
   --ink-dim: rgba(241, 245, 232, 0.74);
-  --ink-faint: rgba(241, 245, 232, 0.56);
+  --ink-faint: rgba(241, 245, 232, 0.7);
   --gold: #dfb05c;
   --gold-soft: #f3e2b0;
   --sky: #a9d6b8;
@@ -3093,6 +3093,21 @@ textarea:focus-visible {
   transition: background 0.25s var(--ease), border-color 0.25s var(--ease), transform 0.25s var(--ease);
 }
 
+.picker-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
 .picker-row:hover,
 .picker-row:active {
   background: rgba(255, 255, 255, 0.08);
@@ -3454,6 +3469,7 @@ button,
 .settings-label-btn,
 .swatch,
 .picker-row,
+.picker-open,
 .picker-fav,
 .feed-pill,
 .world-meter .wm-value,

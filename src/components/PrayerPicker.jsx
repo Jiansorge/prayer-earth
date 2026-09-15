@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITY_BY_ID, loadSpirit } from '../data/prayers.js'
 import { useT, prayerTitle } from '../i18n.js'
 import { stopPlayback } from '../playback.js'
+import useFocusTrap from '../shared/useFocusTrap.js'
 import Sparkles from './Sparkles.jsx'
 
 // Anonymous Gregorian Easter algorithm — exact Easter Sunday for any year >= 1583.
@@ -69,25 +70,29 @@ function PickerRow({ p, i, spirit, openPrayer, close, t }) {
   return (
     <div
       className="picker-row"
-      role="button"
-      tabIndex={0}
-      onClick={open}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          open()
-        }
+      onClick={(e) => {
+        // Whole-row tap/click convenience for mouse users; the inner button is
+        // what keyboard + screen-reader users activate. Ignore fav clicks.
+        if (e.target.closest && e.target.closest('.picker-fav')) return
+        open()
       }}
     >
-      <span className="picker-num">{i + 1}</span>
-      <span className="picker-main">
-        <span className="picker-row-title">{prayerTitle(t, p.id, p.title)}</span>
-        <span className="picker-row-sub">{p.langLabel}</span>
-      </span>
-      <span className="picker-meta">
-        <span className="picker-total" title={t('prayer.todayTitle')}>{t('prayer.today', { n: today.toLocaleString() })}</span>
-        <span className="picker-now" title={t('prayer.prayingNowTitle')}>{t('prayer.peoplePraying', { n: now })}</span>
-      </span>
+      <button
+        className="picker-open"
+        onClick={open}
+        aria-label={prayerTitle(t, p.id, p.title)}
+      >
+        <span className="picker-num">{i + 1}</span>
+        <span className="picker-main">
+          <span className="picker-row-title">{prayerTitle(t, p.id, p.title)}</span>
+          <span className="picker-row-sub">{p.langLabel}</span>
+        </span>
+        <span className="picker-meta">
+          <span className="picker-total" title={t('prayer.todayTitle')}>{t('prayer.today', { n: today.toLocaleString() })}</span>
+          <span className="picker-now" title={t('prayer.prayingNowTitle')}>{t('prayer.peoplePraying', { n: now })}</span>
+        </span>
+        <span className="picker-go">→</span>
+      </button>
       <button
         className={`picker-fav ${fav ? 'on' : ''}`}
         onClick={(e) => {
@@ -95,11 +100,11 @@ function PickerRow({ p, i, spirit, openPrayer, close, t }) {
           toggleFavorite(p.id)
         }}
         aria-label={t('prayer.favorite')}
+        aria-pressed={!!fav}
         title={t('prayer.favorite')}
       >
         {fav ? '★' : '☆'}
       </button>
-      <span className="picker-go">→</span>
     </div>
   )
 }
@@ -110,7 +115,7 @@ export default function PrayerPicker() {
   const close = useStore((s) => s.closePrayerPicker)
   const openPrayer = useStore((s) => s.openPrayer)
   const favorites = useStore((s) => s.favorites)
-  const sheetRef = useRef(null)
+  const sheetRef = useFocusTrap(!!spiritId)
   const t = useT()
   const [query, setQuery] = useState('')
   const [, reload] = useState(0)
@@ -125,9 +130,7 @@ export default function PrayerPicker() {
       if (e.key === 'Escape') close()
     }
     window.addEventListener('keydown', onKey)
-    const t2 = setTimeout(() => sheetRef.current && sheetRef.current.focus(), 40)
     return () => {
-      clearTimeout(t2)
       window.removeEventListener('keydown', onKey)
     }
   }, [spiritId, close])

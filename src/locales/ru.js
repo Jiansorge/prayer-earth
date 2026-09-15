@@ -76,7 +76,7 @@ export default {
   'prayer.softChant': 'тихий напев',
   'prayer.voiceUnavailable': 'Голос недоступен',
   'prayer.voiceNoteBody': 'Голос недоступен в этом браузере (защита от цифровых отпечатков может блокировать его, или голоса не установлены). Молитва продолжается тихим напевом. Чтобы услышать её, откройте приложение в Edge или Chrome либо разрешите речь для этого сайта.',
-  'prayer.close': 'Закрыть', 'prayer.back': 'Назад', 'prayer.share': 'Поделиться этой молитвой',
+  'prayer.close': 'Закрыть', 'prayer.back': 'Назад', 'prayer.share': 'Поделиться этой молитвой', 'prayer.prev': 'Предыдущая молитва', 'prayer.next': 'Следующая молитва',
   'prayer.favorite': 'Избранное',
   'prayer.peoplePraying': '{n} молятся',
   'prayer.prayingNowTitle': 'Люди, молящиеся этой молитвой сейчас',

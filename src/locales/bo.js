@@ -114,6 +114,8 @@ export default {
   'prayer.close': 'བཏོན་པ།',
   'prayer.back': 'ཕྱིར།',
   'prayer.share': 'གསོལ་བ་འདི་བརྒྱུད་སྤྲོད།',
+  'prayer.prev': 'སྔོན་གྱི་གསོལ་བ།',
+  'prayer.next': 'རྗེས་མའི་གསོལ་བ།',
   'prayer.favorite': 'ཐུགས་དམ་གྱི་ནང་འཛུད།',
   'prayer.peoplePraying': '{n} གསོལ་བ་འདེབས་བཞིན་ཡོད།',
   'prayer.prayingNowTitle': 'གསོལ་བ་འདི་ད་ལྟ་འདེབས་བཞིན་པའི་མི་ཚོ།',

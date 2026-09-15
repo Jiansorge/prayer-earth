@@ -77,7 +77,7 @@ export default {
   'prayer.softChant': '轻柔吟诵',
   'prayer.voiceUnavailable': '朗读不可用',
   'prayer.voiceNoteBody': '此浏览器中无法朗读（指纹保护可能阻止，或未安装声音）。祈祷将以轻柔吟诵继续。如需朗读，请在 Edge 或 Chrome 中打开，或允许本站使用语音。',
-  'prayer.close': '关闭', 'prayer.back': '返回', 'prayer.share': '分享这段祈祷',
+  'prayer.close': '关闭', 'prayer.back': '返回', 'prayer.share': '分享这段祈祷', 'prayer.prev': '上一篇祈祷', 'prayer.next': '下一篇祈祷',
   'prayer.favorite': '收藏',
   'prayer.peoplePraying': '{n} 人正在祈祷',
   'prayer.prayingNowTitle': '此刻正在祈祷这段祷文的人',

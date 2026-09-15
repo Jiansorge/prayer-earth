@@ -76,7 +76,7 @@ export default {
   'prayer.softChant': '부드러운 염송',
   'prayer.voiceUnavailable': '음성을 사용할 수 없어요',
   'prayer.voiceNoteBody': '이 브라우저에서는 음성을 사용할 수 없어요 (핑거프린팅 보호가 막거나 음성이 설치되지 않았습니다). 기도는 부드러운 염송으로 이어집니다. 낭독을 들으려면 Edge나 Chrome에서 열거나 이 사이트에 음성을 허용하세요.',
-  'prayer.close': '닫기', 'prayer.back': '뒤로', 'prayer.share': '이 기도 공유',
+  'prayer.close': '닫기', 'prayer.back': '뒤로', 'prayer.share': '이 기도 공유', 'prayer.prev': '이전 기도', 'prayer.next': '다음 기도',
   'prayer.favorite': '즐겨찾기',
   'prayer.peoplePraying': '{n}명이 기도 중',
   'prayer.prayingNowTitle': '지금 이 기도를 하는 사람들',

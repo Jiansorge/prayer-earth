@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useStore } from '../store.js'
 import { useT } from '../i18n.js'
+import useFocusTrap from '../shared/useFocusTrap.js'
 
 // A compact sheet listing every keyboard shortcut in the app. Opened with the
 // ? key, the "?" button in the nav, or from settings.
@@ -8,6 +9,7 @@ export default function KeyboardHelp() {
   const open = useStore((s) => s.keyboardHelpOpen)
   const setOpen = useStore((s) => s.setKeyboardHelpOpen)
   const t = useT()
+  const sheetRef = useFocusTrap(open)
 
   useEffect(() => {
     if (!open) return
@@ -31,7 +33,7 @@ export default function KeyboardHelp() {
   ]
   return (
     <div className="sheet-backdrop" onClick={() => setOpen(false)}>
-      <div className="sheet keys-sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('keys.title')}>
+      <div className="sheet keys-sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('keys.title')} tabIndex={-1} ref={sheetRef}>
         <div className="sheet-head">
           <div className="sheet-title-row">
             <h3 className="sheet-title">⌨ {t('keys.title')}</h3>

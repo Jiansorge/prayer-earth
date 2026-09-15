@@ -107,6 +107,8 @@ export default {
   'prayer.close': 'Schließen',
   'prayer.back': 'Zurück',
   'prayer.share': 'Dieses Gebet teilen',
+  'prayer.prev': 'Vorheriges Gebet',
+  'prayer.next': 'Nächstes Gebet',
   'prayer.favorite': 'Favorit',
   'prayer.peoplePraying': '{n} beten',
   'prayer.prayingNowTitle': 'Menschen beten dieses Gebet gerade',

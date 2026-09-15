@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useStore } from '../store.js'
 import { useT, LOCALES } from '../i18n.js'
 import { sanitizeName } from '../shared/profanity.js'
+import useFocusTrap from '../shared/useFocusTrap.js'
 
 const KEY = 'pe-onboarded'
 
@@ -15,7 +16,6 @@ export default function Onboarding() {
   const locale = useStore((s) => s.locale)
   const setLocale = useStore((s) => s.setLocale)
   const t = useT()
-  const cardRef = useRef(null)
   const [shown, setShown] = useState(() => {
     try {
       return !localStorage.getItem(KEY)
@@ -23,20 +23,16 @@ export default function Onboarding() {
       return false
     }
   })
+  const cardRef = useFocusTrap(shown && view === 'home')
 
-  // Bring keyboard focus into the dialog the moment it appears and let Escape
-  // close it, matching the picker sheet and settings dialog.
+  // Let Escape close the dialog.
   useEffect(() => {
     if (!shown) return
-    const t = requestAnimationFrame(() => {
-      cardRef.current && cardRef.current.focus()
-    })
     const onKey = (e) => {
       if (e.key === 'Escape') done()
     }
     window.addEventListener('keydown', onKey)
     return () => {
-      cancelAnimationFrame(t)
       window.removeEventListener('keydown', onKey)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
