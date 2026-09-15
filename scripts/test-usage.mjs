@@ -5,6 +5,7 @@
 import { spawn } from 'node:child_process'
 import WebSocket from 'ws'
 import { readFileSync } from 'node:fs'
+import { SPIRITUALITIES } from '../src/data/prayers.js'
 
 const APP = process.env.APP_URL || 'http://localhost:5173'
 const EDGE = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
@@ -141,13 +142,13 @@ await nav(APP)
 
 ok('home renders title', await c.waitFor(`document.body.innerText.includes('Pray with the whole world')`))
 ok(
-  '16 spirituality tiles render',
-  (await c.eval(`document.querySelectorAll('.tile').length`)) === 15,
-  'tiles=16'
+  'all spirituality tiles render',
+  (await c.eval(`document.querySelectorAll('.tile').length`)) === SPIRITUALITIES.length,
+  `tiles=${SPIRITUALITIES.length}`
 )
 ok(
   'tiles show per-spirit counts',
-  (await c.eval(`document.querySelectorAll('.tile-praying').length`)) === 15
+  (await c.eval(`document.querySelectorAll('.tile-praying').length`)) === SPIRITUALITIES.length
 )
 
 // --- settings sheet ---
