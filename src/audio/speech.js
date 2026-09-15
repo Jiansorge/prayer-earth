@@ -70,32 +70,10 @@ class SpeechEngine {
         )
       }
     }
-    // After the machine sleeps / the tab is hidden while a prayer is playing,
-    // the audio engine dies silently. We don't auto-restart on return (that
-    // would resume prayer without the user asking) — instead we pause on hide so
-    // the prayer stays silent until they press play, and resume() then revives
-    // the dead engine with a fresh phrase.
-    this.bindVisibility()
-  }
-
-  // Pause playback when the tab is hidden (sleep / switching away). This keeps
-  // the prayer silent until the user explicitly presses play again, and —
-  // crucially — corrects the state after a sleep so the play button revives the
-  // dead engine instead of doing nothing. Active-play hiccups are still
-  // recovered by the stall guard / kicker watchdog (they only act while not
-  // paused).
-  bindVisibility() {
-    if (this._visBound) return
-    this._visBound = true
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) return
-      const j = this.job
-      const s = useStore.getState()
-      if (j && j.active && !j.paused && s.playing && !s.paused) {
-        this.pause()
-        useStore.setState({ paused: true, praying: false })
-      }
-    })
+    // The prayer keeps playing while the tab is hidden or you switch to another
+    // tab/window — no pause on visibilitychange. If the machine sleeps anyway
+    // and the audio engine dies silently, the kicker watchdog revives it with a
+    // fresh phrase the moment the tab is visible again (see primeKicker).
   }
 
   // Ask the server whether the Google TTS proxy is available (once).
