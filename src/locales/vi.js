@@ -113,6 +113,8 @@ export default {
   'prayer.close': 'Đóng',
   'prayer.back': 'Quay lại',
   'prayer.share': 'Chia sẻ lời cầu nguyện này',
+  'prayer.prev': 'Lời cầu nguyện trước',
+  'prayer.next': 'Lời cầu nguyện tiếp theo',
   'prayer.favorite': 'Yêu thích',
   'prayer.peoplePraying': '{n} đang cầu nguyện',
   'prayer.prayingNowTitle': 'Người đang cầu nguyện lời này ngay bây giờ',

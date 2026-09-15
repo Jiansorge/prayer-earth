@@ -76,7 +76,7 @@ export default {
   'prayer.softChant': 'やわらかな詠唱',
   'prayer.voiceUnavailable': '音声を利用できません',
   'prayer.voiceNoteBody': 'このブラウザでは音声を利用できません（フィンガープリンティング保護が妨げるか、音声がインストールされていません）。祈りはやわらかな詠唱として続きます。読み上げを聞くには、Edge か Chrome で開くか、このサイトへの音声を許可してください。',
-  'prayer.close': '閉じる', 'prayer.back': '戻る', 'prayer.share': 'この祈りを共有',
+  'prayer.close': '閉じる', 'prayer.back': '戻る', 'prayer.share': 'この祈りを共有', 'prayer.prev': '前の祈り', 'prayer.next': '次の祈り',
   'prayer.favorite': 'お気に入り',
   'prayer.peoplePraying': '{n} 人が祈っています',
   'prayer.prayingNowTitle': 'いまこの祈りをしている人',

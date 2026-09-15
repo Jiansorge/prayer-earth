@@ -74,6 +74,16 @@ const TTS_VOICES = {
 // Only same-origin callers are allowed and each IP is rate-limited, so a
 // runaway client can never run up the TTS bill.
 const ttsHits = new Map()
+function clientIp(req) {
+  // Behind Cloudflare/Render the socket is the proxy; read forwarding headers
+  // (comma-separated) so per-client limits actually key on the visitor.
+  return (
+    (req.headers['cf-connecting-ip'] || '').trim() ||
+    (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+    req.socket.remoteAddress ||
+    'unknown'
+  )
+}
 function ttsLimited(ip) {
   const now = Date.now()
   const arr = (ttsHits.get(ip) || []).filter((t) => now - t < 60000)
@@ -83,6 +93,58 @@ function ttsLimited(ip) {
   return false
 }
 
+// Defensive pre-merge cleaning for the anonymous sync path (mirrors the
+// Cloudflare worker's sanitizeStats): drop prototype-pollution keys, clamp to
+// known fields, and reject non-finite numbers so NaN can never persist in
+// people.json. Also cap the day maps so a spoofed calendar can't bloat it.
+const DANGEROUS = new Set(['__proto__', 'constructor', 'prototype'])
+const DAY_RE = /^\d{4}-\d{2}-\d{2}$/
+const finiteNum = (v) => typeof v === 'number' && Number.isFinite(v)
+function cleanMap(map) {
+  const out = {}
+  for (const [k, v] of Object.entries(map || {})) {
+    if (DANGEROUS.has(k)) continue
+    if (!finiteNum(v)) continue
+    if (Object.keys(out).length >= 1000) break
+    out[k] = v
+  }
+  return out
+}
+function cleanDayMap(map) {
+  const out = {}
+  for (const [d, m] of Object.entries(map || {})) {
+    if (DANGEROUS.has(d)) continue
+    if (!DAY_RE.test(d)) continue
+    const cleaned = cleanMap(m)
+    if (Object.keys(cleaned).length) out[d] = cleaned
+    if (Object.keys(out).length >= 2000) break
+  }
+  return out
+}
+function sanitizeStats(stats) {
+  if (!stats || typeof stats !== 'object' || Array.isArray(stats)) return {}
+  const now = new Date()
+  const maxDay = (() => {
+    const m = new Date(now)
+    m.setDate(now.getDate() + 1)
+    return `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}-${String(
+      m.getDate()
+    ).padStart(2, '0')}`
+  })()
+  const out = {}
+  for (const [k, v] of Object.entries(stats)) {
+    if (DANGEROUS.has(k)) continue
+    if (k === 'prayerCompletions') out[k] = cleanMap(v)
+    else if (k === 'prayerDayCompletions' || k === 'prayerDayStats') out[k] = cleanDayMap(v)
+    else if (k === 'localPrayerSeconds' || k === 'streak' || k === 'bestStreak') {
+      if (finiteNum(v)) out[k] = v
+    } else if (k === 'lastPrayedDay') {
+      if (typeof v === 'string' && DAY_RE.test(v) && v <= maxDay) out[k] = v
+    }
+  }
+  return out
+}
+
 async function handleTTS(urlPath, req, res) {
   for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v)
   if (req.method !== 'GET') {
@@ -90,7 +152,17 @@ async function handleTTS(urlPath, req, res) {
     res.end()
     return
   }
-  if (ttsLimited(req.socket.remoteAddress || 'unknown')) {
+  // The claim at the top of this file is only true if we enforce it: a paid
+  // Google TTS call must never be reachable cross-site. Same check the WS
+  // server uses (dev-localhost allowed), and rate-limit on the real client IP
+  // behind a proxy, not the one-socket bucket everyone would share.
+  if (!originAllowed(req)) {
+    res.writeHead(403)
+    res.end('forbidden')
+    return
+  }
+  const ip = clientIp(req)
+  if (ttsLimited(ip)) {
     res.writeHead(429)
     res.end('too many requests')
     return
@@ -365,11 +437,20 @@ function countActiveUsers() {
   const weekAgo = new Date(now)
   weekAgo.setDate(now.getDate() - 7)
   const weekKey = day(weekAgo)
+  // A valid day is a YYYY-MM-DD string no later than tomorrow (UTC+14 law); a
+  // spoofed '9999-12-31' must never inflate the weekly rollup forever.
+  const maxDay = (() => {
+    const m = new Date(now)
+    m.setDate(now.getDate() + 1)
+    return day(m)
+  })()
+  const okDay = (d) => typeof d === 'string' && DAY_RE.test(d) && d <= maxDay
   for (const p of Object.values(peopleSync)) {
     const days = p.prayerDayCompletions || {}
-    if (p.lastPrayedDay === todayKey || days[todayKey]) today++
+    if (okDay(p.lastPrayedDay) && p.lastPrayedDay === todayKey) today++
     for (const d of Object.keys(days)) {
-      if (d >= weekKey) {
+      if (okDay(d) && d === todayKey) today++
+      if (okDay(d) && d >= weekKey) {
         week++
         break
       }
@@ -446,8 +527,13 @@ setInterval(() => {
   ).padStart(2, '0')}`
   let changed = false
   for (const [id, p] of Object.entries(peopleSync)) {
+    // Only real calendar days count; a spoofed '9999-12-31' must not keep a
+    // blob alive (or block pruning) forever.
     const days = Object.keys(p.prayerDayCompletions || {})
-    const newest = days.sort().at(-1) || p.lastPrayedDay || ''
+      .filter((d) => typeof d === 'string' && DAY_RE.test(d))
+      .sort()
+    const last = p.lastPrayedDay
+    const newest = (days.at(-1) || (last && DAY_RE.test(last) ? last : '') || '')
     if (!newest || newest < cutoff) {
       delete peopleSync[id]
       changed = true
@@ -523,15 +609,12 @@ wss.on('connection', (ws, req) => {
         // the merged result so every device converges on the same totals.
         const id = typeof msg.anonId === 'string' ? msg.anonId.slice(0, 64) : ''
         if (id) {
-          // Cap the incoming payload so an abusive client can't bloat memory
-          // or the people.json file with unbounded nested objects.
-          let stats = msg.stats || {}
-          try {
-            if (JSON.stringify(stats).length > 250000) stats = {}
-          } catch {
-            stats = {}
-          }
-          const merged = mergeStats(peopleSync[id], stats)
+          // Sanitize before merging: prototype-pollution keys, non-finite
+          // values, malformed/future calendar keys and unbounded maps are all
+          // stripped so a hostile client can't poison people.json or defeat
+          // the retention prune with a '9999-12-31' day.
+          const stats = sanitizeStats(msg.stats)
+          const merged = mergeStats(peopleSync[id] || {}, stats)
           peopleSync[id] = merged
           savePeople()
           ws.send(JSON.stringify({ type: 'sync', stats: merged }))

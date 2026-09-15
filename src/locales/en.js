@@ -120,6 +120,8 @@ export default {
   'prayer.close': 'Dismiss',
   'prayer.back': 'Back',
   'prayer.share': 'Share this prayer',
+  'prayer.prev': 'Previous prayer',
+  'prayer.next': 'Next prayer',
   'prayer.favorite': 'Favorite',
   'prayer.peoplePraying': '{n} praying',
   'prayer.joinedYou': '✶ {n} praying this with you now',

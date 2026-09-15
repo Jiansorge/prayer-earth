@@ -107,6 +107,8 @@ export default {
   'prayer.close': 'बंद करें',
   'prayer.back': 'वापस',
   'prayer.share': 'यह प्रार्थना साझा करें',
+  'prayer.prev': 'पिछली प्रार्थना',
+  'prayer.next': 'अगली प्रार्थना',
   'prayer.favorite': 'पसंदीदा',
   'prayer.peoplePraying': '{n} प्रार्थना कर रहे हैं',
   'prayer.prayingNowTitle': 'जो लोग अभी यह प्रार्थना कर रहे हैं',

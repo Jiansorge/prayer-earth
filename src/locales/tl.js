@@ -113,6 +113,8 @@ export default {
   'prayer.close': 'Isara',
   'prayer.back': 'Bumalik',
   'prayer.share': 'Ibahagi ang panalanging ito',
+  'prayer.prev': 'Nakaraang panalangin',
+  'prayer.next': 'Susunod na panalangin',
   'prayer.favorite': 'Paborito',
   'prayer.peoplePraying': '{n} ang nananalangin',
   'prayer.prayingNowTitle': 'Mga taong nananalangin dito ngayon',

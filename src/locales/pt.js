@@ -76,7 +76,7 @@ export default {
   'prayer.softChant': 'canto suave',
   'prayer.voiceUnavailable': 'Voz indisponível',
   'prayer.voiceNoteBody': 'A voz falada não está disponível neste navegador (a proteção contra impressão digital pode bloqueá-la, ou nenhuma voz está instalada). A oração continua como um canto suave. Para ouvi-la, abra o app no Edge ou Chrome, ou permita a fala para este site.',
-  'prayer.close': 'Fechar', 'prayer.back': 'Voltar', 'prayer.share': 'Compartilhar esta oração',
+  'prayer.close': 'Fechar', 'prayer.back': 'Voltar', 'prayer.share': 'Compartilhar esta oração', 'prayer.prev': 'Oração anterior', 'prayer.next': 'Próxima oração',
   'prayer.favorite': 'Favorito',
   'prayer.peoplePraying': '{n} rezando',
   'prayer.prayingNowTitle': 'Pessoas rezando esta oração agora',

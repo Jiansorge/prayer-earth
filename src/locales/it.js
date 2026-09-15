@@ -77,7 +77,7 @@ export default {
   'prayer.softChant': 'canto dolce',
   'prayer.voiceUnavailable': 'Voce non disponibile',
   'prayer.voiceNoteBody': 'La voce parlata non è disponibile in questo browser (la protezione dalle impronte digitali può bloccarla, o nessuna voce è installata). La preghiera continua come un canto dolce. Per ascoltarla, apri l\u2019app in Edge o Chrome, o consenti la voce per questo sito.',
-  'prayer.close': 'Chiudi', 'prayer.back': 'Indietro', 'prayer.share': 'Condividi questa preghiera',
+  'prayer.close': 'Chiudi', 'prayer.back': 'Indietro', 'prayer.share': 'Condividi questa preghiera', 'prayer.prev': 'Preghiera precedente', 'prayer.next': 'Preghiera successiva',
   'prayer.favorite': 'Preferito',
   'prayer.peoplePraying': '{n} pregano',
   'prayer.prayingNowTitle': 'Persone che pregano questa preghiera ora',

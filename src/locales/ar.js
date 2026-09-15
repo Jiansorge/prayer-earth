@@ -76,7 +76,7 @@ export default {
   'prayer.softChant': 'ترتيل هادئ',
   'prayer.voiceUnavailable': 'الصوت غير متاح',
   'prayer.voiceNoteBody': 'الصوت المنطوق غير متاح في هذا المتصفح (قد تمنعه حماية بصمة الجهاز، أو لا توجد أصوات مثبّتة). تستمر الصلاة كترتيل هادئ. لتسمعها مقروءة، افتح التطبيق في Edge أو Chrome، أو اسمح بالكلام لهذا الموقع.',
-  'prayer.close': 'إغلاق', 'prayer.back': 'رجوع', 'prayer.share': 'مشاركة هذه الصلاة',
+  'prayer.close': 'إغلاق', 'prayer.back': 'رجوع', 'prayer.share': 'مشاركة هذه الصلاة', 'prayer.prev': 'الصلاة السابقة', 'prayer.next': 'الصلاة التالية',
   'prayer.favorite': 'مفضل',
   'prayer.peoplePraying': '{n} يصلّون',
   'prayer.prayingNowTitle': 'من يصلّون هذه الصلاة الآن',

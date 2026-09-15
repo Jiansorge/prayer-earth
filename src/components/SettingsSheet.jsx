@@ -5,6 +5,7 @@ import { ambient } from '../audio/ambience.js'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
 import { useT, LOCALES, prayerTitle } from '../i18n.js'
 import { sanitizeName } from '../shared/profanity.js'
+import useFocusTrap from '../shared/useFocusTrap.js'
 import QRCard from './QRCard.jsx'
 import LegalSheet from './LegalSheet.jsx'
 import { canInstall, promptInstall } from '../shared/installPrompt.js'
@@ -45,7 +46,7 @@ export default function SettingsSheet() {
   const [installed, setInstalled] = useState(false)
   const [showIosTip, setShowIosTip] = useState(false)
   const previewTimer = useRef(null)
-  const sheetRef = useRef(null)
+  const sheetRef = useFocusTrap(open)
 
   const spirit = SPIRITUALITY_BY_ID[spiritId]
   const prayer = spirit?.prayers?.find((p) => p.id === prayerId) || null
