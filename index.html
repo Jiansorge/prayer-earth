@@ -73,18 +73,7 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="preconnect" href="https://static.cloudflareinsights.com" crossorigin />
-    <script>
-      // Cloudflare Web Analytics, embedded manually so it never blocks the
-      // critical path. Skipped under Lighthouse (auto-audit crawlers) so the
-      // beacon fetch doesn't surface as a console error.
-      if (!/Chrome-Lighthouse|HeadlessChrome/i.test(navigator.userAgent)) {
-        const s = document.createElement('script')
-        s.type = 'module'
-        s.src = 'https://static.cloudflareinsights.com/beacon.min.js'
-        s.setAttribute('data-cf-beacon', '{"token": "8765c1887bb54b48928d93c3faa8e66c"}')
-        document.head.appendChild(s)
-      }
-    </script>
+    <script defer src="/analytics-loader.js"></script>
     <style>
       /* Boot splash: shown the instant the page paints, faded out by React. */
       #boot {
