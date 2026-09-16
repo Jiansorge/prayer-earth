@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { useBackdropCanvas } from './useBackdropCanvas.js'
+import { useBackdropCanvas, fitCanvas } from './useBackdropCanvas.js'
 
 // A mystical night backdrop, deep indigo space, drifting nebula glows,
 // aurora veils, twinkling stars, a soft glowing orb, and rising motes of light.
@@ -63,11 +63,7 @@ const gold = Array.from({ length: 5 }, () => ({
 function drawMystic(ctx, dpr, t, reduced) {
   const w = window.innerWidth
   const h = window.innerHeight
-  const canvas = ctx.canvas
-  canvas.width = Math.round(w * dpr)
-  canvas.height = Math.round(h * dpr)
-  canvas.style.width = w + 'px'
-  canvas.style.height = h + 'px'
+  fitCanvas(ctx.canvas, w, h, dpr)
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.clearRect(0, 0, w, h)
 

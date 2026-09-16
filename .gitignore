@@ -16,6 +16,7 @@ server/people-test.json
 
 # local QA captures
 qa-shots/
+dev-server.log
 
 # aider (local pair-programming tool) artifacts
 .aider*

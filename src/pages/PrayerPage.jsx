@@ -536,7 +536,7 @@ const countedRef = useRef(false)
   if (!prayer) return (
     <div className="view" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
       <div className="earth-loading-inner">
-        <img className="earth-loading-icon" src="/icons/icon-prayer.webp" alt="" />
+        <img className="earth-loading-icon" src="/icons/icon-prayer-256.webp" alt="" />
         <p className="subtitle" style={{ marginTop: 16 }}>{t('picker.loading')}</p>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { useBackdropCanvas } from './useBackdropCanvas.js'
+import { useBackdropCanvas, fitCanvas } from './useBackdropCanvas.js'
 
 // A deep-space backdrop, a dark cosmos with twinkling stars, a drift of
 // nebula light, a faint Milky Way band, and a couple of distant planets.
@@ -36,11 +36,7 @@ const nebula = [
 function drawSpace(ctx, dpr, t, reduced) {
   const w = window.innerWidth
   const h = window.innerHeight
-  const canvas = ctx.canvas
-  canvas.width = Math.round(w * dpr)
-  canvas.height = Math.round(h * dpr)
-  canvas.style.width = w + 'px'
-  canvas.style.height = h + 'px'
+  fitCanvas(ctx.canvas, w, h, dpr)
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.clearRect(0, 0, w, h)
 

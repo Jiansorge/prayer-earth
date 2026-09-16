@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { useBackdropCanvas } from './useBackdropCanvas.js'
+import { useBackdropCanvas, fitCanvas } from './useBackdropCanvas.js'
 
 // A bright, airy dawn — soft warm sky, a glowing rising sun, drifting clouds,
 // gentle light, a calm sea at the horizon, and a few birds. Offers a light,
@@ -42,11 +42,7 @@ const motes = Array.from({ length: 30 }, () => ({
 function drawDawn(ctx, dpr, t, reduced) {
   const w = window.innerWidth
   const h = window.innerHeight
-  const canvas = ctx.canvas
-  canvas.width = Math.round(w * dpr)
-  canvas.height = Math.round(h * dpr)
-  canvas.style.width = w + 'px'
-  canvas.style.height = h + 'px'
+  fitCanvas(ctx.canvas, w, h, dpr)
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.clearRect(0, 0, w, h)
 

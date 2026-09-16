@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { getScene } from './Scenery.jsx'
+import { fitCanvas } from './useBackdropCanvas.js'
 
 // A rich, painterly nature backdrop rendered to a canvas, layered skies,
 // glowing sun or moon, drifting clouds, mist, mountain ridges, and pines.
@@ -257,10 +258,7 @@ export default function NatureBackdrop() {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
       const w = window.innerWidth
       const h = window.innerHeight
-      canvas.width = Math.round(w * dpr)
-      canvas.height = Math.round(h * dpr)
-      canvas.style.width = w + 'px'
-      canvas.style.height = h + 'px'
+      fitCanvas(canvas, w, h, dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       drawScene(ctx, w, h, getScene(), Date.now() / 1000)
       raf = 0

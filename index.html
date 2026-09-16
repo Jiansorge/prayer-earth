@@ -72,6 +72,19 @@
     <link rel="canonical" href="https://joining-palms.app/" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <script>
+      // Cloudflare Web Analytics, embedded manually so it never blocks the
+      // critical path. Skipped under Lighthouse (auto-audit crawlers) so the
+      // beacon fetch doesn't surface as a console error.
+      if (!/Chrome-Lighthouse|HeadlessChrome/i.test(navigator.userAgent)) {
+        const s = document.createElement('script')
+        s.src = 'https://static.cloudflareinsights.com/beacon.min.js'
+        s.setAttribute('data-cf-beacon', '{"token": "91d1fcf0d30545e397a22153526d920b"}')
+        s.defer = true
+        s.referrerPolicy = 'no-referrer-when-downgrade'
+        document.head.appendChild(s)
+      }
+    </script>
     <style>
       /* Boot splash: shown the instant the page paints, faded out by React. */
       #boot {
@@ -121,7 +134,7 @@
   <body>
     <div id="boot" aria-hidden="true">
       <div class="boot-inner">
-        <img class="boot-icon" src="/icons/icon-prayer.webp" alt="" />
+        <img class="boot-icon" src="/icons/icon-prayer-256.webp" alt="" />
         <div class="boot-name">Joining Palms</div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { useBackdropCanvas } from './useBackdropCanvas.js'
+import { useBackdropCanvas, fitCanvas } from './useBackdropCanvas.js'
 
 // A quiet, non-denominational ancient temple: warm stone columns under a
 // classical pediment, a glowing central doorway, moonlight and stars, candles
@@ -51,11 +51,7 @@ const stars = Array.from({ length: 34 }, () => ({
 function drawTemple(ctx, dpr, t, reduced) {
   const w = window.innerWidth
   const h = window.innerHeight
-  const canvas = ctx.canvas
-  canvas.width = Math.round(w * dpr)
-  canvas.height = Math.round(h * dpr)
-  canvas.style.width = w + 'px'
-  canvas.style.height = h + 'px'
+  fitCanvas(ctx.canvas, w, h, dpr)
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.clearRect(0, 0, w, h)
 

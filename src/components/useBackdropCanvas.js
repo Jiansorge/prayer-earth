@@ -5,6 +5,23 @@ import { useEffect } from 'react'
 // and draws a single static frame for people who prefer reduced motion.
 //
 // draw(ctx, dpr, t, reduced) is called every frame; t is seconds.
+
+const buffered = new WeakMap() // canvas -> {w, h} in CSS pixels
+
+// Size a full-viewport canvas WITHOUT forcing work on every frame. Assigning
+// canvas.width/height resets the backing store and invalidates layout (a
+// forced reflow cost that previously ran 60×/second). Only touch the canvas
+// when the CSS-pixel size really changed; draw() can read `w`/`h` freely.
+export function fitCanvas(canvas, w, h, dpr) {
+  const prev = buffered.get(canvas)
+  if (prev && prev.w === w && prev.h === h) return
+  canvas.width = Math.round(w * dpr)
+  canvas.height = Math.round(h * dpr)
+  canvas.style.width = w + 'px'
+  canvas.style.height = h + 'px'
+  buffered.set(canvas, { w, h })
+}
+
 export function useBackdropCanvas(ref, draw) {
   useEffect(() => {
     const canvas = ref.current

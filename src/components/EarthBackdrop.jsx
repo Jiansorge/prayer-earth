@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { useStore } from '../store.js'
 import { EarthScene } from '../three/EarthScene.js'
+import { fitCanvas } from './useBackdropCanvas.js'
 
 // A quiet, translucent Earth behind the prayer view. Its coastlines glow a
 // little brighter as collective prayer accumulates, it rotates slowly, and it
@@ -19,10 +20,9 @@ function drawStaticStars(canvas) {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
-  const w = canvas.clientWidth || window.innerWidth
-  const h = canvas.clientHeight || window.innerHeight
-  canvas.width = Math.round(w * dpr)
-  canvas.height = Math.round(h * dpr)
+  const w = window.innerWidth
+  const h = window.innerHeight
+  fitCanvas(canvas, w, h, dpr)
   ctx.scale(dpr, dpr)
   ctx.clearRect(0, 0, w, h)
   const count = w * h > 900000 ? 420 : 260
