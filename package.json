@@ -7,7 +7,7 @@
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/inline-css.mjs",
     "build:capacitor": "vite build --mode capacitor",
     "cap:sync": "npm run build:capacitor && npx cap sync",
     "preview": "vite preview",
@@ -19,6 +19,7 @@
     "deploy": "node ../sync-engine/scripts/deploy-app.mjs",
     "deploy:dry": "node ../sync-engine/scripts/deploy-app.mjs --dry-run",
     "test": "node scripts/test-server.mjs && node scripts/test-usage.mjs",
+    "test:ci": "node scripts/test-usage-ci.mjs",
     "test:proof": "node scripts/test-proof.mjs",
     "test:proof2": "node scripts/test-proof-multi.mjs",
     "test:prod": "node scripts/test-prod.mjs",

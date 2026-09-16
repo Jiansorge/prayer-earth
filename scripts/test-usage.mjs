@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs'
 import { SPIRITUALITIES } from '../src/data/prayers.js'
 
 const APP = process.env.APP_URL || 'http://localhost:5173'
-const EDGE = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
+const EDGE = process.env.PE_EDGE || 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
 const DEBUG_PORT = 9223
 const PROFILE = `${process.env.TEMP}\\pe-usage-${Date.now()}`
 const log = (...a) => console.log('[usage]', ...a)
@@ -24,6 +24,18 @@ const ok = (name, cond, extra = '') => {
 
 // Watchdog: headless Edge can freeze on Windows; never let this suite hang the
 // regression run. Force-exit after 4 minutes regardless.
+// Preflight: the suite drives a live app, so exit fast with a clear message if
+// the dev server isn't up (rather than a 4-minute watchdog timeout that reads
+// as a hundred cascading FAILs).
+try {
+  const resp = await fetch(APP)
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+} catch (e) {
+  console.error(`[usage] APP not reachable at ${APP} (${e.message}).`)
+  console.error('[usage] Start it first: `npm start` (server + vite on :5173), then re-run.')
+  process.exit(2)
+}
+
 const WATCHDOG = setTimeout(() => {
   console.error('[usage] TIMEOUT — killing hung run')
   try { edge.kill() } catch {}
@@ -37,6 +49,7 @@ const edge = spawn(EDGE, [
   '--mute-audio',
   '--autoplay-policy=no-user-gesture-required',
   '--no-first-run',
+  ...(process.platform !== 'win32' ? ['--no-sandbox'] : []),
   `--user-data-dir=${PROFILE}`,
   `--remote-debugging-port=${DEBUG_PORT}`,
   'about:blank'
