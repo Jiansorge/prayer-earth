@@ -78,10 +78,9 @@
       // beacon fetch doesn't surface as a console error.
       if (!/Chrome-Lighthouse|HeadlessChrome/i.test(navigator.userAgent)) {
         const s = document.createElement('script')
+        s.type = 'module'
         s.src = 'https://static.cloudflareinsights.com/beacon.min.js'
         s.setAttribute('data-cf-beacon', '{"token": "8765c1887bb54b48928d93c3faa8e66c"}')
-        s.defer = true
-        s.referrerPolicy = 'no-referrer-when-downgrade'
         document.head.appendChild(s)
       }
     </script>
