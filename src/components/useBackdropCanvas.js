@@ -4,7 +4,8 @@ import { useEffect } from 'react'
 // canvas, runs a requestAnimationFrame loop, pauses when the tab is hidden,
 // and draws a single static frame for people who prefer reduced motion.
 //
-// draw(ctx, dpr, t, reduced) is called every frame; t is seconds.
+// draw(ctx, dpr, t, reduced, size) is called every frame; t is seconds and
+// size is a cached {w, h} (CSS px) that only changes on window resize.
 
 const buffered = new WeakMap() // canvas -> {w, h} in CSS pixels
 
@@ -35,6 +36,12 @@ export function useBackdropCanvas(ref, draw) {
     const low = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4
     const dpr = Math.min(window.devicePixelRatio || 1, low ? 1 : 1.5)
 
+    // Cache the viewport once and re-measure only on resize. The animation
+    // loop must NEVER query window layout props — that forces a sync layout
+    // on a 60fps hot path.
+    const size = { w: window.innerWidth || 1, h: window.innerHeight || 1 }
+    fitCanvas(canvas, size.w, size.h, dpr)
+
     let raf = 0
     let frame = 0
     const loop = (t) => {
@@ -43,13 +50,14 @@ export function useBackdropCanvas(ref, draw) {
         raf = requestAnimationFrame(loop)
         return
       }
-      draw(ctx, dpr, t / 1000, reduced)
+      draw(ctx, dpr, t / 1000, reduced, size)
       if (!reduced) raf = requestAnimationFrame(loop)
     }
-    if (reduced) draw(ctx, dpr, 2.5, reduced)
-    else raf = requestAnimationFrame(loop)
 
     const onResize = () => {
+      size.w = window.innerWidth || 1
+      size.h = window.innerHeight || 1
+      fitCanvas(canvas, size.w, size.h, dpr)
       if (!raf) raf = requestAnimationFrame(loop)
     }
     const onVis = () => {
@@ -57,6 +65,8 @@ export function useBackdropCanvas(ref, draw) {
       raf = 0
       if (!document.hidden && !reduced) raf = requestAnimationFrame(loop)
     }
+    if (reduced) draw(ctx, dpr, 2.5, reduced, size)
+    else raf = requestAnimationFrame(loop)
     window.addEventListener('resize', onResize)
     document.addEventListener('visibilitychange', onVis)
     return () => {

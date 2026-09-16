@@ -117,7 +117,7 @@ export default function HomePage() {
       <div className="row" style={{ marginTop: 4 }}>
         <div>
           <div className="home-title">
-            <img className="home-title-icon" src="/icons/icon-prayer-256.webp" alt="" />
+            <img className="home-title-icon" src="/icons/icon-prayer-128.webp" srcSet="/icons/icon-prayer-64.webp 64w, /icons/icon-prayer-128.webp 128w, /icons/icon-prayer-256.webp 256w" sizes="46px" alt="" />
             <h1 className="page-title">
               {t('home.title')}
             </h1>

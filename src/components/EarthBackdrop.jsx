@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { useStore } from '../store.js'
 import { EarthScene } from '../three/EarthScene.js'
-import { fitCanvas } from './useBackdropCanvas.js'
 
 // A quiet, translucent Earth behind the prayer view. Its coastlines glow a
 // little brighter as collective prayer accumulates, it rotates slowly, and it
@@ -10,39 +9,7 @@ import { fitCanvas } from './useBackdropCanvas.js'
 //
 // Low-power devices (or reduced-motion) get a static starfield instead of the
 // live WebGL scene: the backdrop render loop + audio together freeze old
-// devices the moment play is pressed. The static stars are drawn once onto a
-// plain 2D canvas — no animation loop, no WebGL — so even a slow phone sees a
-// quiet night sky with the earth's glow, just frozen.
-// Draw a fixed field of stars (a few warmer ones among cool white) onto a 2D
-// canvas once. Re-drawn only on resize; never animated. Deterministic enough
-// per draw, cheap on every device.
-function drawStaticStars(canvas) {
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
-  const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
-  const w = window.innerWidth
-  const h = window.innerHeight
-  fitCanvas(canvas, w, h, dpr)
-  ctx.scale(dpr, dpr)
-  ctx.clearRect(0, 0, w, h)
-  const count = w * h > 900000 ? 420 : 260
-  let seed = 7
-  const rnd = () => {
-    seed = (seed * 1103515245 + 12345) & 0x7fffffff
-    return seed / 0x7fffffff
-  }
-  for (let i = 0; i < count; i++) {
-    const x = rnd() * w
-    const y = rnd() * h
-    const r = 0.5 + rnd() * 1.1
-    const warm = rnd() < 0.14
-    const a = 0.25 + rnd() * 0.55
-    ctx.fillStyle = warm ? `rgba(255, 236, 200, ${a})` : `rgba(210, 226, 255, ${a})`
-    ctx.beginPath()
-    ctx.arc(x, y, r, 0, Math.PI * 2)
-    ctx.fill()
-  }
-}
+// devices the moment play is pressed.
 
 export default function EarthBackdrop() {
   const mountRef = useRef(null)

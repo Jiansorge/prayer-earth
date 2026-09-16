@@ -71,7 +71,7 @@ export default function EarthPage() {
       {!ready && (
         <div className="earth-loading-overlay">
           <div className="earth-loading-inner">
-            <img className="earth-loading-icon" src="/icons/icon-prayer-256.webp" alt="" />
+            <img className="earth-loading-icon" src="/icons/icon-prayer-128.webp" srcSet="/icons/icon-prayer-128.webp 128w, /icons/icon-prayer-256.webp 256w" sizes="104px" alt="" />
             <p className="subtitle">{t('earth.loading')}</p>
           </div>
         </div>

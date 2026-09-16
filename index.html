@@ -72,6 +72,7 @@
     <link rel="canonical" href="https://joining-palms.app/" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="preconnect" href="https://static.cloudflareinsights.com" crossorigin />
     <script>
       // Cloudflare Web Analytics, embedded manually so it never blocks the
       // critical path. Skipped under Lighthouse (auto-audit crawlers) so the
@@ -133,7 +134,7 @@
   <body>
     <div id="boot" aria-hidden="true">
       <div class="boot-inner">
-        <img class="boot-icon" src="/icons/icon-prayer-256.webp" alt="" />
+        <img class="boot-icon" src="/icons/icon-prayer-128.webp" srcset="/icons/icon-prayer-128.webp 128w, /icons/icon-prayer-256.webp 256w" sizes="112px" alt="" />
         <div class="boot-name">Joining Palms</div>
       </div>
     </div>

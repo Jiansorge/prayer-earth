@@ -50,9 +50,8 @@ const deep = Array.from({ length: 5 }, () => ({
   ph: rnd2() * Math.PI * 2
 }))
 
-function drawOcean(ctx, dpr, t, reduced) {
-  const w = window.innerWidth
-  const h = window.innerHeight
+function drawOcean(ctx, dpr, t, reduced, size) {
+  const { w, h } = size
   fitCanvas(ctx.canvas, w, h, dpr)
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.clearRect(0, 0, w, h)

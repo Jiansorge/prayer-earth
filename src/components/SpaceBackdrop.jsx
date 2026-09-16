@@ -33,9 +33,8 @@ const nebula = [
   { x: 0.75, y: 0.25, r: 0.26, c: 'rgba(60,160,220,ALPHA)', drift: 0.003 }
 ]
 
-function drawSpace(ctx, dpr, t, reduced) {
-  const w = window.innerWidth
-  const h = window.innerHeight
+function drawSpace(ctx, dpr, t, reduced, size) {
+  const { w, h } = size
   fitCanvas(ctx.canvas, w, h, dpr)
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.clearRect(0, 0, w, h)
