@@ -38,7 +38,7 @@ every tradition pray together on one living Earth — live at
 | Real-time sync | [`sync-engine`](https://github.com/Jiansorge/sync-engine) — Cloudflare Workers + Durable Objects (WebSocket presence, live feed, durable anonymous totals) |
 | Voices | pre-rendered neural MP3s (`public/audio/`, `manifest.json`) + on-device TTS fallback |
 | Install/offline | service worker (`public/sw.js`), Web App Manifest |
-| CI | GitHub Actions: build + server tests + i18n audit on every push |
+| CI | GitHub Actions: build + server tests + i18n audit on every push; `main` push triggers an auto-deploy to `joining-palms.app` via sync-engine |
 
 ## Project
 
@@ -108,6 +108,13 @@ npm run ship        # test → build app (cf engine) → stage → deploy
 rollback backup), and deploys to `joining-palms.app`. Audio rides along; after
 changing the MP3 library, bump `public/sw.js`'s cache version and purge the
 Cloudflare `/audio/*` cache (see `sync-engine/docs/DEPLOYMENT.md`).
+
+**Pushes to `main` auto-deploy.** `test.yml` runs build + asset audit + server
+and i18n tests, then dispatches a deploy to `sync-engine` (via the `DEPLOY_PAT`
+repo secret) — no manual step needed. The production deploy itself always runs
+in `sync-engine` behind two post-deploy safety gates (version contract + live
+endpoints) with automatic rollback; see
+[`sync-engine/docs/DEPLOYMENT.md`](https://github.com/Jiansorge/sync-engine/blob/main/docs/DEPLOYMENT.md).
 
 ## Security & privacy
 
