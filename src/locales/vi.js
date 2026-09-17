@@ -7,6 +7,7 @@ export default {
   'home.sub':
     'Chọn một con đường bên dưới. Khi bạn tham gia, lời cầu nguyện của bạn hòa cùng mọi lời cầu nguyện đang diễn ra ngay lúc này, và Trái Đất sẽ sáng thêm một chút.',
   'home.carried': 'Bạn đã cùng thế giới mang theo {time} cầu nguyện.',
+  'home.yourPrayersToday': '✶ {n} lời cầu nguyện của bạn hôm nay',
   'home.sacredWords': 'Những lời thiêng liêng của thế giới',
   'home.prayers.one': '1 lời cầu nguyện thiêng liêng',
   'home.prayers.other': '{n} lời cầu nguyện thiêng liêng',
@@ -17,6 +18,8 @@ export default {
   'home.pray': 'Cầu nguyện →',
   'home.prayStreak': 'Cầu nguyện để giữ chuỗi ngày của bạn',
   'home.hint': 'Một Trái Đất. Một hơi thở. Lời cầu nguyện bằng bất kỳ ngôn ngữ nào cũng được tính như nhau.',
+  'home.favorites': 'Mục yêu thích của bạn',
+  'home.favoritesHint': 'Chạm ☆ trên bất kỳ lời cầu nguyện nào để ghim nó tại đây — ánh sáng của bạn, luôn chỉ cách một lần chạm.',
   'meter.prayingNow': 'Đang cầu nguyện ngay lúc này',
   'meter.earthAlight': 'Trái Đất rực sáng',
   'meter.prayedToday': 'đã cầu nguyện hôm nay',
@@ -72,6 +75,9 @@ export default {
   'settings.secLook': 'Giao diện và ngôn ngữ',
   'settings.secShare': 'Chia sẻ',
   'settings.secAbout': 'Giới thiệu',
+  'settings.installApp': 'Thêm vào Màn hình chính',
+  'settings.installHint': 'Cài Joining Palms như một ứng dụng gốc — không cần cửa hàng ứng dụng.',
+  'settings.installHintIos': 'Trên Safari, chạm Share rồi chọn "Thêm vào Màn hình chính".',
   'settings.sharePrayerLabel': 'Chia sẻ một lời cầu nguyện',
   'settings.sharePrayerHint':
     'Tạo một tấm thiệp cho "{title}" để ai đó có thể tham gia bằng cách quét mã.',
@@ -84,6 +90,9 @@ export default {
   'settings.copied': 'Đã sao chép!',
   'settings.done': 'Xong',
   'settings.gear': 'Cài đặt',
+  'settings.donateLabel': 'Ủng hộ Joining Palms',
+  'settings.donateHint': 'Mỗi khoản đóng góp giúp giữ ứng dụng này miễn phí, riêng tư và không quảng cáo. Không cần tài khoản hoặc email.',
+  'settings.donateButton': 'Ủng hộ Joining Palms',
   'prayer.repeat': 'Lặp lại liên tục',
   'prayer.once': 'Phát một lần',
   'prayer.pray': 'Cầu nguyện',
@@ -100,6 +109,7 @@ export default {
   'prayer.across': '· {n} tại {name}',
   'prayer.allTime': '✶ {n} mọi thời đại',
   'prayer.today': '✶ {n} hôm nay',
+  'prayer.todayTitle': 'Số lần bạn tụng lời cầu nguyện này hôm nay',
   'prayer.recited': 'đọc to',
   'prayer.repeated': 'lặp lại trong tim',
   'prayer.doneTitle': 'Lời cầu nguyện của bạn đã được mang đi.',
@@ -117,6 +127,7 @@ export default {
   'prayer.next': 'Lời cầu nguyện tiếp theo',
   'prayer.favorite': 'Yêu thích',
   'prayer.peoplePraying': '{n} đang cầu nguyện',
+  'prayer.joinedYou': '✶ {n} đang cùng bạn cầu nguyện lúc này',
   'prayer.prayingNowTitle': 'Người đang cầu nguyện lời này ngay bây giờ',
   'prayer.allTimeTitle': 'Số lần cầu nguyện mọi thời đại',
   'earth.title': 'Trái Đất sống động của chúng ta',
@@ -187,6 +198,14 @@ export default {
   'trad.earthway.tagline': 'Tất cả bà con của tôi, lòng biết ơn đối với thế giới sống động.',
   'trad.zoroastrianism.name': 'Hỏa giáo',
   'trad.zoroastrianism.tagline': 'Tư tưởng tốt, lời nói tốt, việc làm tốt, ngọn lửa chân lý.',
+  'trad.celtic.name': 'Tâm linh Celtic',
+  'trad.celtic.tagline': 'Phúc lành, những nơi giao thoa, và sự tốt lành của mọi tạo vật.',
+  'trad.stoic.name': 'Suy ngẫm Khắc kỷ',
+  'trad.stoic.tagline': 'Điềm tĩnh, dũng cảm, và kỷ luật của tâm trí.',
+  'trad.unitarian.name': 'Nhất thể luận',
+  'trad.unitarian.tagline': 'Sự tự do tìm kiếm chân lý và phẩm giá của mỗi con người.',
+  'trad.seasonal.name': 'Suy ngẫm theo mùa',
+  'trad.seasonal.tagline': 'Sự xoay vần của thế giới — những khoảng dừng để nhớ lại.',
   'trad.confucianism.name': 'Nho giáo',
   'trad.confucianism.tagline': 'Nhân, lễ, và sự hòa hợp của muôn vật dưới trời.',
   'trad.chinese.name': 'Tâm linh Trung Hoa',
@@ -200,6 +219,119 @@ export default {
   'profile.color': 'Ánh sáng của bạn',
   'profile.you': 'bạn',
   'settings.legal': 'Quyền riêng tư và sự chăm sóc',
+  'legal.title': 'Quyền riêng tư và sự chăm sóc',
+  'legal.wellnessTitle': 'Lưu ý về sức khỏe và tinh thần',
+  'legal.wellnessBody':
+    'Joining Palms là nơi để tĩnh lặng suy ngẫm và kết nối, không phải là dịch vụ y tế, tâm lý hay hỗ trợ khủng hoảng. Ứng dụng không chẩn đoán hoặc điều trị bất kỳ tình trạng nào. Nếu bạn đang gặp căng thẳng, xin hãy liên hệ với một chuyên gia y tế có chuyên môn hoặc một đường dây cứu trợ khủng hoảng tại địa phương. Cũng xin hãy chăm sóc cơ thể của bạn: giữ âm lượng ở mức dễ chịu, và không sử dụng ứng dụng khi đang lái xe hoặc vận hành máy móc.',
+  'legal.privacyTitle': 'Quyền riêng tư',
+  'legal.priv1': 'Không cần tài khoản để cầu nguyện.',
+  'legal.priv2': 'Lịch sử cầu nguyện và tùy chọn của bạn được lưu trữ trên chính thiết bị của bạn.',
+  'legal.priv3':
+    'Khi bạn cầu nguyện, một tên ẩn danh và một vùng thô được chia sẻ với máy chủ Joining Palms để người khác nhìn thấy một ánh sáng nơi có người đang cầu nguyện. Vùng thường đến từ quyền định vị của thiết bị của bạn, hoặc, nếu bạn không chia sẻ vị trí, nó được ước lượng từ múi giờ của thiết bị (ví dụ trung tâm của múi giờ của bạn, không bao giờ là địa chỉ chính xác của bạn). Không bao giờ sử dụng tên thật hoặc địa chỉ chính xác.',
+  'legal.priv4':
+    'Khi bạn cầu nguyện, âm thanh phát từ các bản ghi được lưu trên thiết bị hoặc từ giọng đọc chuyển văn bản thành lời nói được tích hợp trong trình duyệt của bạn. Không có gì bạn cầu nguyện được gửi đến máy chủ của chúng tôi dưới dạng âm thanh.',
+  'legal.priv5': 'Chúng tôi không bán dữ liệu và không hiển thị quảng cáo.',
+  'legal.priv6':
+    'Khi bạn kết nối, các máy chủ thoáng thấy một địa chỉ mạng và có thể xử lý dữ liệu tại các trung tâm dữ liệu ngoài quốc gia của bạn. Nhà cung cấp lưu trữ và CDN của chúng tôi (Cloudflare) tuân thủ GDPR.',
+  'legal.priv7': 'Joining Palms không thu thập thông tin cá nhân nào từ trẻ em và có thể được sử dụng bởi mọi lứa tuổi.',
+  'legal.priv8':
+    'Sự hiện diện trực tiếp chỉ được giữ trong khi một phiên đang hoạt động và thường bị quét bỏ sau khoảng 60 giây không có cập nhật. Dòng hoạt động gần đây là một cửa sổ bộ nhớ có giới hạn. Riêng biệt, ứng dụng có thể gửi một định danh thiết bị ẩn danh ngẫu nhiên và các bộ đếm trọn đời để tổng số có thể hợp nhất qua các phiên; những bản ghi bền vững này không chứa tên đã chọn, email hoặc vị trí chính xác, nhưng việc xóa bộ nhớ trình duyệt không tự động xóa chúng. Hãy liên hệ với chúng tôi để hỏi về một bản ghi dữ liệu.',
+  'legal.priv9':
+    'Tên hiển thị bạn chọn trong Cài đặt được hiển thị cho người khác trong khi bạn cầu nguyện, giống hệt như một tên người dùng; hãy dùng bất kỳ tên nào, nhưng đừng bao giờ dùng tên thật.',
+  'legal.contactEmail': 'care@joining-palms.app',
+  'legal.termsTitle': 'Điều khoản',
+  'legal.termsBody':
+    'Joining Palms được cung cấp theo nguyên trạng, dành cho sự suy ngẫm cá nhân. Các văn bản thiêng liêng được trình bày để chiêm nghiệm và tôn trọng. Xin hãy đối xử với những người khác trong cộng đồng bằng lòng tử tế. Chúng tôi có thể cập nhật ứng dụng và các ghi chú này theo thời gian.',
+  'legal.pIntro':
+    'Joining Palms là một nơi lặng lẽ để cầu nguyện cùng thế giới. Trang này giải thích, bằng ngôn ngữ đơn giản, những gì ứng dụng biết về bạn và cách nó được sử dụng.',
+  'legal.pWhatTitle': 'Những gì chúng tôi thu thập',
+  'legal.pUseTitle': 'Cách dữ liệu được sử dụng',
+  'legal.pUseBody':
+    'Sự hiện diện ẩn danh của bạn (một cái tên tự đặt và một vùng thô) được hiển thị cho người khác chỉ như một ánh sáng trên Trái Đất. Khi bạn không cấp quyền định vị, vùng được ước lượng từ múi giờ của bạn — vẫn thô, không bao giờ là một địa chỉ chính xác. Không có gì được bán hoặc chia sẻ với các nhà quảng cáo.',
+  'legal.pRightsTitle': 'Quyền của bạn',
+  'legal.pRightsBody':
+    'Vì hầu hết dữ liệu của bạn không bao giờ rời khỏi thiết bị, bạn đã kiểm soát nó: xóa bộ nhớ trình duyệt sẽ xóa lịch sử cầu nguyện và tùy chọn của bạn. Bạn có thể ngừng sử dụng ứng dụng bất cứ lúc nào.',
+  'legal.pContactTitle': 'Liên hệ',
+  'legal.pContactBody':
+    'Đối với các yêu cầu kinh doanh, bổ sung lời cầu nguyện, hoặc thắc mắc, hãy gửi email cho chúng tôi tại ',
+  'legal.pContactBody2': '. Chúng tôi sẽ phản hồi lại bạn.',
+  'legal.tIntro': 'Bằng việc sử dụng Joining Palms, bạn đồng ý với các điều khoản này.',
+  'legal.tUseTitle': 'Sử dụng cá nhân',
+  'legal.tUseBody':
+    'Joining Palms được cung cấp để suy ngẫm cá nhân, phi thương mại. Bạn đồng ý không lạm dụng dịch vụ, gửi thư rác cho người khác, hoặc cố gắng phá vỡ thế giới chung.',
+  'legal.tContentTitle': 'Nội dung',
+  'legal.tContentBody':
+    'Các văn bản thiêng liêng được trình bày một cách tôn trọng để chiêm nghiệm. Chúng vẫn là di sản của các cộng đồng của chúng và được hiển thị ở đây để suy ngẫm, không phải để sở hữu.',
+  'legal.tLiabilityTitle': 'Không bảo hành',
+  'legal.tLiabilityBody':
+    'Ứng dụng được cung cấp theo nguyên trạng, không có bảo hành. Đây không phải là dịch vụ y tế, tâm lý hay hỗ trợ khủng hoảng. Nếu bạn đang gặp căng thẳng, xin hãy liên hệ với một chuyên gia có chuyên môn hoặc một đường dây cứu trợ khủng hoảng tại địa phương.',
+  'legal.tChangesTitle': 'Thay đổi',
+  'legal.tChangesBody':
+    'Chúng tôi có thể cập nhật các điều khoản này và ứng dụng theo thời gian. Tiếp tục sử dụng sau khi có thay đổi nghĩa là bạn chấp nhận những thay đổi đó.',
+  'legal.viewPrivacy': 'Xem chính sách quyền riêng tư đầy đủ',
+  'legal.viewTerms': 'Xem điều khoản dịch vụ đầy đủ',
+  'legal.intlTitle': 'Ghi chú quốc tế và theo khu vực',
+  'legal.pRightsEu':
+    'Nếu bạn đang ở Khu vực Kinh tế Châu Âu, Vương quốc Anh hoặc Thụy Sĩ, GDPR cho bạn các quyền truy cập, chỉnh sửa, hạn chế, phản đối, và yêu cầu xóa hoặc chuyển dữ liệu cá nhân khi áp dụng. Sự hiện diện trực tiếp là ẩn danh và thường bị quét bỏ sau khoảng 60 giây; các bản ghi bộ đếm ẩn danh bền vững có thể vẫn còn trừ khi việc xóa là cần thiết về mặt kỹ thuật và pháp lý hoặc chúng tôi có thể xác định bản ghi liên quan. Hãy liên hệ với chúng tôi để thực hiện một quyền hoặc khiếu nại lên cơ quan bảo vệ dữ liệu tại địa phương của bạn.',
+  'legal.pRightsCa':
+    'Nếu bạn là cư dân California, CCPA/CPRA cho bạn các quyền được biết, chỉnh sửa, xóa, và từ chối việc "bán" hoặc "chia sẻ" thông tin cá nhân. Chúng tôi không bán hoặc chia sẻ thông tin cá nhân cho mục đích quảng cáo, và chúng tôi chỉ giữ lại sự hiện diện ẩn danh và dữ liệu tổng hợp được mô tả ở trên.',
+  'legal.pRightsIntl':
+    'Những quyền này áp dụng bất kể bạn sống ở đâu. Vì chúng tôi thu thập rất ít, hầu hết mọi người sẽ không bao giờ cần thực hiện chúng — nhưng chúng là của bạn.',
+  'legal.cookTitle': 'Cookie và bộ nhớ cục bộ',
+  'legal.cookBody':
+    'Joining Palms sử dụng bộ nhớ trình duyệt trên chính thiết bị của bạn để ghi nhớ các tùy chọn và lịch sử cầu nguyện của bạn. Chúng tôi không sử dụng cookie quảng cáo hoặc theo dõi. Nhà cung cấp lưu trữ của chúng tôi (Cloudflare) có thể đặt các cookie bảo mật và hiệu suất tiêu chuẩn hoặc xử lý dữ liệu nhật ký để giữ dịch vụ nhanh chóng và an toàn, và có thể sử dụng cookie của riêng họ để chống gian lận. Không có gì chúng tôi vận hành được dùng để xây dựng hồ sơ về bạn trên các trang web khác.',
+  'legal.ageTitle': 'Trẻ em',
+  'legal.ageBody':
+    'Joining Palms có thể được sử dụng bởi mọi lứa tuổi. Ở những nơi pháp luật yêu cầu trẻ em phải có sự đồng ý của cha mẹ (ví dụ GDPR từ 16 tuổi, hoặc COPPA dưới 13 tuổi tại Hoa Kỳ), chúng tôi trông cậy vào bạn — trẻ em nên có sự cho phép của cha mẹ hoặc người giám hộ trước khi sử dụng ứng dụng. Chúng tôi không thu thập thông tin cá nhân có chủ đích từ trẻ em, và chúng tôi không bao giờ quảng cáo tới trẻ em.',
+  'legal.processingTitle': 'Nơi dữ liệu được xử lý',
+  'legal.processingBody':
+    'Dữ liệu ẩn danh được mô tả ở trên được xử lý bởi nhà cung cấp lưu trữ và CDN của chúng tôi là Cloudflare. Trong khi bạn cầu nguyện ở một nơi nào đó, một vùng thô được chia sẻ với máy chủ Joining Palms để ánh sáng của bạn xuất hiện trên Trái Đất. Nếu việc xử lý đó diễn ra tại một trung tâm dữ liệu ngoài quốc gia của bạn (ví dụ Hoa Kỳ), chúng tôi dựa vào các cơ chế chuyển dữ liệu hợp pháp, chẳng hạn như các điều khoản hợp đồng tiêu chuẩn, để bảo vệ thông tin của bạn. Điều này không thay đổi những gì ứng dụng biết về bạn — nó vẫn ẩn danh và ưu tiên thiết bị.',
+  'legal.tGoverningTitle': 'Luật điều chỉnh',
+  'legal.tGoverningBody':
+    'Các điều khoản này được điều chỉnh bởi luật áp dụng tại nơi đơn vị vận hành Joining Palms được thành lập, không xét đến các quy tắc xung đột pháp luật. Ứng dụng được cung cấp từ một nhà cung cấp lưu trữ ưu tiên quyền riêng tư (Cloudflare) và, khi bạn ở Khu vực Kinh tế Châu Âu, Vương quốc Anh hoặc Thụy Sĩ, không có điều gì trong các điều khoản này loại bỏ các quyền lợi bảo vệ người tiêu dùng mà luật địa phương của bạn trao cho bạn.',
+  'legal.tAbuseTitle': 'Sử dụng có trách nhiệm',
+  'legal.tAbuseBody':
+    'Joining Palms là một thế giới chung. Bạn đồng ý đối xử với cộng đồng bằng lòng tử tế, không gửi thư rác, không cố gắng phá vỡ dịch vụ, và không sử dụng nó cho bất kỳ điều gì bất hợp pháp. Chúng tôi có thể hạn chế quyền truy cập của bất kỳ ai lạm dụng thế giới chung.',
+  'legal.tDisputeTitle': 'Tranh chấp',
+  'legal.tDisputeBody':
+    'Chúng tôi hy vọng những bất đồng không bao giờ xảy ra. Nếu có, trước tiên hãy liên hệ với chúng tôi — hầu hết mọi việc đều được giải quyết qua một email thân thiện. Nếu không được, các tranh chấp liên quan đến các điều khoản này sẽ được quyết định tại các tòa án theo luật điều chỉnh đơn vị vận hành nêu trên, nhưng không có gì ở đây ngăn cản bạn nộp khiếu nại lên cơ quan quản lý tại địa phương (chẳng hạn như một cơ quan bảo vệ dữ liệu) khi pháp luật cho phép.',
+  'legal.tChangesTitle2': 'Thay đổi và cập nhật quốc tế',
+  'legal.tChangesBody2':
+    'Chúng tôi có thể cập nhật các điều khoản này, chính sách quyền riêng tư này, và ứng dụng theo thời gian. Khi chúng tôi làm vậy, phiên bản mới chỉ áp dụng kể từ ngày nó được công bố, và việc tiếp tục sử dụng sau đó nghĩa là bạn chấp nhận nó. Ở những nơi pháp luật yêu cầu thông báo chặt chẽ hơn (ví dụ nghĩa vụ minh bạch của GDPR), chúng tôi sẽ đưa ra thông báo rõ ràng, dễ thấy trước khi những thay đổi đó áp dụng cho bạn.',
+  'legal.tEffectiveTitle': 'Ngày có hiệu lực',
+  'legal.tEffectiveBody':
+    'Các điều khoản này và chính sách quyền riêng tư này có hiệu lực kể từ ngày công bố, và thay thế mọi phiên bản trước đó.',
+  'legal.pDataCite': 'Những gì chúng tôi thu thập (chi tiết)',
+  'legal.pGdprTitle': 'Quyền của bạn theo khu vực (GDPR, CPRA, toàn thế giới)',
+  'legal.pCookTitle': 'Cookie và bộ nhớ cục bộ',
+  'legal.pKidsTitle': 'Trẻ em và độ tuổi',
+  'legal.pProcTitle': 'Nơi dữ liệu được xử lý',
+  'legal.pBasisTitle': 'Cơ sở pháp lý',
+  'legal.pBasisBody':
+    'Vì Joining Palms thu thập rất ít thông tin cá nhân (một vùng thô, ẩn danh và một tên hiển thị do bạn chọn), chúng tôi dựa vào lợi ích chính đáng làm cơ sở pháp lý theo Điều 6(1)(f) của GDPR: thế giới cầu nguyện chung không thể tồn tại nếu không hiển thị nơi mọi người đang cầu nguyện. Chúng tôi đã cân bằng rủi ro tối thiểu với lợi ích cộng đồng và kết luận rằng việc xử lý là cân xứng. Bạn có thể phản đối bất cứ lúc nào bằng cách liên hệ với chúng tôi hoặc ngừng sử dụng.',
+  'legal.pDpoTitle': 'Nhân viên bảo vệ dữ liệu',
+  'legal.pDpoBody':
+    'Là một đội ngũ nhỏ vận hành một ứng dụng ưu tiên quyền riêng tư, chúng tôi chưa chỉ định một DPO chính thức theo Điều 37 của GDPR vì việc xử lý cốt lõi không ở quy mô lớn, không có hệ thống, hoặc không nhạy cảm. Hãy liên hệ với chúng tôi qua các thông tin liên hệ trong phần Liên hệ cho bất kỳ vấn đề bảo vệ dữ liệu nào.',
+  'legal.pLgpdTitle': 'Brazil (LGPD)',
+  'legal.pLgpdBody':
+    'Nếu bạn ở Brazil, Lei Geral de Proteção de Dados (LGPD) cho bạn các quyền tương tự như được mô tả cho GDPR: truy cập, chỉnh sửa, xóa, và phản đối. Vì ứng dụng ẩn danh và ưu tiên thiết bị, việc thực hiện những quyền này rất đơn giản — ngừng sử dụng ứng dụng và xóa bộ nhớ trình duyệt của bạn.',
+  'legal.pBreachTitle': 'Vi phạm dữ liệu',
+  'legal.pBreachBody':
+    'Nếu xảy ra vi phạm có khả năng dẫn đến rủi ro đáng kể, chúng tôi sẽ thông báo cho những người dùng bị ảnh hưởng và các cơ quan có thẩm quyền liên quan theo yêu cầu của pháp luật. Vì ứng dụng không lưu trữ tài khoản, tên thật, hoặc vị trí chính xác, nguy cơ gây hại được giảm đáng kể.',
+  'legal.tSeverTitle': 'Tính có thể tách rời',
+  'legal.tSeverBody': 'Nếu bất kỳ phần nào của các điều khoản này bị xem là không thể thi hành, các phần còn lại vẫn có hiệu lực.',
+  'legal.tForceTitle': 'Bất khả kháng',
+  'legal.tForceBody':
+    'Chúng tôi không chịu trách nhiệm đối với các sự cố gây ra bởi những sự kiện nằm ngoài tầm kiểm soát hợp lý, bao gồm thiên tai, sự cố hạ tầng, hoặc sự gián đoạn dịch vụ của bên thứ ba.',
+  'legal.tDmcaTitle': 'Bản quyền / DMCA',
+  'legal.tDmcaBody':
+    'Chúng tôi tôn trọng quyền sở hữu trí tuệ. Nếu bạn tin rằng nội dung trong ứng dụng xâm phạm bản quyền của bạn, hãy liên hệ với chúng tôi qua email trong phần Liên hệ kèm theo mô tả về tác phẩm và nơi nó xuất hiện. Chúng tôi phản hồi kịp thời.',
+  'legal.tAiTitle': 'Quyết định tự động',
+  'legal.tAiBody':
+    'Joining Palms không đưa ra bất kỳ quyết định tự động nào ảnh hưởng đến các quyền hợp pháp của bạn. Ứng dụng không sử dụng AI để định hồ sơ, chấm điểm, hoặc phân loại người dùng. Chúng tôi khuyến nghị không nên thực hiện bất kỳ việc huấn luyện AI hoặc mô hình ngôn ngữ lớn nào trên nội dung của dịch vụ này, và chúng tôi không huấn luyện mô hình trên dữ liệu cầu nguyện của bạn.',
+  'legal.tTransTitle': 'Chuyển dữ liệu quốc tế',
+  'legal.tTransBody':
+    'Dữ liệu hiện diện ẩn danh (một vùng thô) có thể được xử lý tại các trung tâm dữ liệu do nhà cung cấp lưu trữ của chúng tôi (Cloudflare) vận hành ngoài quốc gia của bạn. Đối với các chuyển dữ liệu từ EEA, Vương quốc Anh hoặc Thụy Sĩ, chúng tôi dựa vào các điều khoản hợp đồng tiêu chuẩn hoặc một quyết định về mức độ phù hợp. Không có gì thay đổi bản chất của dữ liệu — nó vẫn ẩn danh và ưu tiên thiết bị.',
   // Localized titles for the original nonreligious prayers.
   'ptitle.gratitude': 'Một khoảnh khắc biết ơn',
   'ptitle.awe': 'Một hơi thở kinh ngạc',

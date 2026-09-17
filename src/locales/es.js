@@ -16,6 +16,7 @@ export default {
   'home.sub':
     'Elige un camino abajo. Al unirte, tu oración se une a cada oración que ocurre ahora, y la Tierra brilla un poco más.',
   'home.carried': 'Has llevado {time} de oración con el mundo.',
+  'home.yourPrayersToday': '✶ {n} de tus oraciones hoy',
   'home.sacredWords': 'Palabras sagradas del mundo',
   'home.prayers.one': '1 oración sagrada',
   'home.prayers.other': '{n} oraciones sagradas',
@@ -26,6 +27,8 @@ export default {
   'home.pray': 'Rezar →',
   'home.prayStreak': 'Reza para mantener tu racha',
   'home.hint': 'Una Tierra. Una respiración. Las oraciones en cualquier idioma cuentan igual.',
+  'home.favorites': 'Tus favoritas',
+  'home.favoritesHint': 'Toca ☆ en cualquier oración para guardarla aquí — tu luz, siempre a un toque.',
   'meter.prayingNow': 'Rezando ahora mismo',
   'meter.earthAlight': 'Tierra iluminada',
   'meter.quietCompany': 'Compañía silenciosa, conectando con el mundo…',
@@ -67,6 +70,9 @@ export default {
   'settings.secLook': 'Aspecto e idioma',
   'settings.secShare': 'Compartir',
   'settings.secAbout': 'Acerca de',
+  'settings.installApp': 'Añadir a la pantalla de inicio',
+  'settings.installHint': 'Instala Joining Palms como una app nativa — sin necesidad de tienda de aplicaciones.',
+  'settings.installHintIos': 'Toca Compartir  y luego \u201cAñadir a pantalla de inicio\u201d en Safari.',
   'settings.legal': 'Privacidad y atención',
   'settings.sharePrayerLabel': 'Compartir una oración',
   'settings.sharePrayerHint':
@@ -80,6 +86,9 @@ export default {
   'settings.copied': '¡Copiado!',
   'settings.done': 'Listo',
   'settings.gear': 'Ajustes',
+  'settings.donateLabel': 'Apoya Joining Palms',
+  'settings.donateHint': 'Cada contribución mantiene esto gratis, privado y sin anuncios. No se necesita cuenta ni correo.',
+  'settings.donateButton': 'Apoya Joining Palms',
   'prayer.repeat': 'Repetir continuamente',
   'prayer.pray': 'Rezar',
   'prayer.pause': 'Pausar', 'prayer.loading': 'Comenzando…',
@@ -94,6 +103,7 @@ export default {
   'prayer.across': '· {n} en {name}',
   'prayer.allTime': '✶ {n} en total',
   'prayer.today': '✶ {n} hoy',
+  'prayer.todayTitle': 'Tus recitaciones de esta oración hoy',
   'prayer.recited': 'recitada en voz alta',
   'prayer.repeated': 'repetida en el corazón',
   'prayer.doneTitle': 'Tu oración ha sido llevada.',
@@ -111,6 +121,7 @@ export default {
   'prayer.next': 'Siguiente oración',
   'prayer.favorite': 'Favorito',
   'prayer.peoplePraying': '{n} rezando',
+  'prayer.joinedYou': '✶ {n} rezando esto contigo ahora',
   'prayer.prayingNowTitle': 'Personas rezando esta oración ahora',
   'prayer.allTimeTitle': 'Oraciones de todos los tiempos',
   'earth.title': 'Nuestra Tierra viva',
@@ -178,6 +189,14 @@ export default {
   'trad.earthway.tagline': 'Todos mis parientes, gratitud al mundo vivo.',
   'trad.zoroastrianism.name': 'Zoroastrismo',
   'trad.zoroastrianism.tagline': 'Buenos pensamientos, buenas palabras, buenas obras, la llama de la verdad.',
+  'trad.celtic.name': 'Espiritualidad celta',
+  'trad.celtic.tagline': 'Bendición, los umbrales sagrados y la bondad de toda la creación.',
+  'trad.stoic.name': 'Reflexión estoica',
+  'trad.stoic.tagline': 'Calma, valor y disciplina de la mente.',
+  'trad.unitarian.name': 'Unitario',
+  'trad.unitarian.tagline': 'La búsqueda libre de la verdad y el valor de cada persona.',
+  'trad.seasonal.name': 'Reflexión estacional',
+  'trad.seasonal.tagline': 'El giro del mundo — pausas para recordar.',
   'trad.confucianism.name': 'Confucianismo', 'trad.confucianism.tagline': 'Ren, el ritual y la armonía de todo bajo el cielo.', 'trad.chinese.name': 'Espiritualidad china', 'trad.chinese.tagline': 'El cielo, los ancestros y los espíritus del hogar y la tierra.',
   'trad.african.name': 'Tradiciones africanas', 'trad.african.tagline': 'Ancestros, el Gran Espíritu y la tierra viva.',
   'profile.title': 'Tu presencia',
@@ -197,6 +216,121 @@ export default {
   'prayer.once': 'Reproducir una vez',
   'prayer.voice': 'Voz',
   'legal.langNote': 'Estas políticas se ofrecen en inglés, que rige el uso de Joining Palms.',
+  'legal.title': 'Privacidad y atención',
+  'legal.wellnessTitle': 'Una nota sobre el bienestar',
+  'legal.wellnessBody':
+    'Joining Palms es un lugar para la reflexión tranquila y la conexión, no un servicio médico, psicológico ni de crisis. No diagnostica ni trata ninguna afección. Si estás en una situación de angustia, ponte en contacto con un profesional de la salud cualificado o con una línea de crisis local. Cuida también tu cuerpo: mantén un volumen cómodo y no uses la app mientras conduces o manejas maquinaria.',
+  'legal.privacyTitle': 'Privacidad',
+  'legal.priv1': 'No se requiere ninguna cuenta para rezar.',
+  'legal.priv2': 'Tu historial de oraciones y tus preferencias se guardan en tu propio dispositivo.',
+  'legal.priv3':
+    'Cuando rezas, un nombre anónimo y una región aproximada se comparten con el servidor de Joining Palms para que los demás vean una luz donde la gente está rezando. La región normalmente proviene del permiso de ubicación de tu dispositivo o, si no compartes la ubicación, se aproxima a partir de la zona horaria de tu dispositivo (por ejemplo, el centro de tu zona horaria, nunca tu dirección exacta). Nunca se usa un nombre real ni una dirección precisa.',
+  'legal.priv4':
+    'Cuando rezas, el audio se reproduce desde grabaciones guardadas en el dispositivo o desde la voz de texto a voz integrada en tu navegador. Nada de lo que rezas se envía a nuestro servidor para el audio.',
+  'legal.priv5': 'No vendemos datos ni mostramos anuncios.',
+  'legal.priv6':
+    'Cuando te conectas, los servidores ven brevemente una dirección de red y pueden procesar datos en centros de datos fuera de tu país. Nuestro proveedor de alojamiento y CDN (Cloudflare) cumple con el GDPR.',
+  'legal.priv7': 'Joining Palms no recopila información personal de los niños y puede ser utilizado por personas de todas las edades.',
+  'legal.priv8':
+    'La presencia en vivo se mantiene solo mientras una sesión está activa y normalmente se elimina después de unos 60 segundos sin actualización. El flujo de actividad reciente es una ventana limitada en memoria. Por otra parte, la app puede enviar un identificador de dispositivo anónimo y aleatorio y contadores de por vida para que los totales puedan unificarse entre sesiones; esos registros duraderos no contienen nombre elegido, correo ni ubicación precisa, pero borrar el almacenamiento del navegador no los elimina automáticamente. Contáctanos para consultar sobre un registro de datos.',
+  'legal.priv9':
+    'El nombre visible que elijas en Ajustes se muestra a los demás mientras rezas, igual que un nombre de usuario: usa cualquier nombre, nunca uno real.',
+  'legal.contactEmail': 'care@joining-palms.app',
+  'legal.termsTitle': 'Términos',
+  'legal.termsBody':
+    'Joining Palms se ofrece tal cual, para la reflexión personal. Los textos sagrados se presentan para la contemplación y el respeto. Trata a los demás de la comunidad con amabilidad. Podemos actualizar la app y estas notas con el tiempo.',
+  'legal.pIntro':
+    'Joining Palms es un lugar tranquilo para rezar junto con el mundo. Esta página explica, en lenguaje sencillo, qué sabe la app sobre ti y cómo se usa.',
+  'legal.pWhatTitle': 'Qué recopilamos',
+  'legal.pUseTitle': 'Cómo se usa',
+  'legal.pUseBody':
+    'Tu presencia anónima (un nombre inventado y una región aproximada) se muestra a los demás solo como una luz en la Tierra. Cuando no concedes permiso de ubicación, la región se aproxima a partir de tu zona horaria — sigue siendo aproximada, nunca una dirección precisa. Nada se vende ni se comparte con anunciantes.',
+  'legal.pRightsTitle': 'Tus derechos',
+  'legal.pRightsBody':
+    'Como la mayor parte de tus datos nunca sale de tu dispositivo, ya los controlas: borrar el almacenamiento del navegador elimina tu historial de oraciones y tus preferencias. Puedes dejar de usar la app en cualquier momento.',
+  'legal.pContactTitle': 'Contacto',
+  'legal.pContactBody': 'Para consultas comerciales, añadir oraciones o preguntas, escríbenos a ',
+  'legal.pContactBody2': '. Te responderemos.',
+  'legal.tIntro': 'Al usar Joining Palms aceptas estos términos.',
+  'legal.tUseTitle': 'Uso personal',
+  'legal.tUseBody':
+    'Joining Palms se ofrece para la reflexión personal y no comercial. Aceptas no hacer mal uso del servicio, no enviar spam a otros ni intentar alterar el mundo compartido.',
+  'legal.tContentTitle': 'Contenido',
+  'legal.tContentBody':
+    'Los textos sagrados se presentan con respeto para la contemplación. Siguen siendo el patrimonio de sus comunidades y se muestran aquí para la reflexión, no para apropiarse de ellos.',
+  'legal.tLiabilityTitle': 'Sin garantía',
+  'legal.tLiabilityBody':
+    'La app se ofrece tal cual, sin garantía. No es un servicio médico, psicológico ni de crisis. Si estás en una situación de angustia, ponte en contacto con un profesional cualificado o con una línea de crisis local.',
+  'legal.tChangesTitle': 'Cambios',
+  'legal.tChangesBody': 'Podemos actualizar estos términos y la app con el tiempo. El uso continuado tras los cambios implica que los aceptas.',
+  'legal.viewPrivacy': 'Ver la política de privacidad completa',
+  'legal.viewTerms': 'Ver los términos de servicio completos',
+
+  // --- notas internacionales / regionales (en lenguaje sencillo) ---
+  'legal.intlTitle': 'Notas internacionales y regionales',
+  'legal.pRightsEu':
+    'Si te encuentras en el Espacio Económico Europeo, el Reino Unido o Suiza, el GDPR te otorga derechos de acceso, rectificación, limitación, oposición y solicitud de supresión o portabilidad de los datos personales cuando corresponda. La presencia en vivo es anónima y normalmente se elimina después de unos 60 segundos; los registros anónimos de contadores duraderos pueden permanecer, salvo que la supresión sea técnica y jurídicamente necesaria o podamos identificar el registro correspondiente. Contáctanos para ejercer un derecho o presentar una reclamación ante tu autoridad local de protección de datos.',
+  'legal.pRightsCa':
+    'Si resides en California, la CCPA/CPRA te otorga derechos a conocer, corregir, eliminar y oponerte a la \u201cventa\u201d o \u201cdifusión\u201d de información personal. No vendemos ni compartimos información personal con fines publicitarios, y solo conservamos la presencia anónima y los datos agregados descritos anteriormente.',
+  'legal.pRightsIntl':
+    'Estos derechos se aplican independientemente de dónde vivas. Como recopilamos tan poco, la mayoría de las personas nunca tendrán que ejercerlos — pero son tuyos.',
+  'legal.cookTitle': 'Cookies y almacenamiento local',
+  'legal.cookBody':
+    'Joining Palms usa el almacenamiento del navegador en tu propio dispositivo para recordar tus preferencias e historial de oraciones. No usamos cookies publicitarias ni de seguimiento. Nuestro proveedor de alojamiento (Cloudflare) puede colocar cookies estándar de seguridad y rendimiento o procesar datos de registro para mantener el servicio rápido y seguro, y puede usar sus propias cookies para la protección contra el fraude. Nada de lo que utilizamos se emplea para crear un perfil tuyo en otros sitios web.',
+  'legal.ageTitle': 'Menores',
+  'legal.ageBody':
+    'Joining Palms puede ser utilizado por personas de todas las edades. Cuando una región exige que un menor cuente con el consentimiento de sus padres (por ejemplo, el GDPR a los 16 años, o la COPPA por debajo de los 13 en Estados Unidos), confiamos en ti — los menores deben tener el permiso de un padre o tutor antes de usar la app. No recopilamos información deliberadamente personal de los menores y nunca publicitamos para ellos.',
+  'legal.processingTitle': 'Dónde se procesan los datos',
+  'legal.processingBody':
+    'Los datos anónimos descritos anteriormente son procesados por nuestro proveedor de alojamiento y CDN, Cloudflare. Mientras rezas en algún lugar, se comparte una región aproximada con el servidor de Joining Palms para que tu luz aparezca en la Tierra. Si ese procesamiento ocurre en un centro de datos fuera de tu país (por ejemplo, Estados Unidos), recurrimos a mecanismos de transferencia legales, como las cláusulas contractuales tipo, para proteger tu información. Esto no cambia lo que la app sabe sobre ti — sigue siendo anónima y centrada en el dispositivo.',
+  // --- adiciones a los términos ---
+  'legal.tGoverningTitle': 'Legislación aplicable',
+  'legal.tGoverningBody':
+    'Estos términos se rigen por las leyes aplicables en el lugar donde esté establecido el operador de Joining Palms, sin tener en cuenta las normas de conflicto de leyes. La app se ofrece desde un proveedor de alojamiento centrado en la privacidad (Cloudflare) y, cuando te encuentras en el Espacio Económico Europeo, el Reino Unido o Suiza, nada en estos términos elimina las protecciones al consumidor que te otorga tu legislación local.',
+  'legal.tAbuseTitle': 'Uso aceptable',
+  'legal.tAbuseBody':
+    'Joining Palms es un mundo compartido. Aceptas tratar a la comunidad con amabilidad, no enviar spam, no intentar interrumpir el servicio y no usarlo para nada ilícito. Podemos restringir el acceso a cualquiera que abuse del mundo compartido.',
+  'legal.tDisputeTitle': 'Disputas',
+  'legal.tDisputeBody':
+    'Esperamos que los desacuerdos nunca ocurran. Si ocurre uno, primero contáctanos — la mayoría de las cosas se resuelven con un correo amistoso. De no ser así, las disputas relativas a estos términos se decidirán en los tribunales de la legislación del operador mencionada arriba, pero nada aquí te impide presentar una reclamación ante tu regulador local (como una autoridad de protección de datos) cuando la ley lo permita.',
+  'legal.tChangesTitle2': 'Cambios y actualizaciones internacionales',
+  'legal.tChangesBody2':
+    'Podemos actualizar estos términos, esta política de privacidad y la app con el tiempo. Cuando lo hagamos, la nueva versión se aplica solo a partir del día en que se publica, y el uso continuado después de esa fecha implica que la aceptas. Cuando una región exija un aviso más estricto (por ejemplo, los deberes de transparencia del GDPR), daremos un aviso claro y visible antes de que esos cambios se te apliquen.',
+  'legal.tEffectiveTitle': 'Fecha de entrada en vigor',
+  'legal.tEffectiveBody': 'Estos términos y esta política de privacidad son efectivos desde su publicación y sustituyen a cualquier versión anterior.',
+
+  // --- renumeración de secciones de la página completa de privacidad ---
+  'legal.pDataCite': 'Qué recopilamos (detalles)',
+  'legal.pGdprTitle': 'Tus derechos por región (GDPR, CPRA, mundial)',
+  'legal.pCookTitle': 'Cookies y almacenamiento local',
+  'legal.pKidsTitle': 'Menores y edad',
+  'legal.pProcTitle': 'Dónde se procesan los datos',
+  'legal.pBasisTitle': 'Base jurídica',
+  'legal.pBasisBody':
+    'Como Joining Palms recopila muy poca información personal (una región anónima y aproximada y un nombre visible que tú eliges), nos basamos en los intereses legítimos como base jurídica conforme al GDPR Article 6(1)(f): el mundo de oración compartido no puede existir sin mostrar dónde reza la gente. Sopesamos el riesgo mínimo frente al beneficio comunitario y concluimos que el procesamiento es proporcionado. Puedes oponerte en cualquier momento contactándonos o dejando de usar la app.',
+  'legal.pDpoTitle': 'Delegado de protección de datos',
+  'legal.pDpoBody':
+    'Al ser un equipo pequeño que gestiona una app centrada en la privacidad, no hemos designado un DPO formal conforme al GDPR Article 37 porque el procesamiento principal no es a gran escala, sistemático ni sensible. Ponte en contacto con nosotros a través de los datos de contacto de la sección Contacto para cualquier asunto de protección de datos.',
+  'legal.pLgpdTitle': 'Brasil (LGPD)',
+  'legal.pLgpdBody':
+    'Si te encuentras en Brasil, la Lei Geral de Proteção de Dados (LGPD) te otorga los mismos derechos descritos para el GDPR: acceso, corrección, supresión y oposición. Como la app es anónima y está centrada en el dispositivo, ejercerlos es sencillo — deja de usar la app y borra el almacenamiento de tu navegador.',
+  'legal.pBreachTitle': 'Violación de datos',
+  'legal.pBreachBody':
+    'Si se produce una violación de datos que pueda suponer un riesgo significativo, notificaremos a los usuarios afectados y a las autoridades pertinentes según exija la ley. Como la app no guarda cuentas, nombres reales ni ubicaciones precisas, el riesgo de daño se reduce considerablemente.',
+  'legal.tSeverTitle': 'Divisibilidad',
+  'legal.tSeverBody': 'Si alguna parte de estos términos se considera inaplicable, el resto permanece en vigor.',
+  'legal.tForceTitle': 'Fuerza mayor',
+  'legal.tForceBody':
+    'No somos responsables de los fallos causados por acontecimientos fuera de nuestro control razonable, incluyendo desastres naturales, fallos de infraestructura o interrupciones de servicios de terceros.',
+  'legal.tDmcaTitle': 'Derechos de autor / DMCA',
+  'legal.tDmcaBody':
+    'Respetamos la propiedad intelectual. Si crees que un contenido de la app infringe tus derechos de autor, contáctanos a través del correo de la sección Contacto con una descripción de la obra y de dónde aparece. Respondemos con prontitud.',
+  'legal.tAiTitle': 'Decisiones automatizadas',
+  'legal.tAiBody':
+    'Joining Palms no toma decisiones automatizadas que afecten a tus derechos legales. La app no usa IA para crear perfiles, puntuar ni clasificar usuarios. Recomendamos que no se realice ningún entrenamiento de IA ni de modelos de lenguaje grandes sobre el contenido de este servicio, y nosotros no entrenamos modelos con tus datos de oración.',
+  'legal.tTransTitle': 'Transferencias internacionales',
+  'legal.tTransBody':
+    'Los datos anónimos de presencia (una región aproximada) pueden procesarse en centros de datos operados por nuestro proveedor de alojamiento (Cloudflare) fuera de tu país de residencia. Para las transferencias desde el EEE, el Reino Unido o Suiza, recurrimos a las cláusulas contractuales tipo o a una decisión de adecuación. Nada cambia la naturaleza de los datos — siguen siendo anónimos y centrados en el dispositivo.',
   // Localized titles for the original nonreligious prayers.
   'ptitle.gratitude': 'Un momento de gratitud',
   'ptitle.awe': 'Un soplo de asombro',

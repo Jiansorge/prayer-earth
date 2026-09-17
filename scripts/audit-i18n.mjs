@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-const locales = ['en', 'es', 'fr', 'de', 'hi', 'pt', 'it', 'ru', 'zh', 'ar', 'ja', 'ko']
+const locales = ['en', 'es', 'fr', 'de', 'hi', 'pt', 'it', 'ru', 'zh', 'ar', 'ja', 'ko', 'vi', 'tl', 'bo']
 const keys = {}
 for (const loc of locales) {
   const src = readFileSync(`src/locales/${loc}.js`, 'utf8')
