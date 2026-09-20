@@ -7,8 +7,9 @@
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/inline-css.mjs",
-    "build:capacitor": "vite build --mode capacitor",
+    "build": "node scripts/build-legal.mjs && vite build && node scripts/inline-css.mjs",
+    "build:legal": "node scripts/build-legal.mjs",
+    "build:capacitor": "node scripts/build-legal.mjs && vite build --mode capacitor",
     "cap:sync": "npm run build:capacitor && npx cap sync",
     "preview": "vite preview",
     "server": "node server/index.js",

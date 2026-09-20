@@ -11,6 +11,15 @@ server/people-test.json
 !.env.example
 !.env.capacitor
 
+# Android release signing (never commit the upload key or its passwords)
+android/key.properties
+*.jks
+*.keystore
+
+# Generated store legal pages (rebuilt from src/locales at build time)
+public/privacy.html
+public/terms.html
+
 # Godot import artifacts (accidentally copied in from the healing game)
 *.import
 
