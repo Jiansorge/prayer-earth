@@ -72,7 +72,8 @@ export default {
   'settings.secAbout': 'Acerca de',
   'settings.installApp': 'Añadir a la pantalla de inicio',
   'settings.installHint': 'Instala Joining Palms como una app nativa — sin necesidad de tienda de aplicaciones.',
-  'settings.installHintIos': 'Toca Compartir  y luego \u201cAñadir a pantalla de inicio\u201d en Safari.',
+  'settings.installHintIos': 'Toca Compartir y luego \u201cAñadir a pantalla de inicio\u201d.',
+  'settings.installHintBrowser': 'Abre el menú del navegador y elige \u201cAñadir a pantalla de inicio\u201d.',
   'settings.legal': 'Privacidad y atención',
   'settings.sharePrayerLabel': 'Compartir una oración',
   'settings.sharePrayerHint':

@@ -72,7 +72,8 @@ export default {
   'settings.secAbout': 'Über',
   'settings.installApp': 'Zum Home-Bildschirm hinzufügen',
   'settings.installHint': 'Installiere Joining Palms wie eine native App — kein App-Store nötig.',
-  'settings.installHintIos': 'Tippe in Safari auf „Teilen" und dann auf „Zum Home-Bildschirm hinzufügen".',
+  'settings.installHintIos': 'Tippe auf „Teilen" und dann auf „Zum Home-Bildschirm hinzufügen".',
+  'settings.installHintBrowser': 'Öffne das Browsermenü und wähle „Zum Home-Bildschirm hinzufügen".',
   'settings.legal': 'Datenschutz & Fürsorge',
   'settings.sharePrayerLabel': 'Ein Gebet teilen',
   'settings.sharePrayerHint':

@@ -77,7 +77,8 @@ export default {
   'settings.secAbout': 'Giới thiệu',
   'settings.installApp': 'Thêm vào Màn hình chính',
   'settings.installHint': 'Cài Joining Palms như một ứng dụng gốc — không cần cửa hàng ứng dụng.',
-  'settings.installHintIos': 'Trên Safari, chạm Share rồi chọn "Thêm vào Màn hình chính".',
+  'settings.installHintIos': 'Chạm Share rồi chọn "Thêm vào Màn hình chính".',
+  'settings.installHintBrowser': 'Mở menu trình duyệt rồi chọn "Thêm vào Màn hình chính".',
   'settings.sharePrayerLabel': 'Chia sẻ một lời cầu nguyện',
   'settings.sharePrayerHint':
     'Tạo một tấm thiệp cho "{title}" để ai đó có thể tham gia bằng cách quét mã.',

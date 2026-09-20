@@ -77,7 +77,8 @@ export default {
   'settings.secAbout': 'About',
   'settings.installApp': 'Add to Home Screen',
   'settings.installHint': 'Install Joining Palms like a native app — no app store needed.',
-  'settings.installHintIos': 'Tap Share  then "Add to Home Screen" in Safari.',
+  'settings.installHintIos': 'Tap Share, then \u201cAdd to Home Screen\u201d.',
+  'settings.installHintBrowser': 'Open your browser menu, then choose \u201cAdd to Home Screen\u201d.',
   'settings.sharePrayerLabel': 'Share a prayer',
   'settings.sharePrayerHint':
     'Make a card for "{title}" so someone can join by scanning it.',

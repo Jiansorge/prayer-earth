@@ -9,7 +9,7 @@ import useFocusTrap from '../shared/useFocusTrap.js'
 import QRCard from './QRCard.jsx'
 import LegalSheet from './LegalSheet.jsx'
 import { canInstall, promptInstall } from '../shared/installPrompt.js'
-import { isMobile } from '../shared/mobile.js'
+import { isMobile, isIos } from '../shared/mobile.js'
 
 const isInstalled = () =>
   window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone
@@ -324,7 +324,9 @@ export default function SettingsSheet() {
               </>
             ) : (
               <>
-                <div className="field-hint">{t('settings.installHintIos')}</div>
+                <div className="field-hint">
+                  {t(isIos() ? 'settings.installHintIos' : 'settings.installHintBrowser')}
+                </div>
                 <button
                   className="field-btn"
                   onClick={() => setShowIosTip(!showIosTip)}

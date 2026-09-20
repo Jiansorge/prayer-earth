@@ -78,7 +78,8 @@ export default {
   'settings.secAbout': 'སྐོར།',
   'settings.installApp': 'ཁྱིམ་ཐོག་ངོས་ལ་རྩིས་སྣ་གཏན་འཇགས།',
   'settings.installHint': 'Joining Palms ཡོ་ཆས་རྒྱུན་གཏན་གྱི་ངང་ཚུལ་དུ་བཙུགས་ཐུབ། — ཡོ་ཆས་ཞོགས་ཁང་དགོས་པ་མེད།',
-  'settings.installHintIos': 'Safari ནང་མཉམ་སྤྱོད་(Share) གནན་ཏེ། དེ་ནས་"ཁྱིམ་ཐོག་ངོས་ལ་རྩིས་སྣ་གཏན་འཇགས" གནན་རོགས།',
+  'settings.installHintIos': 'མཉམ་སྤྱོད་(Share) གནན་ཏེ། དེ་ནས་"ཁྱིམ་ཐོག་ངོས་ལ་རྩིས་སྣ་གཏན་འཇགས" གདམ་རོགས།',
+  'settings.installHintBrowser': 'བརྡ་འཚོལ་(browser) གྱི་ཟུར་ཐོ་ཁ་ཕྱེ་ཏེ། དེ་ནས་"ཁྱིམ་ཐོག་ངོས་ལ་རྩིས་སྣ་གཏན་འཇགས" གདམ་རོགས།',
   'settings.sharePrayerLabel': 'གསོལ་བ་བརྒྱུད་སྤྲོད།',
   'settings.sharePrayerHint':
     '"{title}" ཀྱི་བཀྲ་ཤིས་ཤོག་ངོས་ཤིག་བཟོས་ཏེ། གཞན་པས་བཤེར་དེ་གསོལ་བཏབ་ཐུབ་པར་བྱེད།',
