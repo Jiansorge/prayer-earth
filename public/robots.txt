@@ -1,4 +1,7 @@
+# Public PWA — keep it discoverable (the single-URL sitemap opts in too). Only
+# block the large non-page media so crawlers don't burn bandwidth on ~60 MB MP3s.
 User-agent: *
 Allow: /
+Disallow: /audio/
 
 Sitemap: https://joining-palms.app/sitemap.xml
