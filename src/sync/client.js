@@ -157,7 +157,7 @@ class SyncClient {
     if (window.Capacitor?.isNativePlatform?.()) {
       // On native, use the Geolocation plugin so location goes through the
       // native permission dialog instead of the WebView's geolocation prompt.
-      import('@capacitor/geolocation')
+      import(/* @vite-ignore */ '@capacitor/geolocation')
         .then(({ Geolocation }) =>
           Geolocation.getCurrentPosition({
             timeout: 8000,
