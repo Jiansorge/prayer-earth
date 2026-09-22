@@ -7,6 +7,9 @@ export default defineConfig({
     host: true,
     port: 5173
   },
+  optimizeDeps: {
+    exclude: ['@capacitor/geolocation']
+  },
   build: {
     target: 'es2020',
     chunkSizeWarningLimit: 1200,
