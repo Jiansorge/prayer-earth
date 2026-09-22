@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { EarthScene } from '../three/EarthScene.js'
-import WorldFeed from '../components/WorldFeed.jsx'
 import { useT } from '../i18n.js'
+
+const WorldFeed = lazy(() => import('../components/WorldFeed.jsx'))
 
 export default function EarthPage() {
   const mountRef = useRef(null)
@@ -92,7 +93,9 @@ export default function EarthPage() {
                 : t('earth.soulsNow', { n: people })
               : t('earth.quietCompany')}          </div>
         </div>
-        <WorldFeed limit={8} compact />
+        <Suspense fallback={null}>
+          <WorldFeed limit={8} compact />
+        </Suspense>
       </div>
     </div>
   )

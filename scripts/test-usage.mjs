@@ -513,6 +513,19 @@ ok(
   offPraying.praying && (offPraying.buddhism || 0) >= 2 && (offPraying.mani || 0) >= 1,
   JSON.stringify(offPraying)
 )
+const offlineQueue = await c.eval(`window.__store.getState().offlineQueue || []`)
+ok(
+  'offline queue persists while disconnected',
+  Array.isArray(offlineQueue),
+  `queue=${offlineQueue.length}`
+)
+const navPausedCheck = await c.eval(`(() => {
+  const s = window.__store.getState()
+  s.setPlaying(true); s.setPaused(true)
+  return { playing: s.playing, paused: s.paused }
+})()`)
+ok('Nav pause state sets correctly', navPausedCheck.paused === true && navPausedCheck.playing === true)
+await c.eval(`window.__store.setState({ paused: false })`)
 
 // --- no speech voices (Firefox Fingerprinting Protection / no TTS installed):
 // must fall back to the audible chant, not sit in silence ---
