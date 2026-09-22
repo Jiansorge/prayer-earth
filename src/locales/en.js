@@ -88,6 +88,8 @@ export default {
   'settings.shareAppHint':
     'Send a friend the whole living Earth, every tradition, every prayer, the growing glow.',
   'settings.shareApp': 'Share Joining Palms',
+  'settings.sharePlayStore': 'Share on Play Store',
+  'settings.playStoreComingSoon': 'Play Store — coming soon',
   'settings.copied': 'Copied!',
   'settings.done': 'Done',
   'settings.gear': 'Settings',

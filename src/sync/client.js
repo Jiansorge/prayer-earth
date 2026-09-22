@@ -248,6 +248,7 @@ class SyncClient {
       }
       this.engine.onStatus = (connected) => {
         if (connected) {
+          this.retryCount = 0
           this.stopSim()
           this.mode = 'live'
           useStore.getState().setConnected(true)
@@ -274,7 +275,9 @@ class SyncClient {
 
   scheduleRetry() {
     clearTimeout(this.retry)
-    this.retry = setTimeout(() => this.connect(), RETRY_MS)
+    this.retryCount = (this.retryCount || 0) + 1
+    const delay = Math.min(RETRY_MS * Math.pow(1.5, this.retryCount - 1), 60000)
+    this.retry = setTimeout(() => this.connect(), delay)
   }
 
   sendPresence() {

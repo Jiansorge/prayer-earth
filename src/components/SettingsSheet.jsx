@@ -67,9 +67,11 @@ export default function SettingsSheet() {
     previewTimer.current = setTimeout(() => setPreviewing(false), 1800)
   }
 
-  const shareApp = async () => {
-    const url = CANONICAL_ORIGIN
-    const text = `Joining Palms, join us in prayer. ${url}`
+  const shareApp = async (target = 'web') => {
+    const url = target === 'store' && PLAY_STORE_URL ? PLAY_STORE_URL : CANONICAL_ORIGIN
+    const text = target === 'store' && PLAY_STORE_URL
+      ? `Joining Palms on Play Store: ${url}`
+      : `Joining Palms, join us in prayer. ${url}`
     try {
       if (navigator.share) {
         await navigator.share({ title: 'Joining Palms', text, url })
@@ -308,9 +310,18 @@ export default function SettingsSheet() {
         <div className="field-hint">
           {t('settings.shareAppHint')}
         </div>
-        <button className="field-btn" onClick={shareApp}>
+        <button className="field-btn" onClick={() => shareApp('web')}>
           {appCopied ? t('settings.copied') : t('settings.shareApp')}
         </button>
+        {PLAY_STORE_URL ? (
+          <button className="field-btn" onClick={() => shareApp('store')} style={{ marginTop: 8 }}>
+            {t('settings.sharePlayStore')}
+          </button>
+        ) : (
+          <div className="field-hint" style={{ marginTop: 8, opacity: 0.6 }}>
+            {t('settings.playStoreComingSoon')}
+          </div>
+        )}
 
         {!isAppShell() && !isInstalled() && isMobile() && (
           <>

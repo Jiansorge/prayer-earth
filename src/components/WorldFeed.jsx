@@ -47,8 +47,9 @@ function WorldFeed({ limit = 10, compact = false }) {
           const place = e.cell
             ? nearestPlace(...e.cell.split(',').map(Number))
             : null
+          const isRecent = Date.now() - e.t < 120000
           return (
-            <span key={e.id} className="feed-pill">
+            <span key={e.id} className={`feed-pill ${isRecent ? 'recent' : ''}`}>
               <span className="feed-emoji">{SPIRIT[e.spiritId]?.emoji || '🕯️'}</span>
               <b>{e.name}</b>
               <span className="feed-prayer">
