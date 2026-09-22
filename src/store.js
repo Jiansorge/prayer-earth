@@ -168,6 +168,8 @@ export const useStore = create(
       // this person's own contributions to the all-time counts
       prayerCompletions: {},
       prayerDayCompletions: {},
+      // offline queue: prayers completed while disconnected, replayed on reconnect
+      offlineQueue: [],
 
       // per-prayer seconds, bucketed by local day: { 'YYYY-MM-DD': { prayerId: secs } }
       prayerDayStats: {},
@@ -274,14 +276,24 @@ export const useStore = create(
           if (keys.length > 62) {
             for (let i = 0; i < keys.length - 62; i++) delete days[keys[i]]
           }
+          const offlineQueue = !s.connected
+            ? [...(s.offlineQueue || []), { prayerId, t: Date.now() }]
+            : s.offlineQueue
           return {
             prayerCompletions: {
               ...s.prayerCompletions,
               [prayerId]: (s.prayerCompletions[prayerId] || 0) + 1
             },
-            prayerDayCompletions: days
+            prayerDayCompletions: days,
+            offlineQueue,
           }
         }),
+      drainOfflineQueue: () => {
+        const q = get().offlineQueue || []
+        if (!q.length) return []
+        set({ offlineQueue: [] })
+        return q
+      },
 
       // Attribute one prayed second to this prayer on the current local day.
       addPrayerSecond: (prayerId) =>
@@ -464,7 +476,8 @@ export const useStore = create(
         bestStreak: s.bestStreak,
         lastPrayedDay: s.lastPrayedDay,
         anonId: s.anonId,
-        firstSeen: s.firstSeen
+        firstSeen: s.firstSeen,
+        offlineQueue: s.offlineQueue || [],
       })
     }
   )

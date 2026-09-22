@@ -249,6 +249,15 @@ class SyncClient {
       this.engine.onStatus = (connected) => {
         if (connected) {
           this.retryCount = 0
+          // replay offline prayers queued while disconnected
+          try {
+            const q = useStore.getState().drainOfflineQueue?.() || []
+            if (q.length) {
+              q.forEach(({ prayerId }) => {
+                try { this.engine.send({ type: 'prayer_complete', prayerId }) } catch {}
+              })
+            }
+          } catch {}
           this.stopSim()
           this.mode = 'live'
           useStore.getState().setConnected(true)
