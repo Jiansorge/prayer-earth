@@ -368,7 +368,7 @@ export default function SettingsSheet() {
           {t('settings.legal')}
         </button>
 
-        {!isAppShell() && (
+        {!isAppShell() && !isMobile() && (
           <button
             className="field-btn"
             onClick={() => {

@@ -157,7 +157,12 @@ class SyncClient {
     if (window.Capacitor?.isNativePlatform?.()) {
       // On native, use the Geolocation plugin so location goes through the
       // native permission dialog instead of the WebView's geolocation prompt.
-      import(/* @vite-ignore */ '@capacitor/geolocation')
+      // Use Plugins registry first (no bundler resolution needed), fall back to
+      // dynamic import only if needed — avoids Vite pre-bundle on web/CI.
+      const capGeo = window.Capacitor?.Plugins?.Geolocation
+      const geoPromise = capGeo
+        ? Promise.resolve({ Geolocation: capGeo })
+        : import('@' + 'capacitor/geolocation')
         .then(({ Geolocation }) =>
           Geolocation.getCurrentPosition({
             timeout: 8000,

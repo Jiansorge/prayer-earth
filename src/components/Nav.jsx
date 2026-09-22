@@ -55,7 +55,7 @@ if (!s.spiritId) {
             </button>
             {item.id === 'prayer' && view !== 'prayer' && (
               <button
-                className={`nav-play ${playing && !paused ? 'on' : ''}`}
+                className={`nav-play ${playing && !paused ? 'on' : paused ? 'paused' : ''}`}
                 onClick={requestPlayToggle}
                 aria-label={playing && !paused ? t('prayer.pause') : t('prayer.pray')}
               >

@@ -523,6 +523,12 @@ h3,
   box-shadow: 0 0 20px rgba(223, 176, 92, 0.55);
 }
 
+.nav .nav-play.paused {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--ink-faint);
+  box-shadow: none;
+}
+
 .nav .nav-stop {
   border: none;
   border-radius: 999px;
