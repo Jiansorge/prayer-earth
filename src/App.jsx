@@ -157,7 +157,7 @@ export default function App() {
       // The 1/2/3/? shortcuts need a physical keyboard — they're meaningless and
       // confusing on the Android app shell, so keep them web-only.
       if (isAppShell()) return
-      else if (e.key === '2') {
+      if (e.key === '2') {
         if (!s.spiritId) s.openPrayer('christianity', 'lords-prayer')
         else s.go('prayer')
       } else if (e.key === '3') s.go('earth')
