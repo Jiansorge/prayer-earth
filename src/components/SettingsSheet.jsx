@@ -9,7 +9,8 @@ import useFocusTrap from '../shared/useFocusTrap.js'
 import QRCard from './QRCard.jsx'
 import LegalSheet from './LegalSheet.jsx'
 import { canInstall, promptInstall } from '../shared/installPrompt.js'
-import { isMobile, isIos } from '../shared/mobile.js'
+import { isMobile, isIos, isAppShell } from '../shared/mobile.js'
+import { CANONICAL_ORIGIN } from '../shared/canonical.js'
 
 const isInstalled = () =>
   window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone
@@ -18,6 +19,14 @@ const isInstalled = () =>
 const AVATARS = ['🌿', '🌙', '🌺', '🕊️', '🌊', '⛰️', '🌾', '🦋', '☀️', '🍃', '🐚', '🌟', '🌸', '🍁', '🪷', '🔥']
 const COLORS = ['#7fc9a0', '#dfb05c', '#7aa2ff', '#ff9e4f', '#ffd166', '#b09dff', '#e8b06f', '#7fd488']
 const DONATE_URL = 'https://ko-fi.com/joiningpalms'
+
+// Share links must point at the canonical production origin, never at the
+// localhost/dev/standalone host the app happens to be running on — a copied
+// `window.location.origin` would hand someone a dead "localhost" link.
+const APP_ORIGIN = 'https://joining-palms.app'
+// Android listing is not live yet: null keeps the Play-Store share row in a
+// "coming soon" state until the store URL exists.
+const PLAY_STORE_URL = null
 
 export default function SettingsSheet() {
   const open = useStore((s) => s.settingsOpen)
@@ -59,8 +68,8 @@ export default function SettingsSheet() {
   }
 
   const shareApp = async () => {
-    const url = window.location.origin
-    const text = `Joining Palms, pray with the whole world, in every tradition. Join me: ${url}`
+    const url = CANONICAL_ORIGIN
+    const text = `Joining Palms, join us in prayer. ${url}`
     try {
       if (navigator.share) {
         await navigator.share({ title: 'Joining Palms', text, url })
@@ -303,7 +312,7 @@ export default function SettingsSheet() {
           {appCopied ? t('settings.copied') : t('settings.shareApp')}
         </button>
 
-        {!isInstalled() && isMobile() && (
+        {!isAppShell() && !isInstalled() && isMobile() && (
           <>
             <div className="field-divider" />
 
@@ -347,7 +356,7 @@ export default function SettingsSheet() {
             {t('settings.donateButton')}
           </a>
           <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Ko-fi — joiningpalms" title="Ko-fi — joiningpalms" style={{ flex: '0 0 auto', display: 'inline-flex' }}>
-            <img src="https://storage.ko-fi.com/cdn/kofi6.png?v=3" alt="Support on Ko-fi" style={{ height: 36, border: 0, display: 'block' }} loading="lazy" />
+            <img src="/kofi6.png" alt="Support on Ko-fi" style={{ height: 36, border: 0, display: 'block' }} loading="lazy" />
           </a>
         </div>
 
@@ -359,15 +368,17 @@ export default function SettingsSheet() {
           {t('settings.legal')}
         </button>
 
-        <button
-          className="field-btn"
-          onClick={() => {
-            setOpen(false)
-            useStore.getState().setKeyboardHelpOpen(true)
-          }}
-        >
-          ⌨ {t('keys.title')}
-        </button>
+        {!isAppShell() && (
+          <button
+            className="field-btn"
+            onClick={() => {
+              setOpen(false)
+              useStore.getState().setKeyboardHelpOpen(true)
+            }}
+          >
+            ⌨ {t('keys.title')}
+          </button>
+        )}
 
         <button className="sheet-close" onClick={() => setOpen(false)}>
           {t('settings.done')}

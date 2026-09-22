@@ -2085,8 +2085,11 @@ this.autoRotate = !this.reducedMotion
     if (this.disposed) return
     requestAnimationFrame(this.animate)
     if (this.hidden) return
+    // Firefox keeps the rAF loop honest at 60fps even when the tab is merely
+    // visible-but-unfocused; there's nobody looking, so drop to ~10fps then.
+    const     focusMs = document.hasFocus() ? 0 : 120
     const now = performance.now()
-    if (this.frameMs && now - this.lastFrame < this.frameMs) return
+    if ((this.frameMs || focusMs) && now - this.lastFrame < Math.max(this.frameMs || 0, focusMs)) return
     this.lastFrame = now
     const t = now / 1000
 

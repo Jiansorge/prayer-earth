@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useT, prayerTitle } from '../i18n.js'
+import { CANONICAL_ORIGIN } from '../shared/canonical.js'
 
 export default function QRCard({ spirit, prayer, onClose }) {
   const canvasRef = useRef(null)
   const t = useT()
   const [url] = useState(
-    () => `${window.location.origin}/#/pray/${spirit.id}/${prayer.id}`
+    () => `${CANONICAL_ORIGIN}/#/pray/${spirit.id}/${prayer.id}`
   )
   const [err, setErr] = useState(false)
 

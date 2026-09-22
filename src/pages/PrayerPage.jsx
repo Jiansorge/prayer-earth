@@ -10,6 +10,8 @@ import PrayerStats from '../components/PrayerStats.jsx'
 import Sparkles from '../components/Sparkles.jsx'
 import { stopPlayback } from '../playback.js'
 import { toggleMute, applyMute } from '../audio/mute.js'
+import { isAppShell } from '../shared/mobile.js'
+import { CANONICAL_ORIGIN } from '../shared/canonical.js'
 
 const fmt = (s) => {
   const m = Math.floor(s / 60)
@@ -357,6 +359,9 @@ const countedRef = useRef(false)
     const onKey = (e) => {
       const tag = (e.target && e.target.tagName) || ''
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+      // Space/arrows/m/r/s are physical-keyboard binds — the Android shell has
+      // no physical keyboard, so treat the whole handler as web-only.
+      if (isAppShell()) return
       // Space must still activate focused buttons/links (share, favorite,
       // close, …) — only take it over when focus is on the page background.
       if (e.target && e.target.closest && e.target.closest('button, a, [role="button"]')) return
@@ -515,7 +520,7 @@ const countedRef = useRef(false)
   }
 
   const share = async () => {
-    const url = `${window.location.origin}/#/pray/${spiritId}/${prayerId}`
+      const url = `${CANONICAL_ORIGIN}/#/pray/${spiritId}/${prayerId}`
     const text = `${prayerTitle(t, prayer.id, prayer.title)} · ${spirit.name}. Pray with the world: ${url}`
     try {
       if (navigator.share) {

@@ -169,6 +169,9 @@ export class AmbientEngine {
 
   ring(intensity = 1) {
     if (!this.ctx || !this.master) return
+    // Respect the stored prayer volume so a first-visit welcome bell never
+    // blasts at 100% while the user is set to (say) 5%.
+    const volume = (useStore.getState().volume ?? 0.8) || 0.001
     const ctx = this.ctx
     const t = ctx.currentTime
     const g = ctx.createGain()
@@ -179,7 +182,7 @@ export class AmbientEngine {
       { f: f * 4.05, gain: 0.05, dur: 2.2 }
     ]
     const out = ctx.createGain()
-    out.gain.value = 0.22 * intensity
+    out.gain.value = 0.22 * intensity * volume
     partials.forEach(({ f: pf, gain, dur }) => {
       const o = ctx.createOscillator()
       o.type = 'sine'
@@ -215,3 +218,4 @@ export class AmbientEngine {
 }
 
 export const ambient = new AmbientEngine()
+if (typeof window !== 'undefined') window.__ambient = ambient
