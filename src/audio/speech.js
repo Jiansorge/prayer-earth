@@ -60,6 +60,11 @@ class SpeechEngine {
     // One <audio> element per recorded file, reused across repeated phrases
     // (mantras repeat the same line many times) so the MP3 is fetched once.
     this._audioByUrl = new Map()
+    // Decoded copies of each recorded phrase (Web Audio route) so a WebView
+    // whose <audio> element stalls at 0:00 can still speak. Loaded on demand.
+    this._bufferByUrl = new Map()
+    this.cloudSource = null
+    this.cloudGain = null
 
     if (this.synth) {
       this.refreshVoices()
@@ -211,6 +216,84 @@ class SpeechEngine {
     }
   }
 
+  // Fetch + decode a recorded phrase once, cached for repeats (mantras say the
+  // same line many times). Returns null if the graph or the decode is missing.
+  async _bufferFor(url) {
+    const cached = this._bufferByUrl.get(url)
+    if (cached) return cached
+    const ctx = ambient.ctx
+    if (!ctx) return null
+    try {
+      if (this._bufferByUrl.size >= 128) {
+        const oldest = this._bufferByUrl.keys().next().value
+        this._bufferByUrl.delete(oldest)
+      }
+      const r = await fetch(url)
+      if (!r.ok) return null
+      const data = await r.arrayBuffer()
+      const buf = await ctx.decodeAudioData(data)
+      this._bufferByUrl.set(url, buf)
+      return buf
+    } catch {
+      return null
+    }
+  }
+
+  // Hands a decoded phrase to the shared WebAudio graph with the same gentle
+  // warmth the old element reverb used: a soft low-pass plus the hall tail.
+  voiceConnect(src, gain) {
+    const ctx = src.context
+    if (!ctx || ctx.state !== 'running') return
+    try {
+      const lowpass = ctx.createBiquadFilter()
+      lowpass.type = 'lowpass'
+      lowpass.frequency.value = 2600
+      lowpass.Q.value = 0.2
+      gain.connect(lowpass)
+      lowpass.connect(ctx.destination)
+      if (this._revConvolver) {
+        const wet = ctx.createGain()
+        wet.gain.value = 0.01
+        src.connect(this._revConvolver)
+        this._revConvolver.connect(wet)
+        wet.connect(ctx.destination)
+      }
+    } catch {}
+  }
+
+  // Stop the currently-speaking decoded phrase so a new phrase (or a stop/pause)
+  // can never overlap it.
+  stopCloudSource() {
+    if (this.cloudSource) {
+      try {
+        this.cloudSource.onended = null
+        try {
+          this.cloudSource.stop()
+        } catch {}
+        this.cloudSource.disconnect()
+      } catch {}
+      this.cloudSource = null
+    }
+    this.cloudGain = null
+  }
+
+  // One shared, hidden <audio> element attached to the document. Attached media
+  // owns the platform's audio track — an orphan element cannot — which is what
+  // hardened WebViews need to actually produce sound.
+  _elementEl() {
+    if (this._el) return this._el
+    let el = document.getElementById('__speechAudio')
+    if (!el) {
+      el = new Audio()
+      el.id = '__speechAudio'
+      el.style.display = 'none'
+      el.preload = 'auto'
+      document.body.appendChild(el)
+    }
+    this._el = el
+    return el
+  }
+
   async speakCloud(i) {
     const job = this.job
     if (!job || !job.active || job.mode !== 'tts') return false
@@ -245,18 +328,6 @@ class SpeechEngine {
           this.cloudCache.delete(oldest)
         }
       }
-      let audio = this._audioByUrl.get(url)
-      if (!audio) {
-        audio = new Audio(url)
-        audio.volume = Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75)
-        // Play directly, never through the WebAudio graph: an element routed
-        // through createMediaElementSource can't play on its own again, so a
-        // suspended AudioContext (mobile/background) would silence it forever.
-        this._audioByUrl.set(url, audio)
-      }
-      audio.playbackRate = job.rate ?? 1
-      audio.currentTime = 0
-      this.cloudAudio = audio
       clearTimeout(job.guard)
       clearTimeout(job.advTimer)
       job.index = i
@@ -271,12 +342,61 @@ class SpeechEngine {
         job.done.add(token)
         this.advance(i)
       }
-      audio.onended = finish
-      audio.onerror = finish
-      // Safety net set BEFORE play() so a stalled file or a muted environment
+      // Safety net set BEFORE playback so a stalled file or a muted environment
       // can never hang a prayer — the phrase always advances.
       job.advTimer = setTimeout(finish, job.phraseHold * 2 + 1200)
-      await audio.play()
+      // Native WebViews that harden the browser (e.g. GrapheneOS's Vanadium)
+      // force-suspend AudioContexts, so the WebAudio graph can never sustain a
+      // prayer there — the DOM-attached <audio> element is the dependable path.
+      const native = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())
+      const ctx = native ? null : ambient.ctx
+      const buffer = native ? null : await this._bufferFor(url)
+      if (this.job !== job || !job.active || job.mode !== 'tts') {
+        this.stopCloudSource()
+        return false
+      }
+      if (ctx && ctx.state === 'suspended') {
+        // A user-tap call stack can resume the ambient graph; a refused resume
+        // (headless/background) just falls through to the element backup.
+        try {
+          await ctx.resume()
+        } catch {}
+      }
+      if (buffer && ctx && ctx.state === 'running' && !job.noCloud) {
+        this.stopCloudSource()
+        if (!this._revConvolver) this.buildReverb(ctx)
+        const src = ctx.createBufferSource()
+        src.buffer = buffer
+        src.playbackRate.value = job.rate ?? 1
+        const gain = ctx.createGain()
+        gain.gain.value = Math.max(0.001, Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75))
+        this.voiceConnect(src, gain)
+        this.cloudSource = src
+        this.cloudGain = gain
+        src.onended = finish
+        try {
+          src.start(0, 0)
+        } catch {
+          src.onended = finish
+        }
+      } else {
+        // One shared hidden <audio> element attached to the document. Attached
+        // media owns the platform's audio track (an orphan element cannot), so
+        // it really plays here; swapping src keeps it registered as the active
+        // media across every phrase.
+        this.stopCloudSource()
+        const el = this._elementEl()
+        el.src = url
+        el.volume = Math.max(0.001, Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75))
+        el.playbackRate = job.rate ?? 1
+        el.currentTime = 0
+        el.onended = finish
+        el.onerror = finish
+        this.cloudAudio = el
+        try {
+          await el.play()
+        } catch {}
+      }
       const next = i + 1
       const np = job.phrases[next]
       if (next < job.phrases.length && np && np.t) {
@@ -389,6 +509,13 @@ class SpeechEngine {
     }
 
     if (!this.synth) {
+      // No TTS engine (e.g. a de-Googled device without speechSynthesis): the
+      // recorded phrase files still speak, so say those instead of the chant.
+      if (this.hasStaticFor(this.job)) {
+        this.primeKicker()
+        this.speakIndex(opts.index || 0)
+        return
+      }
       this.timedLoop(opts, true)
       return
     }
@@ -421,6 +548,13 @@ class SpeechEngine {
     // and some devices have no TTS voices. Skip the dead engine entirely and go
     // straight to the audible chant so prayer is still heard in the room.
     if (!this.voices.length) {
+      // Voices missing would silence speechSynthesis, but the recordings still
+      // speak — the de-Googled-device case again (no TTS, static audio present).
+      if (this.hasStaticFor(this.job)) {
+        this.primeKicker()
+        this.speakIndex(this.job ? this.job.index || 0 : 0)
+        return
+      }
       this.job.chantReason = 'no-voices'
       this.notifyFallback('no-voices')
       this.timedLoop(this.job, true)
@@ -456,6 +590,11 @@ class SpeechEngine {
     if (this.cloudAudio) {
       try {
         this.cloudAudio.volume = Math.min(0.85, vol * 0.75)
+      } catch {}
+    }
+    if (this.cloudGain) {
+      try {
+        this.cloudGain.gain.value = Math.max(0.001, Math.min(0.85, vol * 0.75))
       } catch {}
     }
   }
@@ -561,6 +700,13 @@ class SpeechEngine {
     }
     clearTimeout(job.guard)
     clearTimeout(job.advTimer)
+    if (!this.synth) {
+      j.mode = 'timed'
+      j.chantReason = 'no-voices'
+      this.notifyFallback('no-voices')
+      this.timedLoop(j, true)
+      return
+    }
     const { text, lang, voice } = this.utteranceText(phrase, job.lang)
     const u = new SpeechSynthesisUtterance(text)
     u.lang = lang
@@ -730,6 +876,7 @@ class SpeechEngine {
           try {
             if (this.cloudAudio) this.cloudAudio.pause()
           } catch {}
+          this.stopCloudSource()
           this.speakIndex(j.index)
         }
       }
@@ -775,6 +922,7 @@ class SpeechEngine {
     this.job = null
     clearInterval(this.kicker)
     this.teardownReverb()
+    this.stopCloudSource()
     if (j) {
       clearTimeout(j.guard)
       clearTimeout(j.advTimer)
@@ -794,6 +942,7 @@ class SpeechEngine {
         this.cloudAudio.pause()
       } catch {}
     }
+    this.stopCloudSource()
     if (this.job) {
       this.job.paused = true
       // Drop any pending stall/advance timers so a paused job can't be revived
@@ -822,6 +971,7 @@ class SpeechEngine {
       try {
         if (this.cloudAudio) this.cloudAudio.pause()
       } catch {}
+      this.stopCloudSource()
       clearTimeout(j.guard)
       clearTimeout(j.advTimer)
       try {
@@ -858,6 +1008,7 @@ class SpeechEngine {
     clearInterval(this.kicker)
     clearTimeout(this.timer)
     this.teardownReverb()
+    this.stopCloudSource()
     if (this.cloudAudio) {
       try {
         this.cloudAudio.pause()
@@ -874,6 +1025,7 @@ class SpeechEngine {
       }
       this._audioByUrl.clear()
     }
+    if (this._bufferByUrl) this._bufferByUrl.clear()
     try {
       this.synth.cancel()
     } catch {}

@@ -3139,6 +3139,7 @@ textarea:focus-visible {
   font-size: 17px;
   font-weight: 600;
   display: block;
+  overflow-wrap: anywhere;
 }
 
 .picker-row-sub {
@@ -3152,7 +3153,9 @@ textarea:focus-visible {
 }
 
 .picker-meta {
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 32%;
   text-align: end;
   font-size: 12px;
   color: var(--ink-faint);
@@ -3163,6 +3166,8 @@ textarea:focus-visible {
 
 .picker-total {
   color: var(--gold-soft);
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .picker-go {

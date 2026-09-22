@@ -147,16 +147,32 @@ class SyncClient {
     // fallback city is an anonymous guess for the world's light; we never
     // pretend a guess is where the person actually is.
     const publishReal = () => useStore.getState().setYouLoc(this.loc)
+    const done = (pos) => {
+      this.loc = {
+        lat: +pos.coords.latitude.toFixed(1),
+        lon: +pos.coords.longitude.toFixed(1)
+      }
+      publishReal()
+    }
+    if (window.Capacitor?.isNativePlatform?.()) {
+      // On native, use the Geolocation plugin so location goes through the
+      // native permission dialog instead of the WebView's geolocation prompt.
+      import('@capacitor/geolocation')
+        .then(({ Geolocation }) =>
+          Geolocation.getCurrentPosition({
+            timeout: 8000,
+            maximumAge: 600000,
+            enableHighAccuracy: false
+          })
+        )
+        .then(done)
+        .catch(() => this.fallbackLoc())
+      return
+    }
     try {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            this.loc = {
-              lat: +pos.coords.latitude.toFixed(1),
-              lon: +pos.coords.longitude.toFixed(1)
-            }
-            publishReal()
-          },
+          done,
           () => {
             this.fallbackLoc()
           },

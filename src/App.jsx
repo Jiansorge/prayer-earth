@@ -154,15 +154,19 @@ export default function App() {
     const onKey = (e) => {
       const tag = e.target && e.target.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
-      const s = useStore.getState()
-      if (e.key === '1') s.go('home')
+      // The 1/2/3/? shortcuts need a physical keyboard — they're meaningless and
+      // confusing on the Android app shell, so keep them web-only.
+      if (isAppShell()) return
       else if (e.key === '2') {
         if (!s.spiritId) s.openPrayer('christianity', 'lords-prayer')
         else s.go('prayer')
       } else if (e.key === '3') s.go('earth')
       else if (e.key === '?' || (e.shiftKey && e.code === 'Slash')) {
-        e.preventDefault()
-        useStore.getState().setKeyboardHelpOpen(true)
+        // Android shell: no physical keyboard — the ? shortcut is web-only.
+        if (!isAppShell()) {
+          e.preventDefault()
+          useStore.getState().setKeyboardHelpOpen(true)
+        }
       }
     }
     window.addEventListener('keydown', onKey)

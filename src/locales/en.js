@@ -5,7 +5,7 @@ export default {
   'nav.earth': 'Earth',
   'home.title': 'Pray with the whole world.',
   'home.sub':
-    'Pick a path below. When you join, your prayer joins every other prayer happening right now — the Earth glows a little brighter, and divine energy ripples through the multiverse.',
+    'Pick a path below. When you join, your prayer joins every other prayer happening right now. The Earth glows a little brighter, and divine energy ripples through the multiverse.',
   'home.carried': 'You have carried {time} of prayer with the world.',
   'home.yourPrayersToday': '✶ {n} your prayers today',
   'home.sacredWords': 'Sacred words of the world',

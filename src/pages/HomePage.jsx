@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useStore } from '../store.js'
 import { canInstall, promptInstall } from '../shared/installPrompt.js'
-import { isMobile } from '../shared/mobile.js'
+import { isMobile, isAppShell } from '../shared/mobile.js'
 import { SPIRITUALITIES, getPrayerWithSpirit, loadSpirit, isLoaded } from '../data/prayers.js'
 import WorldMeter from '../components/WorldMeter.jsx'
 import WorldFeed from '../components/WorldFeed.jsx'
@@ -146,7 +146,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {installVisible && canInstall() && isMobile() && (
+      {!isAppShell() && installVisible && canInstall() && isMobile() && (
         <div className="install-banner">
           <span>{t('install.text')}</span>
           <button className="field-btn" onClick={async () => {
