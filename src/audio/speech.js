@@ -369,8 +369,7 @@ class SpeechEngine {
         src.buffer = buffer
         src.playbackRate.value = job.rate ?? 1
         const gain = ctx.createGain()
-        const baseGain = (useStore.getState().volume ?? 0.8) * 0.75
-        gain.gain.value = Math.max(0.001, Math.min(0.85, baseGain * (i === 0 ? 0.9 : 1)))
+        gain.gain.value = Math.max(0.001, Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75))
         this.voiceConnect(src, gain)
         this.cloudSource = src
         this.cloudGain = gain
@@ -388,7 +387,7 @@ class SpeechEngine {
         this.stopCloudSource()
         const el = this._elementEl()
         el.src = url
-        el.volume = Math.max(0.001, Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75 * (i === 0 ? 0.9 : 1)))
+        el.volume = Math.max(0.001, Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75))
         el.playbackRate = job.rate ?? 1
         el.currentTime = 0
         el.onended = finish
@@ -713,9 +712,7 @@ class SpeechEngine {
     u.lang = lang
     u.rate = job.rate ?? 1
     // Speech sits gently under the ambient bed rather than shouting over it.
-    // First line gets a 10% softer start to avoid a loud cold-start click.
-    const baseVol = (useStore.getState().volume ?? 0.8) * 0.75
-    u.volume = Math.min(0.85, baseVol * (i === 0 ? 0.9 : 1))
+    u.volume = Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75)
     u.pitch = 1.0
     if (voice) u.voice = voice
 

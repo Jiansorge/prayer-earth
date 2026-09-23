@@ -277,7 +277,7 @@ export const useStore = create(
             for (let i = 0; i < keys.length - 62; i++) delete days[keys[i]]
           }
           const offlineQueue = !s.connected
-            ? [...(s.offlineQueue || []), { prayerId, t: Date.now(), loc: s.youLoc, cell: s.youLoc ? `${s.youLoc.lat.toFixed(1)},${s.youLoc.lon.toFixed(1)}` : null }]
+            ? [...(s.offlineQueue || []), { prayerId, t: Date.now() }]
             : s.offlineQueue
           return {
             prayerCompletions: {
