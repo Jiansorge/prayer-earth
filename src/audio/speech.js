@@ -133,7 +133,7 @@ class SpeechEngine {
       for (let ch = 0; ch < 2; ch++) {
         const data = ir.getChannelData(ch)
         for (let i = 0; i < len; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5)
+          data[i] = Math.pow(1 - i / len, 2.5) * Math.cos(i / len * Math.PI * 2)
         }
       }
       const convolver = ctx.createConvolver()
