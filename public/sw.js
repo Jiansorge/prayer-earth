@@ -12,7 +12,7 @@ const CORE = [
   '/index.html',
   '/analytics-loader.js',
   '/manifest.webmanifest',
-  '/icons/icon.svg',
+  '/icons/icon-prayer-128.webp',
   '/icons/icon-prayer.webp',
   '/icons/icon-prayer-64.webp',
   '/icons/icon-prayer-128.webp',
