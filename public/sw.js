@@ -6,7 +6,7 @@
 // installs, deletes the old cache in `activate`, and re-caches fresh files. If
 // the app is served through Cloudflare, also purge the CDN cache for /audio/*
 // so the edge stops handing out the old files.
-const CACHE = 'prayer-earth-v21'
+const CACHE = 'prayer-earth-v22'
 const CORE = [
   '/',
   '/index.html',
@@ -19,7 +19,8 @@ const CORE = [
   '/icons/icon-prayer-256.webp',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
-  '/icons/apple-touch-icon-180.png'
+  '/icons/apple-touch-icon-180.png',
+  '/land-mask.png'
 ]
 
 self.addEventListener('install', (e) => {
