@@ -721,13 +721,24 @@ await c.eval(`document.querySelector('.ctrl-btn.play').click()`)
 const recordedTaras = await c.waitFor(`window.__speech?.job?.active === true && (window.__speech.cloudAudio || window.__speech.cloudSource)`, 15000)
 const recordedTarasState = await c.eval(`(() => { const sp = window.__speech; return { mode: sp?.job?.mode || null, source: !!sp?.cloudSource, element: !!sp?.cloudAudio, manifestVoices: sp?._manifestData?.prayers?.['21-taras']?.voices?.length || 0 } })()`)
 ok('21 Taras uses recorded audio when available', !!recordedTaras && recordedTarasState.manifestVoices > 0, JSON.stringify(recordedTarasState))
-// --- the real 21 Taras praise is its own prayer, in Sanskrit read by Indian
-// voices, with a selectable voice list (more than one recorded voice) ---
-const praiseTaras = await c.eval(`(() => { const sp = window.__speech; const e = sp?._manifestData?.prayers?.['21-taras-praise']; return { voices: e?.voices || [], phrases: e?.phrases || 0, has: !!e } })()`)
+// --- the real 21 Taras praise is its own prayer with a selectable voice list
+// (more than one recorded voice); the short Tara Dhāraṇī is the Sanskrit one
+// that uses the Indian voices ---
+const praiseTaras = await c.eval(`(() => { const sp = window.__speech; const e = sp?._manifestData?.prayers?.['21-taras-praise']; const d = sp?._manifestData?.prayers?.['21-taras']; return { voices: e?.voices || [], phrases: e?.phrases || 0, has: !!e, dharanaVoices: d?.voices || [] } })()`)
 ok('21 Taras praise is a separate recorded prayer', praiseTaras.has && praiseTaras.phrases === 22 && praiseTaras.voices.length > 1, JSON.stringify(praiseTaras))
-ok('21 Taras praise uses Indian voices', praiseTaras.voices.length > 0 && praiseTaras.voices.every((v) => v.startsWith('hi-')), JSON.stringify(praiseTaras.voices))
+ok('Tara Dhāraṇī uses Indian voices', praiseTaras.dharanaVoices.length > 0 && praiseTaras.dharanaVoices.every((v) => v.startsWith('hi-')), JSON.stringify(praiseTaras.dharanaVoices))
 await c.eval(`document.querySelector('.ctrl-btn.stop')?.click()`)
 await c.waitFor(`window.__store?.getState().playing === false`, 8000)
+
+// --- regression: the praise's non-English text must be real, varied verse
+// text that lines up with its own English line (it must NOT be a single
+// mantra repeated across every verse) ---
+await c.eval(`window.__store.getState().openPrayer('buddhism', '21-taras-praise')`)
+await c.waitFor(`document.querySelectorAll('.prayer-line').length >= 20`, 15000)
+const praiseLines = await c.eval(`(() => { const lines = [].slice.call(document.querySelectorAll('.prayer-line')); return lines.map(l => ({ t: (l.querySelector('.hlt')?.textContent || '').trim(), en: (l.querySelector('.en')?.textContent || '').trim() })); })()`)
+const distinctScript = new Set(praiseLines.map((l) => l.t)).size
+ok('21 Taras praise renders varied per-verse script text', praiseLines.length >= 20 && distinctScript >= 15, `lines=${praiseLines.length} distinct=${distinctScript}`)
+ok('21 Taras praise has English for every verse', praiseLines.every((l) => l.en.length > 0), `withEnglish=${praiseLines.filter((l) => l.en.length > 0).length}`)
 
 // --- no speech voices (Firefox Fingerprinting Protection / no TTS installed):
 // must fall back to the audible chant, not sit in silence ---

@@ -210,11 +210,11 @@ const testTaras = async () => {
   await cdp.evaluate(`document.querySelector('.ctrl-btn.play')?.click()`)
   await cdp.waitFor(`window.__speech?.job?.active === true && (window.__speech.cloudAudio || window.__speech.cloudSource)`, 12000)
   const switched = await cdp.evaluate(`(() => { const chip = [...document.querySelectorAll('.chooser .chip')].find((node) => node.innerText.includes('Twenty-One')); if (!chip) return false; chip.click(); return true })()`)
-  await cdp.waitFor(`window.__store?.getState().prayerId === '21-taras' && document.querySelector('.prayer-title')?.innerText.includes('Twenty-One') && !!document.querySelector('.ctrl-btn.play')`, 10000)
+  await cdp.waitFor(`window.__store?.getState().prayerId === '21-taras-praise' && document.querySelector('.prayer-title')?.innerText.includes('Twenty-One') && !!document.querySelector('.ctrl-btn.play')`, 10000)
   check('switching from mani to 21 Taras selects the new prayer', !!switched, `switched=${switched}`)
   await cdp.evaluate(`document.querySelector('.ctrl-btn.play')?.click()`)
   const started = await cdp.waitFor(`window.__speech?.job?.active === true && (window.__speech.cloudAudio || window.__speech.cloudSource)`, 15000)
-  const state = await cdp.evaluate(`(() => { const sp = window.__speech; return { mode: sp?.job?.mode || null, source: !!sp?.cloudSource, element: !!sp?.cloudAudio, manifestVoices: sp?._manifestData?.prayers?.['21-taras']?.voices?.length || 0 } })()`)
+  const state = await cdp.evaluate(`(() => { const sp = window.__speech; return { mode: sp?.job?.mode || null, source: !!sp?.cloudSource, element: !!sp?.cloudAudio, manifestVoices: sp?._manifestData?.prayers?.['21-taras-praise']?.voices?.length || 0 } })()`)
   const samples = []
   for (let i = 0; i < 24; i++) {
     await sleep(500)

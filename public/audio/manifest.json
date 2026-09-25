@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-25T19:00:18.109Z",
+  "generated": "2026-09-25T19:30:32.803Z",
   "prayers": {
     "lords-prayer": {
       "lang": "en",
@@ -2422,10 +2422,12 @@
       "phrases": 4
     },
     "21-taras-praise": {
-      "lang": "hi",
+      "lang": "en",
       "voices": [
-        "hi-IN-SwaraNeural",
-        "hi-IN-MadhurNeural"
+        "en-AU-NatashaNeural",
+        "en-CA-LiamNeural",
+        "en-CA-ClaraNeural",
+        "en-HK-SamNeural"
       ],
       "phrases": 22
     }
