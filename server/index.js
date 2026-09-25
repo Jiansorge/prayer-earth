@@ -4,7 +4,7 @@
 
 import { WebSocketServer } from 'ws'
 import { createServer } from 'node:http'
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
+import { readFileSync, writeFileSync, renameSync, existsSync, mkdirSync } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import { extname, join, normalize, dirname, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -98,13 +98,31 @@ function ttsLimited(ip) {
 // known fields, and reject non-finite numbers so NaN can never persist in
 // people.json. Also cap the day maps so a spoofed calendar can't bloat it.
 const DANGEROUS = new Set(['__proto__', 'constructor', 'prototype'])
+const safeKey = (value) =>
+  typeof value === 'string' && value.length > 0 && !DANGEROUS.has(value)
+const assignSafeCounts = (target, source) => {
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return
+  for (const [key, value] of Object.entries(source)) {
+    if (safeKey(key) && Number.isSafeInteger(value) && value >= 0) target[key] = value
+  }
+}
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/
-const finiteNum = (v) => typeof v === 'number' && Number.isFinite(v)
+const counter = (v) => Number.isSafeInteger(v) && v >= 0
+const utcDay = (d) =>
+  `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(
+    d.getUTCDate()
+  ).padStart(2, '0')}`
+const validDay = (d) => {
+  if (typeof d !== 'string' || !DAY_RE.test(d)) return false
+  const parsed = new Date(`${d}T00:00:00.000Z`)
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === d
+}
+const maxValidDay = utcDay(new Date(Date.now() + 86400000))
 function cleanMap(map) {
   const out = {}
   for (const [k, v] of Object.entries(map || {})) {
-    if (DANGEROUS.has(k)) continue
-    if (!finiteNum(v)) continue
+    if (DANGEROUS.has(k) || typeof k !== 'string' || k.length > 100) continue
+    if (!counter(v)) continue
     if (Object.keys(out).length >= 1000) break
     out[k] = v
   }
@@ -112,34 +130,24 @@ function cleanMap(map) {
 }
 function cleanDayMap(map) {
   const out = {}
-  for (const [d, m] of Object.entries(map || {})) {
-    if (DANGEROUS.has(d)) continue
-    if (!DAY_RE.test(d)) continue
-    const cleaned = cleanMap(m)
+  for (const d of Object.keys(map || {}).sort().slice(-62)) {
+    if (!validDay(d) || d > maxValidDay) continue
+    const cleaned = cleanMap(map[d])
     if (Object.keys(cleaned).length) out[d] = cleaned
-    if (Object.keys(out).length >= 2000) break
   }
   return out
 }
 function sanitizeStats(stats) {
   if (!stats || typeof stats !== 'object' || Array.isArray(stats)) return {}
-  const now = new Date()
-  const maxDay = (() => {
-    const m = new Date(now)
-    m.setDate(now.getDate() + 1)
-    return `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}-${String(
-      m.getDate()
-    ).padStart(2, '0')}`
-  })()
   const out = {}
   for (const [k, v] of Object.entries(stats)) {
     if (DANGEROUS.has(k)) continue
     if (k === 'prayerCompletions') out[k] = cleanMap(v)
     else if (k === 'prayerDayCompletions' || k === 'prayerDayStats') out[k] = cleanDayMap(v)
     else if (k === 'localPrayerSeconds' || k === 'streak' || k === 'bestStreak') {
-      if (finiteNum(v)) out[k] = v
+      if (counter(v)) out[k] = v
     } else if (k === 'lastPrayedDay') {
-      if (typeof v === 'string' && DAY_RE.test(v) && v <= maxDay) out[k] = v
+      if (validDay(v) && v <= maxValidDay) out[k] = v
     }
   }
   return out
@@ -334,6 +342,17 @@ function dataFile(name) {
   return new URL(`./${name}`, import.meta.url)
 }
 
+const RECENT_START_TTL_MS = 7 * 86400000
+const MAX_RECENT_STARTS = 10000
+const recentStarts = new Map()
+
+function atomicWriteJson(file, value) {
+  const target = fileURLToPath(file)
+  const temp = `${target}.${process.pid}.tmp`
+  writeFileSync(temp, JSON.stringify(value))
+  renameSync(temp, target)
+}
+
 // All-time totals of prayers ever carried. Survives restarts via a small JSON
 // file so the numbers never reset when the server comes back up.
 const SERVER_DIR = dirname(fileURLToPath(import.meta.url))
@@ -343,29 +362,47 @@ const DATA_FILE = process.env.PE_DATA_FILE
 const prayerTotals = {}
 const spiritTotals = {}
 let startedAt = Date.now()
+let saveTimer = null
 try {
   if (existsSync(DATA_FILE)) {
     const d = JSON.parse(readFileSync(DATA_FILE, 'utf8'))
-    if (d.prayers) Object.assign(prayerTotals, d.prayers)
-    if (d.spirits) Object.assign(spiritTotals, d.spirits)
+    if (d.prayers) assignSafeCounts(prayerTotals, d.prayers)
+    if (d.spirits) assignSafeCounts(spiritTotals, d.spirits)
+    if (typeof d.totalPrayerSeconds === 'number' && Number.isFinite(d.totalPrayerSeconds)) {
+      totalPrayerSeconds = Math.max(0, d.totalPrayerSeconds)
+    }
+    if (Array.isArray(d.recentStarts)) {
+      for (const entry of d.recentStarts) {
+        if (Array.isArray(entry) && typeof entry[0] === 'string' && Number.isFinite(entry[1])) {
+          recentStarts.set(entry[0], entry[1])
+        }
+      }
+    }
     if (typeof d.startedAt === 'number') startedAt = d.startedAt
     else saveTotals()
   }
 } catch {}
-let saveTimer = null
 function saveTotals() {
   clearTimeout(saveTimer)
-  saveTimer = setTimeout(() => {
-    try {
-      writeFileSync(DATA_FILE, JSON.stringify({ prayers: prayerTotals, spirits: spiritTotals, startedAt }))
-    } catch {}
-  }, 500)
+  saveTimer = setTimeout(writeTotalsNow, 500)
+}
+function writeTotalsNow() {
+  clearTimeout(saveTimer)
+  saveTimer = null
+  try {
+    atomicWriteJson(DATA_FILE, {
+      prayers: prayerTotals,
+      spirits: spiritTotals,
+      totalPrayerSeconds,
+      recentStarts: Array.from(recentStarts.entries()),
+      startedAt
+    })
+  } catch {}
 }
 
 // ---- anonymous lifetime sync ----
-// Keeps personal prayer stats keyed by an opaque, random id so they can follow
-// a person between devices, no account, no name, nothing that reveals who
-// they are.
+// Keeps personal prayer stats keyed by an opaque browser-profile id, with no
+// account, name, or other identifying information.
 const PEOPLE_FILE = process.env.PE_PEOPLE_FILE
   ? pathToFileURL(resolve(SERVER_DIR, process.env.PE_PEOPLE_FILE))
   : dataFile('people.json')
@@ -378,11 +415,33 @@ try {
 let peopleSaveTimer = null
 function savePeople() {
   clearTimeout(peopleSaveTimer)
-  peopleSaveTimer = setTimeout(() => {
-    try {
-      writeFileSync(PEOPLE_FILE, JSON.stringify(peopleSync))
-    } catch {}
-  }, 500)
+  peopleSaveTimer = setTimeout(writePeopleNow, 500)
+}
+function writePeopleNow() {
+  clearTimeout(peopleSaveTimer)
+  peopleSaveTimer = null
+  try {
+    atomicWriteJson(PEOPLE_FILE, peopleSync)
+  } catch {}
+}
+
+function pruneRecentStarts(now = Date.now()) {
+  const cutoff = now - RECENT_START_TTL_MS
+  for (const [id, at] of recentStarts) {
+    if (!Number.isFinite(at) || at < cutoff) recentStarts.delete(id)
+  }
+  while (recentStarts.size > MAX_RECENT_STARTS) {
+    recentStarts.delete(recentStarts.keys().next().value)
+  }
+}
+pruneRecentStarts()
+
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.once(signal, () => {
+    writeTotalsNow()
+    writePeopleNow()
+    process.exit(0)
+  })
 }
 
 // (mergeStats lives in ../src/shared/stats.js so client and server agree.)
@@ -411,7 +470,7 @@ function recount() {
   for (const k in lightSpirits) delete lightSpirits[k]
   people = 0
   for (const { praying, prayerId, spiritId, lat, lon } of clients.values()) {
-    if (!praying) continue
+    if (!praying || !safeKey(prayerId) || !safeKey(spiritId)) continue
     people += 1
     if (prayerId) prayerCounts[prayerId] = (prayerCounts[prayerId] || 0) + 1
     if (spiritId) spiritCounts[spiritId] = (spiritCounts[spiritId] || 0) + 1
@@ -429,32 +488,24 @@ function countActiveUsers() {
   let today = 0
   let week = 0
   const day = (t) =>
-    `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(
-      t.getDate()
+    `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, '0')}-${String(
+      t.getUTCDate()
     ).padStart(2, '0')}`
   const now = new Date()
   const todayKey = day(now)
-  const weekAgo = new Date(now)
-  weekAgo.setDate(now.getDate() - 7)
-  const weekKey = day(weekAgo)
+  const weekKey = day(new Date(now.getTime() - 6 * 86400000))
+  const maxDay = day(new Date(now.getTime() + 86400000))
   // A valid day is a YYYY-MM-DD string no later than tomorrow (UTC+14 law); a
   // spoofed '9999-12-31' must never inflate the weekly rollup forever.
-  const maxDay = (() => {
-    const m = new Date(now)
-    m.setDate(now.getDate() + 1)
-    return day(m)
-  })()
-  const okDay = (d) => typeof d === 'string' && DAY_RE.test(d) && d <= maxDay
+  const okDay = (d) => validDay(d) && d <= maxDay
   for (const p of Object.values(peopleSync)) {
-    const days = p.prayerDayCompletions || {}
-    if (okDay(p.lastPrayedDay) && p.lastPrayedDay === todayKey) today++
-    for (const d of Object.keys(days)) {
-      if (okDay(d) && d === todayKey) today++
-      if (okDay(d) && d >= weekKey) {
-        week++
-        break
-      }
-    }
+    const days = Object.keys(p.prayerDayCompletions || {}).filter(okDay)
+    const activeToday = p.lastPrayedDay === todayKey || days.includes(todayKey)
+    const activeWeek =
+      (okDay(p.lastPrayedDay) && p.lastPrayedDay >= weekKey && p.lastPrayedDay <= todayKey) ||
+      days.some((d) => d >= weekKey && d <= todayKey)
+    if (activeToday) today++
+    if (activeWeek) week++
   }
   return { today, week }
 }
@@ -483,10 +534,15 @@ function broadcast() {
 }
 
 // Even with no one connected, the world keeps praying a little.
+let lastSecondsSave = 0
 setInterval(() => {
-  if (clients.size === 0) return
-  totalPrayerSeconds += clients.size * 0.25
+  if (people <= 0) return
+  totalPrayerSeconds += people * 0.25
   broadcast()
+  if (Date.now() - lastSecondsSave >= 2000) {
+    lastSecondsSave = Date.now()
+    saveTotals()
+  }
 }, 250)
 
 // Reap dead connections: a phone or tab that was killed without closing its
@@ -520,20 +576,16 @@ setInterval(() => {
 // who hasn't prayed in four months is pruned, which bounds people.json growth
 // and honors the "kept only as long as needed" promise in the privacy policy.
 setInterval(() => {
-  const c = new Date()
-  c.setDate(c.getDate() - 120)
-  const cutoff = `${c.getFullYear()}-${String(c.getMonth() + 1).padStart(2, '0')}-${String(
-    c.getDate()
-  ).padStart(2, '0')}`
+  const cutoff = utcDay(new Date(Date.now() - 120 * 86400000))
   let changed = false
   for (const [id, p] of Object.entries(peopleSync)) {
     // Only real calendar days count; a spoofed '9999-12-31' must not keep a
     // blob alive (or block pruning) forever.
     const days = Object.keys(p.prayerDayCompletions || {})
-      .filter((d) => typeof d === 'string' && DAY_RE.test(d))
+      .filter((d) => validDay(d))
       .sort()
     const last = p.lastPrayedDay
-    const newest = (days.at(-1) || (last && DAY_RE.test(last) ? last : '') || '')
+    const newest = (days.at(-1) || (validDay(last) ? last : '') || '')
     if (!newest || newest < cutoff) {
       delete peopleSync[id]
       changed = true
@@ -551,7 +603,14 @@ wss.on('connection', (ws, req) => {
   ws.on('pong', () => {
     ws.isAlive = true
   })
-  clients.set(ws, { praying: false, prayerId: null, spiritId: null, lat: null, lon: null })
+  clients.set(ws, {
+    praying: false,
+    prayerId: null,
+    spiritId: null,
+    sessionId: null,
+    lat: null,
+    lon: null
+  })
 
   ws.on('message', (raw) => {
     if (msgLimited(ws)) return
@@ -564,6 +623,8 @@ wss.on('connection', (ws, req) => {
           typeof msg.prayerId === 'string' ? msg.prayerId.slice(0, 60) : prev.prayerId
         const spiritId =
           typeof msg.spiritId === 'string' ? msg.spiritId.slice(0, 60) : prev.spiritId
+        const sessionId =
+          typeof msg.sessionId === 'string' ? msg.sessionId.slice(0, 80) : prev.sessionId
         // The engine protocol sends a coarse "lat,lon" cell (never a precise
         // position); older clients send lat/lon directly.
         let lat = null
@@ -582,28 +643,37 @@ wss.on('connection', (ws, req) => {
           praying: !!msg.praying,
           prayerId: msg.praying ? prayerId : null,
           spiritId: msg.praying ? spiritId : null,
+          sessionId: msg.praying ? sessionId : null,
           name,
           lat,
           lon
         })
-        // Count a freshly-started prayer toward the all-time totals (once per
-        // prayer per person, the presence ping repeats every few seconds).
         const c = clients.get(ws)
-        if (msg.praying && c.prayerId && c.prayerId !== prev.prayerId) {
+        const isNewStart =
+          msg.praying &&
+          c.prayerId &&
+          safeKey(c.prayerId) &&
+          safeKey(c.spiritId) &&
+          c.prayerId !== prev.prayerId &&
+          (!c.sessionId || !recentStarts.has(c.sessionId))
+        if (isNewStart) {
           prayerTotals[c.prayerId] = (prayerTotals[c.prayerId] || 0) + 1
           if (c.spiritId) spiritTotals[c.spiritId] = (spiritTotals[c.spiritId] || 0) + 1
+          if (c.sessionId) {
+            recentStarts.set(c.sessionId, Date.now())
+            pruneRecentStarts()
+          }
           saveTotals()
         }
-        recount()
-        broadcast()
-        // When a soul starts praying, share it with the world.
-        if (msg.praying && !prev.praying && prev.prayerId === null) {
+        if (isNewStart && !prev.praying && prev.prayerId === null) {
           pushFeed(c.name, c.spiritId, c.prayerId, c.lat, c.lon)
           const payload = feedPayload()
           for (const client of clients.keys()) {
             if (client.readyState === client.OPEN) client.send(payload)
           }
         }
+        recount()
+        broadcast()
       } else if (msg.type === 'sync') {
         // Anonymous lifetime sync: merge this device's counters and reply with
         // the merged result so every device converges on the same totals.
@@ -632,6 +702,8 @@ wss.on('connection', (ws, req) => {
       spirits: spiritCounts,
       lights,
       lightSpirits,
+      usersToday: countActiveUsers().today,
+      usersWeek: countActiveUsers().week,
       startedAt,
       totals: {
         prayers: prayerTotals,

@@ -88,6 +88,8 @@ export default {
   'settings.shareAppHint':
     'Gửi cho bạn bè cả Trái Đất sống động, mọi truyền thống, mọi lời cầu nguyện, và ánh sáng đang lớn dần.',
   'settings.shareApp': 'Chia sẻ Joining Palms',
+  'settings.sharePlayStore': 'Chia sẻ trên Play Store',
+  'settings.playStoreComingSoon': 'Play Store — sắp ra mắt',
   'settings.copied': 'Đã sao chép!',
   'settings.done': 'Xong',
   'settings.gear': 'Cài đặt',

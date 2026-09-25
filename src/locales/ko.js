@@ -68,6 +68,8 @@ export default {
   'settings.shareAppLabel': 'Joining Palms 공유',
   'settings.shareAppHint': '살아있는 지구 전체를 친구에게 보내세요, 모든 전통, 모든 기도, 자라나는 빛.',
   'settings.shareApp': 'Joining Palms 공유',
+  'settings.sharePlayStore': 'Play Store에서 공유',
+  'settings.playStoreComingSoon': 'Play Store — 곧 출시',
   'settings.copied': '복사됨!', 'settings.done': '완료', 'settings.gear': '설정',
   'prayer.repeat': '반복하기', 'prayer.pray': '기도', 'prayer.pause': '일시정지', 'prayer.loading': '불러오는 중…', 'prayer.stop': '멈춤',
   'prayer.tune': '소리와 속도 조절', 'prayer.tuneLabel': '조절',

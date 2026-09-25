@@ -11,7 +11,7 @@
 //      promise of a fully precached shell holds.
 // Exit code 1 on any violation.
 
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -43,6 +43,18 @@ check('no executable inline <script> in dist/index.html', bad.length === 0, bad.
 // The entry stylesheet must be inlined, not a separate render-blocking request.
 const cssLinks = [...html.matchAll(/<link[^>]*\brel="stylesheet"/gi)]
 check('entry CSS inlined (no render-blocking <link rel=stylesheet>)', cssLinks.length === 0, cssLinks.map((m) => m[0].slice(0, 60)).join(' | ') || 'none')
+
+const assetDir = path.join(DIST, 'assets')
+const missingCss = []
+for (const file of readdirSync(assetDir)) {
+  if (!file.endsWith('.js')) continue
+  const source = readFileSync(path.join(assetDir, file), 'utf8')
+  for (const match of source.matchAll(/assets\/[^"'`\s]+\.css/g)) {
+    const asset = match[0].replace(/^assets\//, '')
+    if (!existsSync(path.join(assetDir, asset))) missingCss.push(`${file}:${match[0]}`)
+  }
+}
+check('lazy preload CSS targets exist', missingCss.length === 0, missingCss.join(' | ') || 'none')
 
 // 2. SW CORE precache holds the beacon loader + responsive icons.
 const swPath = path.join(DIST, 'sw.js')

@@ -354,17 +354,49 @@ export default   {
       },
       {
         id: '21-taras',
-        title: 'The Twenty-One Taras',
-        lang: 'bo',
-        langLabel: 'བོད་སྐད · Tibetan · repeated',
+        title: 'Tara Dhāraṇī',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit · repeated',
         loop: true,
         phrases: [
-          { t: 'ཨོཾ་ཇེ་ཙུན་དཔལ་མོ་སྒྲོལ་མ་ལ་ཕྱག་འཚལ།', s: 'Oṃ Tāre Tuttāre Ture Svāhā', e: 'Homage to Tara, the swift liberator, embodiment of compassion and courage.' },
-          { t: 'ཨོཾ་ཏཱ་རེ་ཏུཏྟཱ་རེ་ཏུ་རེ་སྭཱ་ཧཱ།', s: 'Oṃ Tāre Tuttāre Ture Svāhā', e: 'Oṃ, homage to the shining mother who rescues from fear and grants protection.' },
-          { t: 'ཨོཾ་ཏཱ་རེ་ཏུཏྟཱ་རེ་ཏུ་རེ་སྭཱ་ཧཱ།', s: 'Oṃ Tāre Tuttāre Ture Svāhā', e: 'Oṃ, to the lady who quells obstacles and leads beings to the other shore.' },
-          { t: 'ཨོཾ་ཏཱ་རེ་ཏུཏྟཱ་རེ་ཏུ་རེ་སྭཱ་ཧཱ།', s: 'Oṃ Tāre Tuttāre Ture Svāhā', e: 'Oṃ, the liberator of the twenty-one forms, who grants all blessings.' }
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Svāhā', e: 'Homage to Tārā, the swift liberator, embodiment of compassion and courage.' },
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Svāhā', e: 'The shining mother who rescues from fear and grants protection.' },
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Svāhā', e: 'The lady who quells obstacles and leads beings to the other shore.' },
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Svāhā', e: 'The liberator who grants all blessings.' }
         ],
-        translation: 'The homage to the Twenty-One Taras, the female Buddhas of swift compassionate action, called upon for fearlessness, protection, and the removal of obstacles.'
+        translation: 'The root mantra of Tārā — Oṃ Tāre Tuttāre Ture Sohā — the essence of the twenty-one Taras, chanted for protection, fearlessness, and the removal of obstacles.'
+      },
+      {
+        id: '21-taras-praise',
+        title: 'The Twenty-One Taras',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit · 21 verses',
+        loop: true,
+        phrases: [
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Sohā', e: 'Oṃ. Homage to Tārā, swift and valiant; homage to Tuttārā, who banishes fear; homage to Turā, who fulfils every need. With svāhā we offer honour and praise.' },
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Sohā', e: 'Homage to Tārā, swift and valiant, whose glance flashes like flares of lightning, born on the heart of a blossoming lotus that rose from the tears of the Triple World’s Lord.' },
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Sohā', e: 'Homage to the one whose countenance is a hundred full moons gathered in autumn, smiling and glowing with brilliant radiance, like a thousand stars clustered, ablaze.' },
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Sohā', e: 'Homage, golden lady, whose lotus-hand is graced with a blue water-born flower. You embody generosity, diligence, endurance, serenity, patience and meditation.' },
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Sohā', e: 'Homage to the one whose victories are endless, a jewel on the great Tathāgata’s crown. You are well served by the heirs of the Victors, those who have accomplished all the perfections.' },
+          { t: 'तुत्तारे हूं', s: 'Tuttāre Hūṃ', e: 'Homage to the one who, with tuttāre and hūṃ, fills the desire realms unto the ends of space. You trample underfoot the seven worlds, and have the strength to summon all.' },
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Sohā', e: 'Homage to the one praised by Indra, Agni, Brahmā, Maruts and Śiva. All the hosts of bhūtas, vetālas, gandharvas and yakṣas pay tribute to you.' },
+          { t: 'त्राट् फट्', s: 'Trāṭ Phaṭ', e: 'Homage to the one who, with traṭ and phaṭ, crushes the enemies’ magic diagrams to dust. With right leg bent in and left leg extended, shining, you tread amidst a turbulent blaze.' },
+          { t: 'तुरे', s: 'Ture', e: 'Homage to Ture, the fearsome lady, destroyer of the most powerful demons. With a lotus-face and a deep-furrowed brow, you are the slayer of each and every foe.' },
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Sohā', e: 'Homage to the one whose fingers grace her heart and display the Three Jewels mudrā. You are graced by wheels adorning every direction, with dazzling radiance that overwhelms all.' },
+          { t: 'तुत्तारे', s: 'Tuttāre', e: 'Homage to the one, supremely joyous, whose splendorous crown spreads garlands of light. Smiling and laughing, with tuttāre you bring demons and worlds under control.' },
+          { t: 'हूं', s: 'Hūṃ', e: 'Homage to the one who can summon the hosts of earthly guardians. Your frown quivers, and the syllable hūṃ delivers us all from every misfortune.' },
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Sohā', e: 'Homage to the one so brightly adorned, who has a sliver of moon for a crown. Your locks are graced by Amitābha, whose gleaming rays stream forever forth.' },
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Sohā', e: 'Homage to the one in a blazing halo of flames, all-consuming, apocalyptic. Your right leg stretched out and left leg bent inward, the whirl of enemies blissfully crushing.' },
+          { t: 'हूं', s: 'Hūṃ', e: 'Homage to the one who strikes the ground with her palms and stamps her feet. Your brow deeply furrowed, with hūṃ you smash the seven netherworlds to nothing but dust.' },
+          { t: 'ॐ स्वाहा', s: 'Oṃ Sohā', e: 'Homage to the one, blissful, gracious and tranquil, whose domain is the peace of nirvāṇa. With oṃ and svāhā in perfect union, you destroy every terrible evil.' },
+          { t: 'हूं', s: 'Hūṃ', e: 'Homage to the one immersed in rapture, who shatters the bodies of all foes. You manifest from the wisdom-syllable hūṃ, and display each of your mantra’s ten syllables.' },
+          { t: 'हूं', s: 'Hūṃ', e: 'Homage to Ture, her feet stomping boldly, formed from the seed of the syllable hūṃ. The mountains of Meru, Mandara and Vindhya, and all the three worlds, you cause to quake.' },
+          { t: 'तारे तारे फट्', s: 'Tāre Tāre Phaṭ', e: 'Homage to the one who holds in her hand a deer-marked moon like a divine lake. With tāra twice and then with phaṭ, you totally cleanse all of the poisons.' },
+          { t: 'ॐ तारे तुत्तारे तुरे स्वाहा', s: 'Oṃ Tāre Tuttāre Ture Sohā', e: 'Homage to the one honoured by kings of hosts divine, gods and kiṃnaras. Clad in your armour of joy and splendour, you clear away nightmares and soothe away strife.' },
+          { t: 'हर हर तुत्तारे', s: 'Hara Hara Tuttāre', e: 'Homage to the one whose eyes shine with lustre, bright with the fullness of the sun and moon. With twice-uttered hara and then with tuttāre you pacify even the cruelest of diseases.' },
+          { t: 'तुरे', s: 'Ture', e: 'Homage to the one with the power to free, who puts forth the realities as a set of three. Supreme Ture, you completely destroy the hordes of grahas, vetālas and yakṣas.' }
+        ],
+        translation: 'The full Praise to Tārā with Twenty-One Verses of Homage — a homage to all twenty-one forms of the goddess, from peaceful to wrathful, chanted for protection, healing, and freedom from every fear.'
       }
     ]
   }

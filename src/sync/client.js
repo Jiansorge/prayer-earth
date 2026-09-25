@@ -20,7 +20,8 @@ const RETRY_MS = 10000
 // reach the store. The engine is trusted, but a bug or a hostile/mitm'd
 // source must never be able to crash the render tree (e.g. a non-array feed
 // or a non-string cell). Everything unknown is coerced to a safe default.
-const toCount = (v) => (Number.isFinite(v) ? v : Number.isFinite(Number(v)) ? Number(v) : 0)
+const toCount = (v) =>
+  Number.isSafeInteger(Number(v)) && Number(v) >= 0 ? Number(v) : 0
 const toCell = (v) =>
   typeof v === 'string' && /^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(v) ? v : ''
 const cleanFeed = (f) =>
@@ -48,6 +49,14 @@ const cleanCountMap = (m) => {
   return out
 }
 const MAX_FEED_ITEMS = 100
+const activePlayback = (s) =>
+  s.playing && !s.paused && s.playingPrayerId
+    ? {
+        prayerId: s.playingPrayerId,
+        spiritId: s.playingSpiritId,
+        sessionId: s.playingSessionId
+      }
+    : null
 
 // A gentle crowd for when the shared server can't be reached, so the world
 // never looks empty. The user's own prayer is always added on top so their
@@ -133,9 +142,22 @@ class SyncClient {
     this.connect()
     // when the tab comes back, sync anything prayed while it was away
     this._vis = () => {
-      if (!document.hidden) this.pushSync()
+      if (document.hidden) return
+      if (this.mode !== 'live') {
+        clearTimeout(this.retry)
+        this.connect()
+      } else {
+        this.pushSync()
+      }
     }
     document.addEventListener('visibilitychange', this._vis)
+    this._online = () => {
+      if (this.mode !== 'live') {
+        clearTimeout(this.retry)
+        this.connect()
+      }
+    }
+    window.addEventListener('online', this._online)
   }
 
   // Ask once for a coarse location so the world can show a light where you
@@ -206,6 +228,10 @@ class SyncClient {
       document.removeEventListener('visibilitychange', this._vis)
       this._vis = null
     }
+    if (this._online) {
+      window.removeEventListener('online', this._online)
+      this._online = null
+    }
     this.engine.disconnect()
     this.stopSim()
   }
@@ -221,15 +247,13 @@ class SyncClient {
             useStore.getState().setSpiritCounts(cleanCountMap(msg.spirits))
             const today = toCount(msg.usersToday)
             const week = toCount(msg.usersWeek)
-            if (today > 0 || week > 0) {
-              useStore.getState().setUsersActivity(today, week)
-            }
+            useStore.getState().setUsersActivity(today, week)
             const startedAt = toCount(msg.startedAt)
             if (startedAt > 0) useStore.getState().setStartedAt(startedAt)
             const lights = cleanCountMap(msg.lights)
             const lightSpirits = cleanCountMap(msg.lightSpirits)
-            if (Object.keys(lights).length) useStore.getState().setLights(lights)
-            if (Object.keys(lightSpirits).length) useStore.getState().setLightSpirits(lightSpirits)
+            useStore.getState().setLights(lights)
+            useStore.getState().setLightSpirits(lightSpirits)
             if (msg.totals && typeof msg.totals === 'object' && !Array.isArray(msg.totals)) {
               useStore.getState().setPrayerTotals(cleanCountMap(msg.totals.prayers))
               useStore.getState().setSpiritTotals(cleanCountMap(msg.totals.spirits))
@@ -249,15 +273,8 @@ class SyncClient {
       this.engine.onStatus = (connected) => {
         if (connected) {
           this.retryCount = 0
-          // replay offline prayers queued while disconnected
-          try {
-            const q = useStore.getState().drainOfflineQueue?.() || []
-            if (q.length) {
-              q.forEach(({ prayerId }) => {
-                try { this.engine.send({ type: 'prayer_complete', prayerId }) } catch {}
-              })
-            }
-          } catch {}
+          clearInterval(this.ping)
+          clearInterval(this.syncTimer)
           this.stopSim()
           this.mode = 'live'
           useStore.getState().setConnected(true)
@@ -268,6 +285,10 @@ class SyncClient {
           clearInterval(this.syncTimer)
           this.syncTimer = setInterval(() => this.pushSync(), 30000)
         } else {
+          clearInterval(this.ping)
+          clearInterval(this.syncTimer)
+          this.ping = null
+          this.syncTimer = null
           this.mode = 'sim'
           useStore.getState().setConnected(false)
           this.startSim()
@@ -297,11 +318,13 @@ class SyncClient {
       return
     }
     const grid = this.loc ? this.gridLoc(this.loc) : null
+    const active = activePlayback(s)
     this.engine.send({
       type: C_PRESENCE,
-      praying: s.praying,
-      prayerId: s.praying ? s.prayerId : null,
-      spiritId: s.praying ? s.spiritId : null,
+      praying: !!active,
+      prayerId: active?.prayerId || null,
+      spiritId: active?.spiritId || null,
+      sessionId: active?.sessionId || null,
       name: profileName(),
       cell: grid ? `${grid.lat},${grid.lon}` : null
     })
@@ -375,11 +398,12 @@ class SyncClient {
       addLight(lat, lon, sp)
     }
     // Always count the person praying right here.
-    if (s.praying && s.spiritId && s.prayerId) {
-      prayers[s.prayerId] = (prayers[s.prayerId] || 0) + 1
-      spirits[s.spiritId] = (spirits[s.spiritId] || 0) + 1
+    const active = activePlayback(s)
+    if (active?.prayerId && active?.spiritId) {
+      prayers[active.prayerId] = (prayers[active.prayerId] || 0) + 1
+      spirits[active.spiritId] = (spirits[active.spiritId] || 0) + 1
     }
-    if (this.loc) addLight(this.loc.lat, this.loc.lon, s.spiritId)
+    if (this.loc && active) addLight(this.loc.lat, this.loc.lon, active.spiritId)
     const total = Object.values(spirits).reduce((a, b) => a + b, 0)
     s.setPeoplePraying(total)
     s.setPrayerCounts(prayers)
@@ -387,11 +411,10 @@ class SyncClient {
     s.setUsersActivity(20 + total * 3, 120 + total * 12)
     s.setLights(lights)
     s.setLightSpirits(lightSpirits)
-    s.setTotalPrayerSeconds(s.totalPrayerSeconds + 1.5)
 
     // A gentle trickle of "now praying" entries, including the person here.
     const now = Date.now()
-    if (!s.praying && Math.random() < 0.35) {
+    if (!active && Math.random() < 0.35) {
       const [sp, pr, lat, lon] = SIM_PEOPLE[Math.floor(Math.random() * SIM_PEOPLE.length)]
       this.simFeed.push({
         id: ++this.simSeq,
@@ -402,14 +425,14 @@ class SyncClient {
         cell: gridKey(lat, lon)
       })
     }
-    if (s.praying && s.spiritId && s.prayerId && this.lastSimSelf !== now) {
+    if (active && this.lastSimSelf !== now) {
       this.lastSimSelf = now
       this.simFeed.push({
         id: ++this.simSeq,
         t: now,
         name: profileName(),
-        spiritId: s.spiritId,
-        prayerId: s.prayerId,
+        spiritId: active.spiritId,
+        prayerId: active.prayerId,
         cell: this.loc ? gridKey(this.loc.lat, this.loc.lon) : undefined
       })
     }

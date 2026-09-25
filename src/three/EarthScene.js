@@ -429,11 +429,25 @@ let _maskImgFailed = false
 let _maskImgPromise = null
 let _snapGridCache = null // { comp, sizes, trusted, rows, cols }
 
+export function supportsWebGL2() {
+  if (typeof document === 'undefined') return false
+  try {
+    const canvas = document.createElement('canvas')
+    return !!canvas.getContext('webgl2')
+  } catch {
+    return false
+  }
+}
+
 export class EarthScene {
   constructor(container, options = {}) {
     this.container = container
     this.backdrop = !!options.backdrop
     this.onReady = options.onReady || null
+    this.onError = options.onError || null
+    this.onContextLost = options.onContextLost || null
+    this._rendered = false
+    this._errorNotified = false
     this.glow = 0.2
     this.surge = 0
     this.tier = 0
@@ -461,7 +475,9 @@ export class EarthScene {
     // prefers-reduced-motion is a separate flag: it only stops animation
     // (auto-rotation, twinkle, aurora) without degrading visual quality.
     this.reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-    this.lowPower = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4
+    this.lowPower =
+      (typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4) ||
+      !!window.Capacitor?.isNativePlatform?.()
     this.seg = this.lowPower ? 96 : 128 // sphere segments (was 192)
 
     const w = container.clientWidth || 1
@@ -532,9 +548,8 @@ export class EarthScene {
     // Never let the loading overlay hang: even if a texture is slow or fails on
     // a low-end phone, show the Earth (slightly untextured) after a short wait.
     this._readyTimer = setTimeout(() => {
-      if (!this._ready) {
-        this._ready = true
-        if (this.onReady) this.onReady()
+      if (!this._ready && !this.hidden && !this._rendered) {
+        this._notifyError(new Error('Earth renderer did not produce a frame'))
       }
     }, 6000)
 
@@ -2045,6 +2060,7 @@ this.autoRotate = !this.reducedMotion
     this._ctxLost = (e) => {
       if (e) e.preventDefault()
       this.hidden = true
+      if (this.onContextLost) this.onContextLost()
     }
     this._ctxRestored = () => {
       this.hidden = false
@@ -2081,6 +2097,33 @@ this.autoRotate = !this.reducedMotion
     this.wispsT = clamp01((progress - 0.72) / 0.2) // drifts in around 5M
   }
 
+  _notifyError(error) {
+    if (this.disposed || this._errorNotified) return
+    this._errorNotified = true
+    if (this.onError) this.onError(error)
+  }
+
+  renderFrame() {
+    if (this.disposed || !this.renderer || this.hidden) return false
+    try {
+      const context = this.renderer.getContext()
+      if (context && context.isContextLost && context.isContextLost()) {
+        if (this.onContextLost) this.onContextLost()
+        return false
+      }
+      this.renderer.render(this.scene, this.camera)
+      this._rendered = true
+      if (!this._ready) {
+        this._ready = true
+        if (this.onReady) this.onReady()
+      }
+      return true
+    } catch (error) {
+      this._notifyError(error)
+      return false
+    }
+  }
+
   animate = () => {
     if (this.disposed) return
     requestAnimationFrame(this.animate)
@@ -2098,13 +2141,6 @@ this.autoRotate = !this.reducedMotion
     this.tier += (this.tierT - this.tier) * 0.06
     this.corona += (this.coronaT - this.corona) * 0.05
     this.wisps += (this.wispsT - this.wisps) * 0.05
-
-    // Surface the Earth only once its textures have loaded and a frame has
-    // rendered, so the page never flashes a half-formed globe.
-    if (!this._ready && this._dayLoaded) {
-      this._ready = true
-      if (this.onReady) this.onReady()
-    }
 
     // auto-rotation glides: ease back toward the calm base speed after a drag
     if (this.autoRotate) {
@@ -2268,7 +2304,7 @@ this.autoRotate = !this.reducedMotion
     }
 
     if (this.backdrop) {
-      this.renderer.render(this.scene, this.camera)
+      this.renderFrame()
       return
     }
 
@@ -2291,7 +2327,7 @@ this.autoRotate = !this.reducedMotion
     this.motes.geometry.attributes.position.needsUpdate = true
     this.motes.material.opacity = 0.35 + 0.25 * Math.sin(t * 1.4)
 
-    this.renderer.render(this.scene, this.camera)
+    if (!this.renderFrame()) this._notifyError(new Error('Earth render failed'))
   }
 
   dispose() {

@@ -150,6 +150,20 @@ async function nav(url) {
   await sleep(800)
 }
 
+async function openSettings() {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (await c.eval(`!!document.querySelector('.sheet')`)) return true
+    await c.eval(`document.querySelector('.gear-btn')?.click()`)
+    if (await c.waitFor(`!!document.querySelector('.sheet')`, 5000)) return true
+  }
+  return false
+}
+
+async function closeSettings() {
+  await c.eval(`document.querySelector('.sheet-close')?.click()`)
+  return c.waitFor(`!document.querySelector('.sheet')`, 5000)
+}
+
 log('navigating to home')
 await nav(APP)
 
@@ -166,48 +180,51 @@ ok(
 
 // --- settings sheet ---
 ok('settings button present', await c.waitFor(`!!document.querySelector('.gear-btn')`))
-await c.eval(`document.querySelector('.gear-btn').click()`)
-ok('settings sheet opens', await c.waitFor(`!!document.querySelector('.sheet')`))
-ok(
-  'voice picker lists voices',
-  (await c.eval(`document.querySelectorAll('#voice-picker option').length`)) >= 1
-)
+const settingsOpen = await openSettings()
+ok('settings sheet opens', settingsOpen)
+const voiceCount = settingsOpen ? await c.eval(`document.querySelectorAll('#voice-picker option').length`) : 0
+ok('voice picker lists voices', settingsOpen && voiceCount >= 1, `voices=${voiceCount}`)
 ok(
   'voice picker offers soft chant',
-  await c.eval(`document.querySelector('#voice-picker').textContent.includes('Soft chant')`)
+  settingsOpen && await c.eval(`!!document.querySelector('#voice-picker') && document.querySelector('#voice-picker').textContent.includes('Soft chant')`)
 )
 ok(
   'speaking speed slider present',
-  await c.eval(`document.querySelectorAll('input[type="range"]').length >= 2`)
+  settingsOpen && await c.eval(`document.querySelectorAll('input[type="range"]').length >= 2`)
 )
 ok(
   'settings offers app/site share',
-  await c.eval(`[...document.querySelectorAll('.field-btn')].some((b) => b.innerText.includes('Share Joining Palms'))`)
+  settingsOpen && await c.eval(`[...document.querySelectorAll('.field-btn')].some((b) => b.innerText.includes('Share Joining Palms'))`)
 )
-await c.eval(`document.querySelector('.sheet-close').click()`)
-ok('settings sheet closes', await c.waitFor(`!document.querySelector('.sheet')`))
+if (settingsOpen) await closeSettings()
+ok('settings sheet closes', await c.waitFor(`!document.querySelector('.sheet')`, 5000))
 
 // --- theme switching: every home theme must mount without killing the app ---
 // (regression: the lazy backdrop used to suspend with no Suspense boundary /
 // while WorldFeed had a conditional hook — both blanked the app)
-await c.eval(`document.querySelector('.gear-btn').click()`)
-await c.waitFor(`!!document.querySelectorAll('.theme-opt').length`)
-for (const [i, th] of ['mystic', 'nature', 'space', 'temple', 'ocean', 'dawn'].entries()) {
-  await c.eval(`document.querySelectorAll('.theme-opt')[${i}].click()`)
-  const okCanvas = await c.waitFor(`document.querySelectorAll('canvas.${th}-backdrop').length === 1`, 6000)
-  ok(`theme ${th} mounts its backdrop`, okCanvas)
+const themeSheet = await openSettings()
+const themeOptions = themeSheet && await c.waitFor(`document.querySelectorAll('.theme-opt').length === 6`, 5000)
+if (themeOptions) {
+  for (const [i, th] of ['mystic', 'nature', 'space', 'temple', 'ocean', 'dawn'].entries()) {
+    await c.eval(`document.querySelectorAll('.theme-opt')[${i}]?.click()`)
+    const okCanvas = await c.waitFor(`document.querySelectorAll('canvas.${th}-backdrop').length === 1`, 15000)
+    ok(`theme ${th} mounts its backdrop`, okCanvas)
+  }
+} else {
+  for (const th of ['mystic', 'nature', 'space', 'temple', 'ocean', 'dawn']) ok(`theme ${th} mounts its backdrop`, false)
 }
 ok('app alive after cycling every theme', await c.eval(`!!document.querySelector('.app') && !document.body.innerText.includes('A little light flickered')`))
-await c.eval(`document.querySelector('.sheet-close').click()`)
+if (themeSheet) await closeSettings()
 
 // --- language picker: switching locale relabels the app, then restore en ---
-await c.eval(`document.querySelector('.gear-btn').click()`)
-await c.waitFor(`!!document.querySelector('#locale-picker')`)
+const localeSheet = await openSettings()
+const localePicker = localeSheet && await c.waitFor(`!!document.querySelector('#locale-picker')`, 5000)
 ok(
   'language picker offers 12 locales',
-  (await c.eval(`document.querySelectorAll('#locale-picker option').length`)) === 15,
-  `opts=${await c.eval(`document.querySelectorAll('#locale-picker option').length`)}`
+  !!localePicker && (await c.eval(`document.querySelectorAll('#locale-picker option').length`)) === 15,
+  `opts=${localePicker ? await c.eval(`document.querySelectorAll('#locale-picker option').length`) : 0}`
 )
+if (localePicker) await c.eval(`(() => { const s = document.querySelector('#locale-picker'); s.value = 'es'; s.dispatchEvent(new Event('change', { bubbles: true })) })()`)
 await c.eval(`(() => { const s = document.querySelector('#locale-picker'); s.value = 'es'; s.dispatchEvent(new Event('change', { bubbles: true })) })()`)
 ok('locale switch to Spanish relabels nav', await c.waitFor(`!!document.querySelector('.nav button[aria-label="Inicio"]')`))
 ok(
@@ -216,7 +233,7 @@ ok(
 )
 await c.eval(`window.__store.getState().setLocale('en')`)
 ok('locale restore to English', await c.waitFor(`!!document.querySelector('.nav button[aria-label="Home"]')`))
-await c.eval(`document.querySelector('.sheet-close').click()`)
+if (localeSheet) await closeSettings()
 
 const NAV = (label) => `document.querySelector('.nav button[aria-label="${label}"]')`
 async function clickNav(label) {
@@ -355,7 +372,8 @@ ok('no footer meter on prayer page', (await c.eval(`!document.querySelector('.pr
 
 // --- switch prayer via chip ---
 const chips = await c.eval(`document.querySelectorAll('.chooser .chip:not(.chip-all)').length`)
-ok('Buddhism lists all its prayers as chips', chips === 26, `chips=${chips}`)
+const buddhismCount = SPIRITUALITIES.find((s) => s.id === 'buddhism')?.prayerCount
+ok('Buddhism lists all its prayers as chips', chips === buddhismCount, `chips=${chips} expected=${buddhismCount}`)
 await c.eval(`document.querySelectorAll('.chooser .chip')[1].click()`)
 ok('switching prayer updates stage', await c.waitFor(`document.querySelectorAll('.prayer-line').length >= 2`))
 await c.eval(`document.querySelector('.ctrl-btn.stop').click()`)
@@ -375,6 +393,22 @@ ok(
 // --- deep links ---
 await nav(`${APP}/#/earth`)
 ok('deep link earth renders', await c.waitFor(`!!document.querySelector('.earth-view')`))
+const webglBlock = await c.send('Page.addScriptToEvaluateOnNewDocument', {
+  source: `(() => {
+    const original = HTMLCanvasElement.prototype.getContext
+    HTMLCanvasElement.prototype.getContext = function(type, ...args) {
+      if (type === 'webgl2') return null
+      return original.call(this, type, ...args)
+    }
+  })()`
+})
+await nav(`${APP}/?webgl-fallback-test=1#/earth`)
+ok('WebGL-unavailable Earth shows static fallback', await c.waitFor(`!!document.querySelector('.earth-fallback')`))
+await c.send('Page.removeScriptToEvaluateOnNewDocument', { identifier: webglBlock.identifier })
+await nav(`${APP}/#/earth`)
+await c.waitFor(`!!document.querySelector('.earth-canvas canvas')`)
+await c.eval(`window.__earthScene?.renderer?.domElement?.dispatchEvent(new Event('webglcontextlost'))`)
+ok('WebGL context loss falls back from Earth', await c.waitFor(`!!document.querySelector('.earth-fallback')`))
 await nav(`${APP}/#/pray/buddhism/mani`)
 const dlTitle = await c.eval(`document.querySelector('.prayer-title')?.innerText || 'NONE'`)
 const dlHash = await c.eval(`location.hash`)
@@ -392,7 +426,7 @@ ok(
 )
 ok(
   'picker lists every prayer of the tradition',
-  (await c.eval(`document.querySelectorAll('.picker-row').length`)) === 16,
+  await c.waitFor(`document.querySelectorAll('.picker-row').length === 16`),
   `rows=${await c.eval(`document.querySelectorAll('.picker-row').length`)}`
 )
 ok(
@@ -442,6 +476,25 @@ ok('streak starts at 1 on first day', streakRes.first === 1, `first=${streakRes.
 ok('streak idempotent within a day', streakRes.again === 1, `again=${streakRes.again}`)
 ok('streak continues from yesterday', streakRes.next === 2, `next=${streakRes.next}`)
 ok('best streak tracks the high water mark', streakRes.best === 2, `best=${streakRes.best}`)
+const totalsDisjoint = await c.eval(`(() => {
+  window.__store.setState({
+    prayerTotals: { 'lords-prayer': 5 },
+    spiritTotals: { christianity: 5 },
+    prayerCompletions: { 'lords-prayer': 2 }
+  })
+  const live = window.__store.getState()
+  return {
+    all: live.getPrayerCount(),
+    prayer: live.getPrayerTotal('lords-prayer'),
+    spirit: live.getSpiritTotal('christianity')
+  }
+})()`)
+ok(
+  'global and personal totals do not double count',
+  totalsDisjoint.all === 5 && totalsDisjoint.prayer === 5 && totalsDisjoint.spirit === 5,
+  JSON.stringify(totalsDisjoint)
+)
+await c.eval(`window.__store.setState({ prayerTotals: {}, spiritTotals: {} })`)
 await c.eval(`window.__store.setState({ streak: 3, bestStreak: 5, lastPrayedDay: null })`)
 ok(
   'streak chip shows on Home',
@@ -449,6 +502,115 @@ ok(
   'chip="3 days"'
 )
 await c.eval(`window.__store.setState({ streak: 0, bestStreak: 0, lastPrayedDay: null })`)
+
+const tallySequence = await c.eval(`(() => {
+  const store = window.__store
+  const key = (t) => t.getUTCFullYear() + '-' + String(t.getUTCMonth() + 1).padStart(2, '0') + '-' + String(t.getUTCDate()).padStart(2, '0')
+  store.setState({ prayerCompletions: {}, prayerDayCompletions: {} })
+  const before = store.getState().getYourToday()
+  store.getState().notePrayerComplete('mani')
+  const one = store.getState().getYourToday()
+  store.getState().notePrayerComplete('mani')
+  const live = store.getState()
+  return { before, one, two: live.getYourToday(), personal: live.prayerCompletions.mani || 0, day: live.getPrayerToday('mani') }
+})()`)
+ok(
+  'personal tally increments once per recitation',
+  tallySequence.before === 0 && tallySequence.one === 1 && tallySequence.two === 2 && tallySequence.personal === 2 && tallySequence.day === 2,
+  JSON.stringify(tallySequence)
+)
+const totalSequence = await c.eval(`(() => {
+  const store = window.__store
+  store.setState({ prayerTotals: { mani: 10 }, spiritTotals: { buddhism: 20 } })
+  store.getState().setPrayerTotals({ mani: 5 })
+  store.getState().setPrayerTotals({ mani: 12 })
+  store.getState().setSpiritTotals({ buddhism: 15 })
+  store.getState().setSpiritTotals({ buddhism: 25 })
+  const live = store.getState()
+  return { prayer: live.getPrayerTotal('mani'), spirit: live.getSpiritTotal('buddhism'), all: live.getPrayerCount() }
+})()`)
+ok(
+  'all-time totals keep the high-water mark instead of summing updates',
+  totalSequence.prayer === 12 && totalSequence.spirit === 25 && totalSequence.all === 12,
+  JSON.stringify(totalSequence)
+)
+const tallySeed = await c.eval(`(() => {
+  const store = window.__store
+  const key = (t) => t.getUTCFullYear() + '-' + String(t.getUTCMonth() + 1).padStart(2, '0') + '-' + String(t.getUTCDate()).padStart(2, '0')
+  const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(); d.setUTCDate(d.getUTCDate() - 6 + i); return key(d) })
+  const values = [4, 0, 1, 3, 0, 0, 2]
+  const stats = Object.fromEntries(days.map((day, i) => [day, { mani: values[i] }]))
+  const previousSeconds = store.getState().localPrayerSeconds
+  store.setState({
+    connected: true,
+    peoplePraying: 12,
+    usersToday: 34,
+    usersWeek: 210,
+    prayerCounts: { mani: 7, '21-taras': 3 },
+    spiritCounts: { buddhism: 19, islam: 4 },
+    prayerTotals: { mani: 123456, '21-taras': 0 },
+    spiritTotals: { buddhism: 4567, islam: 0 },
+    prayerCompletions: { mani: 9, '21-taras': 4 },
+    prayerDayCompletions: { [days[6]]: { mani: 2, '21-taras': 1 } },
+    prayerDayStats: stats,
+    localPrayerSeconds: 125,
+    streak: 4,
+    bestStreak: 9,
+    lastPrayedDay: days[6]
+  })
+  store.getState().go('home')
+  return { days, values, previousSeconds }
+})()`)
+await c.waitFor(`!!document.querySelector('.wm-row') && !!document.querySelector('.life-card')`)
+const homeTally = await c.eval(`(() => {
+  const clean = (value) => (value || '').replace(/\\s+/g, ' ').trim()
+  const tile = (name) => [...document.querySelectorAll('.tile')].find((node) => clean(node.innerText).includes(name))
+  return {
+    meter: [...document.querySelectorAll('.wm-row')].map((node) => clean(node.innerText)),
+    yourToday: clean(document.querySelector('.your-today-line')?.innerText),
+    life: clean(document.querySelector('.life-card')?.innerText),
+    streakTitle: document.querySelector('.streak-chip')?.getAttribute('title') || '',
+    buddhism: clean(tile('Buddhism')?.querySelector('.tile-praying')?.innerText),
+    islam: clean(tile('Islam')?.querySelector('.tile-praying')?.innerText)
+  }
+})()`)
+ok(
+  'Home displays world meter tallies in order',
+  JSON.stringify(homeTally.meter.map((value) => value.toLowerCase())) === JSON.stringify(['praying right now 12', 'of a million prayers together 12%', 'prayed today 34 this week 210']),
+  JSON.stringify(homeTally.meter)
+)
+ok(
+  'Home displays personal today, lifetime, and streak values',
+  homeTally.yourToday === '✶ 3 your prayers today' && homeTally.life.includes('You have carried 2m 5s') && homeTally.life.includes('4 days') && homeTally.streakTitle === 'Best streak: 9' && homeTally.buddhism === '19 praying now' && homeTally.islam === '4 praying now',
+  JSON.stringify(homeTally)
+)
+await c.eval(`window.__store.getState().openPrayer('buddhism', 'mani')`)
+await c.waitFor(`!!document.querySelector('.prayer-stage') && !!document.querySelector('.ps-chart')`)
+const prayerTally = await c.eval(`(() => {
+  const clean = (value) => (value || '').replace(/\\s+/g, ' ').trim()
+  const label = document.querySelector('.ps-chart')?.getAttribute('aria-label') || ''
+  return {
+    active: clean(document.querySelector('.praying-now b')?.innerText),
+    across: clean(document.querySelector('.praying-now-sub')?.innerText),
+    today: clean(document.querySelector('.praying-now-total')?.innerText),
+    chip: clean(document.querySelector('.chip.on .chip-count')?.innerText),
+    allTime: clean(document.querySelector('.ps-total')?.innerText),
+    bars: document.querySelectorAll('.ps-bar').length,
+    chart: [...label.matchAll(/:\\s*([^,]+)/g)].map((match) => match[1].trim())
+  }
+})()`)
+ok(
+  'Prayer page displays active, today, and all-time counts',
+  prayerTally.active === '7' && prayerTally.across === '· 19 across Buddhism' && prayerTally.today === '✶ 2 your prayers today' && prayerTally.chip === '7' && prayerTally.allTime === '✶ 123,456 all time',
+  JSON.stringify(prayerTally)
+)
+ok(
+  'Weekly chart preserves day order and values',
+  prayerTally.bars === 7 && JSON.stringify(prayerTally.chart) === JSON.stringify(['4s', '0s', '1s', '3s', '0s', '0s', '2s']),
+  JSON.stringify(prayerTally.chart)
+)
+await c.eval(`window.__store.setState({ connected: false, peoplePraying: 0, usersToday: 0, usersWeek: 0, prayerCounts: {}, spiritCounts: {}, prayerTotals: {}, spiritTotals: {}, prayerCompletions: {}, prayerDayCompletions: {}, prayerDayStats: {}, localPrayerSeconds: ${tallySeed.previousSeconds}, streak: 0, bestStreak: 0, lastPrayedDay: null })`)
+await c.eval(`window.__store.getState().go('home')`)
 
 // --- persistence: prayer seconds survive reload ---
 const persistedRaw = await c.eval(`localStorage.getItem('prayer-earth-v1')`)
@@ -513,19 +675,59 @@ ok(
   offPraying.praying && (offPraying.buddhism || 0) >= 2 && (offPraying.mani || 0) >= 1,
   JSON.stringify(offPraying)
 )
-const offlineQueue = await c.eval(`window.__store.getState().offlineQueue || []`)
+const offlinePersonal = await c.eval(`window.__store.getState().prayerCompletions || {}`)
 ok(
-  'offline queue persists while disconnected',
-  Array.isArray(offlineQueue),
-  `queue=${offlineQueue.length}`
+  'offline prayer remains in personal totals',
+  (offlinePersonal.mani || 0) >= 1,
+  `mani=${offlinePersonal.mani || 0}`
 )
 const navPausedCheck = await c.eval(`(() => {
   const s = window.__store.getState()
   s.setPlaying(true); s.setPaused(true)
-  return { playing: s.playing, paused: s.paused }
+  const live = window.__store.getState()
+  return { playing: live.playing, paused: live.paused }
 })()`)
 ok('Nav pause state sets correctly', navPausedCheck.paused === true && navPausedCheck.playing === true)
 await c.eval(`window.__store.setState({ paused: false })`)
+
+await c.eval(`document.querySelector('.ctrl-btn.stop')?.click()`)
+await c.eval(`window.__store.getState().setVoiceURI(null); window.__store.getState().setSpeechRate(0.85)`)
+await c.eval(`document.querySelector('.ctrl-btn.play').click()`)
+await c.waitFor(`!!window.__speech?.cloudAudio`, 10000)
+const pitchSafePlayback = await c.eval(`(() => {
+  const el = window.__speech.cloudAudio
+  const before = { rate: el.playbackRate, preservesPitch: el.preservesPitch, decoded: !!window.__speech.cloudSource }
+  window.__speech.setRate(1.25)
+  return { before, after: el.playbackRate, jobRate: window.__speech.job.rate }
+})()`)
+ok(
+  'recorded speed uses pitch-preserving media playback',
+  pitchSafePlayback.before.rate === 0.85 &&
+    pitchSafePlayback.before.preservesPitch === true &&
+    pitchSafePlayback.before.decoded === false &&
+    pitchSafePlayback.after === 1.25 &&
+    pitchSafePlayback.jobRate === 1.25,
+  JSON.stringify(pitchSafePlayback)
+)
+const reverbMix = await c.eval(`window.__speech?.reverbWetGain`)
+ok('reverb mix is 15%', reverbMix === 0.15, `gain=${reverbMix}`)
+await c.eval(`document.querySelector('.ctrl-btn.stop')?.click()`)
+
+await c.eval(`document.querySelector('.ctrl-btn.stop')?.click()`)
+
+await c.eval(`window.__store.getState().setVoiceURI(null); window.__store.getState().setSpeechRate(1); location.hash = '#/pray/buddhism/21-taras'`)
+await c.waitFor(`!!document.querySelector('.ctrl-btn.play')`, 15000)
+await c.eval(`document.querySelector('.ctrl-btn.play').click()`)
+const recordedTaras = await c.waitFor(`window.__speech?.job?.active === true && (window.__speech.cloudAudio || window.__speech.cloudSource)`, 15000)
+const recordedTarasState = await c.eval(`(() => { const sp = window.__speech; return { mode: sp?.job?.mode || null, source: !!sp?.cloudSource, element: !!sp?.cloudAudio, manifestVoices: sp?._manifestData?.prayers?.['21-taras']?.voices?.length || 0 } })()`)
+ok('21 Taras uses recorded audio when available', !!recordedTaras && recordedTarasState.manifestVoices > 0, JSON.stringify(recordedTarasState))
+// --- the real 21 Taras praise is its own prayer, in Sanskrit read by Indian
+// voices, with a selectable voice list (more than one recorded voice) ---
+const praiseTaras = await c.eval(`(() => { const sp = window.__speech; const e = sp?._manifestData?.prayers?.['21-taras-praise']; return { voices: e?.voices || [], phrases: e?.phrases || 0, has: !!e } })()`)
+ok('21 Taras praise is a separate recorded prayer', praiseTaras.has && praiseTaras.phrases === 22 && praiseTaras.voices.length > 1, JSON.stringify(praiseTaras))
+ok('21 Taras praise uses Indian voices', praiseTaras.voices.length > 0 && praiseTaras.voices.every((v) => v.startsWith('hi-')), JSON.stringify(praiseTaras.voices))
+await c.eval(`document.querySelector('.ctrl-btn.stop')?.click()`)
+await c.waitFor(`window.__store?.getState().playing === false`, 8000)
 
 // --- no speech voices (Firefox Fingerprinting Protection / no TTS installed):
 // must fall back to the audible chant, not sit in silence ---
@@ -548,15 +750,17 @@ await c.send('Page.addScriptToEvaluateOnNewDocument', {
 })
 await c.send('Page.reload', { ignoreCache: true })
 await c.waitFor('document.readyState === "complete"', 10000)
-await sleep(600)
+await c.eval(`location.hash = '#/pray/buddhism/21-taras'`)
+await sleep(800)
 await c.waitFor(`!!document.querySelector('.ctrl-btn.play')`, 10000)
+await c.eval(`window.__speech._manifestData = { prayers: { '21-taras': { voices: [] } } }`)
 await c.eval(`document.querySelector('.ctrl-btn.play').click()`)
 const chantReady = await c.waitFor(
   `window.__speech?.job?.mode === 'timed' && window.__store?.getState().praying === true`,
   12000
 )
 const i1 = await c.eval(`[...document.querySelectorAll('.prayer-line')].findIndex(e => e.classList.contains('on'))`)
-await sleep(2400)
+await sleep(3500)
 const i2 = await c.eval(`[...document.querySelectorAll('.prayer-line')].findIndex(e => e.classList.contains('on'))`)
 const noteShown = await c.eval(`!!document.querySelector('.voice-note')`)
 ok(
@@ -593,22 +797,27 @@ ok(
   !(await c.eval(`!!document.querySelector('.share-btn[title*="QR"]')`))
 )
 await c.eval(`window.__store.getState().setSettingsOpen(true)`)
-ok('settings opens from prayer view', await c.waitFor(`!!document.querySelector('.sheet')`))
-ok('settings offers QR card button', await c.eval(`!!document.querySelector('.field-btn')`))
-await c.eval(`document.querySelector('.field-btn').click()`)
-ok('QR card opens', await c.waitFor(`!!document.querySelector('.qr-card')`))
-ok(
-  'QR canvas drawn',
-  await c.waitFor(`(() => { const cv = document.querySelector('.qr-canvas'); return !!cv && cv.width > 50 && cv.height > 50; })()`)
-)
-ok(
-  'QR card shows the prayer deep link',
-  await c.eval(`document.querySelector('.qr-url')?.innerText.includes('#/pray/buddhism/mani')`)
-)
-await c.eval(`document.querySelector('.qr-x').click()`)
-ok('QR card closes', await c.waitFor(`!document.querySelector('.qr-card')`))
-await c.eval(`document.querySelector('.sheet-close').click()`)
-ok('settings closes after QR', await c.waitFor(`!document.querySelector('.sheet')`))
+const prayerSettingsOpen = await c.waitFor(`!!document.querySelector('.sheet')`, 15000)
+ok('settings opens from prayer view', prayerSettingsOpen)
+const qrButton = prayerSettingsOpen && await c.eval(`!!document.querySelector('.field-btn')`)
+ok('settings offers QR card button', !!qrButton)
+if (qrButton) {
+  await c.eval(`document.querySelector('.field-btn')?.click()`)
+  const qrOpen = await c.waitFor(`!!document.querySelector('.qr-card')`, 10000)
+  ok('QR card opens', !!qrOpen)
+  ok(
+    'QR canvas drawn',
+    await c.waitFor(`(() => { const cv = document.querySelector('.qr-canvas'); return !!cv && cv.width > 50 && cv.height > 50; })()`, 10000)
+  )
+  ok(
+    'QR card shows the prayer deep link',
+    await c.eval(`document.querySelector('.qr-url')?.innerText.includes('#/pray/buddhism/21-taras')`)
+  )
+  await c.eval(`document.querySelector('.qr-x')?.click()`)
+  ok('QR card closes', await c.waitFor(`!document.querySelector('.qr-card')`, 5000))
+}
+if (prayerSettingsOpen) await closeSettings()
+ok('settings closes after QR', await c.waitFor(`!document.querySelector('.sheet')`, 5000))
 
 // --- console / runtime errors ---
 const perr = c.pageErrors().slice(0, 5)

@@ -1,13 +1,50 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { prayerBaseTotals, spiritBaseTotals } from './data/totals.js'
-import { SPIRITUALITY_BY_ID } from './data/prayers.js'
 import { mergeStats } from './shared/stats.js'
 
 // Cheap shallow equality for objects/arrays — skips Zustand subscriber
 // notifications when the values haven't actually changed. Used on the
 // high-frequency sync setters so presence ticks that carry unchanged
 // counts don't trigger cascading re-renders across every subscriber.
+const safeCounter = (v) => (Number.isSafeInteger(v) && v >= 0 ? v : 0)
+const safeStringMap = (value) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+  const out = {}
+  for (const [key, entry] of Object.entries(value)) {
+    if (['__proto__', 'constructor', 'prototype'].includes(key)) continue
+    if (typeof key === 'string' && typeof entry === 'string') out[key] = entry.slice(0, 200)
+  }
+  return out
+}
+const safeCounterMap = (value) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+  const out = {}
+  for (const [key, count] of Object.entries(value)) {
+    if (['__proto__', 'constructor', 'prototype'].includes(key)) continue
+    if (typeof key === 'string' && key.length <= 100) out[key] = safeCounter(count)
+  }
+  return out
+}
+const safeDayMap = (value) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+  const out = {}
+  for (const [day, counts] of Object.entries(value).sort().slice(-62)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue
+    const clean = safeCounterMap(counts)
+    if (Object.keys(clean).length) out[day] = clean
+  }
+  return out
+}
+
+const mergeCountMap = (base, incoming) => {
+  const out = { ...(base || {}) }
+  for (const [k, v] of Object.entries(incoming || {})) {
+    out[k] = Math.max(out[k] || 0, Number(v) || 0)
+  }
+  return out
+}
+
 const eq = (a, b) => {
   if (a === b) return true
   if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false
@@ -108,6 +145,8 @@ export const useStore = create(
       // which prayer is actually producing audio right now (so the footer and
       // other pages know what's playing even when viewing a different prayer)
       playingPrayerId: null,
+      playingSpiritId: null,
+      playingSessionId: null,
       // the phrase index the playing prayer is on, so the highlight survives
       // leaving and returning to the prayer page
       currentPhrase: null,
@@ -165,13 +204,10 @@ export const useStore = create(
       prayerTotals: {},
       spiritTotals: {},
 
-      // this person's own contributions to the all-time counts
+      // this person's own recitations, persisted and synced separately
       prayerCompletions: {},
       prayerDayCompletions: {},
-      // offline queue: prayers completed while disconnected, replayed on reconnect
-      offlineQueue: [],
-
-      // per-prayer seconds, bucketed by local day: { 'YYYY-MM-DD': { prayerId: secs } }
+      // per-prayer seconds, bucketed by UTC day: { 'YYYY-MM-DD': { prayerId: secs } }
       prayerDayStats: {},
       // ids of prayers the person wants close to hand
       favorites: [],
@@ -182,8 +218,7 @@ export const useStore = create(
       lastPrayedDay: null,
       celebrateStreak: 0,
 
-      // a random, anonymous id so your lifetime stats can follow you between
-      // devices, no account, no name, just an opaque token
+      // An opaque browser-profile id for private, server-side lifetime sync.
       anonId: '',
 
       // ---- navigation ----
@@ -198,7 +233,7 @@ export const useStore = create(
         set({ view: 'prayer', spiritId, prayerId }),
       openLegal: (legalPage) => set({ view: 'legal', legalPage, settingsOpen: false }),
       closeLegal: () => set({ view: 'home', legalPage: null }),
-      closePrayer: () => set({ view: 'home', praying: false }),
+      closePrayer: () => set({ view: 'home', praying: false, pendingPlay: false }),
       openPrayerPicker: (spiritId) => set({ prayerPickerSpiritId: spiritId }),
       closePrayerPicker: () => set({ prayerPickerSpiritId: null }),
       setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
@@ -208,6 +243,8 @@ export const useStore = create(
       setPaused: (paused) => set({ paused }),
       setPendingPlay: (pendingPlay) => set({ pendingPlay }),
       setPlayingPrayerId: (playingPrayerId) => set({ playingPrayerId }),
+      setPlayingSpiritId: (playingSpiritId) => set({ playingSpiritId }),
+      setPlayingSessionId: (playingSessionId) => set({ playingSessionId }),
       setElapsed: (elapsed) => set({ elapsed }),
       setCurrentPhrase: (currentPhrase) => set({ currentPhrase }),
       setCompletedAt: (completedAt) => set({ completedAt }),
@@ -245,19 +282,28 @@ export const useStore = create(
         set((s) => eq(s.lightSpirits, lightSpirits) ? {} : { lightSpirits }),
       setProfile: (patch) => set((s) => ({ profile: { ...s.profile, ...patch } })),
       setPrayerTotals: (prayerTotals) =>
-        set((s) => eq(s.prayerTotals, prayerTotals) ? {} : { prayerTotals }),
+        set((s) => {
+          const next = mergeCountMap(s.prayerTotals, prayerTotals)
+          return eq(s.prayerTotals, next) ? {} : { prayerTotals: next }
+        }),
       setSpiritTotals: (spiritTotals) =>
-        set((s) => eq(s.spiritTotals, spiritTotals) ? {} : { spiritTotals }),
+        set((s) => {
+          const next = mergeCountMap(s.spiritTotals, spiritTotals)
+          return eq(s.spiritTotals, next) ? {} : { spiritTotals: next }
+        }),
       setFeed: (feed) => set({ feed }),
       setYouLoc: (youLoc) => set({ youLoc }),
       setUsersActivity: (usersToday, usersWeek) => set({ usersToday, usersWeek }),
       setStartedAt: (startedAt) => set({ startedAt }),
       setFirstSeen: (firstSeen) => set({ firstSeen }),
-      setTotalPrayerSeconds: (totalPrayerSeconds) =>
-        set((s) => ({
-          totalPrayerSeconds,
-          basePrayerSeconds: Math.max(s.basePrayerSeconds, totalPrayerSeconds)
-        })),
+      setTotalPrayerSeconds: (value) =>
+        set((s) => {
+          const totalPrayerSeconds = Math.max(s.totalPrayerSeconds, Number(value) || 0)
+          return {
+            totalPrayerSeconds,
+            basePrayerSeconds: Math.max(s.basePrayerSeconds, totalPrayerSeconds)
+          }
+        }),
       addLocalPrayer: (seconds) =>
         set((s) => ({
           localPrayerSeconds: s.localPrayerSeconds + seconds
@@ -276,26 +322,16 @@ export const useStore = create(
           if (keys.length > 62) {
             for (let i = 0; i < keys.length - 62; i++) delete days[keys[i]]
           }
-          const offlineQueue = !s.connected
-            ? [...(s.offlineQueue || []), { prayerId, t: Date.now() }]
-            : s.offlineQueue
           return {
             prayerCompletions: {
               ...s.prayerCompletions,
               [prayerId]: (s.prayerCompletions[prayerId] || 0) + 1
             },
-            prayerDayCompletions: days,
-            offlineQueue,
+            prayerDayCompletions: days
           }
         }),
-      drainOfflineQueue: () => {
-        const q = get().offlineQueue || []
-        if (!q.length) return []
-        set({ offlineQueue: [] })
-        return q
-      },
 
-      // Attribute one prayed second to this prayer on the current local day.
+      // Attribute one prayed second to this prayer on the current UTC day.
       addPrayerSecond: (prayerId) =>
         set((s) => {
           if (!prayerId) return {}
@@ -387,19 +423,19 @@ export const useStore = create(
       },
 
       // ---- derived ----
-      // Cumulative all-time prayers (server totals + this person's own). Only
-      // ever grows, so anything derived from it can only climb.
+      // Cumulative all-time prayer starts. The shared server is authoritative;
+      // personal recitation counters are kept separate and persisted locally.
       getPrayerCount: () => {
         const s = get()
         return (
-          Object.values(s.prayerTotals).reduce((a, b) => a + (b || 0), 0) +
-          Object.values(s.prayerCompletions).reduce((a, b) => a + (b || 0), 0)
+          Object.values(prayerBaseTotals).reduce((a, b) => a + (b || 0), 0) +
+          Object.values(s.prayerTotals).reduce((a, b) => a + (b || 0), 0)
         )
       },
       // How alight the Earth is, shown as a percentage of a million prayers
       // prayed together. It is driven ONLY by cumulative all-time prayers
-      // (server totals + this person's completions), which never decrease, so
-      // the number and the Earth's glow can only ever climb. The curve is
+      // (server totals), which never decrease, so the number and the Earth's
+      // glow can only ever climb. The curve is
       // gentle: it reads small at first and rises slowly, reaching 100% at the
       // million-prayer mark.
       getGlow: () => {
@@ -417,13 +453,12 @@ export const useStore = create(
       },
 
       // All-time count of a prayer ever carried: believable base + the shared
-      // server's real count + this person's own completed cycles.
+      // server's real count.
       getPrayerTotal: (prayerId) => {
         const s = get()
         return (
           (prayerBaseTotals[prayerId] || 0) +
-          (s.prayerTotals[prayerId] || 0) +
-          (s.prayerCompletions[prayerId] || 0)
+          (s.prayerTotals[prayerId] || 0)
         )
       },
       // How many times this prayer was recited today (per-repetition for mantras).
@@ -441,17 +476,44 @@ export const useStore = create(
       },
       getSpiritTotal: (spiritId) => {
         const s = get()
-        let local = 0
-        const spirit = SPIRITUALITY_BY_ID[spiritId]
-        if (spirit) {
-          for (const p of spirit.prayers || []) local += s.prayerCompletions[p.id] || 0
-        }
-        return (spiritBaseTotals[spiritId] || 0) + (s.spiritTotals[spiritId] || 0) + local
+        return (spiritBaseTotals[spiritId] || 0) + (s.spiritTotals[spiritId] || 0)
       }
     }),
     {
       name: 'prayer-earth-v1',
       storage: createJSONStorage(() => safeStorage),
+      version: 2,
+      migrate: (state) => state,
+      merge: (persisted, current) => {
+        const saved = persisted && typeof persisted === 'object' ? { ...persisted } : {}
+        delete saved.offlineQueue
+        return {
+          ...current,
+          ...saved,
+          profile: {
+            ...current.profile,
+            ...(saved.profile && typeof saved.profile === 'object' && !Array.isArray(saved.profile)
+              ? saved.profile
+              : {})
+          },
+          favorites: Array.isArray(saved.favorites) ? saved.favorites : current.favorites,
+          prayerVoices: safeStringMap(saved.prayerVoices),
+          prayerCompletions: safeCounterMap(saved.prayerCompletions),
+          prayerDayCompletions: safeDayMap(saved.prayerDayCompletions),
+          prayerDayStats: safeDayMap(saved.prayerDayStats),
+          localPrayerSeconds: safeCounter(saved.localPrayerSeconds),
+          streak: safeCounter(saved.streak),
+          bestStreak: safeCounter(saved.bestStreak),
+          speechRate: Math.max(0.6, Math.min(2, Number(saved.speechRate) || current.speechRate)),
+          ambienceLevel:
+            saved.ambienceLevel == null
+              ? current.ambienceLevel
+              : Math.max(0, Math.min(1, Number(saved.ambienceLevel) || 0)),
+          volume:
+            saved.volume == null ? current.volume : Math.max(0, Math.min(1, Number(saved.volume) || 0)),
+          muted: !!saved.muted
+        }
+      },
       partialize: (s) => ({
         spiritId: s.spiritId,
         prayerId: s.prayerId,
@@ -477,14 +539,15 @@ export const useStore = create(
         lastPrayedDay: s.lastPrayedDay,
         anonId: s.anonId,
         firstSeen: s.firstSeen,
-        offlineQueue: s.offlineQueue || [],
       })
     }
   )
 )
 
-// Dev-only handle so the test harness can probe live state.
-if (import.meta.env?.DEV) {
+if (
+  import.meta.env?.DEV ||
+  (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('peTest') === '1')
+) {
   window.__store = useStore
 }
 

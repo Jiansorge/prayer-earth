@@ -1,9 +1,17 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
-import { EarthScene } from '../three/EarthScene.js'
+import { EarthScene, supportsWebGL2 } from '../three/EarthScene.js'
 import { useT } from '../i18n.js'
 
 const WorldFeed = lazy(() => import('../components/WorldFeed.jsx'))
+
+function StaticEarth() {
+  return (
+    <div className="earth-fallback" role="img" aria-label="Earth">
+      <div className="earth-fallback-globe" />
+    </div>
+  )
+}
 
 export default function EarthPage() {
   const mountRef = useRef(null)
@@ -23,8 +31,16 @@ export default function EarthPage() {
 
   useEffect(() => {
     let scene = null
+    if (!supportsWebGL2()) {
+      setWebglFail(true)
+      return undefined
+    }
     try {
-      scene = new EarthScene(mountRef.current, { onReady: () => setReady(true) })
+      scene = new EarthScene(mountRef.current, {
+        onReady: () => setReady(true),
+        onError: () => setWebglFail(true),
+        onContextLost: () => setWebglFail(true)
+      })
       sceneRef.current = scene
       scene.setGlow(useStore.getState().getGlow())
       scene.setLights(useStore.getState().lights, useStore.getState().lightSpirits)
@@ -48,19 +64,22 @@ export default function EarthPage() {
   }, [glowPct, lights, lightSpirits, people, totalSeconds, youLoc])
 
   if (webglFail) {
-    const company = connected
-      ? t('earth.failSouls', { people })
-      : t('earth.failQuiet')
     return (
-      <div className="view" style={{ display: 'grid', placeItems: 'center', textAlign: 'center' }}>
-        <div className="card" style={{ maxWidth: 380 }}>
-          <div style={{ fontSize: 44, marginBottom: 10 }}>🌍</div>
-          <h2 style={{ fontFamily: 'var(--serif)', fontSize: 24, marginBottom: 10 }}>
-            {t('earth.failTitle')}
-          </h2>
-          <p className="subtitle">
-            {t('earth.failBody', { pct: fmtPct(glowPct), company })}
-          </p>
+      <div className="view earth-view">
+        <StaticEarth />
+        <div className="earth-vignette" />
+        <div className="earth-hud">
+          <div className="eh-top fade-in">
+            <h1>{t('earth.title')}</h1>
+            <p>{t('earth.sub')}</p>
+          </div>
+          <div className="eh-bottom fade-in">
+            <div className="eh-glow-pct">{fmtPct(glowPct)}%</div>
+            <div className="eh-glow-label">{t('meter.toMillion')}</div>
+            <div className="eh-caption">
+              {connected ? t('earth.soulsNow', { n: people }) : t('earth.quietCompany')}
+            </div>
+          </div>
         </div>
       </div>
     )

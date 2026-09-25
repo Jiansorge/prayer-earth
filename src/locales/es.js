@@ -84,6 +84,8 @@ export default {
   'settings.shareAppHint':
     'Envía a un amigo toda la Tierra viva, cada tradición, cada oración, el brillo que crece.',
   'settings.shareApp': 'Compartir Joining Palms',
+  'settings.sharePlayStore': 'Compartir sur Play Store',
+  'settings.playStoreComingSoon': 'Play Store — próximamente',
   'settings.copied': '¡Copiado!',
   'settings.done': 'Listo',
   'settings.gear': 'Ajustes',

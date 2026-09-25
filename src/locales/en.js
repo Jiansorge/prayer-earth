@@ -164,7 +164,7 @@ export default {
   'qr.err': 'Couldn\u2019t draw the QR code.',
   'qr.saveCard': 'Save card',
   'stats.thisWeek': 'Your week',
-  'stats.allTime': 'your total',
+  'stats.allTime': 'all time',
   'stats.foot': 'Your seconds on this prayer, one bar per day.',
   'picker.title': 'Choose a prayer',
   'picker.all': 'All',

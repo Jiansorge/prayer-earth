@@ -10,7 +10,7 @@
 // hashed + external (it loads with its chunk, never blocking first paint).
 // Run automatically at the end of `vite build`.
 
-import { readFileSync, writeFileSync, rmSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -38,11 +38,5 @@ try {
 
 const inlined = html.replace(LINK, `    <style>\n${css}\n    </style>\n`)
 writeFileSync(htmlPath, inlined)
-
-// The stylesheet bytes now live in the document; drop the standalone file so
-// nothing references a dead /assets entry and staging stays lean.
-try {
-  rmSync(cssPath, { force: true })
-} catch {}
 
 console.log(`[inline-css] inlined ${path.basename(m[1])} (${(css.length / 1024).toFixed(1)} KiB) into index.html`)

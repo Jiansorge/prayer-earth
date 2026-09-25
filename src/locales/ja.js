@@ -69,6 +69,8 @@ export default {
   'settings.shareAppLabel': 'Joining Palms を共有',
   'settings.shareAppHint': '生きた地球をすべて友達に送りましょう, すべての伝統、すべての祈り、育つ光。',
   'settings.shareApp': 'Joining Palms を共有',
+  'settings.sharePlayStore': 'Play Store で共有',
+  'settings.playStoreComingSoon': 'Play Store — 近日公開',
   'settings.copied': 'コピーしました！', 'settings.done': '完了', 'settings.gear': '設定',
   'prayer.repeat': '繰り返す', 'prayer.pray': '祈る', 'prayer.pause': '一時停止', 'prayer.loading': '読み込み中…', 'prayer.stop': '停止',
   'prayer.tune': '音量と速さを調節', 'prayer.tuneLabel': '調節',

@@ -8,7 +8,7 @@ const dayKey = (t) =>
   ).padStart(2, '0')}`
 
 const WEEK = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
-const shortDay = (t) => WEEK[t.getDay()]
+const shortDay = (t) => WEEK[t.getUTCDay()]
 
 const fmtSecs = (s) => {
   if (s < 60) return `${s}s`
@@ -40,8 +40,8 @@ export default function PrayerStats({ prayerId }) {
   const days = []
   for (let i = 6; i >= 0; i--) {
     const d = new Date()
-    d.setDate(d.getDate() - i)
-    days.push({ key: dayKey(d), label: shortDay(d), full: d.toLocaleDateString() })
+    d.setUTCDate(d.getUTCDate() - i)
+    days.push({ key: dayKey(d), label: shortDay(d), full: d.toLocaleDateString(undefined, { timeZone: 'UTC' }) })
   }
   const values = days.map((d) => stats[d.key]?.[prayerId] || 0)
   const max = Math.max(4, ...values)

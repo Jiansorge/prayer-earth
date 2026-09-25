@@ -79,7 +79,10 @@ function PickerRow({ p, i, spirit, openPrayer, close, t }) {
     >
       <button
         className="picker-open"
-        onClick={open}
+        onClick={(e) => {
+          e.stopPropagation()
+          open()
+        }}
         aria-label={prayerTitle(t, p.id, p.title)}
       >
         <span className="picker-num">{i + 1}</span>

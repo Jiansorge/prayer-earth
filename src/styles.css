@@ -57,6 +57,7 @@ h3,
 
 .app {
   position: relative;
+  height: 100vh;
   height: 100dvh;
   width: 100%;
   overflow: hidden;
@@ -1285,6 +1286,8 @@ html[dir='rtl'] .chooser-arrow.right {
   left: 18px;
   right: 18px;
   bottom: calc(170px + env(safe-area-inset-bottom));
+  max-height: 50vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1562,6 +1565,51 @@ html[dir='rtl'] .chooser-arrow.right {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+.earth-fallback {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(1px 1px at 12% 18%, rgba(255, 255, 255, 0.8) 50%, transparent 51%),
+    radial-gradient(1px 1px at 78% 12%, rgba(255, 255, 255, 0.7) 50%, transparent 51%),
+    radial-gradient(1px 1px at 64% 74%, rgba(255, 255, 255, 0.65) 50%, transparent 51%),
+    radial-gradient(1px 1px at 26% 82%, rgba(255, 255, 255, 0.55) 50%, transparent 51%),
+    radial-gradient(ellipse at center, #162b54 0%, #09152f 42%, #030712 78%);
+}
+
+.earth-fallback-globe {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: min(58vmin, 78vw);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 34% 28%, rgba(157, 218, 190, 0.8) 0 7%, transparent 8%),
+    radial-gradient(ellipse at 62% 35%, rgba(91, 164, 141, 0.75) 0 12%, transparent 13%),
+    radial-gradient(ellipse at 43% 62%, rgba(75, 145, 128, 0.76) 0 10%, transparent 11%),
+    radial-gradient(circle at 35% 30%, #2c8e83 0%, #164d62 42%, #071a36 72%, #020713 100%);
+  box-shadow: 0 0 45px rgba(74, 170, 255, 0.3), inset -30px -24px 45px rgba(0, 0, 0, 0.65);
+}
+
+.earth-fallback-globe::after {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  border: 1px solid rgba(151, 221, 255, 0.22);
+  border-radius: 50%;
+  box-shadow: inset 0 0 22px rgba(120, 203, 255, 0.18);
+}
+
+.earth-fallback-backdrop {
+  opacity: 0.62;
+}
+
+.earth-fallback-backdrop .earth-fallback-globe {
+  width: min(76vmin, 92vw);
 }
 
 /* static (reduced-motion / low-power) starfield: sits where the live WebGL
@@ -3734,9 +3782,6 @@ input[type='radio'] {
   border-color: rgba(255, 255, 255, 0.32);
 }
 /* voice/tune panel: small down-arrow close affordance */
-.prayer-tune {
-  position: relative;
-}
 .pt-close {
   position: absolute;
   top: 6px;

@@ -65,6 +65,8 @@ export default {
   'settings.shareAppLabel': '分享 Joining Palms',
   'settings.shareAppHint': '把整个活生生的地球送给朋友，每种传统、每段祈祷、越来越亮的光芒。',
   'settings.shareApp': '分享 Joining Palms',
+  'settings.sharePlayStore': '在 Play Store 分享',
+  'settings.playStoreComingSoon': 'Play Store — 即将推出',
   'settings.copied': '已复制！', 'settings.done': '完成', 'settings.gear': '设置',
   'settings.donateLabel': '支持 Joining Palms',
   'settings.donateHint': '每一份支持都能让它保持免费、私密、无广告。无需账号，也无需邮箱。',

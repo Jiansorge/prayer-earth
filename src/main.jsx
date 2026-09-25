@@ -4,6 +4,7 @@ import App from './App.jsx'
 import './styles.css'
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  const hadController = !!navigator.serviceWorker.controller
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {})
   })
@@ -14,7 +15,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   // the user without a manual hard-refresh. `reloading` guards against a loop.
   let reloading = false
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (reloading) return
+    if (!hadController || reloading) return
     reloading = true
     window.location.reload()
   })

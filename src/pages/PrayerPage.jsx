@@ -22,6 +22,10 @@ const fmt = (s) => {
 // Scripts that read right-to-left, their original text must flow RTL even
 // though the transliteration and meaning below stay left-to-right.
 const RTL_LANGS = new Set(['ar', 'he', 'fa', 'ur', 'sd', 'dv'])
+const newPlaybackSessionId = () =>
+  typeof crypto?.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `play-${Date.now()}-${Math.random().toString(36).slice(2)}`
 
 export default function PrayerPage() {
   const closePrayer = useStore((s) => s.closePrayer)
@@ -35,6 +39,8 @@ export default function PrayerPage() {
   const paused = useStore((s) => s.paused)
   const setPaused = useStore((s) => s.setPaused)
   const setPlayingPrayerId = useStore((s) => s.setPlayingPrayerId)
+  const setPlayingSpiritId = useStore((s) => s.setPlayingSpiritId)
+  const setPlayingSessionId = useStore((s) => s.setPlayingSessionId)
   const pendingPlay = useStore((s) => s.pendingPlay)
   const notePrayerComplete = useStore((s) => s.notePrayerComplete)
   const getPrayerTotal = useStore((s) => s.getPrayerTotal)
@@ -71,6 +77,7 @@ export default function PrayerPage() {
 const startAt = useRef(0)
 const startingRef = useRef(false)
 const startingWatchdog = useRef(null)
+const restartTimer = useRef(null)
 const joinedTimer = useRef(null)
 const prevCountRef = useRef(null)
 const prevPrayerRef = useRef(null)
@@ -190,7 +197,14 @@ const countedRef = useRef(false)
       joinedTimer.current = setTimeout(() => setJoinedToast(false), 4500)
     }
   }, [prayerCount, prayerId, playing, paused])
-  useEffect(() => () => clearTimeout(joinedTimer.current), [])
+  useEffect(
+    () => () => {
+      clearTimeout(joinedTimer.current)
+      clearTimeout(restartTimer.current)
+      clearTimeout(startingWatchdog.current)
+    },
+    []
+  )
   const reflectionTimer = useRef(null)
   useEffect(() => {
     if (reflectionTimer.current) clearTimeout(reflectionTimer.current)
@@ -219,11 +233,13 @@ const countedRef = useRef(false)
     setPaused(false)
     setPlaying(true)
     setPlayingPrayerId(prayer.id)
+    setPlayingSpiritId(spirit.id)
+    setPlayingSessionId(newPlaybackSessionId())
     setFinished(false)
     setVoiceNote(false)
     setPraying(true)
     syncClient.presenceNow()
-    ambient.start()
+    ambient.start().catch(() => {})
     ambient.setLevel(0.9)
     ambient.ring(0.6)
     if (fromIndex === 0) useStore.getState().setElapsed(0)
@@ -292,6 +308,9 @@ const countedRef = useRef(false)
         setPlaying(false)
         setPraying(false)
         useStore.getState().setPlayingPrayerId(null)
+        useStore.getState().setPlayingSpiritId(null)
+        useStore.getState().setPlayingSessionId(null)
+        syncClient.presenceNow()
         useStore.getState().setCurrentPhrase(null)
         setFinished(true)
         setActive(null)
@@ -433,12 +452,15 @@ const countedRef = useRef(false)
   const stopJob = () => {
     speech.stop()
     clearTimeout(startingWatchdog.current)
+    clearTimeout(restartTimer.current)
     startingRef.current = false
     setStarting(false)
     setPlaying(false)
     setPaused(false)
     setPraying(false)
     useStore.getState().setPlayingPrayerId(null)
+    useStore.getState().setPlayingSpiritId(null)
+    useStore.getState().setPlayingSessionId(null)
     useStore.getState().setCurrentPhrase(null)
     syncClient.presenceNow()
     setActive(null)
@@ -493,7 +515,8 @@ const countedRef = useRef(false)
       // we're on, just with the new loop setting.
       const fromIndex = speech.currentIndex()
       stopJob()
-      setTimeout(() => startJob(fromIndex), 120)
+      clearTimeout(restartTimer.current)
+      restartTimer.current = setTimeout(() => startJob(fromIndex), 120)
     }
   }
 
@@ -520,14 +543,16 @@ const countedRef = useRef(false)
   }
 
   const share = async () => {
-      const url = `${CANONICAL_ORIGIN}/#/pray/${spiritId}/${prayerId}`
+    const url = `${CANONICAL_ORIGIN}/#/pray/${spiritId}/${prayerId}`
     const text = `${prayerTitle(t, prayer.id, prayer.title)} · ${spirit.name}. Pray with the world: ${url}`
     try {
       if (navigator.share) {
         await navigator.share({ title: 'Joining Palms', text, url })
         return
       }
-    } catch {}
+    } catch (err) {
+      if (err?.name === 'AbortError') return
+    }
     try {
       await navigator.clipboard.writeText(url)
       setCopied(true)
@@ -651,7 +676,7 @@ aria-label={t('prayer.prev')}
               className={`chip ${p.id === prayerId ? 'on' : ''}`}
               onClick={() => {
                 const cur = useStore.getState()
-                if (cur.playingPrayerId && cur.playingPrayerId !== p.id) stopPlayback()
+                if (cur.playingPrayerId && cur.playingPrayerId !== p.id) stopJob()
                 openPrayer(spiritId, p.id)
               }}
             >

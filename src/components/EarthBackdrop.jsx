@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
-import { EarthScene } from '../three/EarthScene.js'
+import { EarthScene, supportsWebGL2 } from '../three/EarthScene.js'
 
 // A quiet, translucent Earth behind the prayer view. Its coastlines glow a
 // little brighter as collective prayer accumulates, it rotates slowly, and it
@@ -14,6 +14,13 @@ import { EarthScene } from '../three/EarthScene.js'
 export default function EarthBackdrop() {
   const mountRef = useRef(null)
   const sceneRef = useRef(null)
+  const [failed, setFailed] = useState(false)
+  const [staticMode] = useState(
+    () =>
+      !!window.Capacitor?.isNativePlatform?.() ||
+      (typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4) ||
+      !supportsWebGL2()
+  )
   const glow = useStore((s) => s.getGlow())
   const lights = useStore((s) => s.lights)
   const lightSpirits = useStore((s) => s.lightSpirits)
@@ -23,8 +30,13 @@ export default function EarthBackdrop() {
 
   useEffect(() => {
     let scene = null
+    if (staticMode || failed) return undefined
     try {
-      scene = new EarthScene(mountRef.current, { backdrop: true })
+      scene = new EarthScene(mountRef.current, {
+        backdrop: true,
+        onError: () => setFailed(true),
+        onContextLost: () => setFailed(true)
+      })
       scene.setGlow(useStore.getState().getGlow())
       scene.setLights(useStore.getState().lights, useStore.getState().lightSpirits)
       scene.setYouLoc(useStore.getState().youLoc)
@@ -34,7 +46,7 @@ export default function EarthBackdrop() {
       if (scene) scene.dispose()
       sceneRef.current = null
     }
-  }, [])
+  }, [staticMode, failed])
 
   useEffect(() => {
     const scene = sceneRef.current
@@ -47,7 +59,13 @@ export default function EarthBackdrop() {
 
   return (
     <div className="earth-backdrop" aria-hidden="true">
-      <div ref={mountRef} className="earth-backdrop-canvas" />
+      {staticMode || failed ? (
+        <div className="earth-fallback earth-fallback-backdrop">
+          <div className="earth-fallback-globe" />
+        </div>
+      ) : (
+        <div ref={mountRef} className="earth-backdrop-canvas" />
+      )}
       <div className="earth-backdrop-scrim" />
     </div>
   )

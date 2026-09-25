@@ -5,6 +5,8 @@ import { ambient } from './audio/ambience.js'
 import HomePage from './pages/HomePage.jsx'
 import Nav from './components/Nav.jsx'
 import { getScene } from './components/Scenery.jsx'
+import { stopPlayback } from './playback.js'
+import { isAppShell } from './shared/mobile.js'
 
 const PrayerPage = lazy(() => import('./pages/PrayerPage.jsx'))
 const LegalPage = lazy(() => import('./pages/LegalPage.jsx'))
@@ -36,8 +38,9 @@ class Boundary extends Component {
   static getDerivedStateFromError() {
     return { err: true }
   }
-  componentDidCatch() {
-    // no-op, keep the app alive
+  componentDidCatch(error, info) {
+    console.error('App render failure', error, info?.componentStack)
+    stopPlayback().finally(() => useStore.setState({ view: 'home', praying: false }))
   }
   render() {
     if (this.state.err) {
@@ -53,7 +56,7 @@ class Boundary extends Component {
             <button
               onClick={() => {
                 this.setState({ err: false })
-                useStore.setState({ view: 'home', praying: false })
+                stopPlayback().finally(() => useStore.setState({ view: 'home', praying: false }))
               }}
               style={{
                 border: 'none',
@@ -157,7 +160,9 @@ export default function App() {
       // The 1/2/3/? shortcuts need a physical keyboard — they're meaningless and
       // confusing on the Android app shell, so keep them web-only.
       if (isAppShell()) return
-      if (e.key === '2') {
+      const s = useStore.getState()
+      if (e.key === '1') s.go('home')
+      else if (e.key === '2') {
         if (!s.spiritId) s.openPrayer('christianity', 'lords-prayer')
         else s.go('prayer')
       } else if (e.key === '3') s.go('earth')

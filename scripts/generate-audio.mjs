@@ -15,7 +15,7 @@
 
 import { writeFileSync, mkdirSync, existsSync, renameSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { SPIRITUALITIES } from '../src/data/prayers.js'
+import { SPIRITUALITIES, loadSpirit } from '../src/data/prayers.js'
 import edgePkg from 'msedge-tts'
 
 const { MsEdgeTTS, OUTPUT_FORMAT } = edgePkg
@@ -37,6 +37,7 @@ const FALLBACK_LANG = {
   pra: 'hi',
   mi: 'en',
   la: 'en',
+  bo: 'en',
   ae: 'en',
   lkt: 'en',
   haw: 'en',
@@ -98,7 +99,7 @@ for (const v of voices) {
 tts.close()
 
 // Render every phrase of one prayer in one voice with a fresh connection.
-async function renderPrayerVoice(p, dir, voice) {
+async function renderPrayerVoice(p, dir, voice, useTransliteration = false) {
   const t = new MsEdgeTTS()
   try {
     await withTimeout(t.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3, {}), 20000, 'setMetadata')
@@ -109,7 +110,7 @@ async function renderPrayerVoice(p, dir, voice) {
   let count = 0
   try {
     for (const [i, ph] of (p.phrases || []).entries()) {
-      const text = ph.t || ph.s || ''
+      const text = (useTransliteration && ph.s) || ph.t || ph.s || ''
       if (!text) continue
       const file = join(dir, `${i}-${voice}.mp3`)
       if (existsSync(file)) {
@@ -134,6 +135,8 @@ function withTimeout(promise, ms, label) {
     new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timed out`)), ms))
   ])
 }
+
+for (const s of SPIRITUALITIES) await loadSpirit(s.id)
 
 const prayers = []
 for (const s of SPIRITUALITIES) {
@@ -177,7 +180,7 @@ async function renderPrayer(p, n, total) {
     let attempts = 0
     while (attempts < 3) {
       try {
-        generated += await renderPrayerVoice(p, dir, voice)
+          generated += await renderPrayerVoice(p, dir, voice, p.lang === 'bo')
         break
       } catch (e) {
         attempts++

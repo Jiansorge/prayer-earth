@@ -6,7 +6,7 @@
 export const PROTOCOL_VERSION = 3
 
 // Client → Engine
-export const C_PRESENCE = 'presence' // { type, praying, prayerId?, spiritId?, name, cell? }
+export const C_PRESENCE = 'presence' // { type, praying, prayerId?, spiritId?, sessionId?, name, cell? }
 export const C_SYNC = 'sync' // { type, anonId, stats }
 export const C_PING = 'ping' // { type } — client keepalive probe
 

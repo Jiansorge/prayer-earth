@@ -68,6 +68,8 @@ export default {
   'settings.shareAppLabel': 'مشاركة Joining Palms',
   'settings.shareAppHint': 'أرسل لصديق كلّ الأرض الحيّة, كل تقاليد وكل صلاة وضوءُها المتنامي.',
   'settings.shareApp': 'مشاركة Joining Palms',
+  'settings.sharePlayStore': 'المشاركة على Play Store',
+  'settings.playStoreComingSoon': 'Play Store — قريبًا',
   'settings.copied': 'تمّ النسخ!', 'settings.done': 'تمّ', 'settings.gear': 'الإعدادات',
   'prayer.repeat': 'تكرار مستمر', 'prayer.pray': 'صَلِّ', 'prayer.pause': 'إيقاف مؤقت', 'prayer.loading': 'جارٍ البدء…', 'prayer.stop': 'إيقاف',
   'prayer.tune': 'ضبط الصوت والسرعة', 'prayer.tuneLabel': 'ضبط',

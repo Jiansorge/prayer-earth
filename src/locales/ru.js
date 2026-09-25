@@ -65,6 +65,8 @@ export default {
   'settings.shareAppLabel': 'Поделиться Joining Palms',
   'settings.shareAppHint': 'Отправьте другу всю живую Землю, каждую традицию, каждую молитву, растущее свечение.',
   'settings.shareApp': 'Поделиться Joining Palms',
+  'settings.sharePlayStore': 'Поделиться в Play Store',
+  'settings.playStoreComingSoon': 'Play Store — скоро',
   'settings.copied': 'Скопировано!', 'settings.done': 'Готово', 'settings.gear': 'Настройки',
   'settings.donateLabel': 'Поддержите Joining Palms',
   'settings.donateHint': 'Каждый вклад помогает сохранять приложение бесплатным, приватным и без рекламы. Учётная запись или электронная почта не нужны.',

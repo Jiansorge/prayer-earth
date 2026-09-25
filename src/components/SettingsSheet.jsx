@@ -77,7 +77,9 @@ export default function SettingsSheet() {
         await navigator.share({ title: 'Joining Palms', text, url })
         return
       }
-    } catch {}
+    } catch (err) {
+      if (err?.name === 'AbortError') return
+    }
     try {
       await navigator.clipboard.writeText(url)
       setAppCopied(true)
@@ -192,7 +194,11 @@ export default function SettingsSheet() {
           max="2.0"
           step="0.05"
           value={speechRate}
-          onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+          onChange={(e) => {
+            const rate = parseFloat(e.target.value)
+            setSpeechRate(rate)
+            speech.setRate(rate)
+          }}
         />
         <div className="field-row">
           <span className="field-hint">{t('settings.speedSlow', { n: speechRate.toFixed(2) })}</span>

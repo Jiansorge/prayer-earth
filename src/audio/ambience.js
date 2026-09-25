@@ -13,7 +13,7 @@ export class AmbientEngine {
     this.startedAt = 0
   }
 
-  ensure() {
+  async ensure() {
     if (!this.ctx) {
       const AC = window.AudioContext || window.webkitAudioContext
       if (!AC) return
@@ -24,7 +24,7 @@ export class AmbientEngine {
       this.buildPad()
       this.buildWind()
     }
-    if (this.ctx.state === 'suspended') this.ctx.resume()
+    if (this.ctx.state === 'suspended') await this.ctx.resume()
   }
 
   buildPad() {
@@ -199,13 +199,12 @@ export class AmbientEngine {
     out.connect(this.master)
   }
 
-  start() {
-    this.ensure()
+  async start() {
+    await this.ensure()
     if (!this.ctx || this.running) return
     this.running = true
     this.startedAt = this.ctx.currentTime
     this.setLevel(this.level)
-    // welcome bell
     this.ring(0.8)
   }
 

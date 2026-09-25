@@ -6,7 +6,7 @@
 // installs, deletes the old cache in `activate`, and re-caches fresh files. If
 // the app is served through Cloudflare, also purge the CDN cache for /audio/*
 // so the edge stops handing out the old files.
-const CACHE = 'prayer-earth-v22'
+const CACHE = 'prayer-earth-v25'
 const CORE = [
   '/',
   '/index.html',
@@ -23,9 +23,7 @@ const CORE = [
 ]
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE).then((c) => c.addAll(CORE).catch(() => {}))
-  )
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)))
   self.skipWaiting()
 })
 
@@ -43,10 +41,12 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return
   const url = new URL(req.url)
   if (url.origin !== location.origin) return
+  if (
+    url.pathname.startsWith('/api/') ||
+    url.pathname === '/health' ||
+    url.pathname === '/stats'
+  ) return
 
-  // Pages (navigation) are network-first: a fresh deploy reaches users on
-  // their next load, with the cached page as an offline fallback. Everything
-  // else (hashed JS/CSS, audio, images) stays cache-first for speed + offline.
   if (req.mode === 'navigate') {
     e.respondWith(
       fetch(req)
@@ -62,19 +62,26 @@ self.addEventListener('fetch', (e) => {
     return
   }
 
+  const cacheable =
+    url.pathname.startsWith('/assets/') ||
+    url.pathname.startsWith('/audio/') ||
+    url.pathname.startsWith('/icons/') ||
+    url.pathname === '/manifest.webmanifest' ||
+    url.pathname === '/analytics-loader.js' ||
+    url.pathname === '/land-mask.png'
+  if (!cacheable) return
+
   e.respondWith(
     caches.match(req).then(
       (hit) =>
         hit ||
-        fetch(req)
-          .then((res) => {
-            if (res.ok) {
-              const copy = res.clone()
-              caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {})
-            }
-            return res
-          })
-          .catch(() => caches.match('/index.html'))
+        fetch(req).then((res) => {
+          if (res.ok) {
+            const copy = res.clone()
+            caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {})
+          }
+          return res
+        })
     )
   )
 })

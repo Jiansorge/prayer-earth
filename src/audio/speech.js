@@ -13,8 +13,31 @@
 import { ambient } from './ambience.js'
 import { useStore } from '../store.js'
 
+function xhrGet(url) {
+  return new Promise((res, rej) => {
+    const req = new XMLHttpRequest()
+    req.open('GET', url, true)
+    try { req.responseType = 'arraybuffer' } catch {}
+    req.onload = () => res(req)
+    req.onerror = () => rej(req)
+    req.send()
+  })
+}
+
+function xhrGetText(url) {
+  return new Promise((res, rej) => {
+    const req = new XMLHttpRequest()
+    req.open('GET', url, true)
+    req.responseType = 'text'
+    req.onload = () => res(req)
+    req.onerror = () => rej(req)
+    req.send()
+  })
+}
+
 // Sentinel "voice" in the settings picker meaning: no spoken voice, chant only.
 export const CHANT_VOICE = '__chant__'
+const REVERB_WET_GAIN = 0.15
 
 // Flatten sacred transliterations into something a fallback English voice can
 // read sensibly: strip diacritics, map the special consonants used in these
@@ -57,14 +80,13 @@ class SpeechEngine {
     this.cloud = false
     this.cloudCache = new Map()
     this.cloudAudio = null
-    // One <audio> element per recorded file, reused across repeated phrases
-    // (mantras repeat the same line many times) so the MP3 is fetched once.
-    this._audioByUrl = new Map()
+    this.reverbWetGain = REVERB_WET_GAIN
     // Decoded copies of each recorded phrase (Web Audio route) so a WebView
     // whose <audio> element stalls at 0:00 can still speak. Loaded on demand.
     this._bufferByUrl = new Map()
     this.cloudSource = null
     this.cloudGain = null
+    this.cloudNodes = []
 
     if (this.synth) {
       this.refreshVoices()
@@ -83,8 +105,8 @@ class SpeechEngine {
   // Ask the server whether the Google TTS proxy is available (once).
   async probeCloud() {
     try {
-      const res = await fetch('/api/tts?text=hi&lang=en')
-      this.cloud = res.ok
+      const res = await xhrGetText('/api/tts?text=hi&lang=en')
+      this.cloud = res.status === 200
     } catch {
       this.cloud = false
     }
@@ -103,8 +125,8 @@ class SpeechEngine {
   // single time for the whole session.
   loadAudioManifest() {
     if (this._manifestPromise) return this._manifestPromise
-    this._manifestPromise = fetch('/audio/manifest.json')
-      .then((r) => (r.ok ? r.json() : null))
+    this._manifestPromise = xhrGetText('/audio/manifest.json')
+      .then((r) => r.status === 200 ? JSON.parse(r.responseText) : null)
       .then((m) => {
         this._manifestData = m
         return m
@@ -127,13 +149,13 @@ class SpeechEngine {
   // stays clear and front, the room just softens the edges.
   buildReverb(ctx) {
     try {
-      const seconds = 1.5
+      const seconds = 0.5
       const len = Math.floor(ctx.sampleRate * seconds)
       const ir = ctx.createBuffer(2, len, ctx.sampleRate)
       for (let ch = 0; ch < 2; ch++) {
         const data = ir.getChannelData(ch)
         for (let i = 0; i < len; i++) {
-          data[i] = Math.pow(1 - i / len, 2.5) * Math.cos(i / len * Math.PI * 2)
+          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 4)
         }
       }
       const convolver = ctx.createConvolver()
@@ -159,12 +181,12 @@ class SpeechEngine {
       lowpass.type = 'lowpass'
       lowpass.frequency.value = 2600
       lowpass.Q.value = 0.2
-      // Voice stays dry and forward; the room is barely a whisper now.
+      // Voice stays dry and forward; the room is a controlled 15% wet mix.
       const dry = ctx.createGain()
       dry.gain.value = 0.98
       const wet = ctx.createGain()
-      wet.gain.value = 0.01
-      // A barely-there echo, more spacious than musical.
+      wet.gain.value = this.reverbWetGain
+      // A short, spacious echo.
       const delay = ctx.createDelay(2)
       delay.delayTime.value = 0.26
       const feedback = ctx.createGain()
@@ -228,9 +250,10 @@ class SpeechEngine {
         const oldest = this._bufferByUrl.keys().next().value
         this._bufferByUrl.delete(oldest)
       }
-      const r = await fetch(url)
-      if (!r.ok) return null
-      const data = await r.arrayBuffer()
+      const r = await xhrGet(url)
+      if (r.status !== 200) return null
+      let data = r.response
+      if (typeof data === 'string') data = new TextEncoder().encode(data).buffer
       const buf = await ctx.decodeAudioData(data)
       this._bufferByUrl.set(url, buf)
       return buf
@@ -249,15 +272,19 @@ class SpeechEngine {
       lowpass.type = 'lowpass'
       lowpass.frequency.value = 2600
       lowpass.Q.value = 0.2
+      src.connect(gain)
       gain.connect(lowpass)
       lowpass.connect(ctx.destination)
+      let wet = null
       if (this._revConvolver) {
-        const wet = ctx.createGain()
-        wet.gain.value = 0.01
+        wet = ctx.createGain()
+        wet.gain.value = this.reverbWetGain
         src.connect(this._revConvolver)
         this._revConvolver.connect(wet)
         wet.connect(ctx.destination)
       }
+      this.cloudNodes.push(gain, lowpass)
+      if (wet) this.cloudNodes.push(wet)
     } catch {}
   }
 
@@ -274,6 +301,10 @@ class SpeechEngine {
       } catch {}
       this.cloudSource = null
     }
+    for (const node of this.cloudNodes) {
+      try { node.disconnect() } catch {}
+    }
+    this.cloudNodes = []
     this.cloudGain = null
   }
 
@@ -308,23 +339,24 @@ class SpeechEngine {
       // Static pre-rendered audio is used when it exists; otherwise fall back
       // to the live cloud proxy. The cache key is the URL itself so a prayer
       // with static audio is shared across every playback rate.
-      const key = staticUrl || `${job.lang}:${job.rate}:${text}`
+      const key = staticUrl || `${job.lang}:${text}`
       let url = this.cloudCache.get(key)
       if (!url) {
         if (staticUrl) {
           url = staticUrl
         } else {
-          const res = await fetch(
-            `/api/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(job.lang)}`
-          )
-          if (!res.ok) return false
-          const blob = await res.blob()
+          const res = await xhrGet(`/api/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(job.lang)}`)
+          if (res.status !== 200) return false
+          const blob = new Blob([res.response])
           url = URL.createObjectURL(blob)
         }
         this.cloudCache.set(key, url)
         if (this.cloudCache.size > 128) {
           const oldest = this.cloudCache.keys().next().value
-          URL.revokeObjectURL(oldest)
+          const oldestUrl = this.cloudCache.get(oldest)
+          if (typeof oldestUrl === 'string' && oldestUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(oldestUrl)
+          }
           this.cloudCache.delete(oldest)
         }
       }
@@ -333,7 +365,15 @@ class SpeechEngine {
       job.index = i
       job.phraseStart = Date.now()
       job.phraseHold = this.estimateMs(phrase)
+      const rate = Math.max(0.6, Math.min(2, Number(job.rate) || 1))
+      job.rate = rate
       const token = ++job.token
+      const isCurrent = () =>
+        this.job === job &&
+        job.active &&
+        job.mode === 'tts' &&
+        job.index === i &&
+        job.token === token
       if (job.onPhrase) job.onPhrase(i, phrase)
       const finish = () => {
         const j = this.job
@@ -345,16 +385,10 @@ class SpeechEngine {
       // Safety net set BEFORE playback so a stalled file or a muted environment
       // can never hang a prayer — the phrase always advances.
       job.advTimer = setTimeout(finish, job.phraseHold * 2 + 1200)
-      // Native WebViews that harden the browser (e.g. GrapheneOS's Vanadium)
-      // force-suspend AudioContexts, so the WebAudio graph can never sustain a
-      // prayer there — the DOM-attached <audio> element is the dependable path.
-      const native = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())
-      const ctx = native ? null : ambient.ctx
-      const buffer = native ? null : await this._bufferFor(url)
-      if (this.job !== job || !job.active || job.mode !== 'tts') {
-        this.stopCloudSource()
-        return false
-      }
+      const ctx = ambient.ctx
+      const preferElement = !!window.Capacitor?.isNativePlatform?.()
+      const buffer = !preferElement && rate === 1 ? await this._bufferFor(url) : null
+      if (!isCurrent()) return false
       if (ctx && ctx.state === 'suspended') {
         // A user-tap call stack can resume the ambient graph; a refused resume
         // (headless/background) just falls through to the element backup.
@@ -362,14 +396,15 @@ class SpeechEngine {
           await ctx.resume()
         } catch {}
       }
+      if (!isCurrent()) return false
       if (buffer && ctx && ctx.state === 'running' && !job.noCloud) {
         this.stopCloudSource()
         if (!this._revConvolver) this.buildReverb(ctx)
         const src = ctx.createBufferSource()
         src.buffer = buffer
-        src.playbackRate.value = job.rate ?? 1
+        src.playbackRate.value = 1
         const gain = ctx.createGain()
-        gain.gain.value = Math.max(0.001, Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75))
+        gain.gain.value = Math.max(0.001, Math.min(1, (useStore.getState().volume ?? 0.8) * 1))
         this.voiceConnect(src, gain)
         this.cloudSource = src
         this.cloudGain = gain
@@ -386,9 +421,12 @@ class SpeechEngine {
         // media across every phrase.
         this.stopCloudSource()
         const el = this._elementEl()
+        el.preservesPitch = true
+        el.mozPreservesPitch = true
+        el.webkitPreservesPitch = true
         el.src = url
-        el.volume = Math.max(0.001, Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75))
-        el.playbackRate = job.rate ?? 1
+        el.volume = Math.max(0.001, Math.min(1, (useStore.getState().volume ?? 0.8) * 1))
+        el.playbackRate = rate
         el.currentTime = 0
         el.onended = finish
         el.onerror = finish
@@ -401,7 +439,7 @@ class SpeechEngine {
       const np = job.phrases[next]
       if (next < job.phrases.length && np && np.t) {
         const ns = await this.staticAudioUrl(job, next)
-        const nk = ns || `${job.lang}:${job.rate}:${np.t}`
+        const nk = ns || `${job.lang}:${np.t}`
         if (!this.cloudCache.has(nk)) {
           if (this.cloudCache.size >= 100) {
             const fk = this.cloudCache.keys().next().value
@@ -412,10 +450,8 @@ class SpeechEngine {
           if (ns) {
             this.cloudCache.set(nk, ns)
           } else {
-            fetch(
-              `/api/tts?text=${encodeURIComponent(np.t)}&lang=${encodeURIComponent(job.lang)}`
-            )
-              .then((r) => (r.ok ? r.blob() : null))
+            xhrGet(`/api/tts?text=${encodeURIComponent(np.t)}&lang=${encodeURIComponent(job.lang)}`)
+              .then((r) => r.status === 200 ? new Blob([r.response]) : null)
               .then((b) => {
                 if (b) {
                   if (this.cloudCache.size >= 100) {
@@ -579,7 +615,16 @@ class SpeechEngine {
   // Adjusts the speaking rate while a prayer is underway; the next phrase (and
   // the chant pacing) picks it up. Safe to call when idle too.
   setRate(rate) {
-    if (this.job) this.job.rate = rate
+    const value = Math.max(0.6, Math.min(2, Number(rate) || 1))
+    if (this.job) this.job.rate = value
+    if (this.cloudAudio) {
+      try {
+        this.cloudAudio.preservesPitch = true
+        this.cloudAudio.mozPreservesPitch = true
+        this.cloudAudio.webkitPreservesPitch = true
+        this.cloudAudio.playbackRate = value
+      } catch {}
+    }
   }
 
   // Re-tune loudness immediately, even mid-phrase. The cloud voice is an Audio
@@ -589,12 +634,12 @@ class SpeechEngine {
     const vol = Math.max(0, Math.min(1, volume ?? 0.8))
     if (this.cloudAudio) {
       try {
-        this.cloudAudio.volume = Math.min(0.85, vol * 0.75)
+        this.cloudAudio.volume = Math.min(1, vol * 1)
       } catch {}
     }
     if (this.cloudGain) {
       try {
-        this.cloudGain.gain.value = Math.max(0.001, Math.min(0.85, vol * 0.75))
+        this.cloudGain.gain.value = Math.max(0.001, Math.min(1, vol * 1))
       } catch {}
     }
   }
@@ -610,20 +655,21 @@ class SpeechEngine {
     }
     // Prefer the authentic cloud voice for the sample.
     if (this.cloud !== false) {
-      fetch(`/api/tts?text=${encodeURIComponent(SAMPLE_TEXT)}&lang=en`)
-        .then((r) => (r.ok ? r.blob() : null))
+      xhrGet(`/api/tts?text=${encodeURIComponent(SAMPLE_TEXT)}&lang=en`)
+        .then((r) => r.status === 200 ? new Blob([r.response]) : null)
         .then((b) => {
           if (!b) return
           const url = URL.createObjectURL(b)
-      // Stop the previous phrase's element too, so a safety-timer advance can
-      // never leave the old audio overlapping the new phrase.
-      if (this.cloudAudio) {
-        try {
-          this.cloudAudio.pause()
-        } catch {}
-      }
-      const audio = new Audio(url)
-          audio.volume = Math.min(0.5, (useStore.getState().volume ?? 0.8) * 0.6)
+          if (this.cloudAudio) {
+            try { this.cloudAudio.pause() } catch {}
+          }
+          const audio = new Audio(url)
+          const rate = useStore.getState().speechRate || 1
+          audio.preservesPitch = true
+          audio.mozPreservesPitch = true
+          audio.webkitPreservesPitch = true
+          audio.playbackRate = rate
+          audio.volume = Math.min(1, (useStore.getState().volume ?? 0.8) * 1)
           audio.play()
         })
         .catch(() => {})
@@ -644,8 +690,9 @@ class SpeechEngine {
       const u = new SpeechSynthesisUtterance(SAMPLE_TEXT)
       u.lang = voice.lang
       u.voice = voice
-      u.volume = Math.min(0.5, (useStore.getState().volume ?? 0.8) * 0.6)
+      u.volume = Math.min(1, (useStore.getState().volume ?? 0.8) * 1)
       u.rate = useStore.getState().speechRate || 1
+      u.pitch = 1
       this.synth.speak(u)
     } catch {}
   }
@@ -654,10 +701,11 @@ class SpeechEngine {
   // Scaled by the speaking-rate setting so a fast voice doesn't outrun the
   // highlight and a slow one isn't clipped.
   estimateMs(phrase) {
-    const words = (phrase.t || '').split(/\s+/).length
-    const base = Math.max(1000, words * 300 + 350)
+    const text = phrase.s || phrase.e || phrase.t || ''
+    const words = text.trim().split(/\s+/).filter(Boolean).length
+    const base = Math.max(1200, words * 320 + 450)
     const rate = this.job?.rate ?? 1
-    return Math.max(750, base / rate)
+    return Math.max(900, base / rate)
   }
 
   // text: { t, s } phrase; choose the speakable form for this device's voices.
@@ -712,7 +760,7 @@ class SpeechEngine {
     u.lang = lang
     u.rate = job.rate ?? 1
     // Speech sits gently under the ambient bed rather than shouting over it.
-    u.volume = Math.min(0.85, (useStore.getState().volume ?? 0.8) * 0.75)
+    u.volume = Math.min(1, (useStore.getState().volume ?? 0.8) * 1)
     u.pitch = 1.0
     if (voice) u.voice = voice
 
@@ -1014,16 +1062,6 @@ class SpeechEngine {
         this.cloudAudio.pause()
         this.cloudAudio = null
       } catch {}
-    }
-    if (this._audioByUrl) {
-      for (const a of this._audioByUrl.values()) {
-        try {
-          a.pause()
-          a.onended = null
-          a.onerror = null
-        } catch {}
-      }
-      this._audioByUrl.clear()
     }
     if (this._bufferByUrl) this._bufferByUrl.clear()
     try {

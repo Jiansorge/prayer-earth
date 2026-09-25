@@ -95,7 +95,7 @@ export default function HomePage() {
   const t = useT()
   const [installVisible, setInstallVisible] = useState(() => canInstall() && !localStorage.getItem('pe-install-dismissed'))
 
-  // Re-render only when the local day rolls over so the "today" counters and
+  // Re-render only when the UTC day rolls over so the "today" counters and
   // streak hint stay correct at midnight without re-rendering every few seconds.
   useEffect(() => {
     let last = dayKey(new Date())

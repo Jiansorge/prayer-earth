@@ -84,6 +84,8 @@ export default {
   'settings.shareAppHint':
     'Ipadala sa isang kaibigan ang buong buhay na Daigdig, bawat tradisyon, bawat panalangin, ang lumalagong liwanag.',
   'settings.shareApp': 'Ibahagi ang Joining Palms',
+  'settings.sharePlayStore': 'Ibahagi sa Play Store',
+  'settings.playStoreComingSoon': 'Play Store — coming soon',
   'settings.copied': 'Nakopya!',
   'settings.done': 'Tapos',
   'settings.gear': 'Mga Setting',

@@ -27,7 +27,7 @@ export async function requestPlayToggle() {
   if (s.playing && s.paused) {
     // Paused, resume if the job is still alive, otherwise restart the prayer.
     if (!speech.resume()) {
-      ambient.ensure() // prime audio inside the user gesture
+      await ambient.ensure().catch(() => {}) // prime audio inside the user gesture
       const spiritId = s.spiritId || 'christianity'
       const prayerId = s.prayerId || 'lords-prayer'
       useStore.setState({
@@ -45,7 +45,7 @@ export async function requestPlayToggle() {
   }
 
   // Nothing playing, go to the last prayer and start it.
-  ambient.ensure() // prime audio inside the user gesture
+  await ambient.ensure().catch(() => {}) // prime audio inside the user gesture
   const spiritId = s.spiritId || 'christianity'
   const prayerId = s.prayerId || 'lords-prayer'
   useStore.setState({ view: 'prayer', spiritId, prayerId, pendingPlay: true })
@@ -56,7 +56,14 @@ export async function requestPlayToggle() {
 export async function stopPlayback() {
   const speech = await getSpeech()
   speech.stop()
-  useStore.setState({ playing: false, paused: false, praying: false, playingPrayerId: null })
+  useStore.setState({
+    playing: false,
+    paused: false,
+    praying: false,
+    playingPrayerId: null,
+    playingSpiritId: null,
+    playingSessionId: null
+  })
   syncClient.presenceNow()
   ambient.setLevel(0.35)
 }

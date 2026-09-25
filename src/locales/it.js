@@ -67,6 +67,8 @@ export default {
   'settings.shareAppLabel': 'Condividi Joining Palms',
   'settings.shareAppHint': 'Invia a un amico l\u2019intera Terra viva, ogni tradizione, ogni preghiera, la luce crescente.',
   'settings.shareApp': 'Condividi Joining Palms',
+  'settings.sharePlayStore': 'Condividi su Play Store',
+  'settings.playStoreComingSoon': 'Play Store — presto',
   'settings.copied': 'Copiato!', 'settings.done': 'Fatto', 'settings.gear': 'Impostazioni',
   'settings.donateLabel': 'Sostieni Joining Palms',
   'settings.donateHint': 'Ogni contributo mantiene questo servizio gratuito, privato e senza pubblicità. Non serve nessun account né email.',

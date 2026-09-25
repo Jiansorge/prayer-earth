@@ -5,19 +5,27 @@
 
 import WebSocket from 'ws'
 import { spawn } from 'node:child_process'
-import { rmSync } from 'node:fs'
+import { rmSync, readFileSync } from 'node:fs'
 
 const PORT = 8790
 const DATA_FILE = './data-test.json'
+const PEOPLE_FILE = './people-test.json'
 const dataPath = new URL(`../server/${DATA_FILE}`, import.meta.url)
+const peoplePath = new URL(`../server/${PEOPLE_FILE}`, import.meta.url)
 try {
   rmSync(dataPath, { force: true })
+  rmSync(peoplePath, { force: true })
 } catch (e) {
   console.log('WARN cleanup-before failed:', e.message)
 }
 const srv = spawn(process.execPath, ['server/index.js'], {
   cwd: process.cwd(),
-  env: { ...process.env, PORT: String(PORT), PE_DATA_FILE: DATA_FILE },
+  env: {
+    ...process.env,
+    PORT: String(PORT),
+    PE_DATA_FILE: DATA_FILE,
+    PE_PEOPLE_FILE: PEOPLE_FILE
+  },
   stdio: 'ignore'
 })
 const WS_URL = `ws://localhost:${PORT}`
@@ -108,6 +116,18 @@ ok('state carries totals', !!(state?.totals?.prayers && state?.totals?.spirits))
 ok('totals count started prayers once each', state?.totals?.prayers?.['al-fatiha'] === 3 && state?.totals?.spirits?.['islam'] === 3, `al-fatiha=${state?.totals?.prayers?.['al-fatiha']} islam=${state?.totals?.spirits?.['islam']}`)
 ok('totals count buddhist prayers', state?.totals?.prayers?.['mani'] === 2 && state?.totals?.spirits?.['buddhism'] === 2, `mani=${state?.totals?.prayers?.['mani']} buddhism=${state?.totals?.spirits?.['buddhism']}`)
 
+const today = new Date().toISOString().slice(0, 10)
+send(ws, {
+  type: 'sync',
+  anonId: 'active-user-once',
+  stats: {
+    lastPrayedDay: today,
+    prayerDayCompletions: { [today]: { 'lords-prayer': 1 } }
+  }
+})
+await sleep(300)
+ok('one user is counted once across activity fields', state?.usersToday === 1, `today=${state?.usersToday}`)
+
 // live feed: each soul that starts praying appears once, with details
 ok('feed has 5 entries', Array.isArray(feed) && feed.length === 5, `feed=${feed?.length}`)
 const lastEntry = feed?.at(-1)
@@ -145,7 +165,14 @@ await new Promise((res) => {
   setTimeout(done, 1500)
 })
 try {
+  const saved = JSON.parse(readFileSync(dataPath, 'utf8'))
+  ok('server persists aggregate seconds on shutdown', saved.totalPrayerSeconds >= Math.max(0, (state?.totalPrayerSeconds || 0) - 5), `saved=${saved.totalPrayerSeconds}`)
+} catch (e) {
+  ok('server persists aggregate seconds on shutdown', false, e.message)
+}
+try {
   rmSync(dataPath, { force: true })
+  rmSync(peoplePath, { force: true })
 } catch (e) {
   console.log('WARN cleanup-after failed:', e.message)
 }

@@ -84,6 +84,8 @@ export default {
   'settings.shareAppHint':
     'Schicke einem Freund die ganze lebendige Erde, jede Tradition, jedes Gebet, das wachsende Leuchten.',
   'settings.shareApp': 'Joining Palms teilen',
+  'settings.sharePlayStore': 'In Play Store teilen',
+  'settings.playStoreComingSoon': 'Play Store — bald',
   'settings.copied': 'Kopiert!',
   'settings.done': 'Fertig',
   'settings.gear': 'Einstellungen',

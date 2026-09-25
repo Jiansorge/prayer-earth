@@ -6,9 +6,13 @@ for (const loc of locales) {
   keys[loc] = new Set(src.match(/'([^']+)':/g)?.map((s) => s.slice(1, -2)) || [])
 }
 const enKeys = [...keys.en]
+let failed = false
 console.log(`en has ${enKeys.length} keys`)
 for (const loc of locales.slice(1)) {
   const missing = enKeys.filter((k) => !keys[loc].has(k))
-  if (missing.length) console.log(`${loc}: MISSING ${missing.length} keys -> ${missing.join(', ')}`)
-  else console.log(`${loc}: complete`)
+  if (missing.length) {
+    failed = true
+    console.log(`${loc}: MISSING ${missing.length} keys -> ${missing.join(', ')}`)
+  } else console.log(`${loc}: complete`)
 }
+if (failed) process.exitCode = 1

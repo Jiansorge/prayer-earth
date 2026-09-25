@@ -87,6 +87,8 @@ export default {
   'settings.shareAppHint':
     'किसी मित्र को पूरी जीवंत पृथ्वी भेजें, हर परंपरा, हर प्रार्थना, बढ़ती चमक।',
   'settings.shareApp': 'Joining Palms साझा करें',
+  'settings.sharePlayStore': 'Play Store पर साझा करें',
+  'settings.playStoreComingSoon': 'Play Store — जल्द आ रहा है',
   'settings.copied': 'कॉपी हुआ!',
   'settings.done': 'हो गया',
   'settings.gear': 'सेटिंग्स',

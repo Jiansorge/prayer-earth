@@ -89,6 +89,8 @@ export default {
   'settings.shareAppHint':
     'གྲོགས་པོ་ལ་གསོན་ཉམས་ལྡན་པའི་ས་གླིང་ཡོངས་། ཆོས་ལུགས་ཀུན་། གསོལ་བ་ཀུན་། འོད་འཕྲོས་འཕེལ་བའི་རྣམ་པ་སྐུར་རོགས།',
   'settings.shareApp': 'Joining Palms བརྒྱུད་སྤྲོད།',
+  'settings.sharePlayStore': 'Play Store ནང་སྤྲོད།',
+  'settings.playStoreComingSoon': 'Play Store — ཉི་མ་ཉེན་བར་ན།',
   'settings.copied': 'བཤེར་བརྒྱུད་བྱས་ཟིན།!',
   'settings.done': 'གྲུབ་ཟིན།',
   'settings.gear': 'སེཊིངས།',
