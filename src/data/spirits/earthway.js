@@ -13,9 +13,9 @@ export default   {
         langLabel: 'Lakȟótiyapi · Lakota · repeated',
         loop: true,
         phrases: [
-          { t: 'Mitákuye Oyásʼiŋ', s: 'Mitákuye Oyásʼiŋ', e: 'All my relations, we are all connected.' },
-          { t: 'Mitákuye Oyásʼiŋ', s: 'Mitákuye Oyásʼiŋ', e: 'All my relations, we are all connected.' },
-          { t: 'Mitákuye Oyásʼiŋ', s: 'Mitákuye Oyásʼiŋ', e: 'All my relations, we are all connected.' }
+          { t: 'Mitákuye Oyásʼiŋ', e: 'All my relations, we are all connected.' },
+          { t: 'Mitákuye Oyásʼiŋ', e: 'All my relations, we are all connected.' },
+          { t: 'Mitákuye Oyásʼiŋ', e: 'All my relations, we are all connected.' }
         ],
         translation: 'A Lakota prayer of kinship, "all my relations", repeated as a meditation on our connection to every living thing.'
       },
@@ -54,10 +54,10 @@ export default   {
         lang: 'haw',
         langLabel: 'ʻŌlelo Hawaiʻi · Hawaiian',
         phrases: [
-          { t: 'E kala mai iaʻu', s: 'E kala mai iaʻu', e: 'Please forgive me.' },
-          { t: 'Ua kala aku au iā ʻoe', s: 'Ua kala aku au iā ʻoe', e: 'I forgive you.' },
-          { t: 'Mahalo iā ʻoe', s: 'Mahalo iā ʻoe', e: 'Thank you.' },
-          { t: 'Aloha wau iā ʻoe', s: 'Aloha wau iā ʻoe', e: 'I love you.' }
+          { t: 'E kala mai iaʻu', e: 'Please forgive me.' },
+          { t: 'Ua kala aku au iā ʻoe', e: 'I forgive you.' },
+          { t: 'Mahalo iā ʻoe', e: 'Thank you.' },
+          { t: 'Aloha wau iā ʻoe', e: 'I love you.' }
         ],
         translation: 'The Hawaiian practice of reconciliation and healing, forgiveness, gratitude, and love offered to set things right.'
       },
@@ -248,10 +248,10 @@ export default   {
         lang: 'mi',
         langLabel: 'Te Reo M\u0101ori \u00b7 M\u0101ori',
         phrases: [
-          { t: 'He mihi aroha ki te whenua', s: 'He mihi aroha ki te whenua', e: 'A loving thanks to the land,' },
-          { t: 'ki ng\u0101 mea katoa e tipu mai ana', s: 'ki ng\u0101 mea katoa e tipu mai ana', e: 'and to all that grows from it.' },
-          { t: 'He mihi ki ng\u0101 t\u016bpuna', s: 'He mihi ki ng\u0101 t\u016bpuna', e: 'Thanks to the ancestors' },
-          { t: 'n\u0101 r\u0101tou te whakaaro nui ki te whenua', s: 'n\u0101 r\u0101tou te whakaaro nui ki te whenua', e: 'who taught us to care for the earth.' }
+          { t: 'He mihi aroha ki te whenua', e: 'A loving thanks to the land,' },
+          { t: 'ki ng\u0101 mea katoa e tipu mai ana', e: 'and to all that grows from it.' },
+          { t: 'He mihi ki ng\u0101 t\u016bpuna', e: 'Thanks to the ancestors' },
+          { t: 'n\u0101 r\u0101tou te whakaaro nui ki te whenua', e: 'who taught us to care for the earth.' }
         ],
         translation: 'A M\u0101ori prayer of the harvest, giving thanks to the land and to the ancestors who cared for it.'
       },

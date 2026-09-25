@@ -23,6 +23,8 @@ jobs:
         run: node scripts/test-server.mjs
       - name: i18n audit
         run: node scripts/audit-i18n.mjs
+      - name: Prayer language/translation audit
+        run: node scripts/audit-prayers.mjs
   android:
     needs: test
     runs-on: ubuntu-latest

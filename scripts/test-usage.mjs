@@ -748,10 +748,10 @@ await c.waitFor(`window.__store?.getState().playing === false`, 8000)
 // mantra repeated across every verse) ---
 await c.eval(`window.__store.getState().openPrayer('buddhism', '21-taras-praise')`)
 await c.waitFor(`document.querySelectorAll('.prayer-line').length >= 20`, 15000)
-const praiseLines = await c.eval(`(() => { const lines = [].slice.call(document.querySelectorAll('.prayer-line')); return lines.map(l => ({ t: (l.querySelector('.hlt')?.textContent || '').trim(), en: (l.querySelector('.en')?.textContent || '').trim() })); })()`)
+const praiseLines = await c.eval(`(() => { const lines = [].slice.call(document.querySelectorAll('.prayer-line')); return lines.map(l => ({ t: (l.querySelector('.hlt')?.textContent || '').trim(), sub: (l.querySelector('.sub')?.textContent || '').trim() })); })()`)
 const distinctScript = new Set(praiseLines.map((l) => l.t)).size
-ok('21 Taras praise renders varied per-verse script text', praiseLines.length >= 20 && distinctScript >= 15, `lines=${praiseLines.length} distinct=${distinctScript}`)
-ok('21 Taras praise has English for every verse', praiseLines.every((l) => l.en.length > 0), `withEnglish=${praiseLines.filter((l) => l.en.length > 0).length}`)
+ok('21 Taras praise renders varied per-verse English text', praiseLines.length >= 20 && distinctScript >= 15, `lines=${praiseLines.length} distinct=${distinctScript}`)
+ok('21 Taras praise shows Tibetan underlay for every verse', praiseLines.every((l) => l.sub.length > 0), `withTibetan=${praiseLines.filter((l) => l.sub.length > 0).length}`)
 
 // --- no speech voices (Firefox Fingerprinting Protection / no TTS installed):
 // must fall back to the audible chant, not sit in silence ---

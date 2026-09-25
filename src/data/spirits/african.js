@@ -13,10 +13,10 @@ export default   {
         langLabel: 'Yorùbá · repeated',
         loop: true,
         phrases: [
-          { t: 'Olódùmarè, Ẹlẹ́dàá', s: 'Olódùmarè, Ẹlẹ́dàá', e: 'Olodumare, the Creator of all.' },
-          { t: 'Àṣẹ.', s: 'Àṣẹ.', e: 'So be it.' },
-          { t: 'Àṣẹ.', s: 'Àṣẹ.', e: 'So be it.' },
-          { t: 'Àṣẹ.', s: 'Àṣẹ.', e: 'So be it.' }
+          { t: 'Olódùmarè, Ẹlẹ́dàá', e: 'Olodumare, the Creator of all.' },
+          { t: 'Àṣẹ.', e: 'So be it.' },
+          { t: 'Àṣẹ.', e: 'So be it.' },
+          { t: 'Àṣẹ.', e: 'So be it.' }
         ],
         translation: 'The Yoruba affirmation of the power of spoken prayer, each word spoken with the force of Àṣẹ, "so be it."'
       },
@@ -41,9 +41,9 @@ export default   {
         lang: 'ak',
         langLabel: 'Akan · Twi',
         phrases: [
-          { t: 'Odomankoma', s: 'Odomankoma', e: 'The Creator of all things.' },
-          { t: 'Nyame', s: 'Nyame', e: 'God, who is above.' },
-          { t: 'Yɛda wo ase', s: 'Yɛda wo ase', e: 'We give You thanks.' }
+          { t: 'Odomankoma', e: 'The Creator of all things.' },
+          { t: 'Nyame', e: 'God, who is above.' },
+          { t: 'Yɛda wo ase', e: 'We give You thanks.' }
         ],
         translation: 'An Akan prayer of thanksgiving to Odomankoma, the Creator, gratitude spoken before all else.'
       },
@@ -54,9 +54,9 @@ export default   {
         langLabel: 'isiZulu · repeated',
         loop: true,
         phrases: [
-          { t: 'Umvelinqangi', s: 'Umvelinqangi', e: 'The Great Spirit, present from the beginning.' },
-          { t: 'Umvelinqangi', s: 'Umvelinqangi', e: 'The Great Spirit, present from the beginning.' },
-          { t: 'Umvelinqangi', s: 'Umvelinqangi', e: 'The Great Spirit, present from the beginning.' }
+          { t: 'Umvelinqangi', e: 'The Great Spirit, present from the beginning.' },
+          { t: 'Umvelinqangi', e: 'The Great Spirit, present from the beginning.' },
+          { t: 'Umvelinqangi', e: 'The Great Spirit, present from the beginning.' }
         ],
         translation: 'A Zulu name for the Great Spirit, repeated as a meditation on the divine that was before all things.'
       },
@@ -80,10 +80,10 @@ export default   {
         lang: 'zu',
         langLabel: 'isiZulu',
         phrases: [
-          { t: 'Ngiyabonga Nkulunkulu', s: 'Ngiyabonga Nkulunkulu', e: 'I give thanks to the Great Spirit.' },
-          { t: 'Ngobuhle bangaphezulu', s: 'Ngobuhle bangaphezulu', e: 'For the goodness that comes from above,' },
-          { t: 'Ngokuthula kwenhliziyo', s: 'Ngokuthula kwenhliziyo', e: 'for the peace of a quiet heart,' },
-          { t: 'Ngezibusiso zonke', s: 'Ngezibusiso zonke', e: 'and for every blessing that surrounds me.' }
+          { t: 'Ngiyabonga Nkulunkulu', e: 'I give thanks to the Great Spirit.' },
+          { t: 'Ngobuhle bangaphezulu', e: 'For the goodness that comes from above,' },
+          { t: 'Ngokuthula kwenhliziyo', e: 'for the peace of a quiet heart,' },
+          { t: 'Ngezibusiso zonke', e: 'and for every blessing that surrounds me.' }
         ],
         translation: 'A Zulu prayer of thanksgiving to Nkulunkulu, gratitude for goodness, peace, and every blessing.'
       },
@@ -93,10 +93,10 @@ export default   {
         lang: 'ak',
         langLabel: 'Akan · Twi',
         phrases: [
-          { t: 'Nyame', s: 'Nyame', e: 'God above, the one who holds the sky.' },
+          { t: 'Nyame', e: 'God above, the one who holds the sky.' },
           { t: 'Wose wode ns\u025b\u025b a na fa', s: 'W\u0254s\u025b w\u0254de ns\u025b\u025b a na fa', e: 'If you do not take something, nothing is gained.' },
-          { t: 'Y\u025bda wo ase', s: 'Y\u025bda wo ase', e: 'We give You thanks.' },
-          { t: 'Ma y\u025bnnya asomdwee', s: 'Ma y\u025bnnya asomdwee', e: 'Grant us peace and wellbeing.' }
+          { t: 'Y\u025bda wo ase', e: 'We give You thanks.' },
+          { t: 'Ma y\u025bnnya asomdwee', e: 'Grant us peace and wellbeing.' }
         ],
         translation: 'An Akan prayer to Nyame, the great sky God, thanking the source of all gifts and asking for peace.'
       },

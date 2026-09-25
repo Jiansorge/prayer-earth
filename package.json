@@ -28,7 +28,8 @@
     "test:prod": "node scripts/test-prod.mjs",
     "test:live": "node scripts/test-live.mjs",
     "test:earth": "node scripts/test-earth.mjs",
-    "capture:demo": "node scripts/capture-demo.mjs"
+    "capture:demo": "node scripts/capture-demo.mjs",
+    "audit:prayers": "node scripts/audit-prayers.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",

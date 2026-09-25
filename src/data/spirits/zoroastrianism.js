@@ -13,9 +13,9 @@ export default   {
         langLabel: 'Avestan · repeated',
         loop: true,
         phrases: [
-          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', s: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness, happiness to the one who is righteous for the sake of the highest righteousness.' },
-          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', s: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness, happiness to the one who is righteous for the sake of the highest righteousness.' },
-          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', s: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness, happiness to the one who is righteous for the sake of the highest righteousness.' }
+          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness, happiness to the one who is righteous for the sake of the highest righteousness.' },
+          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness, happiness to the one who is righteous for the sake of the highest righteousness.' },
+          { t: 'Ashəm vohū vahishtəm astī, ushtā astī, ushtā ahmāi, hyat ashāi vahishtāi ashəm.', e: 'Righteousness is the best good, and it is happiness, happiness to the one who is righteous for the sake of the highest righteousness.' }
         ],
         translation: 'One of the most sacred prayers of Zoroastrianism, the vow of a life aligned with truth and righteousness.'
       },
@@ -52,9 +52,9 @@ export default   {
         langLabel: 'Avestan · repeated',
         loop: true,
         phrases: [
-          { t: 'Humata, hukhta, huvarshta.', s: 'Humata, hukhta, huvarshta.', e: 'Good thoughts, good words, good deeds.' },
-          { t: 'Humata, hukhta, huvarshta.', s: 'Humata, hukhta, huvarshta.', e: 'Good thoughts, good words, good deeds.' },
-          { t: 'Humata, hukhta, huvarshta.', s: 'Humata, hukhta, huvarshta.', e: 'Good thoughts, good words, good deeds.' }
+          { t: 'Humata, hukhta, huvarshta.', e: 'Good thoughts, good words, good deeds.' },
+          { t: 'Humata, hukhta, huvarshta.', e: 'Good thoughts, good words, good deeds.' },
+          { t: 'Humata, hukhta, huvarshta.', e: 'Good thoughts, good words, good deeds.' }
         ],
         translation: 'The threefold path at the heart of Zoroastrian faith, thought, speech, and action kept pure.'
       },
