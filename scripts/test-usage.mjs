@@ -256,7 +256,14 @@ ok(
 )
 ok(
   'backdrop globe renders',
-  await c.waitFor(`(() => { const cv = document.querySelector('.earth-backdrop canvas'); return !!cv && cv.width > 100; })()`)
+  // A live WebGL canvas when a GPU is present, otherwise the static
+  // fallback globe (headless CI has no GPU). Either way a globe renders;
+  // the live and fallback paths are each asserted separately below.
+  await c.waitFor(`(() => {
+    const cv = document.querySelector('.earth-backdrop canvas')
+    if (cv && cv.width > 100) return true
+    return !!document.querySelector('.earth-fallback-globe')
+  })()`)
 )
 
 // --- per-prayer volume + speed tuning ---
@@ -664,6 +671,9 @@ ok(
   `connected=false spirits=${Object.keys(offSpirits || {}).length}`
 )
 await c.waitFor(`!!document.querySelector('.ctrl-btn.play')`, 10000)
+// Clear any completion from an earlier step so this proves a fresh offline
+// completion is actually recorded, not a leftover from a prior play.
+await c.eval(`window.__store.setState({ prayerCompletions: { ...(window.__store.getState().prayerCompletions || {}), mani: 0 } })`)
 await c.eval(`document.querySelector('.ctrl-btn.play').click()`)
 await sleep(1200)
 const offPraying = await c.eval(`(() => {
@@ -675,10 +685,13 @@ ok(
   offPraying.praying && (offPraying.buddhism || 0) >= 2 && (offPraying.mani || 0) >= 1,
   JSON.stringify(offPraying)
 )
+// A personal completion only registers when the recorded prayer finishes,
+// so give mani time to play through offline.
+const offlineCompleted = await c.waitFor(`(window.__store?.getState().prayerCompletions?.mani || 0) >= 1`, 40000)
 const offlinePersonal = await c.eval(`window.__store.getState().prayerCompletions || {}`)
 ok(
   'offline prayer remains in personal totals',
-  (offlinePersonal.mani || 0) >= 1,
+  !!offlineCompleted && (offlinePersonal.mani || 0) >= 1,
   `mani=${offlinePersonal.mani || 0}`
 )
 const navPausedCheck = await c.eval(`(() => {
