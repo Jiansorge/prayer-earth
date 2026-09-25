@@ -47,7 +47,7 @@ jobs:
       - run: node scripts/audit-build.mjs
       - run: npx cap sync android
       - run: npm run test:android:assets
-      - run: ./android/gradlew -p android assembleDebug
+      - run: chmod +x android/gradlew && ./android/gradlew -p android assembleDebug
       - uses: actions/upload-artifact@v4
         with:
           name: app-debug
