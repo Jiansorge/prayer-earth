@@ -701,9 +701,20 @@ class SpeechEngine {
   // Scaled by the speaking-rate setting so a fast voice doesn't outrun the
   // highlight and a slow one isn't clipped.
   estimateMs(phrase) {
-    const text = phrase.s || phrase.e || phrase.t || ''
-    const words = text.trim().split(/\s+/).filter(Boolean).length
-    const base = Math.max(1200, words * 320 + 450)
+    // Estimate from the PRIMARY text (t) — the line that is displayed and, for
+    // every language except bo, the one that is actually spoken/recorded. Never
+    // drive the length from `s` (the transliteration): it is a different script
+    // (e.g. Tibetan Wylie vs. the 21-Taras underlay), so a verse's `s` can look
+    // like a single word and the estimate would collapse to the floor. A verse
+    // written without spaces (Tibetan tsheg, CJK) is charged per-character so a
+    // long line is never mistaken for one word. Over-estimating is harmless — the
+    // recorded element's real `ended` ends the phrase; only an under-estimate
+    // would let the stall-watchdog cut a verse off early.
+    const text = phrase.t || phrase.s || phrase.e || ''
+    const trimmed = text.trim()
+    let units = trimmed ? trimmed.split(/\s+/).filter(Boolean).length : 0
+    if (units <= 2 && trimmed.length > 12) units = Math.ceil(trimmed.length / 3)
+    const base = Math.max(1200, units * 320 + 450)
     const rate = this.job?.rate ?? 1
     return Math.max(900, base / rate)
   }

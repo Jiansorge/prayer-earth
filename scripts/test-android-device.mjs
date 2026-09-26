@@ -224,7 +224,12 @@ const testTaras = async () => {
   let transitions = 0
   for (let i = 1; i < samples.length; i++) if (samples[i] && samples[i] !== samples[i - 1]) transitions++
   check('21 Taras recorded audio starts', !!started && state.mode === 'tts' && state.manifestVoices > 0, JSON.stringify(state))
-  check('21 Taras phrase timing advances without rushing', distinct.length >= 2 && transitions <= 12, `distinct=${distinct.length} transitions=${transitions}`)
+  // The first 21-Taras verse is ~10-12s of speech, so it must STILL be the
+  // active line 5s in. The old bug counted the Tibetan underlay's tsheg as one
+  // "word", collapsed the stall-watchdog to ~4s, and cut every verse after a
+  // few words — here the active line would already have changed by 5s.
+  const firstStillPlaying = !!samples[0] && samples[0] === samples[9]
+  check('21 Taras first verse plays in full (not cut off ~4s)', firstStillPlaying, `at0.5s=${(samples[0]||'').slice(0,18)} at5s=${(samples[9]||'').slice(0,18)}`)
   await cdp.evaluate(`document.querySelector('.ctrl-btn.stop')?.click()`)
   await cdp.waitFor(`window.__store?.getState().playing === false`, 8000)
 }
