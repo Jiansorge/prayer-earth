@@ -11,6 +11,7 @@ import LegalSheet from './LegalSheet.jsx'
 import { canInstall, promptInstall } from '../shared/installPrompt.js'
 import { isMobile, isIos, isAppShell } from '../shared/mobile.js'
 import { CANONICAL_ORIGIN } from '../shared/canonical.js'
+import { shareLink } from '../shared/share.js'
 
 const isInstalled = () =>
   window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone
@@ -72,19 +73,16 @@ export default function SettingsSheet() {
     const text = target === 'store' && PLAY_STORE_URL
       ? `Joining Palms on Play Store: ${url}`
       : `Joining Palms, join us in prayer. ${url}`
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: 'Joining Palms', text, url })
-        return
-      }
-    } catch (err) {
-      if (err?.name === 'AbortError') return
-    }
-    try {
-      await navigator.clipboard.writeText(url)
+    const result = await shareLink({ title: 'Joining Palms', text, url })
+    if (result === 'shared' || result === 'copied') {
       setAppCopied(true)
       setTimeout(() => setAppCopied(false), 2000)
-    } catch {}
+    } else if (result === 'failed') {
+      // Last resort so the button is never a dead end: surface the link for a
+      // manual copy. (The app-shell WebView can block both the share sheet and
+      // the clipboard; without this the tap would silently do nothing.)
+      window.prompt(t('settings.shareAppLabel'), url)
+    }
   }
 
   useEffect(() => () => clearTimeout(previewTimer.current), [])

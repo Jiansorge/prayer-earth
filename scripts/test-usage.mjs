@@ -823,6 +823,28 @@ ok(
 await c.eval(`window.__store.getState().setSettingsOpen(true)`)
 const prayerSettingsOpen = await c.waitFor(`!!document.querySelector('.sheet')`, 15000)
 ok('settings opens from prayer view', prayerSettingsOpen)
+
+// The share button must actually share the production URL. In the app-shell
+// WebView navigator.share/clipboard can both be unavailable, so we stub
+// navigator.share here and assert the button hands it the canonical origin
+// (regression: it used to swallow errors and silently do nothing).
+const shareCaptured = prayerSettingsOpen && await c.eval(`(async () => {
+  const orig = navigator.share
+  let captured = null
+  try { navigator.share = async (data) => { captured = data } } catch {}
+  const btn = [...document.querySelectorAll('.field-btn')].find((b) => /share/i.test(b.innerText || ''))
+  if (!btn) { try { navigator.share = orig } catch {}; return null }
+  btn.click()
+  await new Promise((r) => setTimeout(r, 300))
+  try { navigator.share = orig } catch {}
+  return captured
+})()`)
+ok(
+  'share button shares the production URL',
+  !!shareCaptured && shareCaptured.url === 'https://joining-palms.app',
+  JSON.stringify(shareCaptured)
+)
+
 const qrButton = prayerSettingsOpen && await c.eval(`!!document.querySelector('.field-btn')`)
 ok('settings offers QR card button', !!qrButton)
 if (qrButton) {
