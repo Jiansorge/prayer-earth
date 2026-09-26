@@ -501,7 +501,9 @@ export const useStore = create(
           prayerCompletions: safeCounterMap(saved.prayerCompletions),
           prayerDayCompletions: safeDayMap(saved.prayerDayCompletions),
           prayerDayStats: safeDayMap(saved.prayerDayStats),
-          localPrayerSeconds: safeCounter(saved.localPrayerSeconds),
+          // A duration, not a count: floor rather than requiring an integer so a
+          // fractional persisted value is never silently zeroed on every boot.
+          localPrayerSeconds: Math.max(0, Math.floor(Number(saved.localPrayerSeconds) || 0)),
           streak: safeCounter(saved.streak),
           bestStreak: safeCounter(saved.bestStreak),
           speechRate: Math.max(0.6, Math.min(2, Number(saved.speechRate) || current.speechRate)),

@@ -161,49 +161,15 @@ class SpeechEngine {
       const convolver = ctx.createConvolver()
       convolver.buffer = ir
       this._revConvolver = convolver
-    } catch {}
-  }
-
-  applyReverb(audio) {
-    try {
-      const ctx = ambient.ctx
-      if (!ctx || ctx.state !== 'running') return
-      if (!this._revConvolver) this.buildReverb(ctx)
-      if (!this._revConvolver) return
-      // Tear down the previous phrase's connection first so its audio can't
-      // keep ringing into the shared reverb and stack up on every repeat.
-      this.teardownReverb()
-      const src = ctx.createMediaElementSource(audio)
-      this._revSource = src
-      this._revAudio = audio
-      // A very gentle warmth curve — darkens just the top, keeps the voice clear.
-      const lowpass = ctx.createBiquadFilter()
-      lowpass.type = 'lowpass'
-      lowpass.frequency.value = 2600
-      lowpass.Q.value = 0.2
-      // Voice stays dry and forward; the room is a controlled 15% wet mix.
-      const dry = ctx.createGain()
-      dry.gain.value = 0.98
+      // The convolver→wet→destination tail is built ONCE and reused. Per-phrase
+      // we only connect a source into the convolver. (Previously each phrase
+      // created its own wet node and connected the shared convolver to it;
+      // disconnecting a wet node removes its *outputs* but not the
+      // convolver→wet edge, so those nodes leaked onto the convolver forever.)
       const wet = ctx.createGain()
       wet.gain.value = this.reverbWetGain
-      // A short, spacious echo.
-      const delay = ctx.createDelay(2)
-      delay.delayTime.value = 0.26
-      const feedback = ctx.createGain()
-      feedback.gain.value = 0.2
-      const echo = ctx.createGain()
-      echo.gain.value = 0.003
-      src.connect(dry)
-      dry.connect(lowpass)
-      src.connect(this._revConvolver)
-      this._revConvolver.connect(wet)
-      wet.connect(lowpass)
-      src.connect(delay)
-      delay.connect(feedback)
-      feedback.connect(delay)
-      delay.connect(echo)
-      echo.connect(lowpass)
-      lowpass.connect(ctx.destination)
+      try { convolver.connect(wet); wet.connect(ctx.destination) } catch {}
+      this._revWet = wet
     } catch {}
   }
 
@@ -275,16 +241,13 @@ class SpeechEngine {
       src.connect(gain)
       gain.connect(lowpass)
       lowpass.connect(ctx.destination)
-      let wet = null
+      // Reverb tail is persistent (see buildReverb): just feed this phrase's
+      // source into the shared convolver. Teardown only needs to disconnect the
+      // source (cloudSource.disconnect), so no per-phrase reverb node leaks.
       if (this._revConvolver) {
-        wet = ctx.createGain()
-        wet.gain.value = this.reverbWetGain
-        src.connect(this._revConvolver)
-        this._revConvolver.connect(wet)
-        wet.connect(ctx.destination)
+        try { src.connect(this._revConvolver) } catch {}
       }
       this.cloudNodes.push(gain, lowpass)
-      if (wet) this.cloudNodes.push(wet)
     } catch {}
   }
 
@@ -388,7 +351,11 @@ class SpeechEngine {
       const ctx = ambient.ctx
       const preferElement = !!window.Capacitor?.isNativePlatform?.()
       const buffer = !preferElement && rate === 1 ? await this._bufferFor(url) : null
-      if (!isCurrent()) return false
+      // A newer attempt now owns this phrase (or the job moved on): report it
+      // as handled (true), NOT as a failure — the caller's recovery path counts
+      // a `false` as a cloud failure and would permanently disable recorded
+      // audio after two harmless supersedes.
+      if (!isCurrent()) return true
       if (ctx && ctx.state === 'suspended') {
         // A user-tap call stack can resume the ambient graph; a refused resume
         // (headless/background) just falls through to the element backup.
@@ -396,7 +363,7 @@ class SpeechEngine {
           await ctx.resume()
         } catch {}
       }
-      if (!isCurrent()) return false
+      if (!isCurrent()) return true
       if (buffer && ctx && ctx.state === 'running' && !job.noCloud) {
         this.stopCloudSource()
         if (!this._revConvolver) this.buildReverb(ctx)
@@ -760,10 +727,10 @@ class SpeechEngine {
     clearTimeout(job.guard)
     clearTimeout(job.advTimer)
     if (!this.synth) {
-      j.mode = 'timed'
-      j.chantReason = 'no-voices'
+      job.mode = 'timed'
+      job.chantReason = 'no-voices'
       this.notifyFallback('no-voices')
-      this.timedLoop(j, true)
+      this.timedLoop(job, true)
       return
     }
     const { text, lang, voice } = this.utteranceText(phrase, job.lang)

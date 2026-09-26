@@ -413,8 +413,15 @@ await nav(`${APP}/?webgl-fallback-test=1#/earth`)
 ok('WebGL-unavailable Earth shows static fallback', await c.waitFor(`!!document.querySelector('.earth-fallback')`))
 await c.send('Page.removeScriptToEvaluateOnNewDocument', { identifier: webglBlock.identifier })
 await nav(`${APP}/#/earth`)
-await c.waitFor(`!!document.querySelector('.earth-canvas canvas')`)
-await c.eval(`window.__earthScene?.renderer?.domElement?.dispatchEvent(new Event('webglcontextlost'))`)
+// Context loss only means anything if the live scene actually mounted. Assert
+// the precondition (a real WebGL scene + canvas) before dispatching the event,
+// otherwise the dispatch is a no-op and the pre-existing static fallback would
+// make this pass vacuously.
+const liveScene = await c.waitFor(`!!window.__earthScene && !!document.querySelector('.earth-canvas canvas')`, 10000)
+ok('Earth mounts a live WebGL scene for the context-loss test', !!liveScene, `scene=${!!liveScene}`)
+if (liveScene) {
+  await c.eval(`window.__earthScene.renderer.domElement.dispatchEvent(new Event('webglcontextlost'))`)
+}
 ok('WebGL context loss falls back from Earth', await c.waitFor(`!!document.querySelector('.earth-fallback')`))
 await nav(`${APP}/#/pray/buddhism/mani`)
 const dlTitle = await c.eval(`document.querySelector('.prayer-title')?.innerText || 'NONE'`)

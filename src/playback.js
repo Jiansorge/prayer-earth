@@ -10,6 +10,16 @@ const getSpeech = () => {
   return _speechPromise
 }
 
+// Prime the audio graph inside the user gesture, but never let a hung
+// AudioContext.resume() (blocked / headless / interrupted WebView) stall the
+// play action — the prayer must start regardless. This races ensure() against a
+// short timeout; the ambience graph resumes in the background if it can.
+const primeAudio = () =>
+  Promise.race([
+    ambient.ensure().catch(() => {}),
+    new Promise((r) => setTimeout(r, 300))
+  ])
+
 // The footer play button works from anywhere. If nothing is playing it goes
 // straight to the last prayer and starts it; otherwise it pauses/resumes.
 export async function requestPlayToggle() {
@@ -27,7 +37,7 @@ export async function requestPlayToggle() {
   if (s.playing && s.paused) {
     // Paused, resume if the job is still alive, otherwise restart the prayer.
     if (!speech.resume()) {
-      await ambient.ensure().catch(() => {}) // prime audio inside the user gesture
+      await primeAudio()
       const spiritId = s.spiritId || 'christianity'
       const prayerId = s.prayerId || 'lords-prayer'
       useStore.setState({
@@ -45,7 +55,7 @@ export async function requestPlayToggle() {
   }
 
   // Nothing playing, go to the last prayer and start it.
-  await ambient.ensure().catch(() => {}) // prime audio inside the user gesture
+  await primeAudio()
   const spiritId = s.spiritId || 'christianity'
   const prayerId = s.prayerId || 'lords-prayer'
   useStore.setState({ view: 'prayer', spiritId, prayerId, pendingPlay: true })

@@ -269,6 +269,11 @@ const testLifecycle = async () => {
     await enableTestBridge()
     foreground = await cdp.evaluate(`(() => { const s = window.__store.getState(); return { playing: s.playing, paused: s.paused, seconds: s.localPrayerSeconds } })()`)
   }
+  // The prayer must still be playing after returning to the foreground — that
+  // silent-resume is the regression this guards. Assert the real foreground
+  // state explicitly; only nudge playback back afterwards so the rest of the
+  // suite can continue.
+  check('prayer survives background/foreground without a nudge', foreground.playing === true, `foreground=${JSON.stringify(foreground)}`)
   if (!foreground.playing) {
     await cdp.evaluate(`document.querySelector('.nav-play')?.click()`)
     await cdp.waitFor(`window.__store?.getState().playing === true`, 8000)

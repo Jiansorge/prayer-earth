@@ -40,6 +40,7 @@ function dominantScript(text) {
 // Which script(s) are acceptable for a given lang code.
 const EXPECTED = {
   sa: ['Devanagari'], hi: ['Devanagari'], mr: ['Devanagari'], ne: ['Devanagari'],
+  pra: ['Devanagari'],
   pi: ['Devanagari', 'Latin'], bn: ['Bengali'], gu: ['Gujarati'], ta: ['Tamil'],
   te: ['Telugu'], kn: ['Kannada'], ml: ['Malayalam'], pa: ['Gurmukhi'],
   ar: ['Arabic'], fa: ['Arabic'], ur: ['Arabic'], ps: ['Arabic'],
@@ -89,8 +90,11 @@ for (const spirit of SPIRITUALITIES) {
       if (ph.e) hasE++
       if (ph.t) {
         const sc = dominantScript(ph.t)
-        const exp = EXPECTED[lang]
-        if (exp && !exp.includes(sc)) { scriptOk = false; issues.push(['script-mismatch', `${where}#${i}`, `lang=${lang} t-script=${sc} (expected ${exp.join('/')})`]) }
+        // Unlisted languages (en, la, ae, ak, zu, ig, yo, mi, haw, lkt, ...)
+        // are Latin-script; default them to Latin so an English prayer carrying
+        // stray Devanagari is still caught instead of skipped.
+        const exp = EXPECTED[lang] || ['Latin']
+        if (!exp.includes(sc)) { scriptOk = false; issues.push(['script-mismatch', `${where}#${i}`, `lang=${lang} t-script=${sc} (expected ${exp.join('/')})`]) }
       }
     })
     const needsRomanization = !tIsLatin
