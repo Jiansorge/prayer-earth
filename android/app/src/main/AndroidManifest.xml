@@ -18,6 +18,18 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Deep links: the share/QR links (https://joining-palms.app/#/pray/...).
+                 autoVerify is intentionally omitted so the intent is delivered to
+                 the app without requiring a domain-verified assetlinks.json (and
+                 its signing cert). Android may show a "Browser / App" chooser;
+                 once the app handles the URL it routes the #/pray/... hash
+                 internally via @capacitor/app. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="joining-palms.app" />
+            </intent-filter>
         </activity>
 
         <provider

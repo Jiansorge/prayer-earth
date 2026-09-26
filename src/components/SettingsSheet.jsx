@@ -25,9 +25,11 @@ const DONATE_URL = 'https://ko-fi.com/joiningpalms'
 // localhost/dev/standalone host the app happens to be running on — a copied
 // `window.location.origin` would hand someone a dead "localhost" link.
 const APP_ORIGIN = 'https://joining-palms.app'
-// Android listing is not live yet: null keeps the Play-Store share row in a
-// "coming soon" state until the store URL exists.
-const PLAY_STORE_URL = null
+// Play-Store listing URL, supplied at build time via VITE_PLAY_STORE_URL once
+// the listing is live (the deploy sets it alongside VITE_SYNC_ENGINE). When it
+// is unset (null) the share row shows a "coming soon" note instead of a dead
+// link, so nothing is hardcoded to a placeholder.
+const PLAY_STORE_URL = import.meta.env.VITE_PLAY_STORE_URL || null
 
 export default function SettingsSheet() {
   const open = useStore((s) => s.settingsOpen)

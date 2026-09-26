@@ -1,4 +1,5 @@
 import React, { Component, Suspense, lazy, startTransition, useEffect, useRef, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { useStore } from './store.js'
 import { syncClient } from './sync/client.js'
 import { ambient } from './audio/ambience.js'
@@ -195,6 +196,44 @@ export default function App() {
     route()
     window.addEventListener('hashchange', route)
     return () => window.removeEventListener('hashchange', route)
+  }, [])
+
+  // External deep links: a VIEW intent for a share/QR link
+  // (https://joining-palms.app/#/pray/<spirit>/<prayer>) is delivered to the
+  // native app by @capacitor/app. We only extract its `#/...` hash and hand it
+  // to the same hash router above, so a shared link opens the right view. The
+  // plugin is imported dynamically and only on native, to keep the web bundle
+  // lean and avoid loading it in the browser.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return undefined
+    let alive = true
+    let remove
+    import('@capacitor/app')
+      .then(async ({ App }) => {
+        if (!alive) return
+        const routeUrl = (url) => {
+          if (!url || typeof url !== 'string') return
+          try {
+            const hash = new URL(url).hash
+            if (hash && hash.startsWith('#/')) window.location.hash = hash
+          } catch {}
+        }
+        // Cold start: the app was launched *by* the deep link.
+        try {
+          const launch = await App.getLaunchUrl()
+          routeUrl(launch?.url)
+        } catch {}
+        // Warm: a VIEW intent arrived while the app was already running.
+        try {
+          const handle = await App.addListener('appUrlOpen', ({ url }) => routeUrl(url))
+          remove = () => handle.remove()
+        } catch {}
+      })
+      .catch(() => {})
+    return () => {
+      alive = false
+      try { remove?.() } catch {}
+    }
   }, [])
 
   // Warm the prayer-view bundle (three.js + the earth backdrop + PrayerPage)

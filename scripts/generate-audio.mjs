@@ -31,6 +31,15 @@ const MAX_VOICES = process.env.MAX_VOICES ? parseInt(process.env.MAX_VOICES, 10)
 // (Hindi reads Devanagari, so it voices Sanskrit/Prakrit; English voices the
 // romanised Pāli/Māori and Latin-script Avestan/Lakota/Hawaiian/Yoruba/Akan).
 // Gurmukhi (Punjabi) is left to device voices, no free engine reads it.
+//
+// Tibetan (`bo`) — note: Edge TTS ships ZERO bo-* voices (verified against
+// getVoices(); the only "bo" substring matches are Borislav / es-BO Bolivia).
+// So Tibetan prayers (e.g. the 21-Taras praise) are voiced by an English
+// neural voice reading the text. That is the best *automated* option — an
+// authentic Tibetan voice requires a human recording: drop pre-rendered MP3s
+// into public/audio/<prayerId>/<index>-<voiceId>.mp3, add the voice to the
+// manifest, and the player uses them instead. (Same for any language here that
+// has no engine voice and no device TTS installed.)
 const FALLBACK_LANG = {
   sa: 'hi',
   pi: 'hi',

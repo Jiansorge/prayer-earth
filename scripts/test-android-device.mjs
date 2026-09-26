@@ -234,6 +234,21 @@ const testTaras = async () => {
   await cdp.waitFor(`window.__store?.getState().playing === false`, 8000)
 }
 
+const testDeepLink = async () => {
+  // A shared/QR link (https://joining-palms.app/#/pray/<spirit>/<prayer>) is
+  // delivered to the app as a VIEW intent; @capacitor/app's appUrlOpen must
+  // hand its #/... hash to the hash router and open that prayer. We target the
+  // component explicitly (no chooser) so this is deterministic, and put the app
+  // on a different prayer first to prove the intent actually navigated.
+  await cdp.evaluate(`window.__store.getState().openPrayer('buddhism', '21-taras')`)
+  await cdp.waitFor(`window.__store?.getState().prayerId === '21-taras'`, 10000)
+  const url = 'https://joining-palms.app/#/pray/buddhism/mani'
+  adb(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', url, '-n', `${PACKAGE}/.MainActivity`])
+  const routed = await cdp.waitFor(`window.__store?.getState().prayerId === 'mani' && location.hash === '#/pray/buddhism/mani'`, 12000)
+  const state = await cdp.evaluate(`({ id: window.__store?.getState().prayerId || null, hash: location.hash })`)
+  check('external deep link routes to the shared prayer', !!routed, JSON.stringify(state))
+}
+
 const testLifecycle = async () => {
   await cdp.evaluate(`location.hash = '#/pray/buddhism/mani'`)
   await cdp.waitFor(`!!document.querySelector('.ctrl-btn.play')`, 15000)
@@ -311,6 +326,7 @@ try {
   await testSurface()
   await testAudio()
   await testTaras()
+  await testDeepLink()
   await testLifecycle()
   log(`failures=${failures}`)
 } catch (error) {
