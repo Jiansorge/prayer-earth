@@ -547,11 +547,7 @@ export class EarthScene {
 
     // Never let the loading overlay hang: even if a texture is slow or fails on
     // a low-end phone, show the Earth (slightly untextured) after a short wait.
-    this._readyTimer = setTimeout(() => {
-      if (!this._ready && !this.hidden && !this._rendered) {
-        this._notifyError(new Error('Earth renderer did not produce a frame'))
-      }
-    }, 6000)
+    this._armReadyTimer()
 
     this.earthGroup = new THREE.Group()
     this.earthGroup.rotation.y = this.earthGroupRotation
@@ -2040,6 +2036,11 @@ this.autoRotate = !this.reducedMotion
       this.hidden = document.hidden
       if (!this.hidden) {
         this.lastFrame = 0
+        // A backgrounded tab never renders, so the 6s "no frame yet" watchdog
+        // would fire while hidden-visible and permanently downgrade a healthy
+        // scene to the static fallback. Re-arm it from the moment we come back
+        // so only a genuinely stuck scene is failed over.
+        this._armReadyTimer()
         // After a machine sleep / tab downtime the GPU can drop sprites, and a
         // stale-looking light map lingers. Re-apply the last light state and
         // force a frame so the world wakes up exactly where it should be.
@@ -2048,6 +2049,17 @@ this.autoRotate = !this.reducedMotion
     }
     document.addEventListener('visibilitychange', this._vis)
     this.bindContextLoss()
+  }
+
+  // The "did the renderer ever produce a frame" watchdog. Disarmed as soon as
+  // the first frame lands so a healthy-but-slow scene is never failed over.
+  _armReadyTimer() {
+    if (this._readyTimer) clearTimeout(this._readyTimer)
+    this._readyTimer = setTimeout(() => {
+      if (!this._ready && !this.hidden && !this._rendered) {
+        this._notifyError(new Error('Earth renderer did not produce a frame'))
+      }
+    }, 6000)
   }
 
   // A computer sleep can kill the WebGL context (GPU resets on wake). THREE
@@ -2115,6 +2127,11 @@ this.autoRotate = !this.reducedMotion
       this._rendered = true
       if (!this._ready) {
         this._ready = true
+        // First frame landed: the watchdog has served its purpose, disarm it.
+        if (this._readyTimer) {
+          clearTimeout(this._readyTimer)
+          this._readyTimer = null
+        }
         if (this.onReady) this.onReady()
       }
       return true

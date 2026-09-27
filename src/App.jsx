@@ -228,13 +228,28 @@ export default function App() {
         try {
           const handle = await App.addListener('appUrlOpen', ({ url }) => routeUrl(url))
           removeBack = (await App.addListener('backButton', () => {
-            // Android system back / gesture: unwind the app's own overlay stack
-            // (legal page -> the settings it came from, or close an open sheet)
-            // instead of letting the WebView fall through to the home screen.
+            // Android system back / gesture. Unwind the app's overlay stack in
+            // order (picker -> help -> settings -> legal -> view) so back is
+            // never swallowed. Registering this listener OVERRIDES Capacitor's
+            // default exit behaviour, so when nothing is open we must let the
+            // platform handle it — otherwise back could never leave the app.
             const st = useStore.getState()
-            if (st.view === 'legal') st.closeLegal()
+            if (st.prayerPickerSpiritId) st.closePrayerPicker()
+            else if (st.keyboardHelpOpen) st.setKeyboardHelpOpen(false)
+            else if (st.view === 'legal') st.closeLegal()
             else if (st.settingsOpen) st.setSettingsOpen(false)
             else if (st.view !== 'home') st.go('home')
+            else {
+              // Nothing left to unwind: hand the gesture back to Android so
+              // it exits the app (Capacitor's default).
+              try {
+                const { App: CapApp } = window.Capacitor?.Plugins || {}
+                // @capacitor/app exposes exitApp; fall back to history back.
+                if (CapApp?.exitApp) CapApp.exitApp()
+                else if (CapApp?.minimizeApp) CapApp.minimizeApp()
+                else window.history.back()
+              } catch {}
+            }
           })).remove
           remove = () => handle.remove()
         } catch {}

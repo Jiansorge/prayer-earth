@@ -519,6 +519,8 @@ export const useStore = create(
           favorites: Array.isArray(saved.favorites) ? saved.favorites : current.favorites,
           prayerVoices: safeStringMap(saved.prayerVoices),
           prayerCompletions: safeCounterMap(saved.prayerCompletions),
+          prayerTotals: safeCounterMap(saved.prayerTotals),
+          spiritTotals: safeCounterMap(saved.spiritTotals),
           prayerDayCompletions: safeDayMap(saved.prayerDayCompletions),
           prayerDayStats: safeDayMap(saved.prayerDayStats),
           // A duration, not a count: floor rather than requiring an integer so a
@@ -556,6 +558,12 @@ export const useStore = create(
         prayerCompletions: s.prayerCompletions,
         prayerDayCompletions: s.prayerDayCompletions,
         prayerDayStats: s.prayerDayStats,
+        // Last-known shared world totals, so the "all time" numbers, the glow
+        // and "share of a million prayers" still render while offline instead
+        // of reading 0. They are max-merged (setPrayerTotals -> mergeCountMap)
+        // so a stale cached value can only ever be climbed, never lowered.
+        prayerTotals: s.prayerTotals,
+        spiritTotals: s.spiritTotals,
         streak: s.streak,
         bestStreak: s.bestStreak,
         lastPrayedDay: s.lastPrayedDay,

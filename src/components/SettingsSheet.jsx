@@ -238,7 +238,12 @@ export default function SettingsSheet() {
           max="1"
           step="0.05"
           value={ambienceLevel}
-          onChange={(e) => setAmbienceLevel(parseFloat(e.target.value))}
+          onChange={(e) => {
+            setAmbienceLevel(parseFloat(e.target.value))
+            // Re-apply to the audio graph now (it reads the store value), so the
+            // slider is heard immediately instead of only on the next play/pause.
+            ambient.setLevel(ambient.level)
+          }}
         />
         <div className="field-row">
           <span className="field-hint">{t('settings.ambientLow')}</span>
