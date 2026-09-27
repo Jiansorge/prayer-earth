@@ -320,6 +320,14 @@ try {
   const value = `${Date.now()}`
   await cdp.evaluate(`localStorage.setItem(${JSON.stringify(key)}, ${JSON.stringify(value)})`)
   await testSentinel(key, value)
+  // Flush the sentinel to disk before the reinstall. The WebView batches
+  // localStorage writes, so a key set as the very last action before
+  // `adb install -r` can still be in the write buffer when the process is
+  // killed — it would then read back null after the upgrade (a false
+  // data-loss signal). Backing the app out makes Android flush WebView
+  // storage to disk before we swap the APK.
+  adb(['shell', 'input', 'keyevent', '3'])
+  await sleep(1200)
   cdp.close()
   cdp = null
 
