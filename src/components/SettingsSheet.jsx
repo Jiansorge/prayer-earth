@@ -40,6 +40,8 @@ export default function SettingsSheet() {
   const setSpeechRate = useStore((s) => s.setSpeechRate)
   const ambienceLevel = useStore((s) => s.ambienceLevel)
   const setAmbienceLevel = useStore((s) => s.setAmbienceLevel)
+  const volume = useStore((s) => s.volume)
+  const setVolume = useStore((s) => s.setVolume)
   const locale = useStore((s) => s.locale)
   const setLocale = useStore((s) => s.setLocale)
   const theme = useStore((s) => s.theme)
@@ -216,6 +218,27 @@ export default function SettingsSheet() {
           step="0.05"
           value={ambienceLevel}
           onChange={(e) => setAmbienceLevel(parseFloat(e.target.value))}
+        />
+        <div className="field-row">
+          <span className="field-hint">{t('settings.ambientLow')}</span>
+          <span className="field-hint">{t('settings.ambientHigh')}</span>
+        </div>
+
+        <label className="field-label" htmlFor="vol-range">{t('prayer.volume')}</label>
+        <input
+          id="vol-range"
+          type="range"
+          className="field-range"
+          min="0"
+          max="1"
+          step="0.05"
+          value={volume}
+          onChange={(e) => {
+            const v = parseFloat(e.target.value)
+            setVolume(v)
+            // Apply live so adjusting it mid-prayer is heard immediately.
+            speech.setVolume(v)
+          }}
         />
         <div className="field-row">
           <span className="field-hint">{t('settings.ambientLow')}</span>

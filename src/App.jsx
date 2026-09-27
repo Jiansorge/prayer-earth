@@ -208,6 +208,7 @@ export default function App() {
     if (!Capacitor.isNativePlatform()) return undefined
     let alive = true
     let remove
+    let removeBack
     import('@capacitor/app')
       .then(async ({ App }) => {
         if (!alive) return
@@ -226,6 +227,15 @@ export default function App() {
         // Warm: a VIEW intent arrived while the app was already running.
         try {
           const handle = await App.addListener('appUrlOpen', ({ url }) => routeUrl(url))
+          removeBack = (await App.addListener('backButton', () => {
+            // Android system back / gesture: unwind the app's own overlay stack
+            // (legal page -> the settings it came from, or close an open sheet)
+            // instead of letting the WebView fall through to the home screen.
+            const st = useStore.getState()
+            if (st.view === 'legal') st.closeLegal()
+            else if (st.settingsOpen) st.setSettingsOpen(false)
+            else if (st.view !== 'home') st.go('home')
+          })).remove
           remove = () => handle.remove()
         } catch {}
       })
@@ -233,6 +243,7 @@ export default function App() {
     return () => {
       alive = false
       try { remove?.() } catch {}
+      try { removeBack?.() } catch {}
     }
   }, [])
 

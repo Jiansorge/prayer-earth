@@ -135,6 +135,7 @@ export const useStore = create(
     (set, get) => ({
       view: 'home',
       legalPage: null,
+      legalReturn: null,
       localeReady: 0,
       spiritId: null,
       prayerId: null,
@@ -231,8 +232,27 @@ export const useStore = create(
         }),
       openPrayer: (spiritId, prayerId) =>
         set({ view: 'prayer', spiritId, prayerId }),
-      openLegal: (legalPage) => set({ view: 'legal', legalPage, settingsOpen: false }),
-      closeLegal: () => set({ view: 'home', legalPage: null }),
+      openLegal: (legalPage) =>
+        set((s) => ({
+          view: 'legal',
+          legalPage,
+          // Remember where the legal page was opened from (it is only reachable
+          // from the Settings sheet) so Back returns to that sheet instead of
+          // dumping the user on the home screen.
+          legalReturn: { view: s.view, settingsOpen: s.settingsOpen },
+          settingsOpen: false
+        })),
+      closeLegal: () =>
+        set((s) =>
+          s.legalReturn
+            ? {
+                view: s.legalReturn.view,
+                legalPage: null,
+                settingsOpen: s.legalReturn.settingsOpen,
+                legalReturn: null
+              }
+            : { view: 'home', legalPage: null }
+        ),
       closePrayer: () => set({ view: 'home', praying: false, pendingPlay: false }),
       openPrayerPicker: (spiritId) => set({ prayerPickerSpiritId: spiritId }),
       closePrayerPicker: () => set({ prayerPickerSpiritId: null }),

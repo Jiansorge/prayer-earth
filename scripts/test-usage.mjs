@@ -196,6 +196,21 @@ ok(
   'settings offers app/site share',
   settingsOpen && await c.eval(`[...document.querySelectorAll('.field-btn')].some((b) => b.innerText.includes('Share Joining Palms'))`)
 )
+ok(
+  'settings has a prayer volume slider alongside ambient',
+  settingsOpen && await c.eval(`!!document.querySelector('#vol-range') && !!document.querySelector('#amb-range')`)
+)
+// Back from Privacy/Terms must return to the Settings sheet it was opened
+// from, not the home screen.
+const legalBack = settingsOpen && await c.eval(`(() => {
+  window.__store.getState().openLegal('privacy')
+  const opened = window.__store.getState().view === 'legal'
+  window.__store.getState().closeLegal()
+  const s = window.__store.getState()
+  return { opened, backToSettings: s.settingsOpen === true && s.legalPage === null }
+})()`)
+ok('legal page opens from settings', legalBack && legalBack.opened)
+ok('back from legal returns to the settings sheet', legalBack && legalBack.backToSettings)
 if (settingsOpen) await closeSettings()
 ok('settings sheet closes', await c.waitFor(`!document.querySelector('.sheet')`, 5000))
 
