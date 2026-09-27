@@ -48,7 +48,6 @@ export default function PrayerPage() {
   const loopOn = useStore((s) => s.loopOn)
   const setLoopOn = useStore((s) => s.setLoopOn)
   const speechRate = useStore((s) => s.speechRate)
-  const setSpeechRate = useStore((s) => s.setSpeechRate)
   const setPrayerVoice = useStore((s) => s.setPrayerVoice)
   const chosenVoice = useStore((s) => (prayerId ? s.prayerVoices[prayerId] : null))
   const favorite = useStore((s) => (prayerId ? s.favorites.includes(prayerId) : false))
@@ -529,11 +528,6 @@ const countedRef = useRef(false)
     // ambient.vol meant dragging the voice to 0 permanently silenced the bed
     // (and the Settings voice slider couldn't undo it, since it only calls
     // speech.setVolume). mute.js still uses ambient.setVolume as a true mute.
-  }
-
-  const setLiveRate = (r) => {
-    setSpeechRate(r)
-    speech.setRate(r)
   }
 
   const friendlyVoice = (v) =>

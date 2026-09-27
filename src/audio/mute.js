@@ -15,7 +15,11 @@ export function applyMute(muted) {
   }
   useStore.setState({ muted: next, volume: target })
   speech.setVolume(target)
-  ambient.setVolume(target)
+  // Mute the bed as a TRUE mute (0 / 1). Passing `target` (the voice volume)
+  // here re-coupled the ambient bed to the prayer-voice fader: every unmute
+  // left the bed at the voice level instead of its own. The bed's loudness is
+  // driven by the "Ambient sound volume" slider alone.
+  ambient.setVolume(next ? 0 : 1)
 }
 
 export function toggleMute() {

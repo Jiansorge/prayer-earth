@@ -1,11 +1,11 @@
-// One source of truth for the sound controls, shared by Settings and the prayer
+﻿// One source of truth for the sound controls, shared by Settings and the prayer
 // mini-tune panel so the labels, ranges, and live-apply behavior can never drift
 // between the two surfaces.
 //
 // Order (identical everywhere): Prayer voice volume, Ambient sound volume, Speed,
 // then the ambient bed picker. Every slider applies live to the audio engines.
 
-import React from 'react'
+import React, { useId } from 'react'
 import { useStore } from '../store.js'
 import { speech } from '../audio/speech.js'
 import { ambient } from '../audio/ambience.js'
@@ -30,13 +30,25 @@ export default function SoundControls({ layout = 'field', showBeds = true }) {
   const labelCls = isPt ? 'pt-label' : 'field-label'
   const rowCls = isPt ? 'pt-row' : 'field-row-slider'
   const valCls = isPt ? 'pt-val' : 'field-hint'
+  // Instance-scoped ids: both surfaces can be mounted at once (Settings is a
+  // sheet over the prayer view), and shared static ids would collide and break
+  // htmlFor / aria-labelledby.
+  const uid = useId()
+  const voiceId = `${uid}-voice`
+  const ambientId = `${uid}-ambient`
+  const speedId = `${uid}-speed`
+  const bedLabelId = `${uid}-bed-label`
 
   const onVoice = (v) => {
+    if (muted && v > 0) {
+      // Unmute, but KEEP the level the user just chose. applyMute(false) restores
+      // `lastVolume`, so seed it with v first â€” otherwise dragging up from
+      // muted snapped the slider back to the pre-mute level.
+      useStore.setState({ lastVolume: v })
+      applyMute(false)
+    }
     setVolume(v)
     speech.setVolume(v)
-    // Raising the voice while muted should unmute, so the two controls never
-    // disagree (muted stayed true while audio was audible).
-    if (muted && v > 0) applyMute(false)
   }
   const onAmbient = (v) => {
     setAmbienceLevel(v)
@@ -55,9 +67,9 @@ export default function SoundControls({ layout = 'field', showBeds = true }) {
   return (
     <>
       <div className={rowCls}>
-        <label className={labelCls} htmlFor="sc-voice">{t('sound.prayerVoice')}</label>
+        <label className={labelCls} htmlFor={voiceId}>{t('sound.prayerVoice')}</label>
         <input
-          id="sc-voice"
+          id={voiceId}
           type="range"
           className="field-range"
           min="0"
@@ -69,9 +81,9 @@ export default function SoundControls({ layout = 'field', showBeds = true }) {
         <span className={valCls}>{Math.round(volume * 100)}%</span>
       </div>
       <div className={rowCls}>
-        <label className={labelCls} htmlFor="sc-ambient">{t('sound.ambient')}</label>
+        <label className={labelCls} htmlFor={ambientId}>{t('sound.ambient')}</label>
         <input
-          id="sc-ambient"
+          id={ambientId}
           type="range"
           className="field-range"
           min="0"
@@ -83,9 +95,9 @@ export default function SoundControls({ layout = 'field', showBeds = true }) {
         <span className={valCls}>{Math.round(ambienceLevel * 100)}%</span>
       </div>
       <div className={rowCls}>
-        <label className={labelCls} htmlFor="sc-speed">{t('sound.speed')}</label>
+        <label className={labelCls} htmlFor={speedId}>{t('sound.speed')}</label>
         <input
-          id="sc-speed"
+          id={speedId}
           type="range"
           className="field-range"
           min="0.6"
@@ -94,16 +106,16 @@ export default function SoundControls({ layout = 'field', showBeds = true }) {
           value={speechRate}
           onChange={(e) => onSpeed(parseFloat(e.target.value))}
         />
-        <span className={valCls}>{speechRate.toFixed(2)}×</span>
+        <span className={valCls}>{speechRate.toFixed(2)}Ã—</span>
       </div>
       {showBeds && (
         <>
           <div className={isPt ? 'pt-row' : 'field-label'}>
-            <span className={isPt ? 'pt-label' : 'field-label'} id="sc-bed-label">
+            <span className={isPt ? 'pt-label' : 'field-label'} id={bedLabelId}>
               {t('settings.ambientSound')}
             </span>
           </div>
-          <div className="ambient-pick" role="group" aria-labelledby="sc-bed-label">
+          <div className="ambient-pick" role="group" aria-labelledby={bedLabelId}>
             {AMBIENT_PRESETS.map((id) => (
               <button
                 key={id}

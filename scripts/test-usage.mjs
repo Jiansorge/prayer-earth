@@ -198,7 +198,7 @@ ok(
 )
 ok(
   'settings has a prayer volume slider alongside ambient',
-  settingsOpen && await c.eval(`!!document.querySelector('#sc-voice') && !!document.querySelector('#sc-ambient') && !!document.querySelector('#sc-speed')`)
+  settingsOpen && await c.eval(`!!document.querySelector('[id$="-voice"]') && !!document.querySelector('[id$="-ambient"]') && !!document.querySelector('[id$="-speed"]')`)
 )
 // Seven selectable ambient beds, persisted and switchable.
 ok(
