@@ -128,6 +128,31 @@
       </div>
     </div>
     <div id="root"></div>
+    <script>
+      // Boot failsafe: the splash (#boot) is removed by React on mount, but if the
+      // entry chunk 404s (stale cached shell after a deploy) or throws before the
+      // first effect, it would otherwise sit here forever with no way out. After
+      // a grace period, turn the splash into a tappable "reload" affordance and
+      // surface any early error.
+      (function () {
+        var fired = false
+        function escape() {
+          if (fired) return
+          var boot = document.getElementById('boot')
+          if (!boot || boot.classList.contains('done')) return
+          fired = true
+          boot.setAttribute('aria-hidden', 'false')
+          var name = boot.querySelector('.boot-name')
+          if (name) name.textContent = 'Tap to reload'
+          boot.style.pointerEvents = 'auto'
+          boot.style.cursor = 'pointer'
+          boot.onclick = function () { location.reload() }
+        }
+        setTimeout(escape, 12000)
+        window.addEventListener('error', function () { setTimeout(escape, 1500) })
+        window.addEventListener('unhandledrejection', function () { setTimeout(escape, 1500) })
+      })()
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

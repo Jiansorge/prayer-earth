@@ -38,6 +38,19 @@ if (required.every((file) => existsSync(file))) {
   check('lazy preload references exist in dist', missingDist.length === 0, missingDist.join(', ') || 'none')
   check('lazy preload references exist in Android package', missingAndroid.length === 0, missingAndroid.join(', ') || 'none')
 
+  // The Android build must point at the real sync Worker. A build made with a
+  // plain `npm run build` (not build:capacitor) omits VITE_SYNC_URL, which used
+  // to bake a dead ws://localhost into the app (permanently offline). Assert
+  // the packaged bundle references the production wss:// endpoint.
+  const androidJs = readdirSync(path.join(ANDROID_PUBLIC, 'assets'))
+    .filter((f) => f.endsWith('.js'))
+    .map((f) => readFileSync(path.join(ANDROID_PUBLIC, 'assets', f), 'utf8'))
+    .join('\n')
+  check(
+    'Android bundle targets the production sync Worker',
+    androidJs.includes('wss://joining-palms.app')
+  )
+
   const manifestPath = path.join(DIST, 'audio', 'manifest.json')
   const androidManifestPath = path.join(ANDROID_PUBLIC, 'audio', 'manifest.json')
   check('audio manifest exists in dist and Android package', existsSync(manifestPath) && existsSync(androidManifestPath))

@@ -83,6 +83,14 @@ const SIM_PEOPLE = [
 function defaultUrl() {
   const override = import.meta.env.VITE_SYNC_URL
   if (override) return override
+  // A Capacitor build's WebView origin is capacitor://localhost, so a
+  // location-derived URL would be the dead ws://localhost. If a build somehow
+  // reached native production without VITE_SYNC_URL (e.g. a plain `npm run
+  // build` + `cap sync` instead of `build:capacitor`), default to the real
+  // Worker rather than shipping a permanently-offline app.
+  if (import.meta.env.PROD && window.Capacitor?.isNativePlatform?.()) {
+    return 'wss://joining-palms.app'
+  }
   const host = window.location.hostname || 'localhost'
   const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
   if (import.meta.env.PROD) {
@@ -278,6 +286,11 @@ class SyncClient {
           this.stopSim()
           this.mode = 'live'
           useStore.getState().setConnected(true)
+          // Drop any fabricated (offline) feed from the store on reconnect. The
+          // server only sends a feed frame when its live feed is non-empty, so
+          // without this the invented "people" linger on the Earth page as if
+          // real. A real feed, if any, arrives right after and replaces it.
+          useStore.getState().setFeed([])
           useStore.getState().setSyncNotice(null)
           this.sendPresence()
           this.pushSync()

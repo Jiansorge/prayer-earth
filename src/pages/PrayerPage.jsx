@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
-import { SPIRITUALITY_BY_ID, loadSpirit } from '../data/prayers.js'
+import { SPIRITUALITY_BY_ID, loadSpirit, isLoaded } from '../data/prayers.js'
 import { speech } from '../audio/speech.js'
 import { ambient } from '../audio/ambience.js'
 import { syncClient } from '../sync/client.js'
@@ -99,10 +99,13 @@ const countedRef = useRef(false)
   useEffect(() => {
     if (!spirit) {
       useStore.getState().go('home')
-    } else if (!prayer) {
-      // Prayer texts may still be loading — no fallback yet.
+    } else if (!prayer && isLoaded(spiritId) && (spirit.prayers || []).length) {
+      // The spirit finished loading but this prayer id doesn't exist in it — a
+      // stale/renamed/typo'd shared link or hand-edited hash. Don't spin forever;
+      // drop back to the picker for that tradition.
+      useStore.getState().go('home')
     }
-  }, [spirit, prayer])
+  }, [spirit, prayer, spiritId])
 
   // One prayer at a time per browser: another tab starting playback pauses us.
   // BroadcastChannel also delivers to this same tab, so each message carries its

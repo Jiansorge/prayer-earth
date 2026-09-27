@@ -649,6 +649,24 @@ ok(
   totalSequence.prayer === 12 && totalSequence.spirit === 25 && totalSequence.all === 12,
   JSON.stringify(totalSequence)
 )
+// A lapsed streak must be able to DECREASE after a sync. It used to be
+// max-merged, so a legitimately broken streak (3 days ago) was restored to its
+// old high on every merge and became unbreakable.
+const streakFix = await c.eval(`(() => {
+  const store = window.__store
+  const key = (d) => d.toISOString().slice(0, 10)
+  const days = {}
+  for (let i = 0; i < 3; i++) days[key(new Date(Date.now() - (3 + i) * 86400000))] = { mani: 1 }
+  store.setState({ prayerDayCompletions: days, streak: 3, bestStreak: 3 })
+  store.getState().mergeSyncStats({ prayerCompletions: {}, prayerDayCompletions: {}, prayerDayStats: {}, localPrayerSeconds: 0, bestStreak: 3 })
+  const a = store.getState()
+  return { streak: a.streak, best: a.bestStreak }
+})()`)
+ok(
+  'lapsed streak resets to 0 on merge while best streak is kept',
+  streakFix && streakFix.streak === 0 && streakFix.best === 3,
+  JSON.stringify(streakFix)
+)
 const tallySeed = await c.eval(`(() => {
   const store = window.__store
   const key = (t) => t.getUTCFullYear() + '-' + String(t.getUTCMonth() + 1).padStart(2, '0') + '-' + String(t.getUTCDate()).padStart(2, '0')
