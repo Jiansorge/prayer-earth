@@ -26,28 +26,9 @@ export function gridKey(lat, lon) {
   return `${la},${lo}`
 }
 
-// The lifetime stats that are safe to sync (pure counters, max-merged).
-export function mergeStats(base, incoming) {
-  const pick = (a, b) => Math.max(a || 0, b || 0)
-  const out = { ...(base || {}) }
-  const mergeDay = (local, inc) => {
-    const m = { ...(local || {}) }
-    for (const [d, map] of Object.entries(inc || {})) {
-      m[d] = { ...(m[d] || {}) }
-      for (const [k, v] of Object.entries(map)) m[d][k] = pick(m[d][k], v)
-    }
-    return m
-  }
-  out.prayerCompletions = { ...(base?.prayerCompletions || {}) }
-  for (const [k, v] of Object.entries(incoming.prayerCompletions || {})) {
-    out.prayerCompletions[k] = pick(out.prayerCompletions[k], v)
-  }
-  out.prayerDayCompletions = mergeDay(base?.prayerDayCompletions, incoming.prayerDayCompletions)
-  out.prayerDayStats = mergeDay(base?.prayerDayStats, incoming.prayerDayStats)
-  out.localPrayerSeconds = pick(base?.localPrayerSeconds, incoming.localPrayerSeconds)
-  out.streak = pick(base?.streak, incoming.streak)
-  out.bestStreak = pick(base?.bestStreak, incoming.bestStreak)
-  const ld = incoming.lastPrayedDay || base?.lastPrayedDay
-  if (ld) out.lastPrayedDay = ld > (base?.lastPrayedDay || '') ? ld : base.lastPrayedDay
-  return out
-}
+// The stats merge lives in shared/stats.js (one implementation for the app).
+// This re-export exists so the historical `./protocol.js` import path can't hand
+// back a divergent copy that still max-merged `streak` (the bug that made a
+// lapsed streak unbreakable). Do NOT re-add a local mergeStats here.
+export { mergeStats } from '../shared/stats.js'
+

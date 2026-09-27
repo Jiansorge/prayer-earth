@@ -270,8 +270,10 @@ if (localePicker) await c.eval(`(() => { const s = document.querySelector('#loca
 await c.eval(`(() => { const s = document.querySelector('#locale-picker'); s.value = 'es'; s.dispatchEvent(new Event('change', { bubbles: true })) })()`)
 ok('locale switch to Spanish relabels nav', await c.waitFor(`!!document.querySelector('.nav button[aria-label="Inicio"]')`))
 ok(
+  // Persists are debounced (~1.5s) to coalesce the prayer clock's writes, so
+  // wait for the debounced flush to land before reading localStorage.
   'locale switch persists',
-  (await c.eval(`JSON.parse(localStorage.getItem('prayer-earth-v1')).state.locale`)) === 'es'
+  await c.waitFor(`(() => { try { return JSON.parse(localStorage.getItem('prayer-earth-v1')).state.locale === 'es' } catch { return false } })()`, 5000)
 )
 await c.eval(`window.__store.getState().setLocale('en')`)
 ok('locale restore to English', await c.waitFor(`!!document.querySelector('.nav button[aria-label="Home"]')`))

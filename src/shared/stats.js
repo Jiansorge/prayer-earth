@@ -38,11 +38,18 @@ export function streakFromDays(dayMap, now = new Date()) {
 export function mergeStats(base, incoming) {
   const pick = (a, b) => Math.max(a || 0, b || 0)
   const out = { ...(base || {}) }
+  // Bound the merged day map to the same limit the store enforces, so a union
+  // across devices can't grow the map (and the sync frame) without end.
+  const DAY_MAP_LIMIT = 120
   const mergeDay = (local, inc) => {
     const m = { ...(local || {}) }
     for (const [d, map] of Object.entries(inc || {})) {
       m[d] = { ...(m[d] || {}) }
       for (const [k, v] of Object.entries(map)) m[d][k] = pick(m[d][k], v)
+    }
+    const keys = Object.keys(m).sort()
+    if (keys.length > DAY_MAP_LIMIT) {
+      for (const k of keys.slice(0, keys.length - DAY_MAP_LIMIT)) delete m[k]
     }
     return m
   }

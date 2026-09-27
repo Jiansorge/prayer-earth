@@ -27,10 +27,16 @@ const safeCounterMap = (value) => {
   }
   return out
 }
+// How many days of per-day history we retain. Must be comfortably larger than a
+// realistic streak, because the current streak is DERIVED by walking this map
+// back from today — a cap below the streak length would silently under-report
+// it. 120 days (~4 months) leaves ample payload headroom while representing any
+// realistic streak.
+const DAY_MAP_LIMIT = 120
 const safeDayMap = (value) => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
   const out = {}
-  for (const [day, counts] of Object.entries(value).sort().slice(-62)) {
+  for (const [day, counts] of Object.entries(value).sort().slice(-DAY_MAP_LIMIT)) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue
     const clean = safeCounterMap(counts)
     if (Object.keys(clean).length) out[day] = clean
@@ -74,16 +80,53 @@ const safeStorage = {
       return null
     }
   },
+  // Persisting on every set() meant the prayer clock (~3 sets/sec) wrote the
+  // whole payload to localStorage ~3x/second — heavy jank and, worse, a SILENT
+  // unrecoverable loss: if a write ever throws (storage disabled, WebView data
+  // cleared, OS eviction), the in-memory store kept counting while the persisted
+  // copy silently rotted, and on next launch the user read a smaller number.
+  // So: debounce writes to reduce volume, and latch + surface a failure.
   setItem: (name, value) => {
-    try {
-      window.localStorage.setItem(name, value)
-    } catch {}
+    _pendingWrite = { name, value }
+    clearTimeout(_writeTimer)
+    _writeTimer = setTimeout(flushStorageNow, 1500)
   },
   removeItem: (name) => {
     try {
       window.localStorage.removeItem(name)
     } catch {}
   }
+}
+
+let _writeTimer = null
+let _pendingWrite = null
+let _writeFailed = false
+function flushStorageNow() {
+  clearTimeout(_writeTimer)
+  _writeTimer = null
+  if (!_pendingWrite) return
+  const { name, value } = _pendingWrite
+  _pendingWrite = null
+  try {
+    window.localStorage.setItem(name, value)
+  } catch {
+    if (!_writeFailed) {
+      _writeFailed = true
+      // Tell the user their counts are not being saved, rather than letting
+      // them pray for weeks and lose it silently.
+      try {
+        useStore.setState({ persistFailed: true })
+      } catch {}
+    }
+  }
+}
+// Flush any debounced write on the way out so a quick close doesn't lose the
+// last few seconds.
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', flushStorageNow)
+  document?.addEventListener?.('visibilitychange', () => {
+    if (document.hidden) flushStorageNow()
+  })
 }
 
 const dayKey = (t) =>
@@ -164,8 +207,11 @@ export const useStore = create(
       prayerPickerSpiritId: null,
 
       // global sync
-      connected: false,
-      syncNotice: null,
+  connected: false,
+  syncNotice: null,
+  // Set when a localStorage write fails, so the UI can warn that counts aren't
+  // being saved (see safeStorage.setItem).
+  persistFailed: false,
       // when the shared world was first launched (ms epoch), so the glow can
       // show a gentle floor on day one and be fully honest afterwards
       startedAt: null,
@@ -342,8 +388,8 @@ export const useStore = create(
           day[prayerId] = (day[prayerId] || 0) + 1
           const days = { ...s.prayerDayCompletions, [key]: day }
           const keys = Object.keys(days).sort()
-          if (keys.length > 62) {
-            for (let i = 0; i < keys.length - 62; i++) delete days[keys[i]]
+          if (keys.length > DAY_MAP_LIMIT) {
+            for (let i = 0; i < keys.length - DAY_MAP_LIMIT; i++) delete days[keys[i]]
           }
           return {
             prayerCompletions: {
@@ -355,17 +401,17 @@ export const useStore = create(
         }),
 
       // Attribute one prayed second to this prayer on the current UTC day.
-      addPrayerSecond: (prayerId) =>
+      addPrayerSecond: (prayerId, seconds = 1) =>
         set((s) => {
           if (!prayerId) return {}
           const key = dayKey(new Date())
           const day = s.prayerDayStats[key] ? { ...s.prayerDayStats[key] } : {}
-          day[prayerId] = (day[prayerId] || 0) + 1
+          day[prayerId] = (day[prayerId] || 0) + seconds
           const stats = { ...s.prayerDayStats, [key]: day }
           // Bound the history so it never grows without end.
           const keys = Object.keys(stats).sort()
-          if (keys.length > 62) {
-            for (let i = 0; i < keys.length - 62; i++) delete stats[keys[i]]
+          if (keys.length > DAY_MAP_LIMIT) {
+            for (let i = 0; i < keys.length - DAY_MAP_LIMIT; i++) delete stats[keys[i]]
           }
           return { prayerDayStats: stats }
         }),
@@ -420,7 +466,13 @@ export const useStore = create(
         return {
           prayerCompletions: s.prayerCompletions,
           prayerDayCompletions: s.prayerDayCompletions,
-          prayerDayStats: s.prayerDayStats,
+          // prayerDayStats is deliberately NOT synced: it is ~46% of the frame,
+          // the server uses it for nothing functional (active-day checks read
+          // prayerDayCompletions + lastPrayedDay), and including it pushed the
+          // sync message past MAX_WS_MSG at ~13 distinct prayers/day, which
+          // silently broke lifetime sync (socket closed as 'too-large'). It stays
+          // in the local store + partialize. (hasLifetimeStats stays safe because
+          // localPrayerSeconds and prayerDayCompletions always accompany it.)
           localPrayerSeconds: s.localPrayerSeconds,
           streak: s.streak,
           bestStreak: s.bestStreak,
@@ -591,11 +643,42 @@ if (
 // The prayer clock lives here (not on the prayer page) so a prayer keeps being
 // counted toward the world totals even while you browse Home or the Earth with
 // it playing in the background. No-ops whenever nothing is playing.
-setInterval(() => {
+//
+// Credited by WALL CLOCK, not tick count: a backgrounded tab/OS can throttle or
+// freeze setInterval, which used to under-count a background prayer (audio kept
+// playing off Date.now() while the counter barely ticked) — a permanent, invisible
+// loss of the user's most sacred number. We credit the real elapsed delta on each
+// tick and on visibility/pagehide, capped so a long device sleep can't fabricate
+// hours of prayer either.
+let _lastTickAt = 0
+const MAX_CREDIT_PER_FLUSH = 30 // seconds a single flush may credit
+function creditPrayerClock() {
   const s = useStore.getState()
-  if (!s.playing || s.paused) return
-  s.addLocalPrayer(1)
-  s.addPrayerSecond(s.playingPrayerId)
-  s.setElapsed(s.elapsed + 1)
-}, 1000)
+  const now = Date.now()
+  if (!s.playing || s.paused) {
+    _lastTickAt = now
+    return
+  }
+  if (!_lastTickAt) {
+    _lastTickAt = now
+    return
+  }
+  const delta = Math.min(MAX_CREDIT_PER_FLUSH, Math.max(1, Math.round((now - _lastTickAt) / 1000)))
+  _lastTickAt = now
+  s.addLocalPrayer(delta)
+  s.addPrayerSecond(s.playingPrayerId, delta)
+  s.setElapsed(s.elapsed + delta)
+}
+setInterval(creditPrayerClock, 1000)
+// Flush the real delta when the tab is hidden or closed (the interval may not
+// fire again for a while once backgrounded).
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) creditPrayerClock()
+    else creditPrayerClock()
+  })
+  if (typeof window !== 'undefined') {
+    window.addEventListener('pagehide', creditPrayerClock)
+  }
+}
 

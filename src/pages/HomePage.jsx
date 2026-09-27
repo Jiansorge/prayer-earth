@@ -95,7 +95,16 @@ export default function HomePage() {
   const yourToday = useStore((s) => s.getYourToday())
   const [, force] = useState(0)
   const t = useT()
-  const [installVisible, setInstallVisible] = useState(() => canInstall() && !localStorage.getItem('pe-install-dismissed'))
+  const [installVisible, setInstallVisible] = useState(() => {
+    // Guard the read: a raw localStorage.getItem throws during render when
+    // storage is disabled (private mode / sandboxed iframe / policy), which
+    // would drop the user into the error boundary and block praying entirely.
+    try {
+      return canInstall() && !localStorage.getItem('pe-install-dismissed')
+    } catch {
+      return false
+    }
+  })
   const [shareCopied, setShareCopied] = useState(false)
 
   // Make the public web address discoverable and shareable straight from Home,
