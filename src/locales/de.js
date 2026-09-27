@@ -364,4 +364,7 @@ export default {
   'ambience.forest': 'Waldstille',
   'ambience.space': 'Tiefer Raum',
   'ambience.warm': 'Warme Klangfläche',
+  'sound.prayerVoice': 'Gebetsstimme-Lautstärke',
+  'sound.ambient': 'Lautstärke der Umgebungsgeräusche',
+  'sound.speed': 'Geschwindigkeit',
 };

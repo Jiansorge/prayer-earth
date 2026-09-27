@@ -272,4 +272,7 @@ export default {
   'ambience.forest': '숲의 고요',
   'ambience.space': '깊은 우주',
   'ambience.warm': '따뜻한 이불',
+  'sound.prayerVoice': '기도 음성 음량',
+  'sound.ambient': '환경 소리 음량',
+  'sound.speed': '속도',
 };

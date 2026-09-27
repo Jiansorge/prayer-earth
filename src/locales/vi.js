@@ -367,4 +367,7 @@ export default {
   'ambience.forest': 'Tĩnh lặng rừng',
   'ambience.space': 'Không gian sâu',
   'ambience.warm': 'Lớp ấm',
+  'sound.prayerVoice': 'Âm lượng giọng cầu nguyện',
+  'sound.ambient': 'Âm lượng âm thanh',
+  'sound.speed': 'Tốc độ',
 };

@@ -368,4 +368,7 @@ export default {
   'ambience.forest': 'ནགས་ཚལ་གཤེགས།',
   'ambience.space': 'མཐོ་གྱི་ཁམ་འཁོར།',
   'ambience.warm': 'བདེ་ཐང་གོང་ཁ་ཤུགས།',
+  'sound.prayerVoice': 'སྐད་ཆའི་སྒྲ་ཚད།',
+  'sound.ambient': 'ཉེར་བར་སྒྲའི་སྒྲ་ཚད།',
+  'sound.speed': 'རྒྱུ་མཚོན།',
 };

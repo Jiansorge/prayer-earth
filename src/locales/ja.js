@@ -285,4 +285,7 @@ export default {
   'ambience.forest': '森の静けさ',
   'ambience.space': '遠い宇宙',
   'ambience.warm': '温かい響き',
+  'sound.prayerVoice': '祈祷の声の音量',
+  'sound.ambient': '環境音の音量',
+  'sound.speed': '速度',
 };

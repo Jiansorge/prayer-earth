@@ -335,4 +335,7 @@ export default {
   'ambience.forest': 'Forest Stillness',
   'ambience.space': 'Deep Space',
   'ambience.warm': 'Warming Pad',
+  'sound.prayerVoice': 'Prayer voice volume',
+  'sound.ambient': 'Ambient sound volume',
+  'sound.speed': 'Speed',
 };

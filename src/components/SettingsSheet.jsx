@@ -2,7 +2,7 @@
 import { useStore } from '../store.js'
 import { speech, CHANT_VOICE } from '../audio/speech.js'
 import { ambient } from '../audio/ambience.js'
-import { AMBIENT_PRESETS } from '../audio/presets.js'
+import SoundControls from './SoundControls.jsx'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
 import { useT, LOCALES, prayerTitle } from '../i18n.js'
 import { sanitizeName } from '../shared/profanity.js'
@@ -38,13 +38,7 @@ export default function SettingsSheet() {
   const voiceURI = useStore((s) => s.voiceURI)
   const setVoiceURI = useStore((s) => s.setVoiceURI)
   const speechRate = useStore((s) => s.speechRate)
-  const setSpeechRate = useStore((s) => s.setSpeechRate)
   const ambienceLevel = useStore((s) => s.ambienceLevel)
-  const setAmbienceLevel = useStore((s) => s.setAmbienceLevel)
-  const ambientPreset = useStore((s) => s.ambientPreset)
-  const setAmbientPreset = useStore((s) => s.setAmbientPreset)
-  const volume = useStore((s) => s.volume)
-  const setVolume = useStore((s) => s.setVolume)
   const locale = useStore((s) => s.locale)
   const setLocale = useStore((s) => s.setLocale)
   const theme = useStore((s) => s.theme)
@@ -202,86 +196,10 @@ export default function SettingsSheet() {
 
         <label className="field-label section">{t('settings.secPraying')}</label>
 
-        <label className="field-label" htmlFor="rate-range">{t('settings.speedLabel')}</label>
-        <input
-          id="rate-range"
-          type="range"
-          className="field-range"
-          min="0.6"
-          max="2.0"
-          step="0.05"
-          value={speechRate}
-          onChange={(e) => {
-            const rate = parseFloat(e.target.value)
-            setSpeechRate(rate)
-            speech.setRate(rate)
-          }}
-        />
-        <div className="field-row">
-          <span className="field-hint">{t('settings.speedSlow', { n: speechRate.toFixed(2) })}</span>
-          <span className="field-hint">{t('settings.speedFast')}</span>
-        </div>
-
-        <label className="field-label" htmlFor="vol-range">{t('prayer.voiceVolume')}</label>
-        <input
-          id="vol-range"
-          type="range"
-          className="field-range"
-          min="0"
-          max="1"
-          step="0.05"
-          value={volume}
-          onChange={(e) => {
-            const v = parseFloat(e.target.value)
-            setVolume(v)
-            // Apply live so adjusting it mid-prayer is heard immediately.
-            speech.setVolume(v)
-          }}
-        />
-        <div className="field-row">
-          <span className="field-hint">{t('settings.ambientLow')}</span>
-          <span className="field-hint">{t('settings.ambientHigh')}</span>
-        </div>
-
-        <label className="field-label" htmlFor="amb-range">{t('settings.ambientLabel')}</label>
-        <div className="field-hint">{t('settings.ambientHint')}</div>
-        <input
-          id="amb-range"
-          type="range"
-          className="field-range"
-          min="0"
-          max="1"
-          step="0.05"
-          value={ambienceLevel}
-          onChange={(e) => {
-            setAmbienceLevel(parseFloat(e.target.value))
-            // Re-apply to the audio graph now (it reads the store value), so the
-            // slider is heard immediately instead of only on the next play/pause.
-            ambient.setLevel(ambient.level)
-          }}
-        />
-        <div className="field-row">
-          <span className="field-hint">{t('settings.ambientLow')}</span>
-          <span className="field-hint">{t('settings.ambientHigh')}</span>
-        </div>
-
-        <label className="field-label">{t('settings.ambientSound')}</label>
-        <div className="ambient-pick" role="group" aria-label={t('settings.ambientSound')}>
-          {AMBIENT_PRESETS.map((id) => (
-            <button
-              key={id}
-              type="button"
-              className={`ambient-chip${ambientPreset === id ? ' on' : ''}`}
-              onClick={() => {
-                setAmbientPreset(id)
-                ambient.setPreset(id)
-              }}
-              aria-pressed={ambientPreset === id}
-            >
-              {t(`ambience.${id}`)}
-            </button>
-          ))}
-        </div>
+        {/* The sound controls (prayer voice volume, ambient sound volume, speed,
+            ambient bed picker) are shared verbatim with the prayer mini panel so
+            the two surfaces stay identical. */}
+        <SoundControls layout="field" />
 
         <div className="field-divider" />
 

@@ -269,7 +269,11 @@ export class AmbientEngine {
     this.level = Math.max(0, Math.min(1, level))
     if (this.master && this.ctx) {
       const user = useStore.getState().ambienceLevel
-      const target = (0.1 + this.level * 0.14) * (0.2 + 0.8 * user) * this.vol
+      // Boosted ~3.4x: the previous ceiling (0.1 + level*0.14, max ~0.23) left
+      // the bed barely audible even with the ambience slider at 100%. This
+      // reaches ~0.78 during prayer, adjustable with the "Ambient sound volume"
+      // slider (present in both Settings and the prayer mini panel).
+      const target = (0.15 + this.level * 0.7) * (0.15 + 0.85 * user) * this.vol
       this.master.gain.setTargetAtTime(target, this.ctx.currentTime, 0.8)
     }
   }

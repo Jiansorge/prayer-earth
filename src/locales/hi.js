@@ -372,4 +372,7 @@ export default {
   'ambience.forest': 'वन की शांति',
   'ambience.space': 'गहरा अंतरिक्ष',
   'ambience.warm': 'गर्म आवरण',
+  'sound.prayerVoice': 'प्रार्थना आवाज़ आयतन',
+  'sound.ambient': 'पृष्ठभूमि ध्वनि आयतन',
+  'sound.speed': 'गति',
 };

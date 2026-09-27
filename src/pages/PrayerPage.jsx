@@ -8,6 +8,7 @@ import { useT, prayerTitle } from '../i18n.js'
 import { tPrayer, tPhrase } from '../i18n/prayerL10n.js'
 import PrayerStats from '../components/PrayerStats.jsx'
 import Sparkles from '../components/Sparkles.jsx'
+import SoundControls from '../components/SoundControls.jsx'
 import { stopPlayback } from '../playback.js'
 import { toggleMute, applyMute } from '../audio/mute.js'
 import { isAppShell } from '../shared/mobile.js'
@@ -886,33 +887,10 @@ aria-label={t('prayer.prev')}
               </div>
             </div>
           )}
-          <div className="pt-row">
-            <label className="pt-label" htmlFor="pt-volume">{t('prayer.volume')}</label>
-            <input
-              id="pt-volume"
-              type="range"
-              min="0"
-              max="1"
-              step="0.05"
-              value={volume}
-              onChange={(e) => setLiveVolume(parseFloat(e.target.value))}
-            />
-            <span className="pt-val">{Math.round(volume * 100)}%</span>
-          </div>
+          {/* Shared sound controls (identical labels/order/behavior to Settings):
+              prayer voice volume, ambient sound volume, speed, then the bed picker. */}
+          <SoundControls layout="pt" />
           {muted && <div className="pt-muted">🔇 {t('prayer.muted')}</div>}
-          <div className="pt-row">
-            <label className="pt-label" htmlFor="pt-rate">{t('prayer.speed')}</label>
-            <input
-              id="pt-rate"
-              type="range"
-              min="0.6"
-              max="2.0"
-              step="0.05"
-              value={speechRate}
-              onChange={(e) => setLiveRate(parseFloat(e.target.value))}
-            />
-            <span className="pt-val">{speechRate.toFixed(2)}×</span>
-          </div>
           <div className="pt-row">
             <label className="pt-label" htmlFor="pt-loop">{t('prayer.repeat')}</label>
             <button

@@ -272,4 +272,7 @@ export default {
   'ambience.forest': 'هدوء الغابة',
   'ambience.space': 'فضاء عميق',
   'ambience.warm': 'بطانية دافئة',
+  'sound.prayerVoice': 'مستوى صوت الصلاة',
+  'sound.ambient': 'مستوى الصوت المحيطي',
+  'sound.speed': 'السرعة',
 };

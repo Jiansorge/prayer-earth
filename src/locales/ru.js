@@ -267,4 +267,7 @@ export default {
   'ambience.forest': 'Тишина леса',
   'ambience.space': 'Глубокий космос',
   'ambience.warm': 'Тёплый плед',
+  'sound.prayerVoice': 'Громкость голоса молитвы',
+  'sound.ambient': 'Громкость фонового звука',
+  'sound.speed': 'Скорость',
 };

@@ -271,4 +271,7 @@ export default {
   'ambience.forest': 'Silenzio del bosco',
   'ambience.space': 'Spazio profondo',
   'ambience.warm': 'Manto caldo',
+  'sound.prayerVoice': 'Volume della voce della preghiera',
+  'sound.ambient': 'Volume del suono ambientale',
+  'sound.speed': 'Velocità',
 };

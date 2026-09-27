@@ -339,4 +339,7 @@ export default {
   'ambience.forest': 'Katiyagan ng kagubatan',
   'ambience.space': 'Malalim na espasyo',
   'ambience.warm': 'Lambot na kumot',
+  'sound.prayerVoice': 'Lakas ng boses ng panalangin',
+  'sound.ambient': 'Lakas ng tunog na kapaligitan',
+  'sound.speed': 'Bilis',
 };

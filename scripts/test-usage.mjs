@@ -198,7 +198,7 @@ ok(
 )
 ok(
   'settings has a prayer volume slider alongside ambient',
-  settingsOpen && await c.eval(`!!document.querySelector('#vol-range') && !!document.querySelector('#amb-range')`)
+  settingsOpen && await c.eval(`!!document.querySelector('#sc-voice') && !!document.querySelector('#sc-ambient') && !!document.querySelector('#sc-speed')`)
 )
 // Seven selectable ambient beds, persisted and switchable.
 ok(
@@ -313,9 +313,30 @@ ok('tune button present', await c.waitFor(`!!document.querySelector('.ctrl-btn.t
 await c.eval(`document.querySelector('.ctrl-btn.tune').click()`)
 ok('tune panel opens', await c.waitFor(`!!document.querySelector('.prayer-tune')`))
 ok(
-  'tune has volume + speed sliders',
-  (await c.eval(`document.querySelectorAll('.prayer-tune input[type="range"]').length`)) === 2,
+  'tune has prayer voice + ambient + speed sliders',
+  (await c.eval(`document.querySelectorAll('.prayer-tune input[type="range"]').length`)) === 3,
   `sliders=${await c.eval(`document.querySelectorAll('.prayer-tune input[type="range"]').length`)}`
+)
+ok(
+  'tune exposes the ambient bed picker too',
+  (await c.eval(`document.querySelectorAll('.prayer-tune .ambient-chip').length`)) === 7
+)
+// The prayer mini panel and Settings must show the same sound labels, in the
+// same order, so the two control surfaces never drift.
+const tuneLabels = await c.eval(`[...document.querySelectorAll('.prayer-tune .pt-label')].map((e) => e.innerText.trim()).join('|')`)
+const settingsLabels = await c.eval(`(() => {
+  window.__store.getState().setSettingsOpen(true)
+  return new Promise((r) => setTimeout(() => {
+    r([...document.querySelectorAll('.sheet .field-label')].map((e) => e.innerText.trim()).join('|'))
+    window.__store.getState().setSettingsOpen(false)
+  }, 400))
+})()`)
+const tuneCore = tuneLabels.split('|').slice(0, 3)
+const settingsCore = settingsLabels.split('|').filter((l) => tuneCore.includes(l))
+ok(
+  'settings and prayer panel use the same sound labels',
+  tuneCore.length === 3 && tuneCore.every((l) => settingsLabels.includes(l)),
+  `tune=[${tuneLabels}] settings=[${settingsLabels}]`
 )
 ok(
   'volume default 50%',

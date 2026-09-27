@@ -273,4 +273,7 @@ export default {
   'ambience.forest': '林间静谧',
   'ambience.space': '深邃太空',
   'ambience.warm': '温暖音层',
+  'sound.prayerVoice': '祈祷人声音量',
+  'sound.ambient': '环境音音量',
+  'sound.speed': '速度',
 };
