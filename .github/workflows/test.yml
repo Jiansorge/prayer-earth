@@ -137,11 +137,16 @@ jobs:
     needs: [test, usage, android]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Trigger auto-deploy
+        env:
+          # Pass the PAT through the environment, not into the run: script text.
+          DEPLOY_PAT: ${{ secrets.DEPLOY_PAT }}
         run: |
           curl -fsS -X POST \
-            -H "Authorization: Bearer ${{ secrets.DEPLOY_PAT }}" \
+            -H "Authorization: Bearer $DEPLOY_PAT" \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             -d '{"event_type":"deploy"}' \
