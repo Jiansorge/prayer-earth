@@ -1,8 +1,11 @@
-// A soft, endless ambient bed: warm drone, distant wind, and a singing bowl.
+﻿// A soft, endless ambient bed: warm drone, distant wind, and a singing bowl.
 // Built on the Web Audio API so it works offline with no audio files.
 
 import { useStore } from '../store.js'
 import { AMBIENT_PRESETS } from './presets.js'
+
+// Crossfade duration (seconds) for swapping ambient beds.
+const XFADE = 0.85
 
 export class AmbientEngine {
   constructor() {
@@ -15,19 +18,41 @@ export class AmbientEngine {
     this.presetId = 'reiki'
     this.presetStops = []
     this.presetBus = null
+    this.chanBus = null
     this._noise = null
   }
 
+  // Always returns a Promise. (It used to be `async`; when the ambient rewrite
+  // made it a plain function it could return `undefined`, and callers doing
+  // `ambient.ensure().catch()` threw synchronously â€” breaking the nav play
+  // button.) Never rejects: a refused resume just falls through.
   ensure() {
     if (!this.ctx) {
       const AC = window.AudioContext || window.webkitAudioContext
-      if (!AC) return
-      this.ctx = new AC()
-      this.master = this.ctx.createGain()
-      this.master.gain.value = 0
-      this.master.connect(this.ctx.destination)
+      if (!AC) return Promise.resolve()
+      try {
+        this.ctx = new AC()
+        this.master = this.ctx.createGain()
+        this.master.gain.value = 0
+        this.master.connect(this.ctx.destination)
+        // Chant/bell bus: routed straight to the destination (gated only by the
+        // true mute), NOT through the bed fader. Otherwise dragging the ambient
+        // slider to 0 would silence the "soft chant" fallback and the welcome
+        // bell along with the music.
+        this.chanBus = this.ctx.createGain()
+        this.chanBus.gain.value = this.vol
+        this.chanBus.connect(this.ctx.destination)
+      } catch {
+        return Promise.resolve()
+      }
     }
-    if (this.ctx.state === 'suspended') return this.ctx.resume().then(() => {})
+    if (this.ctx.state === 'suspended') {
+      return this.ctx.resume().then(
+        () => {},
+        () => {}
+      )
+    }
+    return Promise.resolve()
   }
 
   // ---- ambient preset synthesis ----
@@ -128,6 +153,12 @@ export class AmbientEngine {
         o.stop(t + 5.2)
       }
       g.connect(bus)
+      // Each strike's nodes are transient: disconnect them once the tail ends,
+      // otherwise every 11s bell leaves a gain + 3 osc + 3 gains attached to
+      // the bus forever.
+      setTimeout(() => {
+        try { g.disconnect() } catch {}
+      }, 5400)
     }
     strike()
     const id = setInterval(strike, every * 1000)
@@ -137,59 +168,72 @@ export class AmbientEngine {
   // The seven beds. `b` is the preset bus (already connected to master).
   _builders() {
     return {
-      // Reiki Drift — the classic warm healing pad: a broad major-9 with slow
+      // Reiki Drift â€” the classic warm healing pad: a broad major-9 with slow
       // shimmer, the closest thing here to soft "reiki" music.
       reiki: (b, s) => {
         this._pad(b, s, { notes: [130.81, 196.0, 261.63, 329.63, 493.88], gain: 0.05, filter: 420, breathe: 0.04 })
         this._pad(b, s, { notes: [392.0], gain: 0.006, filter: 900 })
       },
-      // Ocean Hush — low pad under a slowly breathing band of surf noise.
+      // Ocean Hush â€” low pad under a slowly breathing band of surf noise.
       ocean: (b, s) => {
         this._pad(b, s, { notes: [65.41, 98.0, 130.81], gain: 0.05, filter: 300, breathe: 0.045 })
         this._air(b, s, { gain: 0.02, filter: 'bandpass', freq: 420, q: 0.5, lfo: 0.05, depth: 260 })
       },
-      // Temple Bowl — near-silence under rare, resonant bowl strikes.
+      // Temple Bowl â€” near-silence under rare, resonant bowl strikes.
       temple: (b, s) => {
         this._pad(b, s, { notes: [65.41, 98.0], gain: 0.035, filter: 240, breathe: 0.03 })
         this._bells(b, s, { root: 196, gain: 0.05, every: 11 })
       },
-      // Night Rain — a soft high band of rain over a low rumble.
+      // Night Rain â€” a soft high band of rain over a low rumble.
       rain: (b, s) => {
         this._pad(b, s, { notes: [55.0, 82.41], gain: 0.04, filter: 200, breathe: 0.04 })
         this._air(b, s, { gain: 0.014, filter: 'highpass', freq: 1400, q: 0.4, lfo: 0.2, depth: 400 })
       },
-      // Forest Stillness — airy leaves and a distant mid pad; very quiet.
+      // Forest Stillness â€” airy leaves and a distant mid pad; very quiet.
       forest: (b, s) => {
         this._pad(b, s, { notes: [98.0, 146.83, 196.0], gain: 0.035, filter: 380, breathe: 0.05 })
         this._air(b, s, { gain: 0.01, filter: 'bandpass', freq: 900, q: 0.8, lfo: 0.08, depth: 300 })
       },
-      // Deep Space — a very low, wide detuned drone with a high shimmer.
+      // Deep Space â€” a very low, wide detuned drone with a high shimmer.
       space: (b, s) => {
         this._pad(b, s, { notes: [55.0, 82.41, 110.0], gain: 0.05, filter: 260, detune: 14, breathe: 0.03 })
         this._pad(b, s, { notes: [880.0, 1174.66], gain: 0.004, filter: 1600, breathe: 0.02 })
       },
-      // Warming Pad — a close, mid-low chord, like a gentle heater.
+      // Warming Pad â€” a close, mid-low chord, like a gentle heater.
       warm: (b, s) => {
         this._pad(b, s, { notes: [98.0, 116.54, 146.83, 196.0], gain: 0.045, filter: 460, breathe: 0.06 })
       }
     }
   }
 
-  // Tear down the current preset's nodes (switching or stopping).
+  // Tear down the current preset's nodes (switching or stopping). Fades the old
+  // bus all the way to zero over `XFADE`, then stops every source AND
+  // disconnects the bus itself, so repeated switching can't leave a stack of
+  // live GainNodes summing into master.
   _teardownPreset() {
-    if (this.presetBus && this.ctx) {
-      this.presetBus.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.6)
-    }
+    const bus = this.presetBus
     const stops = this.presetStops || []
     this.presetStops = []
-    // Let the fade play out before physically stopping, so switching is smooth.
+    this.presetBus = null
+    if (!this.ctx) return
+    const t = this.ctx.currentTime
+    if (bus) {
+      // Cancel any scheduled fade and ramp linearly to silence, so the source
+      // cut below happens at zero (a setTargetAtTime tail would leave ~20%
+      // audible and click when the oscillators stopped).
+      const g = bus.gain
+      g.cancelScheduledValues(t)
+      g.setValueAtTime(g.value, t)
+      g.linearRampToValueAtTime(0.0001, t + XFADE)
+    }
     setTimeout(() => {
       for (const n of stops) {
         try { n.stop ? n.stop() : null } catch {}
         try { n.disconnect && n.disconnect() } catch {}
       }
-    }, 900)
-    this.presetBus = null
+      // The bus is a live node wired to master until it is disconnected.
+      try { bus && bus.disconnect() } catch {}
+    }, XFADE * 1000 + 60)
   }
 
   buildPreset(id) {
@@ -199,7 +243,10 @@ export class AmbientEngine {
     const build = builders[id] || builders.reiki
     const ctx = this.ctx
     const bus = ctx.createGain()
-    bus.gain.value = 1
+    // Ramp the new bed in so switching is a crossfade, not a level step.
+    const t = ctx.currentTime
+    bus.gain.setValueAtTime(0.0001, t)
+    bus.gain.linearRampToValueAtTime(1, t + XFADE)
     bus.connect(this.master)
     this.presetBus = bus
     this.presetStops = []
@@ -232,9 +279,13 @@ export class AmbientEngine {
   setVolume(volume) {
     this.vol = Math.max(0, Math.min(1, volume))
     this.setLevel(this.level)
+    // Keep the chant/bell bus in step with the true mute.
+    if (this.chanBus && this.ctx) {
+      this.chanBus.gain.setTargetAtTime(this.vol, this.ctx.currentTime, 0.05)
+    }
   }
 
-  // A soft, low "ohm" — a vocal-like swell used as a chant cadence when the
+  // A soft, low "ohm" â€” a vocal-like swell used as a chant cadence when the
   // device has no speech voice.
   hum(intensity = 0.3) {
     if (!this.ctx || !this.master) return
@@ -267,7 +318,7 @@ export class AmbientEngine {
       o.stop(t + 2.2)
     })
     lp.connect(out)
-    out.connect(this.master)
+    out.connect(this.chanBus || this.master)
   }
 
   ring(intensity = 1) {
@@ -299,7 +350,7 @@ export class AmbientEngine {
       o.start(t)
       o.stop(t + dur + 0.1)
     })
-    out.connect(this.master)
+    out.connect(this.chanBus || this.master)
   }
 
   async start() {

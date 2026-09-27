@@ -240,11 +240,13 @@ export default function App() {
             else if (st.settingsOpen) st.setSettingsOpen(false)
             else if (st.view !== 'home') st.go('home')
             else {
-              // Nothing left to unwind: hand the gesture back to Android so
-              // it exits the app (Capacitor's default).
+              // Nothing left to unwind. If a first-run dialog (Onboarding) is
+              // up, do NOT exit — pressing back on it used to close the whole
+              // app. Let the dialog's own Skip/Close handle it.
+              if (document.querySelector('.onboard-backdrop')) return
+              // Hand the gesture back to Android so it exits (Capacitor default).
               try {
                 const { App: CapApp } = window.Capacitor?.Plugins || {}
-                // @capacitor/app exposes exitApp; fall back to history back.
                 if (CapApp?.exitApp) CapApp.exitApp()
                 else if (CapApp?.minimizeApp) CapApp.minimizeApp()
                 else window.history.back()

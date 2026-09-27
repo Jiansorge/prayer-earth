@@ -523,7 +523,11 @@ const countedRef = useRef(false)
   const setLiveVolume = (v) => {
     setVolume(v)
     speech.setVolume(v)
-    ambient.setVolume(v)
+    // Do NOT route the voice fader into the ambient engine. The bed's level is
+    // driven by the ambience slider alone; funnelling the voice volume into
+    // ambient.vol meant dragging the voice to 0 permanently silenced the bed
+    // (and the Settings voice slider couldn't undo it, since it only calls
+    // speech.setVolume). mute.js still uses ambient.setVolume as a true mute.
   }
 
   const setLiveRate = (r) => {

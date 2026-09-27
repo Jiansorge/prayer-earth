@@ -16,7 +16,7 @@ const getSpeech = () => {
 // short timeout; the ambience graph resumes in the background if it can.
 const primeAudio = () =>
   Promise.race([
-    ambient.ensure().catch(() => {}),
+    Promise.resolve(ambient.ensure()).catch(() => {}),
     new Promise((r) => setTimeout(r, 300))
   ])
 

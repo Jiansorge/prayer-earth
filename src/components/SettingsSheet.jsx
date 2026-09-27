@@ -103,8 +103,20 @@ export default function SettingsSheet() {
     }
   }, [])
 
+  // Soften the bed while the sheet is open, then restore the prayer level on
+  // close. Without the restore, opening Settings mid-prayer left the bed at the
+  // idle 0.4 for the rest of the prayer (and the ambience slider, which
+  // re-applies ambient.level, could no longer climb back up).
+  const prevLevelRef = useRef(null)
   useEffect(() => {
-    if (open && ambient.ctx) ambient.setLevel(0.4)
+    if (!ambient.ctx) return
+    if (open) {
+      prevLevelRef.current = ambient.level
+      ambient.setLevel(0.4)
+    } else if (prevLevelRef.current != null) {
+      ambient.setLevel(prevLevelRef.current)
+      prevLevelRef.current = null
+    }
   }, [open])
 
   useEffect(() => {
@@ -254,10 +266,11 @@ export default function SettingsSheet() {
         </div>
 
         <label className="field-label">{t('settings.ambientSound')}</label>
-        <div className="ambient-pick">
+        <div className="ambient-pick" role="group" aria-label={t('settings.ambientSound')}>
           {AMBIENT_PRESETS.map((id) => (
             <button
               key={id}
+              type="button"
               className={`ambient-chip${ambientPreset === id ? ' on' : ''}`}
               onClick={() => {
                 setAmbientPreset(id)

@@ -205,6 +205,13 @@ ok(
   'settings offers 7 ambient presets',
   settingsOpen && (await c.eval(`document.querySelectorAll('.ambient-chip').length`)) === 7
 )
+// Regression: ambient.ensure() must ALWAYS return a thenable. When it was a
+// plain function returning undefined, playback.js's `ambient.ensure().catch()`
+// threw and broke the nav play button. Lock the contract.
+ok(
+  'ambient.ensure() always returns a promise',
+  await c.eval(`!!window.__ambient && typeof window.__ambient.ensure().then === 'function'`)
+)
 const presetPick = settingsOpen && await c.eval(`(() => {
   const chip = [...document.querySelectorAll('.ambient-chip')].find((c) => !c.classList.contains('on'))
   if (!chip) return null

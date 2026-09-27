@@ -269,6 +269,13 @@ class SpeechEngine {
     }
     this.cloudNodes = []
     this.cloudGain = null
+    // Also stop the shared <audio> element. If a recorded phrase was still
+    // playing (a slow connect let the advance timer move on early) and the next
+    // phrase takes the Web-Audio path, the element would keep playing underneath
+    // — two voices at once.
+    if (this.cloudAudio) {
+      try { this.cloudAudio.pause() } catch {}
+    }
   }
 
   // One shared, hidden <audio> element attached to the document. Attached media
