@@ -193,7 +193,7 @@ const testAudio = async () => {
   const audio = await cdp.waitFor(`window.__speech && (window.__speech.cloudAudio || window.__speech.cloudSource)`, 12000)
   const state = await cdp.evaluate(`(() => { const speech = window.__speech; const element = speech?.cloudAudio; return { reverb: speech?.reverbWetGain, mode: speech?.job?.mode, element: !!element, paused: element?.paused ?? null, rate: element?.playbackRate ?? null, volume: element?.volume ?? null } })()`)
   check('Android audio route starts', !!audio, JSON.stringify(state))
-  check('reverb configuration reaches the APK', state.reverb === 0.15, `gain=${state.reverb}`)
+  check('reverb configuration reaches the APK', state.reverb === 0.2, `gain=${state.reverb}`)
   if (state.element) check('audio element is not paused', state.paused === false, JSON.stringify(state))
   const exceptions = cdp.events.filter((event) => event.method === 'Runtime.exceptionThrown')
   const exceptionText = exceptions.map((event) => event.params?.exceptionDetails?.exception?.description || event.params?.exceptionDetails?.text || 'unknown').join(' | ')

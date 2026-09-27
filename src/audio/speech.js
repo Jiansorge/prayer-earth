@@ -37,7 +37,7 @@ function xhrGetText(url) {
 
 // Sentinel "voice" in the settings picker meaning: no spoken voice, chant only.
 export const CHANT_VOICE = '__chant__'
-const REVERB_WET_GAIN = 0.15
+const REVERB_WET_GAIN = 0.2
 
 // Flatten sacred transliterations into something a fallback English voice can
 // read sensibly: strip diacritics, map the special consonants used in these

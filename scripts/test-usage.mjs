@@ -768,7 +768,7 @@ ok(
   JSON.stringify(pitchSafePlayback)
 )
 const reverbMix = await c.eval(`window.__speech?.reverbWetGain`)
-ok('reverb mix is 15%', reverbMix === 0.15, `gain=${reverbMix}`)
+ok('reverb mix is 20%', reverbMix === 0.2, `gain=${reverbMix}`)
 await c.eval(`document.querySelector('.ctrl-btn.stop')?.click()`)
 
 await c.eval(`document.querySelector('.ctrl-btn.stop')?.click()`)

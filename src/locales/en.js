@@ -17,7 +17,7 @@ export default {
     'Your {streak}-day flame is waiting for you today. A few quiet moments will keep it alive.',
   'home.pray': 'Pray →',
   'home.prayStreak': 'Pray to keep your streak',
-  'home.hint': 'One Earth. One breath. Prayers in any language count the same — and every prayer sends light through the multiverse.',
+  'home.hint': 'One Earth. One breath. Every prayer sends light through the multiverse.',
   'home.favorites': 'Your favorites',
   'home.favoritesHint': 'Tap ☆ on any prayer to keep it here — your light, always one tap away.',
   'meter.prayingNow': 'Praying right now',
