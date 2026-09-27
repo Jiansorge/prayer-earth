@@ -11,6 +11,7 @@ const CORE = [
   '/',
   '/index.html',
   '/analytics-loader.js',
+  '/boot-failsafe.js',
   '/manifest.webmanifest',
   '/icons/icon-prayer.webp',
   '/icons/icon-prayer-64.webp',
