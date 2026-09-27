@@ -331,4 +331,12 @@ export default {
   'ptitle.enough': 'Sapat Na',
   'ptitle.courage-then-gentleness': 'Tapang, Pagkatapos ay Kahinahunan',
   'ptitle.for-the-grieving': 'Para sa mga Nagluluksa',
+  'settings.ambientSound': 'Tunog na kapaligitan',
+  'ambience.reiki': 'Dahoy ng Reiki',
+  'ambience.ocean': 'Bulong ng dagat',
+  'ambience.temple': 'Bene ng templo',
+  'ambience.rain': 'Ulan sa gabi',
+  'ambience.forest': 'Katiyagan ng kagubatan',
+  'ambience.space': 'Malalim na espasyo',
+  'ambience.warm': 'Lambot na kumot',
 };

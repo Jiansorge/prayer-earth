@@ -277,4 +277,12 @@ export default {
   'ptitle.enough': '十分に',
   'ptitle.courage-then-gentleness': '勇気、そして優しさ',
   'ptitle.for-the-grieving': '悲しむ人々のために',
+  'settings.ambientSound': '環境音',
+  'ambience.reiki': 'レイキ・ドリフト',
+  'ambience.ocean': '海のささやき',
+  'ambience.temple': '寺院の鐘',
+  'ambience.rain': '夜の雨',
+  'ambience.forest': '森の静けさ',
+  'ambience.space': '遠い宇宙',
+  'ambience.warm': '温かい響き',
 };

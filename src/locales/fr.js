@@ -356,4 +356,12 @@ export default {
   'ptitle.enough': 'Assez',
   'ptitle.courage-then-gentleness': 'Le courage, puis la douceur',
   'ptitle.for-the-grieving': 'Pour ceux qui pleurent',
+  'settings.ambientSound': 'Son ambiant',
+  'ambience.reiki': 'Dérive Reiki',
+  'ambience.ocean': 'Murmure de l\'océan',
+  'ambience.temple': 'Bol du temple',
+  'ambience.rain': 'Pluie nocturne',
+  'ambience.forest': 'Silence de forêt',
+  'ambience.space': 'Espace profond',
+  'ambience.warm': 'Nappe chaleureuse',
 };

@@ -264,4 +264,12 @@ export default {
   'ptitle.enough': 'كفى',
   'ptitle.courage-then-gentleness': 'شجاعة، ثم لطف',
   'ptitle.for-the-grieving': 'لمن يبكون',
+  'settings.ambientSound': 'صوت محيطي',
+  'ambience.reiki': 'انجراف ريكي',
+  'ambience.ocean': 'همس المحيط',
+  'ambience.temple': 'جرس المعبد',
+  'ambience.rain': 'مطر الليل',
+  'ambience.forest': 'هدوء الغابة',
+  'ambience.space': 'فضاء عميق',
+  'ambience.warm': 'بطانية دافئة',
 };

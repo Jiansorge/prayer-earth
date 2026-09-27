@@ -2072,6 +2072,38 @@ html[dir='rtl'] .chooser-arrow.right {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5), 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 
+.ambient-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.ambient-chip {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink-dim);
+  font-family: var(--sans);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+}
+
+.ambient-chip:hover,
+.ambient-chip:active {
+  color: var(--gold-soft);
+  border-color: rgba(232, 196, 122, 0.4);
+}
+
+.ambient-chip.on {
+  background: rgba(232, 196, 122, 0.16);
+  border-color: rgba(232, 196, 122, 0.55);
+  color: var(--gold-soft);
+  font-weight: 600;
+}
+
 .theme-pick {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

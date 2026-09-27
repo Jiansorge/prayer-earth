@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { prayerBaseTotals, spiritBaseTotals } from './data/totals.js'
 import { mergeStats } from './shared/stats.js'
+import { AMBIENT_PRESETS, DEFAULT_AMBIENT_PRESET } from './audio/presets.js'
 
 // Cheap shallow equality for objects/arrays — skips Zustand subscriber
 // notifications when the values haven't actually changed. Used on the
@@ -195,6 +196,7 @@ export const useStore = create(
       prayerVoices: {},
       speechRate: 0.85,
       ambienceLevel: 0.7,
+  ambientPreset: DEFAULT_AMBIENT_PRESET,
       volume: 0.5,
       muted: false,
       lastVolume: 0.5,
@@ -281,6 +283,7 @@ export const useStore = create(
       isFavorite: (prayerId) => get().favorites.includes(prayerId),
       setSpeechRate: (speechRate) => set({ speechRate }),
       setAmbienceLevel: (ambienceLevel) => set({ ambienceLevel }),
+  setAmbientPreset: (ambientPreset) => set({ ambientPreset }),
       setVolume: (volume) => set({ volume }),
       setLocale: (locale) => set({ locale }),
       bumpLocaleReady: () => set((s) => ({ localeReady: s.localeReady + 1 })),
@@ -529,10 +532,13 @@ export const useStore = create(
           streak: safeCounter(saved.streak),
           bestStreak: safeCounter(saved.bestStreak),
           speechRate: Math.max(0.6, Math.min(2, Number(saved.speechRate) || current.speechRate)),
-          ambienceLevel:
-            saved.ambienceLevel == null
-              ? current.ambienceLevel
-              : Math.max(0, Math.min(1, Number(saved.ambienceLevel) || 0)),
+    ambienceLevel:
+      saved.ambienceLevel == null
+        ? current.ambienceLevel
+        : Math.max(0, Math.min(1, Number(saved.ambienceLevel) || 0)),
+    ambientPreset: AMBIENT_PRESETS.includes(saved.ambientPreset)
+      ? saved.ambientPreset
+      : current.ambientPreset,
           volume:
             saved.volume == null ? current.volume : Math.max(0, Math.min(1, Number(saved.volume) || 0)),
           muted: !!saved.muted
@@ -549,6 +555,7 @@ export const useStore = create(
         favorites: s.favorites,
         speechRate: s.speechRate,
         ambienceLevel: s.ambienceLevel,
+    ambientPreset: s.ambientPreset,
         volume: s.volume,
         muted: s.muted,
         lastVolume: s.lastVolume,

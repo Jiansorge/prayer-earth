@@ -359,4 +359,12 @@ export default {
   'ptitle.enough': 'Đủ rồi',
   'ptitle.courage-then-gentleness': 'Dũng cảm, rồi dịu dàng',
   'ptitle.for-the-grieving': 'Cho những người đau buồn',
+  'settings.ambientSound': 'Âm thanh',
+  'ambience.reiki': 'Trôi Reiki',
+  'ambience.ocean': 'Thì thầm biển',
+  'ambience.temple': 'Chuông chùa',
+  'ambience.rain': 'Mưa đêm',
+  'ambience.forest': 'Tĩnh lặng rừng',
+  'ambience.space': 'Không gian sâu',
+  'ambience.warm': 'Lớp ấm',
 };

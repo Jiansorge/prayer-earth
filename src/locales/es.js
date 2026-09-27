@@ -358,4 +358,12 @@ export default {
   'ptitle.enough': 'Suficiente',
   'ptitle.courage-then-gentleness': 'Coraje, luego dulzura',
   'ptitle.for-the-grieving': 'Para los que lloran',
+  'settings.ambientSound': 'Sonido ambiente',
+  'ambience.reiki': 'Deriva Reiki',
+  'ambience.ocean': 'Susurro del océano',
+  'ambience.temple': 'Cuenco del templo',
+  'ambience.rain': 'Lluvia nocturna',
+  'ambience.forest': 'Quietud del bosque',
+  'ambience.space': 'Espacio profundo',
+  'ambience.warm': 'Manto cálido',
 };

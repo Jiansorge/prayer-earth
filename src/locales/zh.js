@@ -265,4 +265,12 @@ export default {
   'ptitle.enough': '足够了',
   'ptitle.courage-then-gentleness': '先有勇气，然后温柔',
   'ptitle.for-the-grieving': '致悲伤者',
+  'settings.ambientSound': '环境音',
+  'ambience.reiki': '灵气流转',
+  'ambience.ocean': '海洋低语',
+  'ambience.temple': '寺院钟声',
+  'ambience.rain': '夜雨',
+  'ambience.forest': '林间静谧',
+  'ambience.space': '深邃太空',
+  'ambience.warm': '温暖音层',
 };

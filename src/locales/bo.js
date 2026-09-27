@@ -360,4 +360,12 @@ export default {
   'ptitle.enough': 'ཆོག་པ།',
   'ptitle.courage-then-gentleness': 'གདེང་ཚོད། དེ་ནས་འཇམ་པོ།',
   'ptitle.for-the-grieving': 'སྡུག་བསྔལ་ཅན་ལ།',
+  'settings.ambientSound': 'ཉེར་བར་སྒྲ།',
+  'ambience.reiki': 'རེ་ཁི་འཁྱིལ།',
+  'ambience.ocean': 'མཚོ་གྱི་སྐུལ།',
+  'ambience.temple': 'དགོན་པའི་དྲིལ།',
+  'ambience.rain': 'མཚར་གནམ་པ།',
+  'ambience.forest': 'ནགས་ཚལ་གཤེགས།',
+  'ambience.space': 'མཐོ་གྱི་ཁམ་འཁོར།',
+  'ambience.warm': 'བདེ་ཐང་གོང་ཁ་ཤུགས།',
 };

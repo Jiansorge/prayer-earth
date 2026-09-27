@@ -264,4 +264,12 @@ export default {
   'ptitle.enough': '충분하다',
   'ptitle.courage-then-gentleness': '용기, 그리고 부드러움',
   'ptitle.for-the-grieving': '슬픔에 잠긴 이들을 위해',
+  'settings.ambientSound': '주변 소음',
+  'ambience.reiki': '레이키 드리프트',
+  'ambience.ocean': '바다의 속삭임',
+  'ambience.temple': '사원 종소리',
+  'ambience.rain': '밤의 비',
+  'ambience.forest': '숲의 고요',
+  'ambience.space': '깊은 우주',
+  'ambience.warm': '따뜻한 이불',
 };

@@ -327,4 +327,12 @@ export default {
   'settings.donateLabel': 'Support Joining Palms',
   'settings.donateHint': 'Every contribution keeps this free, private, and ad-free. No account or email needed.',
   'settings.donateButton': 'Support Joining Palms',
+  'settings.ambientSound': 'Ambient sound',
+  'ambience.reiki': 'Reiki Drift',
+  'ambience.ocean': 'Ocean Hush',
+  'ambience.temple': 'Temple Bowl',
+  'ambience.rain': 'Night Rain',
+  'ambience.forest': 'Forest Stillness',
+  'ambience.space': 'Deep Space',
+  'ambience.warm': 'Warming Pad',
 };

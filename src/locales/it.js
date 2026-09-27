@@ -263,4 +263,12 @@ export default {
   'ptitle.enough': 'Basta',
   'ptitle.courage-then-gentleness': 'Coraggio, poi dolcezza',
   'ptitle.for-the-grieving': 'Per coloro che piangono',
+  'settings.ambientSound': 'Suono ambientale',
+  'ambience.reiki': 'Deriva Reiki',
+  'ambience.ocean': 'Sussurro dell\'oceano',
+  'ambience.temple': 'Campana del tempio',
+  'ambience.rain': 'Pioggia notturna',
+  'ambience.forest': 'Silenzio del bosco',
+  'ambience.space': 'Spazio profondo',
+  'ambience.warm': 'Manto caldo',
 };

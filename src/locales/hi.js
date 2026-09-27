@@ -364,4 +364,12 @@ export default {
   'ptitle.enough': 'बहुत हो गया',
   'ptitle.courage-then-gentleness': 'साहस, फिर करुणा',
   'ptitle.for-the-grieving': 'शोकाकुलों के लिए',
+  'settings.ambientSound': 'पृष्ठभूमि ध्वनि',
+  'ambience.reiki': 'रेकी ड्रिफ़्ट',
+  'ambience.ocean': 'समुद्र की फुसफुसाहट',
+  'ambience.temple': 'मंदिर की घंटी',
+  'ambience.rain': 'रात का वर्षा',
+  'ambience.forest': 'वन की शांति',
+  'ambience.space': 'गहरा अंतरिक्ष',
+  'ambience.warm': 'गर्म आवरण',
 };

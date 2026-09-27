@@ -2,6 +2,7 @@
 import { useStore } from '../store.js'
 import { speech, CHANT_VOICE } from '../audio/speech.js'
 import { ambient } from '../audio/ambience.js'
+import { AMBIENT_PRESETS } from '../audio/presets.js'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
 import { useT, LOCALES, prayerTitle } from '../i18n.js'
 import { sanitizeName } from '../shared/profanity.js'
@@ -40,6 +41,8 @@ export default function SettingsSheet() {
   const setSpeechRate = useStore((s) => s.setSpeechRate)
   const ambienceLevel = useStore((s) => s.ambienceLevel)
   const setAmbienceLevel = useStore((s) => s.setAmbienceLevel)
+  const ambientPreset = useStore((s) => s.ambientPreset)
+  const setAmbientPreset = useStore((s) => s.setAmbientPreset)
   const volume = useStore((s) => s.volume)
   const setVolume = useStore((s) => s.setVolume)
   const locale = useStore((s) => s.locale)
@@ -248,6 +251,23 @@ export default function SettingsSheet() {
         <div className="field-row">
           <span className="field-hint">{t('settings.ambientLow')}</span>
           <span className="field-hint">{t('settings.ambientHigh')}</span>
+        </div>
+
+        <label className="field-label">{t('settings.ambientSound')}</label>
+        <div className="ambient-pick">
+          {AMBIENT_PRESETS.map((id) => (
+            <button
+              key={id}
+              className={`ambient-chip${ambientPreset === id ? ' on' : ''}`}
+              onClick={() => {
+                setAmbientPreset(id)
+                ambient.setPreset(id)
+              }}
+              aria-pressed={ambientPreset === id}
+            >
+              {t(`ambience.${id}`)}
+            </button>
+          ))}
         </div>
 
         <div className="field-divider" />

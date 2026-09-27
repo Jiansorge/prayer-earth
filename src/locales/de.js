@@ -356,4 +356,12 @@ export default {
   'ptitle.enough': 'Genug',
   'ptitle.courage-then-gentleness': 'Mut, dann Sanftmut',
   'ptitle.for-the-grieving': 'Für die Trauernden',
+  'settings.ambientSound': 'Umgebungsgeräusch',
+  'ambience.reiki': 'Reiki-Drift',
+  'ambience.ocean': 'Ozeanflüstern',
+  'ambience.temple': 'Tempelglocke',
+  'ambience.rain': 'Nachtregen',
+  'ambience.forest': 'Waldstille',
+  'ambience.space': 'Tiefer Raum',
+  'ambience.warm': 'Warme Klangfläche',
 };

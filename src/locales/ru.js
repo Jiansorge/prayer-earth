@@ -259,4 +259,12 @@ export default {
   'ptitle.enough': 'Достаточно',
   'ptitle.courage-then-gentleness': 'Мужество, а затем мягкость',
   'ptitle.for-the-grieving': 'Для скорбящих',
+  'settings.ambientSound': 'Фоновый звук',
+  'ambience.reiki': 'Дрейф Рейки',
+  'ambience.ocean': 'Шёпот океана',
+  'ambience.temple': 'Колокол храма',
+  'ambience.rain': 'Ночной дождь',
+  'ambience.forest': 'Тишина леса',
+  'ambience.space': 'Глубокий космос',
+  'ambience.warm': 'Тёплый плед',
 };

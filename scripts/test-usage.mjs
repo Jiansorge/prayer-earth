@@ -200,6 +200,26 @@ ok(
   'settings has a prayer volume slider alongside ambient',
   settingsOpen && await c.eval(`!!document.querySelector('#vol-range') && !!document.querySelector('#amb-range')`)
 )
+// Seven selectable ambient beds, persisted and switchable.
+ok(
+  'settings offers 7 ambient presets',
+  settingsOpen && (await c.eval(`document.querySelectorAll('.ambient-chip').length`)) === 7
+)
+const presetPick = settingsOpen && await c.eval(`(() => {
+  const chip = [...document.querySelectorAll('.ambient-chip')].find((c) => !c.classList.contains('on'))
+  if (!chip) return null
+  chip.click()
+  return { stored: window.__store.getState().ambientPreset }
+})()`)
+ok(
+  'selecting an ambient preset updates the store',
+  presetPick && presetPick.stored === 'ocean',
+  JSON.stringify(presetPick)
+)
+ok(
+  'the chosen ambient preset is marked active',
+  settingsOpen && await c.waitFor(`[...document.querySelectorAll('.ambient-chip')].filter((c) => c.classList.contains('on')).length === 1`)
+)
 // Back from Privacy/Terms must return to the Settings sheet it was opened
 // from, not the home screen.
 const legalBack = settingsOpen && await c.eval(`(() => {
