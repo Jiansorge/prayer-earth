@@ -102,6 +102,7 @@ export default {
   'prayer.tuneLabel': 'Tune',
   'prayer.tuneClose': 'Close',
   'prayer.volume': 'Volume',
+  'prayer.voiceVolume': 'Prayer voice volume',
   'prayer.muted': 'Muted',
   'prayer.speed': 'Speed',
   'prayer.voice': 'Voice',

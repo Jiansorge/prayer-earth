@@ -75,6 +75,7 @@ export default {
   'prayer.tune': 'Настроить громкость и скорость', 'prayer.tuneLabel': 'Настроить',
   'prayer.tuneClose': 'Закрыть',
   'prayer.volume': 'Громкость',
+  'prayer.voiceVolume': 'Громкость голоса',
   'prayer.muted': 'Без звука', 'prayer.speed': 'Скорость',
   'prayer.prayingNowRest': 'молятся этой молитвой сейчас',
   'prayer.across': '· {n} в {name}',

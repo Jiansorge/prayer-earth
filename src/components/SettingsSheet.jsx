@@ -207,24 +207,7 @@ export default function SettingsSheet() {
           <span className="field-hint">{t('settings.speedFast')}</span>
         </div>
 
-        <label className="field-label" htmlFor="amb-range">{t('settings.ambientLabel')}</label>
-        <div className="field-hint">{t('settings.ambientHint')}</div>
-        <input
-          id="amb-range"
-          type="range"
-          className="field-range"
-          min="0"
-          max="1"
-          step="0.05"
-          value={ambienceLevel}
-          onChange={(e) => setAmbienceLevel(parseFloat(e.target.value))}
-        />
-        <div className="field-row">
-          <span className="field-hint">{t('settings.ambientLow')}</span>
-          <span className="field-hint">{t('settings.ambientHigh')}</span>
-        </div>
-
-        <label className="field-label" htmlFor="vol-range">{t('prayer.volume')}</label>
+        <label className="field-label" htmlFor="vol-range">{t('prayer.voiceVolume')}</label>
         <input
           id="vol-range"
           type="range"
@@ -239,6 +222,23 @@ export default function SettingsSheet() {
             // Apply live so adjusting it mid-prayer is heard immediately.
             speech.setVolume(v)
           }}
+        />
+        <div className="field-row">
+          <span className="field-hint">{t('settings.ambientLow')}</span>
+          <span className="field-hint">{t('settings.ambientHigh')}</span>
+        </div>
+
+        <label className="field-label" htmlFor="amb-range">{t('settings.ambientLabel')}</label>
+        <div className="field-hint">{t('settings.ambientHint')}</div>
+        <input
+          id="amb-range"
+          type="range"
+          className="field-range"
+          min="0"
+          max="1"
+          step="0.05"
+          value={ambienceLevel}
+          onChange={(e) => setAmbienceLevel(parseFloat(e.target.value))}
         />
         <div className="field-row">
           <span className="field-hint">{t('settings.ambientLow')}</span>

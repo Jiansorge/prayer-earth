@@ -100,6 +100,7 @@ export default {
   'prayer.tuneLabel': 'समायोजन',
   'prayer.tuneClose': 'बंद करें',
   'prayer.volume': 'ध्वनि',
+  'prayer.voiceVolume': 'प्रार्थना आवाज़ स्तर',
   'prayer.muted': 'मूक',
   'prayer.speed': 'गति',
   'prayer.prayingNowRest': 'अभी यह प्रार्थना कर रहे हैं',

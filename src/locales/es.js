@@ -100,6 +100,7 @@ export default {
   'prayer.tuneLabel': 'Afinar',
   'prayer.tuneClose': 'Cerrar',
   'prayer.volume': 'Volumen',
+  'prayer.voiceVolume': 'Volumen de la voz',
   'prayer.muted': 'Silenciado',
   'prayer.speed': 'Velocidad',
   'prayer.prayingNowRest': 'rezando esta oración ahora',

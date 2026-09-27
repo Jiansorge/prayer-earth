@@ -75,6 +75,7 @@ export default {
   'prayer.tune': 'ضبط الصوت والسرعة', 'prayer.tuneLabel': 'ضبط',
   'prayer.tuneClose': 'إغلاق',
   'prayer.volume': 'الصوت',
+  'prayer.voiceVolume': 'مستوى صوت الصلاة',
   'prayer.muted': 'كتم الصوت', 'prayer.speed': 'السرعة',
   'prayer.prayingNowRest': 'يصلّون هذه الصلاة الآن',
   'prayer.across': '· {n} في {name}',

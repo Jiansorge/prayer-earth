@@ -75,6 +75,7 @@ export default {
   'prayer.tune': '调节音量与速度', 'prayer.tuneLabel': '调节',
   'prayer.tuneClose': '关闭',
   'prayer.volume': '音量',
+  'prayer.voiceVolume': '语音音量',
   'prayer.muted': 'ミュート',
   'prayer.muted': 'å·²é™éŸ³', 'prayer.speed': '速度',
   'prayer.prayingNowRest': '此刻正在祈祷这段祷文',

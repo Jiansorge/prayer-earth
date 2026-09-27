@@ -75,6 +75,7 @@ export default {
   'prayer.tune': '소리와 속도 조절', 'prayer.tuneLabel': '조절',
   'prayer.tuneClose': '닫기',
   'prayer.volume': '소리',
+  'prayer.voiceVolume': '기도 음량',
   'prayer.muted': '음소거', 'prayer.speed': '속도',
   'prayer.prayingNowRest': '지금 이 기도를 하고 있어요',
   'prayer.across': '· {name}에서 {n}명',

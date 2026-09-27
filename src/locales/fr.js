@@ -101,6 +101,7 @@ export default {
   'prayer.tuneLabel': 'Réglage',
   'prayer.tuneClose': 'Fermer',
   'prayer.volume': 'Volume',
+  'prayer.voiceVolume': 'Volume de la voix',
   'prayer.speed': 'Vitesse',
   'prayer.prayingNowRest': 'prient cette prière maintenant',
   'prayer.across': '· {n} chez {name}',

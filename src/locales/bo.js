@@ -103,6 +103,7 @@ export default {
   'prayer.tuneLabel': 'སྒྲ་བསྙམས།',
   'prayer.tuneClose': 'ཁེ་རུམ།',
   'prayer.volume': 'སྒྲ་ཚད།',
+  'prayer.voiceVolume': 'སྐད་ཆའི་སྒྲ་ཚད།',
   'prayer.muted': 'སྒྲ་གཅོད་བྱས།',
   'prayer.speed': 'མྱུར་ཚད།',
   'prayer.voice': 'སྐད།',

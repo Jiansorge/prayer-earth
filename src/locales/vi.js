@@ -105,6 +105,7 @@ export default {
   'prayer.tuneLabel': 'Điều chỉnh',
   'prayer.tuneClose': 'Đóng',
   'prayer.volume': 'Âm lượng',
+  'prayer.voiceVolume': 'Âm lượng giọng nói',
   'prayer.muted': 'Đã tắt tiếng',
   'prayer.speed': 'Tốc độ',
   'prayer.voice': 'Giọng đọc',

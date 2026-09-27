@@ -102,6 +102,7 @@ export default {
   'prayer.tuneLabel': 'Tune',
   'prayer.tuneClose': 'Isara',
   'prayer.volume': 'Volume',
+  'prayer.voiceVolume': 'Lakas ng boses',
   'prayer.muted': 'Naka-mute',
   'prayer.speed': 'Bilis',
   'prayer.voice': 'Boses',

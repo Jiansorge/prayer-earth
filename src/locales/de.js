@@ -100,6 +100,7 @@ export default {
   'prayer.tuneLabel': 'Abstimmen',
   'prayer.tuneClose': 'Schließen',
   'prayer.volume': 'Lautstärke',
+  'prayer.voiceVolume': 'Stimmvolume',
   'prayer.muted': 'Stumm',
   'prayer.speed': 'Tempo',
   'prayer.prayingNowRest': 'beten dieses Gebet gerade',
