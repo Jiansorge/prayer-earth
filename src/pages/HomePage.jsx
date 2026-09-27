@@ -7,6 +7,8 @@ import WorldMeter from '../components/WorldMeter.jsx'
 import WorldFeed from '../components/WorldFeed.jsx'
 import Sparkles from '../components/Sparkles.jsx'
 import { useT, prayerTitle } from '../i18n.js'
+import { CANONICAL_ORIGIN } from '../shared/canonical.js'
+import { shareLink } from '../shared/share.js'
 
 const fmtLife = (s) => {
   const m = Math.floor(s / 60)
@@ -94,6 +96,18 @@ export default function HomePage() {
   const [, force] = useState(0)
   const t = useT()
   const [installVisible, setInstallVisible] = useState(() => canInstall() && !localStorage.getItem('pe-install-dismissed'))
+  const [shareCopied, setShareCopied] = useState(false)
+
+  // Make the public web address discoverable and shareable straight from Home,
+  // not just buried in Settings: anyone can open joining-palms.app in a browser.
+  const shareApp = async () => {
+    const url = CANONICAL_ORIGIN
+    const result = await shareLink({ title: 'Joining Palms', text: t('settings.shareAppHint'), url })
+    if (result === 'shared' || result === 'copied') {
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 1600)
+    }
+  }
 
   // Re-render only when the UTC day rolls over so the "today" counters and
   // streak hint stay correct at midnight without re-rendering every few seconds.
@@ -127,6 +141,14 @@ export default function HomePage() {
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            className="share-btn"
+            onClick={shareApp}
+            aria-label={t('settings.shareAppLabel')}
+            title={t('settings.shareAppLabel')}
+          >
+            <span className="nav-icon">{shareCopied ? '✓' : '↗'}</span>
+          </button>
           <button className="settings-label-btn" onClick={() => setSettingsOpen(true)}>
             {t('settings.title')}
           </button>

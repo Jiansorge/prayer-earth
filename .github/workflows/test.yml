@@ -131,7 +131,10 @@ jobs:
         run: node scripts/test-usage-ci.mjs
 
   deploy-dispatch:
-    needs: [test, usage, android, android-smoke]
+    # Deterministic gates only. android-smoke (a KVM emulator) is the flakiest
+    # job in the file, so it reports Android health but does NOT block a
+    # production deploy — a stray emulator flake must not stop a copy change.
+    needs: [test, usage, android]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:

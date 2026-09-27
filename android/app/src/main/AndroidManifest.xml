@@ -23,12 +23,17 @@
                  the app without requiring a domain-verified assetlinks.json (and
                  its signing cert). Android may show a "Browser / App" chooser;
                  once the app handles the URL it routes the #/pray/... hash
-                 internally via @capacitor/app. -->
+                 internally via @capacitor/app.
+                 pathPattern="/" claims ONLY the root path: the fragment (where
+                 the real #/pray/... route lives) is not part of the intent path,
+                 so every share/QR link still matches, while real files like
+                 /privacy.html and /terms.html keep opening in the browser
+                 instead of being hijacked into the app's home view. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="joining-palms.app" />
+                <data android:scheme="https" android:host="joining-palms.app" android:pathPattern="/" />
             </intent-filter>
         </activity>
 

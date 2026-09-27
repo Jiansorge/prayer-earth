@@ -282,6 +282,44 @@ ok(
 await c.eval(`document.querySelector('.ctrl-btn.tune').click()`)
 ok('tune panel closes', await c.waitFor(`!document.querySelector('.prayer-tune')`))
 
+// The tune panel is absolutely positioned above the controls. On a SHORT viewport
+// it must stay bounded (scroll internally) and must never cover the controls —
+// the original bug was it sitting under/over them and swallowing the play tap.
+await c.send('Emulation.setDeviceMetricsOverride', {
+  width: 360,
+  height: 420,
+  deviceScaleFactor: 2,
+  mobile: true
+})
+await new Promise((r) => setTimeout(r, 300))
+await c.eval(`document.querySelector('.ctrl-btn.tune').click()`)
+ok('tune panel opens on short viewport', await c.waitFor(`!!document.querySelector('.prayer-tune')`))
+const tuneGeo = await c.eval(`(() => {
+  const p = document.querySelector('.prayer-tune').getBoundingClientRect()
+  const ctrl = document.querySelector('.controls') || document.querySelector('.prayer-controls') || document.querySelector('.ctrl-btn.tune').closest('[class*=control]')
+  const vh = window.innerHeight
+  return {
+    panelBottom: p.bottom,
+    panelHeight: p.height,
+    vh,
+    ctrlTop: ctrl ? ctrl.getBoundingClientRect().top : null,
+    scrolls: document.querySelector('.prayer-tune').scrollHeight > document.querySelector('.prayer-tune').clientHeight
+  }
+})()`)
+ok(
+  'tune panel bounded on short viewport (<=50vh)',
+  tuneGeo.panelHeight <= tuneGeo.vh * 0.5 + 2,
+  `h=${tuneGeo.panelHeight} vh=${tuneGeo.vh}`
+)
+ok(
+  'tune panel clears the controls',
+  tuneGeo.ctrlTop === null || tuneGeo.panelBottom <= tuneGeo.ctrlTop + 1,
+  `panelBottom=${tuneGeo.panelBottom} ctrlTop=${tuneGeo.ctrlTop}`
+)
+// Restore the normal desktop metrics so the rest of the suite is unaffected.
+await c.send('Emulation.clearDeviceMetricsOverride')
+await new Promise((r) => setTimeout(r, 200))
+
 // --- playability tests use a Buddhist prayer from here on ---
 await nav(`${APP}/#/pray/buddhism/mani`)
 ok('buddhist mantra stage renders', await c.waitFor(`document.body.innerText.includes('Maṇi')`))
@@ -851,6 +889,10 @@ ok(
   !!shareCaptured && shareCaptured.url === 'https://joining-palms.app',
   JSON.stringify(shareCaptured)
 )
+ok(
+  'settings shows the public web URL',
+  await c.eval(`!!document.querySelector('.field-url') && document.querySelector('.field-url').innerText.includes('joining-palms.app')`)
+)
 
 const qrButton = prayerSettingsOpen && await c.eval(`!!document.querySelector('.field-btn')`)
 ok('settings offers QR card button', !!qrButton)
@@ -871,6 +913,74 @@ if (qrButton) {
 }
 if (prayerSettingsOpen) await closeSettings()
 ok('settings closes after QR', await c.waitFor(`!document.querySelector('.sheet')`, 5000))
+
+// --- boot sanitization: malformed / old persisted state must not crash or leak junk ---
+// This is the real "upgrade" risk: not schema migration (migrate is a no-op) but
+// the sanitizing merge that runs on EVERY boot. Seed garbage at document-start
+// (before the bundle reads storage) via the correct version so the merge path
+// actually executes, then reload and confirm the store comes up clean.
+const badState = {
+  state: {
+    favorites: 'not-an-array',
+    prayerVoices: 12345,
+    prayerCompletions: 'garbage',
+    prayerDayCompletions: 999,
+    prayerDayStats: [],
+    localPrayerSeconds: 'abc',
+    streak: -7,
+    bestStreak: 3.5,
+    volume: 99,
+    ambienceLevel: -2,
+    speechRate: 'fast',
+    profile: 'nope'
+  },
+  version: 2
+}
+await c.send('Page.addScriptToEvaluateOnNewDocument', {
+  source: `try { localStorage.setItem('prayer-earth-v1', ${JSON.stringify(JSON.stringify(badState))}); } catch {}`
+})
+const errsBeforeBadBoot = c.pageErrors().length
+await nav(APP)
+await c.waitFor(`!!window.__store`, 10000)
+const san = await c.eval(`(() => { const s = window.__store.getState(); return {
+  favoritesIsArray: Array.isArray(s.favorites),
+  prayerVoices: s.prayerVoices,
+  completions: s.prayerCompletions,
+  dayCompletions: s.prayerDayCompletions,
+  dayStats: s.prayerDayStats,
+  localPrayerSeconds: s.localPrayerSeconds,
+  streak: s.streak,
+  bestStreak: s.bestStreak,
+  volume: s.volume,
+  ambienceLevel: s.ambienceLevel,
+  profileOk: !!s.profile && typeof s.profile === 'object' && typeof s.profile.color === 'string'
+} })()`)
+ok('malformed boot: app renders', await c.waitFor(`!!document.querySelector('.view')`, 10000))
+ok('malformed boot: favorites coerced to array', san.favoritesIsArray)
+ok('malformed boot: prayerVoices sanitized', typeof san.prayerVoices === 'object' && !Array.isArray(san.prayerVoices) && Object.keys(san.prayerVoices).length === 0, JSON.stringify(san.prayerVoices))
+ok('malformed boot: completions sanitized', typeof san.completions === 'object' && !Array.isArray(san.completions) && Object.keys(san.completions).length === 0, JSON.stringify(san.completions))
+ok('malformed boot: day maps sanitized', typeof san.dayCompletions === 'object' && typeof san.dayStats === 'object')
+ok('malformed boot: negative/fractional counters zeroed', san.streak === 0 && san.bestStreak === 0 && san.localPrayerSeconds === 0, `streak=${san.streak} best=${san.bestStreak} secs=${san.localPrayerSeconds}`)
+ok('malformed boot: volume/ambience clamped', san.volume === 1 && san.ambienceLevel === 0, `vol=${san.volume} amb=${san.ambienceLevel}`)
+ok('malformed boot: profile preserved as object', san.profileOk)
+ok('malformed boot: no new page exceptions', c.pageErrors().length === errsBeforeBadBoot, c.pageErrors().slice(errsBeforeBadBoot).join(' | ') || 'none')
+
+// --- home share affordance: the public URL is shareable straight from Home ---
+const homeShare = await c.eval(`(async () => {
+  await window.__store.getState().go('home')
+  await new Promise((r) => setTimeout(r, 300))
+  const btn = document.querySelector('.share-btn')
+  if (!btn) return { present: false }
+  const orig = navigator.share
+  let captured = null
+  try { navigator.share = async (data) => { captured = data } } catch {}
+  btn.click()
+  await new Promise((r) => setTimeout(r, 300))
+  try { navigator.share = orig } catch {}
+  return { present: true, url: captured && captured.url }
+})()`)
+ok('home shows a share button', homeShare.present)
+ok('home share button shares the production URL', homeShare.url === 'https://joining-palms.app', JSON.stringify(homeShare))
 
 // --- console / runtime errors ---
 const perr = c.pageErrors().slice(0, 5)

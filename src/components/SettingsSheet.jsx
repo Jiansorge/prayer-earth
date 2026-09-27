@@ -319,6 +319,9 @@ export default function SettingsSheet() {
         <button className="field-btn" onClick={() => shareApp('web')}>
           {appCopied ? t('settings.copied') : t('settings.shareApp')}
         </button>
+        <button className="field-url" onClick={() => shareApp('web')} title={APP_ORIGIN}>
+          {APP_ORIGIN}
+        </button>
         {PLAY_STORE_URL ? (
           <button className="field-btn" onClick={() => shareApp('store')} style={{ marginTop: 8 }}>
             {t('settings.sharePlayStore')}

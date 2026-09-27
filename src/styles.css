@@ -1987,6 +1987,30 @@ html[dir='rtl'] .chooser-arrow.right {
   color: var(--ink-dim);
 }
 
+/* The public web address, shown literally so it's obvious the app also lives
+   on the open web (tap to share/copy it). */
+.field-url {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-dim);
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-align: center;
+  cursor: pointer;
+}
+
+.field-url:hover,
+.field-url:active {
+  color: var(--gold-soft);
+  border-color: rgba(232, 196, 122, 0.4);
+}
+
 .field-input {
   width: 100%;
   margin-top: 4px;
@@ -2188,6 +2212,29 @@ html[dir='rtl'] .chooser-arrow.right {
   place-items: center;
   flex-shrink: 0;
   transition: all 0.3s var(--ease);
+}
+
+/* Home "share the public URL" affordance — same footprint as the gear, but its
+   own class so it never collides with gear-btn selectors and doesn't spin on hover. */
+.share-btn {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink-dim);
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: all 0.3s var(--ease);
+}
+
+.share-btn:hover,
+.share-btn:active {
+  color: var(--gold-soft);
+  border-color: rgba(232, 196, 122, 0.4);
+  transform: translateY(-1px);
 }
 
 .gear-btn:hover,

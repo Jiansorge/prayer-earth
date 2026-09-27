@@ -539,6 +539,12 @@ setInterval(() => {
   if (people <= 0) return
   totalPrayerSeconds += people * 0.25
   broadcast()
+  // Persist the rolling seconds every 2s. This cadence is load-bearing on
+  // Windows: `child.kill()` there uses TerminateProcess, so the SIGINT flush
+  // handler never runs and the on-disk value is whatever the last periodic save
+  // wrote. Loosening this interval widens that shutdown gap (and trips the
+  // server test's tolerance) — real graceful-shutdown flushing needs a signal
+  // Windows actually delivers, which is a separate change.
   if (Date.now() - lastSecondsSave >= 2000) {
     lastSecondsSave = Date.now()
     saveTotals()
@@ -693,6 +699,8 @@ wss.on('connection', (ws, req) => {
     } catch {}
   })
 
+  // One O(n) scan feeds both counters (it used to be scanned twice per payload).
+  const active = countActiveUsers()
   ws.send(
     JSON.stringify({
       type: 'state',
@@ -702,8 +710,8 @@ wss.on('connection', (ws, req) => {
       spirits: spiritCounts,
       lights,
       lightSpirits,
-      usersToday: countActiveUsers().today,
-      usersWeek: countActiveUsers().week,
+      usersToday: active.today,
+      usersWeek: active.week,
       startedAt,
       totals: {
         prayers: prayerTotals,
