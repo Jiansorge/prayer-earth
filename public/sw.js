@@ -69,6 +69,10 @@ self.addEventListener('fetch', (e) => {
     url.pathname.startsWith('/icons/') ||
     url.pathname === '/manifest.webmanifest' ||
     url.pathname === '/analytics-loader.js' ||
+    // The boot failsafe must be cache-first: it's the recovery path for a stale
+    // cached shell, which is served OFFLINE — without this the script 404s/fails
+    // to load exactly when it's needed and the app is unrecoverable.
+    url.pathname === '/boot-failsafe.js' ||
     url.pathname === '/land-mask.png'
   if (!cacheable) return
 

@@ -845,7 +845,13 @@ aria-label={t('prayer.prev')}
             onChange={(e) => {
               const v = parseFloat(e.target.value)
               setLiveVolume(v)
-              if (muted && v > 0) applyMute(false)
+              if (muted && v > 0) {
+                // Seed lastVolume with the chosen level BEFORE unmuting, else
+                // applyMute(false) restores the pre-mute level and the thumb
+                // snaps back (the bug SoundControls.onVoice already fixed).
+                useStore.setState({ lastVolume: v })
+                applyMute(false)
+              }
             }}
             aria-label={t('prayer.volume')}
           />

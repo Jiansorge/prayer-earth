@@ -32,16 +32,28 @@ export class AmbientEngine {
       if (!AC) return Promise.resolve()
       try {
         this.ctx = new AC()
+        // Shared limiter. The bed is deliberately loud now (~2.5 master) and the
+        // recorded voice shares this same AudioContext, so bed + voice (+ chant)
+        // can sum past 1.0 and crackle. A gentle compressor before destination
+        // keeps peaks in range without audibly squashing the bed. Everything
+        // routed through Web Audio (master, chantBus, the recorded voice) goes
+        // through this; the native <audio> element path is OS-mixed.
+        this.limiter = this.ctx.createDynamicsCompressor()
+        this.limiter.threshold.value = -8
+        this.limiter.knee.value = 8
+        this.limiter.ratio.value = 12
+        this.limiter.attack.value = 0.004
+        this.limiter.release.value = 0.25
+        this.limiter.connect(this.ctx.destination)
         this.master = this.ctx.createGain()
         this.master.gain.value = 0
-        this.master.connect(this.ctx.destination)
-        // Chant/bell bus: routed straight to the destination (gated only by the
-        // true mute), NOT through the bed fader. Otherwise dragging the ambient
-        // slider to 0 would silence the "soft chant" fallback and the welcome
-        // bell along with the music.
+        this.master.connect(this.limiter)
+        // Chant/bell bus: routed to the limiter (not the bed fader). Gated only
+        // by the true mute — so the "soft chant" fallback and welcome bell stay
+        // audible even with the ambience slider at 0.
         this.chanBus = this.ctx.createGain()
         this.chanBus.gain.value = this.vol
-        this.chanBus.connect(this.ctx.destination)
+        this.chanBus.connect(this.limiter)
       } catch {
         return Promise.resolve()
       }
@@ -397,6 +409,10 @@ export class AmbientEngine {
     // Build the ambient bed the user selected (default: Reiki Drift).
     const chosen = useStore.getState().ambientPreset || 'reiki'
     this.buildPreset(AMBIENT_PRESETS.includes(chosen) ? chosen : 'reiki')
+    // Re-apply a persisted mute to the bed: nothing called setVolume at boot, so
+    // a "muted" app would otherwise play the bed at full (louder now that the
+    // ceiling is ~2.5).
+    this.setVolume(useStore.getState().muted ? 0 : 1)
     this.setLevel(this.level)
     this.ring(0.8)
   }

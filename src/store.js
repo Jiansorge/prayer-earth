@@ -350,10 +350,6 @@ export const useStore = create(
         set((s) => ({
           totalPrayerSeconds: Math.max(s.totalPrayerSeconds, Number(value) || 0)
         })),
-      addLocalPrayer: (seconds) =>
-        set((s) => ({
-          localPrayerSeconds: s.localPrayerSeconds + seconds
-        })),
 
       // Credit one clock tick's prayer time in a SINGLE set() (cumulative
       // seconds, today's chart, and the elapsed readout together). The clock used
@@ -400,22 +396,6 @@ export const useStore = create(
             },
             prayerDayCompletions: days
           }
-        }),
-
-      // Attribute one prayed second to this prayer on the current UTC day.
-      addPrayerSecond: (prayerId, seconds = 1) =>
-        set((s) => {
-          if (!prayerId) return {}
-          const key = dayKey(new Date())
-          const day = s.prayerDayStats[key] ? { ...s.prayerDayStats[key] } : {}
-          day[prayerId] = (day[prayerId] || 0) + seconds
-          const stats = { ...s.prayerDayStats, [key]: day }
-          // Bound the history so it never grows without end.
-          const keys = Object.keys(stats).sort()
-          if (keys.length > DAY_MAP_LIMIT) {
-            for (let i = 0; i < keys.length - DAY_MAP_LIMIT; i++) delete stats[keys[i]]
-          }
-          return { prayerDayStats: stats }
         }),
 
       // Called when a full prayer cycle completes; idempotent per day.
@@ -647,12 +627,15 @@ if (
 //
 // Credited by WALL CLOCK, not tick count: a backgrounded tab/OS can throttle or
 // freeze setInterval, which used to under-count a background prayer (audio kept
-// playing off Date.now() while the counter barely ticked) â€” a permanent, invisible
+// playing off Date.now() while the counter barely ticked) — a permanent, invisible
 // loss of the user's most sacred number. We credit the real elapsed delta on each
-// tick and on visibility/pagehide, capped so a long device sleep can't fabricate
-// hours of prayer either.
+// tick and on visibility/pagehide. To avoid under-crediting a throttled tab, the
+// CAPPED credit carries the remainder forward (_lastTickAt advances by only the
+// seconds actually credited), so a backgrounded prayer is fully counted over its
+// throttled ticks; the cap only bounds how much a single long freeze can credit
+// at once (so a device asleep overnight can't fabricate hours).
 let _lastTickAt = 0
-const MAX_CREDIT_PER_FLUSH = 30 // seconds a single flush may credit
+const MAX_CREDIT_PER_FLUSH = 120 // max seconds a single flush may credit
 function creditPrayerClock() {
   const s = useStore.getState()
   const now = Date.now()
@@ -664,18 +647,21 @@ function creditPrayerClock() {
     _lastTickAt = now
     return
   }
-  const delta = Math.min(MAX_CREDIT_PER_FLUSH, Math.max(1, Math.round((now - _lastTickAt) / 1000)))
-  _lastTickAt = now
-  s.tickPrayerClock(delta, s.playingPrayerId)
+  // No floor: a flush <500ms after the last credits 0 (the old Math.max(1,…)
+  // invented a phantom second on every double-fire, e.g. hide+pagehide).
+  const raw = Math.round((now - _lastTickAt) / 1000)
+  const delta = Math.max(0, Math.min(MAX_CREDIT_PER_FLUSH, raw))
+  // Advance the baseline by the CREDITED amount so any remainder carries to the
+  // next flush instead of being discarded.
+  _lastTickAt += delta * 1000
+  if (delta > 0) s.tickPrayerClock(delta, s.playingPrayerId)
 }
 setInterval(creditPrayerClock, 1000)
-// Flush the real delta when the tab is hidden or closed (the interval may not
-// fire again for a while once backgrounded).
+// Flush the real delta when the tab is hidden/foregrounded and on pagehide (the
+// interval may not fire again for a while once backgrounded). The carry-forward
+// + no-floor make back-to-back flushes (hide then pagehide) harmless.
 if (typeof document !== 'undefined') {
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) creditPrayerClock()
-    else creditPrayerClock()
-  })
+  document.addEventListener('visibilitychange', () => creditPrayerClock())
   if (typeof window !== 'undefined') {
     window.addEventListener('pagehide', creditPrayerClock)
   }

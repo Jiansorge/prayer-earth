@@ -168,7 +168,11 @@ class SpeechEngine {
       // convolver→wet edge, so those nodes leaked onto the convolver forever.)
       const wet = ctx.createGain()
       wet.gain.value = this.reverbWetGain
-      try { convolver.connect(wet); wet.connect(ctx.destination) } catch {}
+      // Route through the shared limiter (ambience.limiter) rather than
+      // ctx.destination so the voice + loud bed + chant can't sum past 1.0 and
+      // crackle. Falls back to destination if the limiter isn't built yet.
+      const out = this._outNode(ctx)
+      try { convolver.connect(wet); wet.connect(out) } catch {}
       this._revWet = wet
     } catch {}
   }
@@ -228,6 +232,12 @@ class SpeechEngine {
     }
   }
 
+  // The shared output stage: the ambience engine's limiter when available (so
+  // the loud bed + voice never sum past 1.0), else the raw destination.
+  _outNode(ctx) {
+    return ambient.limiter || ctx.destination
+  }
+
   // Hands a decoded phrase to the shared WebAudio graph with the same gentle
   // warmth the old element reverb used: a soft low-pass plus the hall tail.
   voiceConnect(src, gain) {
@@ -240,7 +250,7 @@ class SpeechEngine {
       lowpass.Q.value = 0.2
       src.connect(gain)
       gain.connect(lowpass)
-      lowpass.connect(ctx.destination)
+      lowpass.connect(this._outNode(ctx))
       // Reverb tail is persistent (see buildReverb): just feed this phrase's
       // source into the shared convolver. Teardown only needs to disconnect the
       // source (cloudSource.disconnect), so no per-phrase reverb node leaks.
