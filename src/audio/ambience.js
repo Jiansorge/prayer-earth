@@ -75,7 +75,7 @@ export class AmbientEngine {
 
   // Warm sustained chord: the body of most presets. Slow-breathing gain keeps
   // it from feeling static.
-  _pad(bus, stops, { notes, gain = 0.05, filter = 340, type = 'sine', detune = 6, q = 0.6, breathe = 0.05 }) {
+  _pad(bus, stops, { notes, gain = 0.05, filter = 340, type = 'sine', detune = 6, q = 0.6, breathe = 0.05, pulse = 0, pulseDepth = 0.35 }) {
     const ctx = this.ctx
     const lp = ctx.createBiquadFilter()
     lp.type = 'lowpass'
@@ -100,6 +100,20 @@ export class AmbientEngine {
     brG.connect(g.gain)
     br.start()
     stops.push(br)
+    // A rhythmic swell so the bed breathes with a beat instead of sitting as one
+    // constant drone. A slow sine LFO gating the pad gain reads as a calm pulse
+    // (like a distant tide) at these rates.
+    if (pulse > 0) {
+      const pl = ctx.createOscillator()
+      pl.type = 'sine'
+      pl.frequency.value = pulse
+      const plG = ctx.createGain()
+      plG.gain.value = gain * pulseDepth
+      pl.connect(plG)
+      plG.connect(g.gain)
+      pl.start()
+      stops.push(pl)
+    }
     lp.connect(g)
     g.connect(bus)
   }
@@ -168,40 +182,45 @@ export class AmbientEngine {
   // The seven beds. `b` is the preset bus (already connected to master).
   _builders() {
     return {
-      // Reiki Drift â€” the classic warm healing pad: a broad major-9 with slow
-      // shimmer, the closest thing here to soft "reiki" music.
+      // Reiki Drift — the classic warm healing pad: a broad major-9 that
+      // breathes with a slow pulse, the closest thing here to soft "reiki" music.
       reiki: (b, s) => {
-        this._pad(b, s, { notes: [130.81, 196.0, 261.63, 329.63, 493.88], gain: 0.05, filter: 420, breathe: 0.04 })
+        this._pad(b, s, { notes: [130.81, 196.0, 261.63, 329.63, 493.88], gain: 0.05, filter: 420, breathe: 0.04, pulse: 0.2, pulseDepth: 0.3 })
         this._pad(b, s, { notes: [392.0], gain: 0.006, filter: 900 })
       },
-      // Ocean Hush â€” low pad under a slowly breathing band of surf noise.
+      // Ocean Hush — low pad under a slowly breathing band of surf noise, with
+      // a slow tidal swell.
       ocean: (b, s) => {
-        this._pad(b, s, { notes: [65.41, 98.0, 130.81], gain: 0.05, filter: 300, breathe: 0.045 })
+        this._pad(b, s, { notes: [65.41, 98.0, 130.81], gain: 0.05, filter: 300, breathe: 0.045, pulse: 0.13, pulseDepth: 0.4 })
         this._air(b, s, { gain: 0.02, filter: 'bandpass', freq: 420, q: 0.5, lfo: 0.05, depth: 260 })
       },
-      // Temple Bowl â€” near-silence under rare, resonant bowl strikes.
+      // Temple Bowl — near-silence under rare, resonant bowl strikes; the slow
+      // pad pulse keeps a gentle heartbeat under the rare bells.
       temple: (b, s) => {
-        this._pad(b, s, { notes: [65.41, 98.0], gain: 0.035, filter: 240, breathe: 0.03 })
+        this._pad(b, s, { notes: [65.41, 98.0], gain: 0.035, filter: 240, breathe: 0.03, pulse: 0.1, pulseDepth: 0.3 })
         this._bells(b, s, { root: 196, gain: 0.05, every: 11 })
       },
-      // Night Rain â€” a soft high band of rain over a low rumble.
+      // Night Rain — a soft high band of rain over a low pulsing rumble.
       rain: (b, s) => {
-        this._pad(b, s, { notes: [55.0, 82.41], gain: 0.04, filter: 200, breathe: 0.04 })
+        this._pad(b, s, { notes: [55.0, 82.41], gain: 0.04, filter: 200, breathe: 0.04, pulse: 0.25, pulseDepth: 0.3 })
         this._air(b, s, { gain: 0.014, filter: 'highpass', freq: 1400, q: 0.4, lfo: 0.2, depth: 400 })
       },
-      // Forest Stillness â€” airy leaves and a distant mid pad; very quiet.
+      // Forest Stillness — airy leaves and a distant mid pad, pulsing gently.
       forest: (b, s) => {
-        this._pad(b, s, { notes: [98.0, 146.83, 196.0], gain: 0.035, filter: 380, breathe: 0.05 })
+        this._pad(b, s, { notes: [98.0, 146.83, 196.0], gain: 0.035, filter: 380, breathe: 0.05, pulse: 0.14, pulseDepth: 0.35 })
         this._air(b, s, { gain: 0.01, filter: 'bandpass', freq: 900, q: 0.8, lfo: 0.08, depth: 300 })
       },
-      // Deep Space â€” a very low, wide detuned drone with a high shimmer.
+      // Deep Space — a very low, warm, wide drone with a slow deep pulse. The
+      // old version had a 880/1174 Hz "shimmer" pad that read as tinny and
+      // high-pitched; replaced with low-mid fifths and a darker lowpass so it
+      // sits as a warm hum instead of a whistle.
       space: (b, s) => {
-        this._pad(b, s, { notes: [55.0, 82.41, 110.0], gain: 0.05, filter: 260, detune: 14, breathe: 0.03 })
-        this._pad(b, s, { notes: [880.0, 1174.66], gain: 0.004, filter: 1600, breathe: 0.02 })
+        this._pad(b, s, { notes: [55.0, 82.41, 110.0, 164.81], gain: 0.05, filter: 300, detune: 14, breathe: 0.03, pulse: 0.08, pulseDepth: 0.45 })
+        this._pad(b, s, { notes: [220.0, 293.66], gain: 0.008, filter: 500, breathe: 0.02 })
       },
-      // Warming Pad â€” a close, mid-low chord, like a gentle heater.
+      // Warming Pad — a close, mid-low chord with a steady gentle pulse.
       warm: (b, s) => {
-        this._pad(b, s, { notes: [98.0, 116.54, 146.83, 196.0], gain: 0.045, filter: 460, breathe: 0.06 })
+        this._pad(b, s, { notes: [98.0, 116.54, 146.83, 196.0], gain: 0.045, filter: 460, breathe: 0.06, pulse: 0.18, pulseDepth: 0.3 })
       }
     }
   }
@@ -269,11 +288,11 @@ export class AmbientEngine {
     this.level = Math.max(0, Math.min(1, level))
     if (this.master && this.ctx) {
       const user = useStore.getState().ambienceLevel
-      // Boosted ~3.4x: the previous ceiling (0.1 + level*0.14, max ~0.23) left
-      // the bed barely audible even with the ambience slider at 100%. This
-      // reaches ~0.78 during prayer, adjustable with the "Ambient sound volume"
-      // slider (present in both Settings and the prayer mini panel).
-      const target = (0.15 + this.level * 0.7) * (0.15 + 0.85 * user) * this.vol
+      // Boosted again (~3x the previous ceiling, ~10x the original): the bed was
+      // still "barely audible at 100%". At full slider this reaches ~2.5 during
+      // prayer — a single bed peaks well under 1.0 so it won't clip, and the
+      // Ambient sound volume slider now has real range to dial it back.
+      const target = (0.5 + this.level * 2.2) * (0.2 + 0.8 * user) * this.vol
       this.master.gain.setTargetAtTime(target, this.ctx.currentTime, 0.8)
     }
   }

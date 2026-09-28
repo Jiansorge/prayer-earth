@@ -212,6 +212,39 @@ ok(
   'ambient.ensure() always returns a promise',
   await c.eval(`!!window.__ambient && typeof window.__ambient.ensure().then === 'function'`)
 )
+// The bed must actually be audible at 100% (twice-reported "way too quiet"):
+// at ambienceLevel=1 during prayer the master gain should settle well above 1
+// (the old ceiling was ~0.23, then ~0.78; the boost targets ~2.5). Guards the
+// boost from silently regressing. Skips if the headless ctx stays suspended.
+const bedLoud = await c.eval(`(async () => {
+  const a = window.__ambient
+  window.__store.setState({ ambienceLevel: 1 })
+  await a.ensure()
+  if (a.ctx.state !== 'running') return { skipped: true }
+  a.setLevel(0.9)
+  await new Promise((r) => setTimeout(r, 2200))
+  return { gain: a.master.gain.value, skipped: false }
+})()`)
+ok(
+  'ambient bed reaches an audible level at 100% (master gain > 1)',
+  bedLoud.skipped || bedLoud.gain > 1.0,
+  JSON.stringify(bedLoud)
+)
+// Each bed must build a rhythmic pulse, not sit as one constant note: building
+// a preset should create several oscillator nodes (pad + pulse + air).
+const bedRhythm = await c.eval(`(() => {
+  const a = window.__ambient
+  a.buildPreset('space')
+  // Oscillator nodes expose .frequency (an AudioParam) and .start(); the only
+  // other entry is the bells interval handle.
+  const osc = (a.presetStops || []).filter((n) => n && n.frequency && typeof n.start === 'function').length
+  return { osc, stops: (a.presetStops || []).length }
+})()`)
+ok(
+  'ambient beds build a multi-oscillator rhythmic texture',
+  bedRhythm.osc >= 4,
+  JSON.stringify(bedRhythm)
+)
 const presetPick = settingsOpen && await c.eval(`(() => {
   const chip = [...document.querySelectorAll('.ambient-chip')].find((c) => !c.classList.contains('on'))
   if (!chip) return null

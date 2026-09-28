@@ -1803,9 +1803,11 @@ html[dir='rtl'] .chooser-arrow.right {
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: rgba(4, 7, 20, 0.55);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(4, 7, 20, 0.62);
+  /* No backdrop-filter here: a full-screen blur re-composites the whole page
+     every frame while the sheet body scrolls (a real source of jank on mobile
+     GPUs), and the sheet itself is ~98% opaque so the blur was barely visible.
+     The dim background alone gives the same separation. */
   display: flex;
   align-items: center;
   justify-content: center;
