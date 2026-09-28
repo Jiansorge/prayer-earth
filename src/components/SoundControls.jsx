@@ -76,9 +76,10 @@ export default function SoundControls({ layout = 'field', showBeds = true }) {
           max="1"
           step="0.05"
           value={volume}
+          aria-valuetext={`${Math.round(volume * 100)}%`}
           onChange={(e) => onVoice(parseFloat(e.target.value))}
         />
-        <span className={valCls}>{Math.round(volume * 100)}%</span>
+        <span className={valCls} aria-hidden="true">{Math.round(volume * 100)}%</span>
       </div>
       <div className={rowCls}>
         <label className={labelCls} htmlFor={ambientId}>{t('sound.ambient')}</label>
@@ -90,9 +91,10 @@ export default function SoundControls({ layout = 'field', showBeds = true }) {
           max="1"
           step="0.05"
           value={ambienceLevel}
+          aria-valuetext={`${Math.round(ambienceLevel * 100)}%`}
           onChange={(e) => onAmbient(parseFloat(e.target.value))}
         />
-        <span className={valCls}>{Math.round(ambienceLevel * 100)}%</span>
+        <span className={valCls} aria-hidden="true">{Math.round(ambienceLevel * 100)}%</span>
       </div>
       <div className={rowCls}>
         <label className={labelCls} htmlFor={speedId}>{t('sound.speed')}</label>
@@ -104,9 +106,10 @@ export default function SoundControls({ layout = 'field', showBeds = true }) {
           max="2.0"
           step="0.05"
           value={speechRate}
+          aria-valuetext={`${speechRate.toFixed(2)}×`}
           onChange={(e) => onSpeed(parseFloat(e.target.value))}
         />
-        <span className={valCls}>{speechRate.toFixed(2)}Ã—</span>
+        <span className={valCls} aria-hidden="true">{speechRate.toFixed(2)}×</span>
       </div>
       {showBeds && (
         <>

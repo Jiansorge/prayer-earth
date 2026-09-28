@@ -323,6 +323,13 @@ export class AmbientEngine {
     })
     lp.connect(out)
     out.connect(this.chanBus || this.master)
+    // Disconnect the one-shot chant/ohm tail once it's done. The oscillators
+    // become collectable after stop(), but these gain/filter nodes stay wired
+    // into the bus otherwise — and hum() fires once per phrase, so a long
+    // chant leaked ~8 nodes per phrase (~4,800 over an hour).
+    setTimeout(() => {
+      try { out.disconnect() } catch {}
+    }, 3000)
   }
 
   ring(intensity = 1) {
@@ -355,6 +362,12 @@ export class AmbientEngine {
       o.stop(t + dur + 0.1)
     })
     out.connect(this.chanBus || this.master)
+    // Disconnect the bell's output once its longest partial has rung out —
+    // otherwise every ring()/hum() left its gain node permanently wired to the
+    // bus (ring() fires per prayer start and per loop cycle).
+    setTimeout(() => {
+      try { out.disconnect() } catch {}
+    }, 7000)
   }
 
   async start() {

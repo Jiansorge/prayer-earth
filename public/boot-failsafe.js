@@ -12,9 +12,20 @@
     boot.setAttribute('aria-hidden', 'false')
     var name = boot.querySelector('.boot-name')
     if (name) name.textContent = 'Tap to reload'
+    // Make the splash a real, keyboard/AT-reachable control. It is the app's
+    // ONLY recovery path after a failed chunk load, so a keyboard or screen
+    // reader user must be able to activate it — not just tap.
+    boot.setAttribute('role', 'button')
+    boot.setAttribute('tabindex', '0')
+    boot.setAttribute('aria-label', 'Tap to reload')
     boot.style.pointerEvents = 'auto'
     boot.style.cursor = 'pointer'
-    boot.onclick = function () { location.reload() }
+    var go = function () { location.reload() }
+    boot.onclick = go
+    boot.onkeydown = function (e) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); go() }
+    }
+    try { boot.focus() } catch {}
   }
   setTimeout(escape, 12000)
   window.addEventListener('error', function () { setTimeout(escape, 1500) })

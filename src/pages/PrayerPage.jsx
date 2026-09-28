@@ -74,7 +74,7 @@ export default function PrayerPage() {
   const muted = useStore((s) => s.muted)
   const [tuning, setTuning] = useState(false)
   const [starting, setStarting] = useState(false)
-const startAt = useRef(0)
+  const startAt = useRef(0)
 const startingRef = useRef(false)
 const startingWatchdog = useRef(null)
 const restartTimer = useRef(null)
@@ -381,6 +381,13 @@ const countedRef = useRef(false)
     const onKey = (e) => {
       const tag = (e.target && e.target.tagName) || ''
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+      // Escape closes the tune panel on EVERY platform (including Android),
+      // before the web-only key binds below.
+      if (e.key === 'Escape' && tuning) {
+        e.preventDefault()
+        setTuning(false)
+        return
+      }
       // Space/arrows/m/r/s are physical-keyboard binds — the Android shell has
       // no physical keyboard, so treat the whole handler as web-only.
       if (isAppShell()) return
@@ -408,7 +415,7 @@ const countedRef = useRef(false)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [tuning])
   useEffect(() => {
     const el = chooserRef.current
     if (!el) return
@@ -846,7 +853,13 @@ aria-label={t('prayer.prev')}
       </div>
 
       {tuning && (
-        <div className="prayer-tune fade-in" aria-label={t('prayer.tuneLabel')}>
+        <div
+          className="prayer-tune fade-in"
+          role="group"
+          aria-label={t('prayer.tuneLabel')}
+          tabIndex={-1}
+          ref={(el) => el && el.focus()}
+        >
           <button
             className="pt-close"
             onClick={() => setTuning(false)}
