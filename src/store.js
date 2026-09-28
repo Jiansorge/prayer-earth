@@ -1,10 +1,10 @@
-import { create } from 'zustand'
+﻿import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { prayerBaseTotals, spiritBaseTotals } from './data/totals.js'
 import { mergeStats } from './shared/stats.js'
 import { AMBIENT_PRESETS, DEFAULT_AMBIENT_PRESET } from './audio/presets.js'
 
-// Cheap shallow equality for objects/arrays — skips Zustand subscriber
+// Cheap shallow equality for objects/arrays â€” skips Zustand subscriber
 // notifications when the values haven't actually changed. Used on the
 // high-frequency sync setters so presence ticks that carry unchanged
 // counts don't trigger cascading re-renders across every subscriber.
@@ -29,7 +29,7 @@ const safeCounterMap = (value) => {
 }
 // How many days of per-day history we retain. Must be comfortably larger than a
 // realistic streak, because the current streak is DERIVED by walking this map
-// back from today — a cap below the streak length would silently under-report
+// back from today â€” a cap below the streak length would silently under-report
 // it. 120 days (~4 months) leaves ample payload headroom while representing any
 // realistic streak.
 const DAY_MAP_LIMIT = 120
@@ -83,10 +83,10 @@ const safeStorage = {
   // Persisting on every set() meant the prayer clock wrote the whole payload to
   // localStorage ~3x/second. We do NOT debounce these writes: a hard kill (adb
   // force-stop, OS process death) fires no pagehide/visibilitychange, so a
-  // pending debounced write would be LOST — a small but real decrease in the
+  // pending debounced write would be LOST â€” a small but real decrease in the
   // user's prayer seconds on relaunch. Durability wins: writes stay synchronous.
-  // (Write VOLUME is instead reduced by batching the clock into one set()/tick —
-  // see tickPrayerClock — and day maps are bounded, so quota is not a risk.)
+  // (Write VOLUME is instead reduced by batching the clock into one set()/tick â€”
+  // see tickPrayerClock â€” and day maps are bounded, so quota is not a risk.)
   // A write failure is latched + surfaced so silent loss can't go unnoticed.
   setItem: (name, value) => {
     try {
@@ -117,13 +117,13 @@ const dayKey = (t) =>
   ).padStart(2, '0')}`
 
 // Locale codes the app ships, in the same order as src/i18n.js LOCALES. Kept
-// here (instead of imported) because i18n.js imports this store — a circular
-// import — and only the codes are needed for matching the browser language.
+// here (instead of imported) because i18n.js imports this store â€” a circular
+// import â€” and only the codes are needed for matching the browser language.
 const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'de', 'pt', 'it', 'ru', 'zh', 'ar', 'ja', 'ko', 'hi', 'vi', 'tl', 'bo']
 
 // Map browser language tags that don't use our base code to the closest locale
-// (Filipino→tl, zh variants→zh, pt-BR/pt-PT→pt). Anything else matches by its
-// first subtag (es-MX→es, fr-CA→fr, hi-IN→hi).
+// (Filipinoâ†’tl, zh variantsâ†’zh, pt-BR/pt-PTâ†’pt). Anything else matches by its
+// first subtag (es-MXâ†’es, fr-CAâ†’fr, hi-INâ†’hi).
 const LOCALE_ALIASES = {
   'fil': 'tl',
   'fil-ph': 'tl',
@@ -202,8 +202,7 @@ export const useStore = create(
       firstSeen: 0,
       peoplePraying: 0,
       totalPrayerSeconds: 0,
-      basePrayerSeconds: 0,
-      prayerCounts: {},
+          prayerCounts: {},
       spiritCounts: {},
       lights: {},
       lightSpirits: {},
@@ -215,7 +214,7 @@ export const useStore = create(
       youLoc: null,
 
       // who you are on the Earth: a sacred name, a nature avatar, a light
-      profile: { name: '', avatar: '🌿', color: '#7fc9a0' },
+      profile: { name: '', avatar: 'ðŸŒ¿', color: '#7fc9a0' },
 
       localPrayerSeconds: 0,
       loopOn: true,
@@ -348,13 +347,9 @@ export const useStore = create(
       setStartedAt: (startedAt) => set({ startedAt }),
       setFirstSeen: (firstSeen) => set({ firstSeen }),
       setTotalPrayerSeconds: (value) =>
-        set((s) => {
-          const totalPrayerSeconds = Math.max(s.totalPrayerSeconds, Number(value) || 0)
-          return {
-            totalPrayerSeconds,
-            basePrayerSeconds: Math.max(s.basePrayerSeconds, totalPrayerSeconds)
-          }
-        }),
+        set((s) => ({
+          totalPrayerSeconds: Math.max(s.totalPrayerSeconds, Number(value) || 0)
+        })),
       addLocalPrayer: (seconds) =>
         set((s) => ({
           localPrayerSeconds: s.localPrayerSeconds + seconds
@@ -607,7 +602,6 @@ export const useStore = create(
         spiritId: s.spiritId,
         prayerId: s.prayerId,
         localPrayerSeconds: s.localPrayerSeconds,
-        basePrayerSeconds: s.basePrayerSeconds,
         loopOn: s.loopOn,
         voiceURI: s.voiceURI,
         prayerVoices: s.prayerVoices,
@@ -653,7 +647,7 @@ if (
 //
 // Credited by WALL CLOCK, not tick count: a backgrounded tab/OS can throttle or
 // freeze setInterval, which used to under-count a background prayer (audio kept
-// playing off Date.now() while the counter barely ticked) — a permanent, invisible
+// playing off Date.now() while the counter barely ticked) â€” a permanent, invisible
 // loss of the user's most sacred number. We credit the real elapsed delta on each
 // tick and on visibility/pagehide, capped so a long device sleep can't fabricate
 // hours of prayer either.
