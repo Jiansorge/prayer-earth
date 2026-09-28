@@ -80,16 +80,27 @@ const safeStorage = {
       return null
     }
   },
-  // Persisting on every set() meant the prayer clock (~3 sets/sec) wrote the
-  // whole payload to localStorage ~3x/second — heavy jank and, worse, a SILENT
-  // unrecoverable loss: if a write ever throws (storage disabled, WebView data
-  // cleared, OS eviction), the in-memory store kept counting while the persisted
-  // copy silently rotted, and on next launch the user read a smaller number.
-  // So: debounce writes to reduce volume, and latch + surface a failure.
+  // Persisting on every set() meant the prayer clock wrote the whole payload to
+  // localStorage ~3x/second. We do NOT debounce these writes: a hard kill (adb
+  // force-stop, OS process death) fires no pagehide/visibilitychange, so a
+  // pending debounced write would be LOST — a small but real decrease in the
+  // user's prayer seconds on relaunch. Durability wins: writes stay synchronous.
+  // (Write VOLUME is instead reduced by batching the clock into one set()/tick —
+  // see tickPrayerClock — and day maps are bounded, so quota is not a risk.)
+  // A write failure is latched + surfaced so silent loss can't go unnoticed.
   setItem: (name, value) => {
-    _pendingWrite = { name, value }
-    clearTimeout(_writeTimer)
-    _writeTimer = setTimeout(flushStorageNow, 1500)
+    try {
+      window.localStorage.setItem(name, value)
+    } catch {
+      if (!_writeFailed) {
+        _writeFailed = true
+        // Tell the user their counts are not being saved, rather than letting
+        // them pray for weeks and lose it silently.
+        try {
+          useStore.setState({ persistFailed: true })
+        } catch {}
+      }
+    }
   },
   removeItem: (name) => {
     try {
@@ -98,36 +109,7 @@ const safeStorage = {
   }
 }
 
-let _writeTimer = null
-let _pendingWrite = null
 let _writeFailed = false
-function flushStorageNow() {
-  clearTimeout(_writeTimer)
-  _writeTimer = null
-  if (!_pendingWrite) return
-  const { name, value } = _pendingWrite
-  _pendingWrite = null
-  try {
-    window.localStorage.setItem(name, value)
-  } catch {
-    if (!_writeFailed) {
-      _writeFailed = true
-      // Tell the user their counts are not being saved, rather than letting
-      // them pray for weeks and lose it silently.
-      try {
-        useStore.setState({ persistFailed: true })
-      } catch {}
-    }
-  }
-}
-// Flush any debounced write on the way out so a quick close doesn't lose the
-// last few seconds.
-if (typeof window !== 'undefined') {
-  window.addEventListener('pagehide', flushStorageNow)
-  document?.addEventListener?.('visibilitychange', () => {
-    if (document.hidden) flushStorageNow()
-  })
-}
 
 const dayKey = (t) =>
   `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, '0')}-${String(
@@ -377,6 +359,31 @@ export const useStore = create(
         set((s) => ({
           localPrayerSeconds: s.localPrayerSeconds + seconds
         })),
+
+      // Credit one clock tick's prayer time in a SINGLE set() (cumulative
+      // seconds, today's chart, and the elapsed readout together). The clock used
+      // to call three separate actions per tick, so every second wrote the whole
+      // persisted payload to localStorage three times; batching cuts that to one
+      // synchronous, durable write per tick.
+      tickPrayerClock: (seconds, prayerId) =>
+        set((s) => {
+          const upd = {
+            localPrayerSeconds: s.localPrayerSeconds + seconds,
+            elapsed: s.elapsed + seconds
+          }
+          if (prayerId) {
+            const key = dayKey(new Date())
+            const day = s.prayerDayStats[key] ? { ...s.prayerDayStats[key] } : {}
+            day[prayerId] = (day[prayerId] || 0) + seconds
+            const stats = { ...s.prayerDayStats, [key]: day }
+            const keys = Object.keys(stats).sort()
+            if (keys.length > DAY_MAP_LIMIT) {
+              for (let i = 0; i < keys.length - DAY_MAP_LIMIT; i++) delete stats[keys[i]]
+            }
+            upd.prayerDayStats = stats
+          }
+          return upd
+        }),
 
       // One full cycle of a prayer finished, count it toward the all-time total.
       notePrayerComplete: (prayerId) =>
@@ -665,9 +672,7 @@ function creditPrayerClock() {
   }
   const delta = Math.min(MAX_CREDIT_PER_FLUSH, Math.max(1, Math.round((now - _lastTickAt) / 1000)))
   _lastTickAt = now
-  s.addLocalPrayer(delta)
-  s.addPrayerSecond(s.playingPrayerId, delta)
-  s.setElapsed(s.elapsed + delta)
+  s.tickPrayerClock(delta, s.playingPrayerId)
 }
 setInterval(creditPrayerClock, 1000)
 // Flush the real delta when the tab is hidden or closed (the interval may not
