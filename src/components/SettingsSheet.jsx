@@ -24,6 +24,18 @@ const AVATARS = ['🌿', '🌙', '🌺', '🕊️', '🌊', '⛰️', '🌾', '�
 const COLORS = ['#7fc9a0', '#dfb05c', '#7aa2ff', '#ff9e4f', '#ffd166', '#b09dff', '#e8b06f', '#7fd488']
 const DONATE_URL = 'https://ko-fi.com/joiningpalms'
 
+// Restore summary readout. "Restored." alone tells the user nothing about
+// whether they pasted the right code, so spell out what came back.
+const fmtDuration = (secs) => {
+  const total = Math.max(0, Math.floor(Number(secs) || 0))
+  if (total < 60) return `${total}s`
+  const m = Math.floor(total / 60)
+  if (m < 60) return `${m}m`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ${m % 60}m`
+  return `${Math.floor(h / 24)}d ${h % 24}h`
+}
+
 // Share links must point at the canonical production origin, never at the
 // localhost/dev/standalone host the app happens to be running on — a copied
 // `window.location.origin` would hand someone a dead "localhost" link.
@@ -61,6 +73,7 @@ export default function SettingsSheet() {
   const [backupMsg, setBackupMsg] = useState(null) // { ok: bool, key: string }
   const [restoreText, setRestoreText] = useState('')
   const [backupCode, setBackupCode] = useState('') // shown when copy/download can't work
+  const [backupSummary, setBackupSummary] = useState(null) // what a restore actually did
   const fileRef = useRef(null)
   const [installed, setInstalled] = useState(false)
   const [showIosTip, setShowIosTip] = useState(false)
@@ -167,9 +180,10 @@ export default function SettingsSheet() {
     const before = useStore.getState().anonId
     try {
       const payload = parseBackupCode(code)
-      applyBackup(payload)
+      const summary = applyBackup(payload)
       setRestoreText('')
-      flashBackup(true, 'settings.backupRestored')
+      setBackupSummary(summary)
+      flashBackup(true, summary.wasNoop ? 'settings.backupNoop' : 'settings.backupRestored')
       // Restoring can adopt a different anonId, but the live socket has already
       // handshook under the old one. Without a re-handshake the connection would
       // keep pushing to the previous identity while local state claims the new
@@ -481,6 +495,42 @@ export default function SettingsSheet() {
         {backupMsg && (
           <div className="field-hint" style={{ marginTop: 10, color: backupMsg.ok ? 'var(--ok,#7fc9a0)' : 'var(--warn,#ffb4a2)' }}>
             {t(backupMsg.key)}
+          </div>
+        )}
+        {backupSummary && (
+          <div className="backup-summary" data-testid="backup-summary">
+            <div className="backup-summary-title">{t('settings.backupSummaryTitle')}</div>
+            <div className="backup-summary-grid">
+              <div>
+                <span className="backup-summary-value">{backupSummary.backup.completions}</span>
+                <span className="backup-summary-label">{t('settings.backupSumCompletions')}</span>
+              </div>
+              <div>
+                <span className="backup-summary-value">{fmtDuration(backupSummary.backup.seconds)}</span>
+                <span className="backup-summary-label">{t('settings.backupSumTime')}</span>
+              </div>
+              <div>
+                <span className="backup-summary-value">{backupSummary.backup.distinctPrayers}</span>
+                <span className="backup-summary-label">{t('settings.backupSumPrayers')}</span>
+              </div>
+              <div>
+                <span className="backup-summary-value">{backupSummary.backup.bestStreak}</span>
+                <span className="backup-summary-label">{t('settings.backupSumStreak')}</span>
+              </div>
+            </div>
+            {backupSummary.backup.days > 0 && (
+              <div className="backup-summary-note">
+                {t('settings.backupSumDays', { n: backupSummary.backup.days })}
+              </div>
+            )}
+            {backupSummary.identityChanged && (
+              <div className="backup-summary-note">{t('settings.backupSumIdentity')}</div>
+            )}
+            {!backupSummary.wasNoop && backupSummary.gainedSeconds > 0 && (
+              <div className="backup-summary-note">
+                {t('settings.backupSumGained', { time: fmtDuration(backupSummary.gainedSeconds) })}
+              </div>
+            )}
           </div>
         )}
 

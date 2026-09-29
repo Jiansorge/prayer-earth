@@ -168,11 +168,34 @@ const SUITE = `(async () => {
           localPrayerSeconds: 99999, bestStreak: 40 })
   const fresh = buildBackupCode()
   reset({ anonId: 'anon-abc', prayerCompletions: { taras: 1 }, localPrayerSeconds: 0 })
-  restoreFromCode(fresh)
+  const gained = restoreFromCode(fresh)
   s = useStore.getState()
   t('merge takes the greater prayer count', s.prayerCompletions.taras === 99, 'got ' + s.prayerCompletions.taras)
   t('merge takes the greater seconds', s.localPrayerSeconds === 99999, 'got ' + s.localPrayerSeconds)
   t('merge takes the greater best streak', s.bestStreak === 40, 'got ' + s.bestStreak)
+
+  // --- the restore summary must describe what actually happened ----------
+  t('summary reports the backup completions', gained.backup.completions === 149, 'n=' + gained.backup.completions)
+  t('summary counts distinct prayers', gained.backup.distinctPrayers === 2, 'n=' + gained.backup.distinctPrayers)
+  t('summary reports the backup seconds', gained.backup.seconds === 99999)
+  t('summary reports the backup best streak', gained.backup.bestStreak === 40)
+  t('a restore that raised the totals is not a no-op', gained.wasNoop === false)
+  t('summary reports the seconds gained', gained.gainedSeconds === 99999, 'gained=' + gained.gainedSeconds)
+  t('summary reports the RESULT, not just the backup',
+    gained.result.seconds === 99999 && gained.result.completions === 149, JSON.stringify(gained.result))
+
+  // --- re-pasting the same code must honestly say "nothing changed" -----
+  const again = restoreFromCode(fresh)
+  t('re-pasting the same backup is reported as a no-op', again.wasNoop === true)
+  t('a no-op restore gains nothing', again.gainedSeconds === 0, 'gained=' + again.gainedSeconds)
+  t('a no-op restore still reports the backup contents', again.backup.completions === 149)
+
+  // --- an empty backup must not claim a restore happened ---------------
+  reset()
+  const emptySummary = restoreFromCode(buildBackupCode())
+  t('an empty backup reports zero completions', emptySummary.backup.completions === 0)
+  t('an empty backup into an empty device is a no-op', emptySummary.wasNoop === true)
+  t('an empty backup has no day range', emptySummary.backup.days === 0)
 
   // --- adopting the anonId reconnects server sync ---
   reset({ anonId: 'fresh-device-id', localPrayerSeconds: 5 })

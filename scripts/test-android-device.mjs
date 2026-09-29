@@ -295,6 +295,22 @@ const testLifecycle = async () => {
   check('force-stop and relaunch preserve counters', after.seconds >= persisted.seconds && after.completions >= persisted.completions, JSON.stringify({ persisted, after }))
 }
 
+const testCryptoSupport = async () => {
+  const caps = await cdp.evaluate(`(() => {
+    const c = window.crypto || {}
+    return {
+      hasCrypto: !!window.crypto,
+      hasSubtle: !!(c && c.subtle),
+      secure: (() => { try { return window.isSecureContext } catch (e) { return 'unknown' } })(),
+      getRandom: typeof c.getRandomValues === 'function',
+      scheme: location.protocol
+    }
+  })()`)
+  log(`crypto support: ${JSON.stringify(caps)}`)
+  check('WebView exposes a CSPRNG', caps.getRandom, JSON.stringify(caps))
+  check('WebView provides crypto.subtle for passphrase encryption', caps.hasSubtle, JSON.stringify(caps))
+}
+
 const testSentinel = async (key, value) => {
   const stored = await cdp.evaluate(`localStorage.getItem(${JSON.stringify(key)})`)
   check('app data survives APK reinstall', stored === value, `stored=${stored}`)
@@ -412,6 +428,27 @@ const testBackup = async () => {
     const after = await cdp.evaluate(`(() => { const s = window.__store.getState(); return { seconds: s.localPrayerSeconds } })()`)
     check('restoring on device brings the cleared counters back',
       after.seconds === before.seconds, `restored=${after.seconds}s expected=${before.seconds}s`)
+
+    // The summary is the only way a user can tell they pasted the RIGHT code,
+    // so assert it actually renders with real numbers on the phone.
+    const sum = await cdp.evaluate(`(() => {
+      const el = document.querySelector('[data-testid="backup-summary"]')
+      if (!el) return null
+      const values = [...el.querySelectorAll('.backup-summary-value')].map(v => (v.textContent || '').trim())
+      return JSON.stringify({
+        values,
+        notes: el.querySelectorAll('.backup-summary-note').length,
+        radius: getComputedStyle(el).borderRadius
+      })
+    })()`)
+    const s2 = sum ? JSON.parse(sum) : null
+    check('the restore summary is shown after restoring on device', !!s2, sum)
+    if (s2) {
+      check('the summary shows four populated figures', s2.values.length === 4 && s2.values.every(Boolean), JSON.stringify(s2.values))
+      check('the summary figures are not all zero (a real restore happened)',
+        s2.values.some(v => v !== '0' && v !== '0s' && v !== '0m'), JSON.stringify(s2.values))
+      check('the summary card is styled', !!s2.radius && s2.radius !== '0px', String(s2.radius))
+    }
   } else {
     console.log('[android-smoke] NOTE: no readable code (clipboard not script-readable); skipping the destroy/restore leg')
   }
@@ -464,6 +501,7 @@ try {
   await testTaras()
   await testDeepLink()
   await testLifecycle()
+  await testCryptoSupport()
   await testBackup()
   log(`failures=${failures}`)
 } catch (error) {

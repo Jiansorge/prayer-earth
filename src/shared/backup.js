@@ -70,11 +70,43 @@ export function parseBackupCode(code) {
   return obj
 }
 
+// A plain-language digest of what a backup actually contains, so a restore can
+// tell the user what they got back. Without this, pasting a code is a leap of
+// faith: "Restored." is indistinguishable from pasting the wrong person's code.
+export function summarizePayload(payload) {
+  const completions = payload?.prayerCompletions && typeof payload.prayerCompletions === 'object'
+    ? payload.prayerCompletions
+    : {}
+  const ids = Object.keys(completions).filter((k) => Number.isFinite(completions[k]))
+  const days = Object.keys(payload?.prayerDayCompletions || {})
+    .map(Number)
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b)
+  return {
+    distinctPrayers: ids.length,
+    completions: ids.reduce((sum, k) => sum + completions[k], 0),
+    seconds: Number.isFinite(payload?.localPrayerSeconds) ? payload.localPrayerSeconds : 0,
+    bestStreak: Number.isFinite(payload?.bestStreak) ? payload.bestStreak : 0,
+    days: days.length,
+    fromDay: days.length ? days[0] : 0,
+    toDay: days.length ? days[days.length - 1] : 0
+  }
+}
+
+// The same digest for live state, so a restore can report the result and say
+// whether the backup was older than what the device already had.
+export function summarizeState(state) {
+  return summarizePayload(state)
+}
+
 // Merge a backup into the live store. Counters are max-merged (so an older
 // backup never lowers newer data); the anonId is adopted so server-side lifetime
-// sync reconnects to the restored identity.
+// sync reconnects to the restored identity. Returns a summary describing both
+// the backup's contents and what the merge actually did.
 export function applyBackup(payload) {
   const s = useStore.getState()
+  const backup = summarizePayload(payload)
+  const before = summarizeState(s)
   const merged = mergeStats(s, payload)
   const next = {
     prayerCompletions: merged.prayerCompletions,
@@ -93,7 +125,23 @@ export function applyBackup(payload) {
     next.firstSeen = payload.firstSeen
   }
   useStore.setState(next)
-  return next
+
+  // Report what the merge actually did, not just that it ran. "wasNoop" means
+  // the backup held nothing this device didn't already have -- the honest
+  // answer to "I pasted my old code and nothing changed".
+  const after = summarizeState(useStore.getState())
+  const identityChanged = next.anonId && next.anonId !== s.anonId
+  return {
+    backup,
+    result: after,
+    identityChanged: Boolean(identityChanged),
+    wasNoop:
+      !identityChanged &&
+      after.seconds === before.seconds &&
+      after.completions === before.completions &&
+      after.bestStreak === before.bestStreak,
+    gainedSeconds: Math.max(0, after.seconds - before.seconds)
+  }
 }
 
 // Convenience: parse + apply in one call.

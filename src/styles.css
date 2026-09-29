@@ -2027,6 +2027,58 @@ html[dir='rtl'] .chooser-arrow.right {
   border-color: rgba(232, 196, 122, 0.5);
 }
 
+/* What a restore actually brought back. Pasting a recovery code is otherwise a
+   leap of faith, so spell out the contents instead of just saying "Restored." */
+.backup-summary {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid rgba(232, 196, 122, 0.28);
+  border-radius: 14px;
+  background: rgba(232, 196, 122, 0.06);
+}
+
+.backup-summary-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+  opacity: 0.9;
+  margin-bottom: 10px;
+}
+
+.backup-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.backup-summary-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.backup-summary-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.backup-summary-label {
+  font-size: 11px;
+  color: var(--ink-dim);
+}
+
+.backup-summary-note {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+}
+
 /* The public web address, shown literally so it's obvious the app also lives
    on the open web (tap to share/copy it). */
 .field-url {
