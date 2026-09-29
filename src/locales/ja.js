@@ -288,4 +288,5 @@ export default {
   'sound.prayerVoice': '祈祷の声の音量',
   'sound.ambient': '環境音の音量',
   'sound.speed': '速度',
+  'settings.saveFailed': 'この端末では祈りのカウントが保存されていません。空き容量を増やすか別のブラウザをお試しください（現在のセッションは記録されています）。',
 };

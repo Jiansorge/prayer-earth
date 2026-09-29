@@ -367,4 +367,5 @@ export default {
   'sound.prayerVoice': 'Volume de la voix de la prière',
   'sound.ambient': 'Volume du son ambiant',
   'sound.speed': 'Vitesse',
+  'settings.saveFailed': 'Vos compteurs de prière ne sont pas enregistrés sur cet appareil. Libérez de l\'espace ou essayez un autre navigateur — la session en cours continue de compter.',
 };

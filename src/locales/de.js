@@ -367,4 +367,5 @@ export default {
   'sound.prayerVoice': 'Gebetsstimme-Lautstärke',
   'sound.ambient': 'Lautstärke der Umgebungsgeräusche',
   'sound.speed': 'Geschwindigkeit',
+  'settings.saveFailed': 'Deine Gebetszähler werden auf diesem Gerät nicht gespeichert. Schaffe Speicher oder nutze einen anderen Browser — die aktuelle Sitzung zählt weiter.',
 };

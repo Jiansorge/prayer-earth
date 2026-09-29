@@ -275,4 +275,5 @@ export default {
   'sound.prayerVoice': '기도 음성 음량',
   'sound.ambient': '환경 소리 음량',
   'sound.speed': '속도',
+  'settings.saveFailed': '이 기기에서 기도 횟수가 저장되지 않습니다. 저장 공간을 확보하거나 다른 브라우저를 사용해 보세요 — 현재 세션은 계속 기록됩니다.',
 };

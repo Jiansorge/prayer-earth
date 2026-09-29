@@ -274,4 +274,5 @@ export default {
   'sound.prayerVoice': 'Volume della voce della preghiera',
   'sound.ambient': 'Volume del suono ambientale',
   'sound.speed': 'Velocità',
+  'settings.saveFailed': 'I tuoi contatori di preghiera non vengono salvati su questo dispositivo. Libera spazio o prova un altro browser: la sessione corrente continua a contare.',
 };

@@ -91,6 +91,14 @@ const safeStorage = {
   setItem: (name, value) => {
     try {
       window.localStorage.setItem(name, value)
+      // A successful write clears a transient failure so the warning can
+      // disappear once storage recovers.
+      if (_writeFailed) {
+        _writeFailed = false
+        try {
+          useStore.setState({ persistFailed: false })
+        } catch {}
+      }
     } catch {
       if (!_writeFailed) {
         _writeFailed = true

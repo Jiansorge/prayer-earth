@@ -342,4 +342,5 @@ export default {
   'sound.prayerVoice': 'Lakas ng boses ng panalangin',
   'sound.ambient': 'Lakas ng tunog na kapaligitan',
   'sound.speed': 'Bilis',
+  'settings.saveFailed': 'Hindi nai-save ang iyong mga bilang ng dasal sa device na ito. Mag-clear ng espasyo o subukan ang ibang browser — kasalukuyang session ay nagbibilang pa rin.',
 };

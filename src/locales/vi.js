@@ -370,4 +370,5 @@ export default {
   'sound.prayerVoice': 'Âm lượng giọng cầu nguyện',
   'sound.ambient': 'Âm lượng âm thanh',
   'sound.speed': 'Tốc độ',
+  'settings.saveFailed': 'Bộ đếm lời cầu nguyện của bạn không được lưu trên thiết bị này. Hãy giải phóng dung lượng hoặc thử trình duyệt khác — phiên hiện tại vẫn đang đếm.',
 };

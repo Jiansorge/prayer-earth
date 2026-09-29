@@ -269,4 +269,5 @@ export default {
   'sound.prayerVoice': 'Volume da voz da oração',
   'sound.ambient': 'Volume do som ambiente',
   'sound.speed': 'Velocidade',
+  'settings.saveFailed': 'Seus contadores de oração não estão sendo salvos neste dispositivo. Libere espaço ou tente outro navegador — a sessão atual continua contando.',
 };

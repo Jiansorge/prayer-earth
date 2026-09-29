@@ -369,4 +369,5 @@ export default {
   'sound.prayerVoice': 'Volumen de la voz de la oración',
   'sound.ambient': 'Volumen del sonido ambiente',
   'sound.speed': 'Velocidad',
+  'settings.saveFailed': 'Tus recuentos de oración no se están guardando en este dispositivo. Libera espacio o prueba otro navegador: la sesión actual sigue contando.',
 };

@@ -276,4 +276,5 @@ export default {
   'sound.prayerVoice': '祈祷人声音量',
   'sound.ambient': '环境音音量',
   'sound.speed': '速度',
+  'settings.saveFailed': '此设备上未能保存你的祈祷计数。请释放一些空间或换用其他浏览器——当前会话仍在计数。',
 };

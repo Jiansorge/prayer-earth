@@ -35,6 +35,7 @@ const PLAY_STORE_URL = import.meta.env.VITE_PLAY_STORE_URL || null
 export default function SettingsSheet() {
   const open = useStore((s) => s.settingsOpen)
   const setOpen = useStore((s) => s.setSettingsOpen)
+  const persistFailed = useStore((s) => s.persistFailed)
   const voiceURI = useStore((s) => s.voiceURI)
   const setVoiceURI = useStore((s) => s.setVoiceURI)
   const speechRate = useStore((s) => s.speechRate)
@@ -195,6 +196,14 @@ export default function SettingsSheet() {
         <div className="field-divider" />
 
         <label className="field-label section">{t('settings.secPraying')}</label>
+
+        {/* If localStorage writes are failing, the user's prayer counts are not
+            being saved — warn them (durability: never lose a prayer silently). */}
+        {persistFailed && (
+          <div className="save-warning" role="alert">
+            {t('settings.saveFailed')}
+          </div>
+        )}
 
         {/* The sound controls (prayer voice volume, ambient sound volume, speed,
             ambient bed picker) are shared verbatim with the prayer mini panel so
