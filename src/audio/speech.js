@@ -1,4 +1,4 @@
-﻿// Speaks prayers phrase-by-phrase so the UI can highlight exactly the phrase
+// Speaks prayers phrase-by-phrase so the UI can highlight exactly the phrase
 // being voiced right now. One utterance per phrase = reliable phrase sync.
 //
 // Hardened for the real world:

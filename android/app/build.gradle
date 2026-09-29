@@ -1,4 +1,4 @@
-﻿apply plugin: 'com.android.application'
+apply plugin: 'com.android.application'
 
 // Release signing: reads android/key.properties (gitignored) when present, so
 // release AABs are upload-key signed locally. CI/web builds never need it.

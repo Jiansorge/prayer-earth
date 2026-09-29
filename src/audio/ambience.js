@@ -1,4 +1,4 @@
-﻿// A soft, endless ambient bed: warm drone, distant wind, and a singing bowl.
+// A soft, endless ambient bed: warm drone, distant wind, and a singing bowl.
 // Built on the Web Audio API so it works offline with no audio files.
 
 import { useStore } from '../store.js'
