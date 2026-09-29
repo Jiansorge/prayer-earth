@@ -21,8 +21,6 @@ jobs:
         run: node scripts/audit-build.mjs
       - name: Server integration tests
         run: node scripts/test-server.mjs
-      - name: Backup / restore tests (no prayer data lost)
-        run: node scripts/test-backup.mjs
       - name: i18n audit
         run: node scripts/audit-i18n.mjs
       - name: Prayer language/translation audit
@@ -129,8 +127,10 @@ jobs:
       - run: npm ci --legacy-peer-deps
       - name: Install headless Chromium (Playwright)
         run: npx playwright install --with-deps chromium
-      - name: Real-usage browser suite (CDP, live app + sync server)
-        run: node scripts/test-usage-ci.mjs
+    - name: Real-usage browser suite (CDP, live app + sync server)
+      run: node scripts/test-usage-ci.mjs
+    - name: Backup / restore tests (no prayer data lost)
+      run: node scripts/test-backup.mjs
 
   deploy-dispatch:
     # Deterministic gates only. android-smoke (a KVM emulator) is the flakiest
