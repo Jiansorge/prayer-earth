@@ -67,6 +67,8 @@ export default {
   'settings.backupRestored': '復元しました。祈りが戻りました。',
   'settings.backupInvalid': '有効なリカバリコードではありません。',
   'settings.backupCorrupt': 'コードが破損しているか読み取れません。',
+  'settings.backupShared': '共有を開きました。コードを安全な場所に保存してください。',
+  'settings.backupShowHint': '自動コピー・保存できませんでした。下のリカバリコードをコピーして保管してください。',
   'settings.secAbout': 'このアプリについて',
   'settings.installApp': 'ホーム画面に追加',
   'settings.installHint': 'Joining Palms をネイティブアプリとしてインストール — アプリストアは不要です。',

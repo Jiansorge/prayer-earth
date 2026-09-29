@@ -67,6 +67,8 @@ export default {
   'settings.backupRestored': 'تمت الاستعادة. عادت صلواتك.',
   'settings.backupInvalid': 'هذا ليس رمز استرداد صالح.',
   'settings.backupCorrupt': 'الرمز تالف أو غير مقروء.',
+  'settings.backupShared': 'تم فتح المشاركة. احفظ الكود في مكان آمن.',
+  'settings.backupShowHint': 'تعذّر النسخ أو التنزيل تلقائيًا. انسخ الكود أدناه واحفظه.',
   'settings.secAbout': 'حول',
   'settings.installApp': 'أضف إلى الشاشة الرئيسية',
   'settings.installHint': 'ثبّت Joining Palms كتطبيق أصلي — دون الحاجة إلى متجر تطبيقات.',

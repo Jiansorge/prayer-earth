@@ -1999,6 +1999,34 @@ html[dir='rtl'] .chooser-arrow.right {
   color: var(--ink-dim);
 }
 
+/* Paste-a-recovery-code box (Settings -> Backup & restore). Sits in the same
+   visual family as .field-btn but is multi-line and must stay legible in the
+   dark theme -- the browser default would render near-white-on-white. */
+.field-textarea {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.field-textarea::placeholder {
+  color: var(--ink-dim);
+  opacity: 0.7;
+}
+
+.field-textarea:focus {
+  outline: none;
+  border-color: rgba(232, 196, 122, 0.5);
+}
+
 /* The public web address, shown literally so it's obvious the app also lives
    on the open web (tap to share/copy it). */
 .field-url {

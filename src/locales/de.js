@@ -84,6 +84,8 @@ export default {
   'settings.backupRestored': 'Wiederhergestellt. Deine Gebete sind zurück.',
   'settings.backupInvalid': 'Das ist kein gültiger Wiederherstellungscode.',
   'settings.backupCorrupt': 'Der Code ist beschädigt oder unlesbar.',
+  'settings.backupShared': 'Teilen geöffnet. Bewahre den Code sicher auf.',
+  'settings.backupShowHint': 'Kopieren oder Download war nicht möglich. Kopiere den Code unten und bewahre ihn auf.',
   'settings.secAbout': 'Über',
   'settings.installApp': 'Zum Home-Bildschirm hinzufügen',
   'settings.installHint': 'Installiere Joining Palms wie eine native App — kein App-Store nötig.',

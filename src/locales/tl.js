@@ -89,6 +89,8 @@ export default {
   'settings.backupRestored': 'Na-restore. Naibalik ang iyong mga dasal.',
   'settings.backupInvalid': 'Hindi ito wastong recovery code.',
   'settings.backupCorrupt': 'Sira o hindi mabasa ang code.',
+  'settings.backupShared': 'Na-open ang share sheet. I-save ang code sa ligtas na lugar.',
+  'settings.backupShowHint': 'Hindi makopya o ma-download nang automatic. Kopyahin ang code sa ibaba at itago.',
   'settings.secAbout': 'Tungkol',
   'settings.sharePrayerLabel': 'Ibahagi ang isang panalangin',
   'settings.sharePrayerHint':

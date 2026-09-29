@@ -12,8 +12,9 @@ import LegalSheet from './LegalSheet.jsx'
 import { canInstall, promptInstall } from '../shared/installPrompt.js'
 import { isMobile, isIos, isAppShell } from '../shared/mobile.js'
 import { CANONICAL_ORIGIN } from '../shared/canonical.js'
-import { shareLink } from '../shared/share.js'
+import { shareLink, copyText } from '../shared/share.js'
 import { buildBackupCode, parseBackupCode, applyBackup } from '../shared/backup.js'
+import { syncClient } from '../sync/client.js'
 
 const isInstalled = () =>
   window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone
@@ -59,6 +60,7 @@ export default function SettingsSheet() {
   const [backupCopied, setBackupCopied] = useState(false)
   const [backupMsg, setBackupMsg] = useState(null) // { ok: bool, key: string }
   const [restoreText, setRestoreText] = useState('')
+  const [backupCode, setBackupCode] = useState('') // shown when copy/download can't work
   const fileRef = useRef(null)
   const [installed, setInstalled] = useState(false)
   const [showIosTip, setShowIosTip] = useState(false)
@@ -99,42 +101,85 @@ export default function SettingsSheet() {
 
   const copyBackup = async () => {
     const code = buildBackupCode()
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(code)
-        setBackupCopied(true)
-        setTimeout(() => setBackupCopied(false), 2000)
-        flashBackup(true, 'settings.backupCopied')
-        return
-      }
-      throw new Error('no clipboard')
-    } catch {
-      // Clipboard can be blocked in the app-shell WebView — surface the code
-      // for manual copy rather than a dead button.
-      window.prompt(t('settings.backupCopyTitle'), code)
+    // Use the same WebView-hardened copyText() the share row uses: it falls
+    // back to the legacy execCommand path, which is what still works inside the
+    // Android/iOS app shell. Calling navigator.clipboard directly (as this did
+    // first) is unreliable there, and window.prompt -- the old last resort -- is
+    // NOT implemented by the Android WebView, so a blocked copy used to look
+    // like success while the recovery code was silently lost. That is the worst
+    // possible failure for a backup feature, so fall through to the share sheet
+    // and only then to a visible, selectable <textarea>.
+    const copied = await copyText(code)
+    if (copied) {
+      setBackupCopied(true)
+      setTimeout(() => setBackupCopied(false), 2000)
+      flashBackup(true, 'settings.backupCopied')
+      return
     }
+    // Native share sheet lets the user send the code to Notes/Drive/mail, which
+    // is a genuinely durable save on a phone (and works in the app shell).
+    let shared = false
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: t('settings.backupCopyTitle'), text: code })
+        shared = true
+      }
+    } catch (err) {
+      shared = err?.name === 'AbortError'
+    }
+    if (shared) {
+      flashBackup(true, 'settings.backupShared')
+      return
+    }
+    // Genuine last resort: show it in a real, selectable field rather than a
+    // prompt() the WebView swallows.
+    setBackupCode(code)
   }
 
   const downloadBackup = () => {
     const code = buildBackupCode()
-    const blob = new Blob([code], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'joining-palms-backup.txt'
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    setTimeout(() => URL.revokeObjectURL(url), 1000)
-    flashBackup(true, 'settings.backupDownloaded')
+    // A blob + <a download> does nothing in the Android WebView (no download
+    // listener), and the old code still reported success -- so a user backing up
+    // before losing a phone was told "downloaded" and got no file at all. Only
+    // claim success when the browser actually took it; otherwise show the code
+    // in a selectable field, which always works.
+    let downloaded = false
+    try {
+      const blob = new Blob([code], { type: 'text/plain' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'joining-palms-backup.txt'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+      downloaded = true
+    } catch {}
+    if (downloaded && !isAppShell()) {
+      flashBackup(true, 'settings.backupDownloaded')
+      return
+    }
+    setBackupCode(code)
   }
 
   const doRestore = (code) => {
+    const before = useStore.getState().anonId
     try {
       const payload = parseBackupCode(code)
       applyBackup(payload)
       setRestoreText('')
       flashBackup(true, 'settings.backupRestored')
+      // Restoring can adopt a different anonId, but the live socket has already
+      // handshook under the old one. Without a re-handshake the connection would
+      // keep pushing to the previous identity while local state claims the new
+      // one. Bounce it so the next handshake uses the restored identity.
+      if (useStore.getState().anonId !== before) {
+        try {
+          syncClient.stop()
+          syncClient.start()
+        } catch {}
+      }
     } catch (e) {
       flashBackup(false, e?.message === 'notBackup' ? 'settings.backupInvalid' : 'settings.backupCorrupt')
     }
@@ -393,6 +438,18 @@ export default function SettingsSheet() {
         <button className="field-btn" onClick={downloadBackup} style={{ marginTop: 8 }}>
           {t('settings.backupDownload')}
         </button>
+        {backupCode && (
+          <>
+            <div className="field-hint" style={{ marginTop: 10 }}>{t('settings.backupShowHint')}</div>
+            <textarea
+              className="field-textarea"
+              value={backupCode}
+              readOnly
+              rows={4}
+              onFocus={(e) => e.target.select()}
+            />
+          </>
+        )}
 
         <label className="field-label" style={{ marginTop: 18 }}>{t('settings.backupRestoreLabel')}</label>
         <div className="field-hint">{t('settings.backupRestoreHint')}</div>

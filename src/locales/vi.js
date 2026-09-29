@@ -89,6 +89,8 @@ export default {
   'settings.backupRestored': 'Đã khôi phục. Những lời cầu nguyện của bạn đã trở lại.',
   'settings.backupInvalid': 'Đó không phải mã khôi phục hợp lệ.',
   'settings.backupCorrupt': 'Mã bị hỏng hoặc không đọc được.',
+  'settings.backupShared': 'Đã mở bảng chia sẻ. Hãy lưu mã ở nơi an toàn.',
+  'settings.backupShowHint': 'Không thể sao chép hoặc tải xuống. Hãy sao chép mã bên dưới và lưu lại.',
   'settings.secAbout': 'Giới thiệu',
   'settings.installApp': 'Thêm vào Màn hình chính',
   'settings.installHint': 'Cài Joining Palms như một ứng dụng gốc — không cần cửa hàng ứng dụng.',

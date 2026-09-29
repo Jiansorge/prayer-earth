@@ -67,6 +67,8 @@ export default {
   'settings.backupRestored': '복원되었습니다. 기도가 돌아왔습니다.',
   'settings.backupInvalid': '유효한 복구 코드가 아닙니다.',
   'settings.backupCorrupt': '코드가 손상되었거나 읽을 수 없습니다.',
+  'settings.backupShared': '공유 시트를 열었습니다. 코드를 안전한 곳에 보관하세요.',
+  'settings.backupShowHint': '자동 복사나 저장이 되지 않았습니다. 아래 코드를 복사해 보관하세요.',
   'settings.secAbout': '정보',
   'settings.installApp': '홈 화면에 추가',
   'settings.installHint': 'Joining Palms를 네이티브 앱처럼 설치하세요 — 앱 스토어가 필요 없습니다.',

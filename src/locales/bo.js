@@ -90,6 +90,8 @@ export default {
   'settings.backupRestored': 'སྐྱེད་ཟིན། སྐུར་སྐྱོད་པའི་སྐུར་བྟོན་བསྐྱེད།',
   'settings.backupInvalid': 'འདི་ནི་གྲོལ་ཡིག་ཚང་མ་གྲགས་པ་ཞིག་མིན།',
   'settings.backupCorrupt': 'གྲོལ་ཡིག་གསར་དམ་བྱུང་ཡོད་པའམ་བསྡུས་མེད།',
+  'settings.backupShared': 'དཔལ་འཛུགས་འགྲོ་བ་བསྟན་པ། གྲོལ་ཡིག་མཐའ་སྔགས་ལ་བཞག་བཤད།',
+  'settings.backupShowHint': 'འདྲ་བཤུགས་ཡང་ལྡན་འཇུག་ཀྱང་མི་ཐུབ། གྲོལ་ཡིག་འདིར་འདྲ་བཤུགས་དང་བཞག་བཤད།',
   'settings.secAbout': 'སྐོར།',
   'settings.installApp': 'ཁྱིམ་ཐོག་ངོས་ལ་རྩིས་སྣ་གཏན་འཇགས།',
   'settings.installHint': 'Joining Palms ཡོ་ཆས་རྒྱུན་གཏན་གྱི་ངང་ཚུལ་དུ་བཙུགས་ཐུབ། — ཡོ་ཆས་ཞོགས་ཁང་དགོས་པ་མེད།',

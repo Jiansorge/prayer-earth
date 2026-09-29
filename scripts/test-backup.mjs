@@ -186,6 +186,7 @@ const SUITE = `(async () => {
   t('rejects a wrong-version payload', tryParse('JP1:' + btoa('{"nope":1}')) === 'corrupt')
   t('rejects undecodable text', tryParse('JP1:@@@@') === 'corrupt')
   t('rejects an empty string', tryParse('') === 'notBackup')
+  t('rejects an oversized paste without decoding it', tryParse('JP1:' + 'A'.repeat(600 * 1024)) === 'corrupt')
   t('a failed restore leaves data untouched', useStore.getState().localPrayerSeconds === before)
 
   // --- privacy: the code must not carry identity or UI prefs ---

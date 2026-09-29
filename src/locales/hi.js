@@ -84,6 +84,8 @@ export default {
   'settings.backupRestored': 'बहाल हो गया। आपकी प्रार्थनाएँ वापस आ गईं।',
   'settings.backupInvalid': 'यह मान्य रिकवरी कोड नहीं है।',
   'settings.backupCorrupt': 'कोड क्षतिग्रस्त या अपठनीय है।',
+  'settings.backupShared': 'शेयर खोला गया। कोड किसी सुरक्षित जगह रखें।',
+  'settings.backupShowHint': 'अपने आप कॉपी या डाउनलोड नहीं हो सका। नीचे का कोड कॉपी करके सुरक्षित रखें।',
   'settings.secAbout': 'परिचय',
   'settings.installApp': 'होम स्क्रीन में जोड़ें',
   'settings.installHint': 'Joining Palms को देशज ऐप की तरह इंस्टॉल करें — किसी ऐप स्टोर की ज़रूरत नहीं।',

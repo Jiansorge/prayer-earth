@@ -67,6 +67,8 @@ export default {
   'settings.backupRestored': 'Восстановлено. Ваши молитвы вернулись.',
   'settings.backupInvalid': 'Это не действительный код восстановления.',
   'settings.backupCorrupt': 'Код повреждён или не читается.',
+  'settings.backupShared': 'Открыто меню «Поделиться». Сохраните код в надёжном месте.',
+  'settings.backupShowHint': 'Не удалось скопировать или скачать. Скопируйте код ниже и сохраните его.',
   'settings.secAbout': 'О приложении',
   'settings.installApp': 'Добавить на главный экран',
   'settings.installHint': 'Установите Joining Palms как обычное приложение — магазин приложений не нужен.',

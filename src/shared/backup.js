@@ -56,6 +56,10 @@ export function buildBackupCode() {
 export function parseBackupCode(code) {
   const trimmed = String(code || '').trim()
   if (!trimmed.startsWith(PREFIX)) throw new Error('notBackup')
+  // Refuse absurd input before decoding. A user's own code is a few KB; this
+  // stops a pasted megabyte from being base64-decoded (and then JSON-parsed)
+  // on the UI thread, and costs nothing for a real code.
+  if (trimmed.length > 512 * 1024) throw new Error('corrupt')
   let obj
   try {
     obj = JSON.parse(b64decode(trimmed.slice(PREFIX.length)))

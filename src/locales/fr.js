@@ -84,6 +84,8 @@ export default {
   'settings.backupRestored': 'Restauré. Vos prières sont de retour.',
   'settings.backupInvalid': 'Ce n\'est pas un code de récupération valide.',
   'settings.backupCorrupt': 'Le code est endommagé ou illisible.',
+  'settings.backupShared': 'Partage ouvert. Conservez le code en lieu sûr.',
+  'settings.backupShowHint': 'Copie ou téléchargement impossible. Copiez le code ci-dessous et conservez-le.',
   'settings.secAbout': 'À propos',
   'settings.legal': 'Confidentialité et bienveillance',
   'settings.installApp': 'Ajouter à l\u2019écran d\u2019accueil',
