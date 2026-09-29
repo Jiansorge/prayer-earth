@@ -32,18 +32,18 @@ export class AmbientEngine {
       if (!AC) return Promise.resolve()
       try {
         this.ctx = new AC()
-        // Shared limiter. The bed is deliberately loud now (~2.5 master) and the
-        // recorded voice shares this same AudioContext, so bed + voice (+ chant)
-        // can sum past 1.0 and crackle. A gentle compressor before destination
-        // keeps peaks in range without audibly squashing the bed. Everything
-        // routed through Web Audio (master, chantBus, the recorded voice) goes
-        // through this; the native <audio> element path is OS-mixed.
-        this.limiter = this.ctx.createDynamicsCompressor()
-        this.limiter.threshold.value = -8
-        this.limiter.knee.value = 8
-        this.limiter.ratio.value = 12
-        this.limiter.attack.value = 0.004
-        this.limiter.release.value = 0.25
+      // The bed is deliberately loud now (~2.5 master) and the
+      // recorded voice shares this same AudioContext, so bed + voice (+ chant)
+      // can sum past 1.0 and crackle. A gentle compressor before destination
+      // keeps peaks in range without audibly squashing the bed. Everything
+      // routed through Web Audio (master, chantBus, the recorded voice) goes
+      // through this; the native <audio> element path is OS-mixed.
+      this.limiter = this.ctx.createDynamicsCompressor()
+      this.limiter.threshold.value = -14
+      this.limiter.knee.value = 10
+      this.limiter.ratio.value = 18
+      this.limiter.attack.value = 0.006
+      this.limiter.release.value = 0.32
         this.limiter.connect(this.ctx.destination)
         this.master = this.ctx.createGain()
         this.master.gain.value = 0
@@ -195,44 +195,48 @@ export class AmbientEngine {
   _builders() {
     return {
       // Reiki Drift — the classic warm healing pad: a broad major-9 that
-      // breathes with a slow pulse, the closest thing here to soft "reiki" music.
+      // breathes with a slow pulse, plus a midrange air layer so it's audible
+      // on a phone speaker (which can't reproduce the low pad).
       reiki: (b, s) => {
         this._pad(b, s, { notes: [130.81, 196.0, 261.63, 329.63, 493.88], gain: 0.05, filter: 420, breathe: 0.04, pulse: 0.2, pulseDepth: 0.3 })
-        this._pad(b, s, { notes: [392.0], gain: 0.006, filter: 900 })
+        this._air(b, s, { gain: 0.05, filter: 'bandpass', freq: 620, q: 0.4, lfo: 0.07, depth: 200 })
       },
       // Ocean Hush — low pad under a slowly breathing band of surf noise, with
       // a slow tidal swell.
       ocean: (b, s) => {
         this._pad(b, s, { notes: [65.41, 98.0, 130.81], gain: 0.05, filter: 300, breathe: 0.045, pulse: 0.13, pulseDepth: 0.4 })
-        this._air(b, s, { gain: 0.02, filter: 'bandpass', freq: 420, q: 0.5, lfo: 0.05, depth: 260 })
+        this._air(b, s, { gain: 0.075, filter: 'bandpass', freq: 500, q: 0.5, lfo: 0.05, depth: 260 })
       },
       // Temple Bowl — near-silence under rare, resonant bowl strikes; the slow
       // pad pulse keeps a gentle heartbeat under the rare bells.
       temple: (b, s) => {
         this._pad(b, s, { notes: [65.41, 98.0], gain: 0.035, filter: 240, breathe: 0.03, pulse: 0.1, pulseDepth: 0.3 })
-        this._bells(b, s, { root: 196, gain: 0.05, every: 11 })
+        this._air(b, s, { gain: 0.022, filter: 'bandpass', freq: 700, q: 0.6, lfo: 0.05, depth: 180 })
+        this._bells(b, s, { root: 196, gain: 0.06, every: 11 })
       },
       // Night Rain — a soft high band of rain over a low pulsing rumble.
       rain: (b, s) => {
         this._pad(b, s, { notes: [55.0, 82.41], gain: 0.04, filter: 200, breathe: 0.04, pulse: 0.25, pulseDepth: 0.3 })
-        this._air(b, s, { gain: 0.014, filter: 'highpass', freq: 1400, q: 0.4, lfo: 0.2, depth: 400 })
+        this._air(b, s, { gain: 0.055, filter: 'highpass', freq: 1400, q: 0.4, lfo: 0.2, depth: 400 })
       },
       // Forest Stillness — airy leaves and a distant mid pad, pulsing gently.
       forest: (b, s) => {
         this._pad(b, s, { notes: [98.0, 146.83, 196.0], gain: 0.035, filter: 380, breathe: 0.05, pulse: 0.14, pulseDepth: 0.35 })
-        this._air(b, s, { gain: 0.01, filter: 'bandpass', freq: 900, q: 0.8, lfo: 0.08, depth: 300 })
+        this._air(b, s, { gain: 0.045, filter: 'bandpass', freq: 950, q: 0.8, lfo: 0.08, depth: 300 })
       },
       // Deep Space — a very low, warm, wide drone with a slow deep pulse. The
       // old version had a 880/1174 Hz "shimmer" pad that read as tinny and
       // high-pitched; replaced with low-mid fifths and a darker lowpass so it
-      // sits as a warm hum instead of a whistle.
+      // sits as a warm hum instead of a whistle. A gentle midrange air layer
+      // keeps it present on a phone speaker.
       space: (b, s) => {
         this._pad(b, s, { notes: [55.0, 82.41, 110.0, 164.81], gain: 0.05, filter: 300, detune: 14, breathe: 0.03, pulse: 0.08, pulseDepth: 0.45 })
-        this._pad(b, s, { notes: [220.0, 293.66], gain: 0.008, filter: 500, breathe: 0.02 })
+        this._air(b, s, { gain: 0.02, filter: 'bandpass', freq: 380, q: 0.5, lfo: 0.04, depth: 120 })
       },
       // Warming Pad — a close, mid-low chord with a steady gentle pulse.
       warm: (b, s) => {
         this._pad(b, s, { notes: [98.0, 116.54, 146.83, 196.0], gain: 0.045, filter: 460, breathe: 0.06, pulse: 0.18, pulseDepth: 0.3 })
+        this._air(b, s, { gain: 0.02, filter: 'bandpass', freq: 560, q: 0.5, lfo: 0.06, depth: 160 })
       }
     }
   }
@@ -300,11 +304,12 @@ export class AmbientEngine {
     this.level = Math.max(0, Math.min(1, level))
     if (this.master && this.ctx) {
       const user = useStore.getState().ambienceLevel
-      // Boosted again (~3x the previous ceiling, ~10x the original): the bed was
-      // still "barely audible at 100%". At full slider this reaches ~2.5 during
-      // prayer — a single bed peaks well under 1.0 so it won't clip, and the
-      // Ambient sound volume slider now has real range to dial it back.
-      const target = (0.5 + this.level * 2.2) * (0.2 + 0.8 * user) * this.vol
+      // Pushed much higher: a phone speaker rolls off hard below ~200 Hz, so the
+      // low pads alone are near-inaudible on a handset no matter the gain. The
+      // beds now carry broadband noise + midrange harmonics, and the master is
+      // run loud behind the limiter (which is set to catch peaks). At full the
+      // slider this reaches ~7 during prayer.
+      const target = (1.0 + this.level * 6.5) * (0.2 + 0.8 * user) * this.vol
       this.master.gain.setTargetAtTime(target, this.ctx.currentTime, 0.8)
     }
   }

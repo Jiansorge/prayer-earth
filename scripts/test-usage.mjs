@@ -226,8 +226,8 @@ const bedLoud = await c.eval(`(async () => {
   return { gain: a.master.gain.value, skipped: false }
 })()`)
 ok(
-  'ambient bed reaches an audible level at 100% (master gain > 1)',
-  bedLoud.skipped || bedLoud.gain > 1.0,
+  'ambient bed reaches an audible level at 100% (master gain > 3)',
+  bedLoud.skipped || bedLoud.gain > 3.0,
   JSON.stringify(bedLoud)
 )
 // Each bed must build a rhythmic pulse, not sit as one constant note: building
