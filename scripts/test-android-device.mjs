@@ -162,7 +162,9 @@ const dismissOnboarding = async () => {
 }
 
 const enableTestBridge = async () => {
-  await cdp.send('Page.navigate', { url: 'capacitor://localhost/?peTest=1' })
+  // The store hook is now gated at BUILD time (VITE_TEST_HOOKS=true in the
+  // instrumented capacitor build); the old `?peTest=1` query param is gone.
+  await cdp.send('Page.navigate', { url: 'capacitor://localhost/' })
   await cdp.waitFor(`document.readyState === 'complete' && !!document.querySelector('.app')`, 15000)
   await dismissOnboarding()
   await cdp.waitFor(`!!window.__store`, 15000)
@@ -298,6 +300,127 @@ const testSentinel = async (key, value) => {
   check('app data survives APK reinstall', stored === value, `stored=${stored}`)
 }
 
+// Backup/restore is the safety net for a lost phone, so prove the whole loop
+// on the real device: produce a recovery code, destroy the counters, and put
+// them back. The clipboard/share/download paths behave differently in the
+// Android WebView than in a desktop browser, so this cannot be a browser test.
+const testBackup = async () => {
+  await cdp.evaluate(`location.hash = '#/'`)
+  await sleep(600)
+  const before = await cdp.evaluate(`(() => { const s = window.__store.getState(); return { seconds: s.localPrayerSeconds, anon: s.anonId } })()`)
+  check('there is prayer data worth backing up', before.seconds > 0, JSON.stringify(before))
+
+  // Drive the real Settings UI, exactly as a person would.
+  await cdp.evaluate(`(() => {
+    const btn = [...document.querySelectorAll('button,[role="button"]')]
+      .find(b => /settings/i.test(b.getAttribute('aria-label') || b.title || ''))
+    if (btn) btn.click()
+    return !!btn
+  })()`)
+  const opened = await cdp.waitFor(`!!document.querySelector('.field-btn')`, 8000)
+  check('settings sheet opens', !!opened)
+
+  const ui = await cdp.evaluate(`(() => {
+    const body = document.body.innerText || ''
+    const btns = [...document.querySelectorAll('.field-btn')].map(b => (b.textContent || '').trim())
+    const ta = document.querySelector('.field-textarea:not([readonly])')
+    return {
+      section: /backup/i.test(body),
+      copy: btns.some(b => /copy recovery code/i.test(b)),
+      download: btns.some(b => /download backup/i.test(b)),
+      restoreField: !!ta,
+      styled: ta ? getComputedStyle(ta).borderRadius : null
+    }
+  })()`)
+  check('backup section is present on device', ui.section, JSON.stringify(ui))
+  check('Copy recovery code is present on device', ui.copy)
+  check('Download backup file is present on device', ui.download)
+  check('restore field is present and editable on device', ui.restoreField)
+  // Regression: the restore box shipped with browser defaults (near-white on
+  // white in the dark theme) because .field-textarea was never defined.
+  check('restore field is styled, not a raw browser default', !!ui.styled && ui.styled !== '0px', String(ui.styled))
+
+  // Tap Copy. In the WebView the async clipboard can be blocked, so the app
+  // falls back to the share sheet and then to showing the code inline. Any of
+  // those is a success; silence would be the bug.
+  await cdp.evaluate(`(() => {
+    const b = [...document.querySelectorAll('.field-btn')].find(x => /copy recovery code/i.test(x.textContent || ''))
+    b.click(); return true
+  })()`)
+  await sleep(2500)
+  const got = await cdp.evaluate(`(() => {
+    const hints = [...document.querySelectorAll('.field-hint')].map(h => (h.textContent || '').trim())
+    const inline = [...document.querySelectorAll('.field-textarea')]
+      .map(a => a.value || '').find(v => v.startsWith('JP1:')) || ''
+    // Match ONLY the app's outcome messages. The section always shows a static
+    // hint ("Save your recovery code somewhere safe..."), so a loose pattern
+    // would pass even if every export path silently failed.
+    const outcome = hints.find(h =>
+      /^Copied\\.?$/.test(h) ||
+      /Share sheet opened/.test(h) ||
+      /Could not copy or download/.test(h) ||
+      /^Backup file downloaded\\.?$/.test(h)
+    ) || ''
+    return { success: outcome, inline }
+  })()`)
+  check('tapping Copy reports a real outcome on device',
+    Boolean(got.success) || Boolean(got.inline), got.success || `inline:${got.inline.length}b`)
+
+  // Strongest on-device proof: the code is well-formed AND restores the exact
+  // counters after we destroy them.
+  let code = got.inline
+  if (!code) {
+    // The copy/share path claimed success; read the system clipboard to prove
+    // it wasn't another empty promise.
+    code = await cdp.evaluate(`(async () => { try { return await navigator.clipboard.readText() } catch (e) { return '' } })()`)
+  }
+  if (code && code.startsWith('JP1:')) {
+    const wiped = await cdp.evaluate(`(() => {
+      const s = window.__store
+      s.setState({ localPrayerSeconds: 0, prayerCompletions: {}, prayerDayCompletions: {} })
+      return s.getState().localPrayerSeconds
+    })()`)
+    check('counters can be cleared to simulate a lost device', wiped === 0, `seconds=${wiped}`)
+
+    const restored = await cdp.evaluate(`(() => {
+      const val = ${JSON.stringify(code)}
+      try {
+        const obj = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(val.slice(4)), c => c.charCodeAt(0))))
+        return JSON.stringify({ ok: true, v: obj.v, seconds: obj.localPrayerSeconds })
+      } catch (e) { return JSON.stringify({ ok: false, err: String(e) }) }
+    })()`)
+    const r = JSON.parse(restored)
+    check('the on-device recovery code is well-formed', r.ok && r.v === 1, restored)
+
+    // Paste it into the real restore field and restore through the UI.
+    const pasted = await cdp.evaluate(`(() => {
+      const ta = document.querySelector('.field-textarea:not([readonly])')
+      if (!ta) return false
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set
+      setter.call(ta, ${JSON.stringify(code)})
+      ta.dispatchEvent(new Event('input', { bubbles: true }))
+      return true
+    })()`)
+    check('the recovery code can be pasted into the restore field', pasted === true)
+    await sleep(500)
+    await cdp.evaluate(`(() => {
+      const b = [...document.querySelectorAll('.field-btn')].find(x => /^restore$/i.test((x.textContent || '').trim()))
+      if (b) b.click()
+      return !!b
+    })()`)
+    await sleep(2000)
+    const after = await cdp.evaluate(`(() => { const s = window.__store.getState(); return { seconds: s.localPrayerSeconds } })()`)
+    check('restoring on device brings the cleared counters back',
+      after.seconds === before.seconds, `restored=${after.seconds}s expected=${before.seconds}s`)
+  } else {
+    console.log('[android-smoke] NOTE: no readable code (clipboard not script-readable); skipping the destroy/restore leg')
+  }
+
+  const finalState = await cdp.evaluate(`(() => { const s = window.__store.getState(); return { seconds: s.localPrayerSeconds, anon: s.anonId } })()`)
+  check('the backup flow never lowered the user counters', finalState.seconds >= before.seconds, `${before.seconds} -> ${finalState.seconds}`)
+  check('the backup flow never changed the anonymous id', finalState.anon === before.anon)
+}
+
 const cleanup = () => {
   if (cdp) cdp.close()
   if (forwarded) {
@@ -341,6 +464,7 @@ try {
   await testTaras()
   await testDeepLink()
   await testLifecycle()
+  await testBackup()
   log(`failures=${failures}`)
 } catch (error) {
   check('Android smoke completed', false, error.message)
