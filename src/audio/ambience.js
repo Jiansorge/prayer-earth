@@ -3,6 +3,7 @@
 
 import { useStore } from '../store.js'
 import { AMBIENT_PRESETS } from './presets.js'
+import { TEST_HOOKS } from '../shared/testHooks.js'
 
 // Crossfade duration (seconds) for swapping ambient beds.
 const XFADE = 0.85
@@ -431,4 +432,4 @@ export class AmbientEngine {
 }
 
 export const ambient = new AmbientEngine()
-if (typeof window !== 'undefined') window.__ambient = ambient
+if (TEST_HOOKS && typeof window !== 'undefined') window.__ambient = ambient

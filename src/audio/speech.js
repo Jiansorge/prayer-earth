@@ -1,4 +1,4 @@
-// Speaks prayers phrase-by-phrase so the UI can highlight exactly the phrase
+﻿// Speaks prayers phrase-by-phrase so the UI can highlight exactly the phrase
 // being voiced right now. One utterance per phrase = reliable phrase sync.
 //
 // Hardened for the real world:
@@ -11,6 +11,7 @@
 //    errors on several phrases in a row hands off to a timed chant.
 
 import { ambient } from './ambience.js'
+import { TEST_HOOKS } from '../shared/testHooks.js'
 import { useStore } from '../store.js'
 
 function xhrGet(url) {
@@ -41,24 +42,24 @@ const REVERB_WET_GAIN = 0.2
 
 // Flatten sacred transliterations into something a fallback English voice can
 // read sensibly: strip diacritics, map the special consonants used in these
-// texts, and drop glottal marks — far closer to the real sound than the raw
+// texts, and drop glottal marks â€” far closer to the real sound than the raw
 // diacritic-heavy text.
 function phoneticForSpeech(text) {
   if (!text) return text
   return text
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/ḍ/g, 'd')
-    .replace(/ṭ/g, 't')
-    .replace(/ṣ/g, 's')
-    .replace(/ḥ/g, 'h')
-    .replace(/ġ/g, 'g')
-    .replace(/ṛ/g, 'r')
-    .replace(/ṅ/g, 'ng')
-    .replace(/ñ/g, 'ny')
-    .replace(/ṁ/g, 'm')
-    .replace(/ṃ/g, 'm')
-    .replace(/[ʼʿʔ']/g, '')
+    .replace(/á¸/g, 'd')
+    .replace(/á¹­/g, 't')
+    .replace(/á¹£/g, 's')
+    .replace(/á¸¥/g, 'h')
+    .replace(/Ä¡/g, 'g')
+    .replace(/á¹›/g, 'r')
+    .replace(/á¹…/g, 'ng')
+    .replace(/Ã±/g, 'ny')
+    .replace(/á¹/g, 'm')
+    .replace(/á¹ƒ/g, 'm')
+    .replace(/[Ê¼Ê¿Ê”']/g, '')
     .replace(/\s+/g, ' ')
 }
 
@@ -97,7 +98,7 @@ class SpeechEngine {
       }
     }
     // The prayer keeps playing while the tab is hidden or you switch to another
-    // tab/window — no pause on visibilitychange. If the machine sleeps anyway
+    // tab/window â€” no pause on visibilitychange. If the machine sleeps anyway
     // and the audio engine dies silently, the kicker watchdog revives it with a
     // fresh phrase the moment the tab is visible again (see primeKicker).
   }
@@ -144,7 +145,7 @@ class SpeechEngine {
     return !!(p && p.voices && p.voices.length)
   }
 
-  // A gentle, warm space for the spoken prayer — a soft hall tail with a
+  // A gentle, warm space for the spoken prayer â€” a soft hall tail with a
   // slight warmth curve and a whisper of echo. Subtle by design: the voice
   // stays clear and front, the room just softens the edges.
   buildReverb(ctx) {
@@ -161,11 +162,11 @@ class SpeechEngine {
       const convolver = ctx.createConvolver()
       convolver.buffer = ir
       this._revConvolver = convolver
-      // The convolver→wet→destination tail is built ONCE and reused. Per-phrase
+      // The convolverâ†’wetâ†’destination tail is built ONCE and reused. Per-phrase
       // we only connect a source into the convolver. (Previously each phrase
       // created its own wet node and connected the shared convolver to it;
       // disconnecting a wet node removes its *outputs* but not the
-      // convolver→wet edge, so those nodes leaked onto the convolver forever.)
+      // convolverâ†’wet edge, so those nodes leaked onto the convolver forever.)
       const wet = ctx.createGain()
       wet.gain.value = this.reverbWetGain
       // Route through the shared limiter (ambience.limiter) rather than
@@ -282,14 +283,14 @@ class SpeechEngine {
     // Also stop the shared <audio> element. If a recorded phrase was still
     // playing (a slow connect let the advance timer move on early) and the next
     // phrase takes the Web-Audio path, the element would keep playing underneath
-    // — two voices at once.
+    // â€” two voices at once.
     if (this.cloudAudio) {
       try { this.cloudAudio.pause() } catch {}
     }
   }
 
   // One shared, hidden <audio> element attached to the document. Attached media
-  // owns the platform's audio track — an orphan element cannot — which is what
+  // owns the platform's audio track â€” an orphan element cannot â€” which is what
   // hardened WebViews need to actually produce sound.
   _elementEl() {
     if (this._el) return this._el
@@ -363,13 +364,13 @@ class SpeechEngine {
         this.advance(i)
       }
       // Safety net set BEFORE playback so a stalled file or a muted environment
-      // can never hang a prayer — the phrase always advances.
+      // can never hang a prayer â€” the phrase always advances.
       job.advTimer = setTimeout(finish, job.phraseHold * 2 + 1200)
       const ctx = ambient.ctx
       const preferElement = !!window.Capacitor?.isNativePlatform?.()
       const buffer = !preferElement && rate === 1 ? await this._bufferFor(url) : null
       // A newer attempt now owns this phrase (or the job moved on): report it
-      // as handled (true), NOT as a failure — the caller's recovery path counts
+      // as handled (true), NOT as a failure â€” the caller's recovery path counts
       // a `false` as a cloud failure and would permanently disable recorded
       // audio after two harmless supersedes.
       if (!isCurrent()) return true
@@ -500,7 +501,7 @@ class SpeechEngine {
     )
   }
 
-  // Chrome sometimes drops the very first utterance — speak a tiny pause first.
+  // Chrome sometimes drops the very first utterance â€” speak a tiny pause first.
   prime() {
     if (this.primed || !this.synth) return
     this.primed = true
@@ -540,7 +541,7 @@ class SpeechEngine {
       return
     }
 
-    // The user can pick "Soft chant" as their voice — no spoken voice at all.
+    // The user can pick "Soft chant" as their voice â€” no spoken voice at all.
     if (useStore.getState().voiceURI === CHANT_VOICE) {
       this.job.chantReason = 'chosen'
       this.notifyFallback('chosen')
@@ -556,7 +557,7 @@ class SpeechEngine {
     }
 
     // We already probed once and the platform reported no voices (Firefox's
-    // Fingerprinting Protection blanks them, or the device has no TTS) — go
+    // Fingerprinting Protection blanks them, or the device has no TTS) â€” go
     // straight to the chant instead of waiting the probe window every play.
     if (!this.voiceDead) {
       await this.waitForVoices()
@@ -569,7 +570,7 @@ class SpeechEngine {
     // straight to the audible chant so prayer is still heard in the room.
     if (!this.voices.length) {
       // Voices missing would silence speechSynthesis, but the recordings still
-      // speak — the de-Googled-device case again (no TTS, static audio present).
+      // speak â€” the de-Googled-device case again (no TTS, static audio present).
       if (this.hasStaticFor(this.job)) {
         this.primeKicker()
         this.speakIndex(this.job ? this.job.index || 0 : 0)
@@ -669,7 +670,7 @@ class SpeechEngine {
       return
     }
     try {
-      // Don't cancel an active prayer's voice — the sample will follow it.
+      // Don't cancel an active prayer's voice â€” the sample will follow it.
       if (!this.job?.active) this.synth.cancel()
       const u = new SpeechSynthesisUtterance(SAMPLE_TEXT)
       u.lang = voice.lang
@@ -685,13 +686,13 @@ class SpeechEngine {
   // Scaled by the speaking-rate setting so a fast voice doesn't outrun the
   // highlight and a slow one isn't clipped.
   estimateMs(phrase) {
-    // Estimate from the PRIMARY text (t) — the line that is displayed and, for
+    // Estimate from the PRIMARY text (t) â€” the line that is displayed and, for
     // every language except bo, the one that is actually spoken/recorded. Never
     // drive the length from `s` (the transliteration): it is a different script
     // (e.g. Tibetan Wylie vs. the 21-Taras underlay), so a verse's `s` can look
     // like a single word and the estimate would collapse to the floor. A verse
     // written without spaces (Tibetan tsheg, CJK) is charged per-character so a
-    // long line is never mistaken for one word. Over-estimating is harmless — the
+    // long line is never mistaken for one word. Over-estimating is harmless â€” the
     // recorded element's real `ended` ends the phrase; only an under-estimate
     // would let the stall-watchdog cut a verse off early.
     const text = phrase.t || phrase.s || phrase.e || ''
@@ -719,7 +720,7 @@ class SpeechEngine {
       this.finishJob()
       return
     }
-    // Prefer recorded audio — it needs no server or API key. The live Google
+    // Prefer recorded audio â€” it needs no server or API key. The live Google
     // proxy is a fallback inside speakCloud for prayers without a recording.
     // `job.noCloud` is set after repeated cloud/static failures so a dead audio
     // element (e.g. after a long sleep the element can no longer play) hands
@@ -730,7 +731,7 @@ class SpeechEngine {
         if (!ok && j && j.active && j === job && j.mode === 'tts' && j.index === i) {
           j.cloudFails = (j.cloudFails || 0) + 1
           if (j.cloudFails >= 2) {
-            // The recorded/proxy audio keeps failing — never spin on it. Block
+            // The recorded/proxy audio keeps failing â€” never spin on it. Block
             // this job's cloud path so the next call uses browser voices (which
             // have their own stall/error fallbacks down to the timed chant).
             j.noCloud = true
@@ -779,7 +780,7 @@ class SpeechEngine {
       if (!j || !j.active || j !== job || j.mode !== 'tts') return
       if (job.done.has(token)) return
       job.done.add(token)
-      // Completed far faster than it could possibly be spoken — the engine is
+      // Completed far faster than it could possibly be spoken â€” the engine is
       // not actually voicing (no usable voice / instant completion). Fall back
       // to the paced, audible chant so prayer still sounds in the room.
       if (Date.now() - job.phraseStart < 400) {
@@ -801,7 +802,7 @@ class SpeechEngine {
       job.done.add(token)
       j.errors = (j.errors || 0) + 1
       // An engine that errors on several phrases in a row without ever
-      // starting one can't talk — hand off to the timed chant.
+      // starting one can't talk â€” hand off to the timed chant.
       if (j.errors >= 3) {
         j.mode = 'timed'
         j.chantReason = 'errors'
@@ -820,7 +821,7 @@ class SpeechEngine {
     // or stall one), hand off to the timer so the highlight keeps moving
     // instead of freezing on a single phrase. A voice that has never produced
     // sound yet (cold start, real machines can take several seconds) gets a
-    // few long chances first — canceling a slow-but-fine voice is exactly the
+    // few long chances first â€” canceling a slow-but-fine voice is exactly the
     // bug that made playback appear to stop after a couple of seconds.
     const takeover = () => {
       const j = this.job
@@ -828,7 +829,7 @@ class SpeechEngine {
       if (job.index !== i) return
       // The phrase has been on screen far longer than its estimate. A healthy
       // voice advances via onend/advTimer near `phraseHold`, so anything past
-      // ~2x means the engine is silent — speechSynthesis can report
+      // ~2x means the engine is silent â€” speechSynthesis can report
       // speaking=true while actually dead after a sleep/hibernation, so we must
       // not trust that flag. Hand off to the timed chant so prayer is still
       // heard.
@@ -886,7 +887,7 @@ class SpeechEngine {
   }
 
   // iOS sometimes pauses synthesis; a gentle resume keeps the voice going. A
-  // mobile OS can also suspend the shared AudioContext in the background — if
+  // mobile OS can also suspend the shared AudioContext in the background â€” if
   // it is still suspended while a prayer is meant to be audible, resume it and
   // re-kick the current phrase so sound always comes back.
   primeKicker() {
@@ -926,7 +927,7 @@ class SpeechEngine {
     }, 6000)
   }
 
-  // No speech engine (or one that stalled) — highlight by estimated reading
+  // No speech engine (or one that stalled) â€” highlight by estimated reading
   // time, and keep an audible cadence with a soft chant so prayer can still be
   // heard. Resumes from the phrase currently on screen so it never jumps back.
   timedLoop(opts, chant) {
@@ -1006,7 +1007,7 @@ class SpeechEngine {
     // A dead engine (after sleep/hibernation, or a backgrounded tab) can report
     // speaking=true while silent, so speechSynthesis.resume() is unreliable.
     // Always restart the current phrase fresh under this user gesture so sound
-    // always comes back — the safest resume after switching away.
+    // always comes back â€” the safest resume after switching away.
     if (j.mode === 'tts') {
       try {
         this.synth.cancel()
@@ -1026,7 +1027,7 @@ class SpeechEngine {
       try {
         const p = this.cloudAudio.play()
         // If the tab switch interrupted the element (mobile browsers suspend
-        // audio), play() rejects — re-speak the current phrase so a fresh
+        // audio), play() rejects â€” re-speak the current phrase so a fresh
         // element starts under this user gesture.
         if (p && p.catch) p.catch(() => this.speakIndex(j.index))
       } catch {
@@ -1066,4 +1067,4 @@ class SpeechEngine {
 }
 
 export const speech = new SpeechEngine()
-if (typeof window !== 'undefined') window.__speech = speech
+if (TEST_HOOKS && typeof window !== 'undefined') window.__speech = speech

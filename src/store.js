@@ -1,4 +1,5 @@
 ﻿import { create } from 'zustand'
+import { TEST_HOOKS } from './shared/testHooks.js'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { prayerBaseTotals, spiritBaseTotals } from './data/totals.js'
 import { mergeStats } from './shared/stats.js'
@@ -622,10 +623,10 @@ export const useStore = create(
   )
 )
 
-if (
-  import.meta.env?.DEV ||
-  (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('peTest') === '1')
-) {
+// Test hook, gated at BUILD time (see shared/testHooks.js). The old runtime
+// `?peTest=1` check shipped in the production web bundle and was reachable via
+// a crafted link — removed; the store handle is no longer exposed in production.
+if (TEST_HOOKS && typeof window !== 'undefined') {
   window.__store = useStore
 }
 

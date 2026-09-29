@@ -44,10 +44,26 @@ app-links chooser because `autoVerify` is intentionally off. To remove the choos
 
 ## 5. Build & publish
 ```bash
+# For the PUBLIC production release, make sure test hooks are OFF first:
+#   edit .env.capacitor  ->  VITE_TEST_HOOKS=false  (or delete the line)
+# (Internal-test builds may keep them on; see below.)
 npm run build:capacitor && npx cap sync android
 cd android && ./gradlew bundleRelease   # .aab for Play
 ```
 Upload the `.aab` to the Play Console.
+
+## Test-observability hooks (security)
+The app exposes `window.__store` / `__speech` / `__ambient` (full read/write
+handles on state + audio) ONLY when built with test hooks on:
+- Vite **dev** server → always on (browser test suite needs it).
+- `VITE_TEST_HOOKS=true` → on for instrumented Android/Capacitor builds used by
+  the on-device smoke test. This is currently set in `.env.capacitor`.
+
+They are gated at **build time** now (a previous version used a runtime
+`?peTest=1` URL param that shipped in the production web bundle and was
+reachable via a crafted link — that hole is closed). For your **public Play
+release**, set `VITE_TEST_HOOKS=false` in `.env.capacitor` so the shipped app has
+no test handles. (Internal testing builds can keep them on.)
 
 ## Notes
 - `versionCode 24` / `versionName 1.0.1` in `android/app/build.gradle` — bump the
