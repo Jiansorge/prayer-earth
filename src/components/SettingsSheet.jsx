@@ -13,6 +13,7 @@ import { canInstall, promptInstall } from '../shared/installPrompt.js'
 import { isMobile, isIos, isAppShell } from '../shared/mobile.js'
 import { CANONICAL_ORIGIN } from '../shared/canonical.js'
 import { shareLink } from '../shared/share.js'
+import { buildBackupCode, parseBackupCode, applyBackup } from '../shared/backup.js'
 
 const isInstalled = () =>
   window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone
@@ -55,6 +56,10 @@ export default function SettingsSheet() {
   const [legalOpen, setLegalOpen] = useState(false)
   const [previewing, setPreviewing] = useState(false)
   const [appCopied, setAppCopied] = useState(false)
+  const [backupCopied, setBackupCopied] = useState(false)
+  const [backupMsg, setBackupMsg] = useState(null) // { ok: bool, key: string }
+  const [restoreText, setRestoreText] = useState('')
+  const fileRef = useRef(null)
   const [installed, setInstalled] = useState(false)
   const [showIosTip, setShowIosTip] = useState(false)
   const previewTimer = useRef(null)
@@ -85,6 +90,64 @@ export default function SettingsSheet() {
       // the clipboard; without this the tap would silently do nothing.)
       window.prompt(t('settings.shareAppLabel'), url)
     }
+  }
+
+  const flashBackup = (ok, key) => {
+    setBackupMsg({ ok, key })
+    setTimeout(() => setBackupMsg(null), 4000)
+  }
+
+  const copyBackup = async () => {
+    const code = buildBackupCode()
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(code)
+        setBackupCopied(true)
+        setTimeout(() => setBackupCopied(false), 2000)
+        flashBackup(true, 'settings.backupCopied')
+        return
+      }
+      throw new Error('no clipboard')
+    } catch {
+      // Clipboard can be blocked in the app-shell WebView — surface the code
+      // for manual copy rather than a dead button.
+      window.prompt(t('settings.backupCopyTitle'), code)
+    }
+  }
+
+  const downloadBackup = () => {
+    const code = buildBackupCode()
+    const blob = new Blob([code], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'joining-palms-backup.txt'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+    flashBackup(true, 'settings.backupDownloaded')
+  }
+
+  const doRestore = (code) => {
+    try {
+      const payload = parseBackupCode(code)
+      applyBackup(payload)
+      setRestoreText('')
+      flashBackup(true, 'settings.backupRestored')
+    } catch (e) {
+      flashBackup(false, e?.message === 'notBackup' ? 'settings.backupInvalid' : 'settings.backupCorrupt')
+    }
+  }
+
+  const restoreFromFile = (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => doRestore(String(reader.result || ''))
+    reader.onerror = () => flashBackup(false, 'settings.backupCorrupt')
+    reader.readAsText(file)
   }
 
   useEffect(() => () => clearTimeout(previewTimer.current), [])
@@ -317,6 +380,50 @@ export default function SettingsSheet() {
         ) : (
           <div className="field-hint" style={{ marginTop: 8, opacity: 0.6 }}>
             {t('settings.playStoreComingSoon')}
+          </div>
+        )}
+
+        <div className="field-divider" />
+
+        <label className="field-label section">{t('settings.secBackup')}</label>
+        <div className="field-hint">{t('settings.backupHint')}</div>
+        <button className="field-btn" onClick={copyBackup}>
+          {backupCopied ? t('settings.copied') : t('settings.backupCopy')}
+        </button>
+        <button className="field-btn" onClick={downloadBackup} style={{ marginTop: 8 }}>
+          {t('settings.backupDownload')}
+        </button>
+
+        <label className="field-label" style={{ marginTop: 18 }}>{t('settings.backupRestoreLabel')}</label>
+        <div className="field-hint">{t('settings.backupRestoreHint')}</div>
+        <textarea
+          className="field-textarea"
+          value={restoreText}
+          onChange={(e) => setRestoreText(e.target.value)}
+          placeholder={t('settings.backupPlaceholder')}
+          rows={3}
+        />
+        <button
+          className="field-btn"
+          disabled={!restoreText.trim()}
+          onClick={() => doRestore(restoreText)}
+          style={{ marginTop: 8 }}
+        >
+          {t('settings.backupRestore')}
+        </button>
+        <button className="field-btn" onClick={() => fileRef.current?.click()} style={{ marginTop: 8 }}>
+          {t('settings.backupRestoreFile')}
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".txt,text/plain"
+          onChange={restoreFromFile}
+          style={{ display: 'none' }}
+        />
+        {backupMsg && (
+          <div className="field-hint" style={{ marginTop: 10, color: backupMsg.ok ? 'var(--ok,#7fc9a0)' : 'var(--warn,#ffb4a2)' }}>
+            {t(backupMsg.key)}
           </div>
         )}
 

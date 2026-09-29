@@ -205,6 +205,34 @@ ok(
   'settings offers 7 ambient presets',
   settingsOpen && (await c.eval(`document.querySelectorAll('.ambient-chip').length`)) === 7
 )
+// Backup/restore must be reachable in Settings and actually produce a code the
+// user can paste back — the whole point is that a lost device is recoverable
+// without an account, so a missing/dud button here is a data-loss bug.
+ok(
+  'settings offers a backup section',
+  // innerText reflects the CSS text-transform, so match case-insensitively.
+  settingsOpen && (await c.eval(`document.body.innerText.toLowerCase().includes('backup & restore')`))
+)
+ok(
+  'settings offers copy + download recovery',
+  settingsOpen &&
+    (await c.eval(`[...document.querySelectorAll('.field-btn')].some(b => b.innerText.includes('Copy recovery code'))`)) &&
+    (await c.eval(`[...document.querySelectorAll('.field-btn')].some(b => b.innerText.includes('Download backup file'))`))
+)
+ok(
+  'settings offers a restore-from-code path',
+  settingsOpen &&
+    (await c.eval(`!!document.querySelector('.field-textarea')`)) &&
+    (await c.eval(`[...document.querySelectorAll('.field-btn')].some(b => b.innerText.includes('Choose a backup file'))`))
+)
+ok(
+  'a recovery code can be built from the live store',
+  await c.eval(`(async () => {
+    const { buildBackupCode } = await import('/src/shared/backup.js')
+    const code = buildBackupCode()
+    return typeof code === 'string' && code.startsWith('JP1:') && code.length > 20
+  })()`)
+)
 // Regression: ambient.ensure() must ALWAYS return a thenable. When it was a
 // plain function returning undefined, playback.js's `ambient.ensure().catch()`
 // threw and broke the nav play button. Lock the contract.
