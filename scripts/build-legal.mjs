@@ -92,7 +92,7 @@ ${body}
 `
 }
 
-const privacyItems = ['priv1', 'priv2', 'priv3', 'priv4', 'priv5', 'priv6', 'priv7', 'priv8', 'priv9']
+const privacyItems = ['priv1', 'priv2', 'priv3', 'priv4', 'priv5', 'priv6', 'priv7', 'priv8', 'priv9', 'priv10', 'priv11']
 
 const privacyBody = `
       <p>${esc(t('legal.pIntro'))}</p>

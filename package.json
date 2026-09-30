@@ -19,7 +19,7 @@
     "serve": "npm run build && node server/index.js",
     "deploy": "node ../sync-engine/scripts/deploy-app.mjs",
     "deploy:dry": "node ../sync-engine/scripts/deploy-app.mjs --dry-run",
-    "test": "node scripts/test-server.mjs && node scripts/test-usage.mjs && node scripts/test-backup.mjs",
+    "test": "node scripts/test-server.mjs && node scripts/test-usage.mjs && node scripts/test-backup.mjs && node scripts/test-units.mjs",
     "test:ci": "node scripts/test-usage-ci.mjs",
     "test:android:assets": "node scripts/test-android-assets.mjs",
     "test:android": "node scripts/test-android-device.mjs",
@@ -31,7 +31,9 @@
     "capture:demo": "node scripts/capture-demo.mjs",
     "audit:prayers": "node scripts/audit-prayers.mjs",
     "test:backup": "node scripts/test-backup.mjs",
-    "build:release": "node scripts/build-release.mjs"
+    "build:release": "node scripts/build-release.mjs",
+    "test:units": "node scripts/test-units.mjs",
+    "check:signing": "node scripts/check-signing.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",

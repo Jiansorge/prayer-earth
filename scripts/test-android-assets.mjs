@@ -1,10 +1,11 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const DIST = path.join(ROOT, 'dist')
 const ANDROID_PUBLIC = path.join(ROOT, 'android', 'app', 'src', 'main', 'assets', 'public')
+const ANDROID_APP_BUILD = path.join(ROOT, 'android', 'app', 'build')
 let failures = 0
 
 const check = (name, condition, detail = '') => {
@@ -50,6 +51,39 @@ if (required.every((file) => existsSync(file))) {
     'Android bundle targets the production sync Worker',
     androidJs.includes('wss://joining-palms.app')
   )
+
+  // The app only ever consumes a COARSE fix (enableHighAccuracy:false, rounded
+  // to 0.1 degrees, and the server only ever receives a 1-degree grid cell), so
+  // ACCESS_FINE_LOCATION was removed as over-collection. Assert it stays out of
+  // the merged manifest that actually ships -- an app asking for a precise fix
+  // it never uses misstates the Play data-safety form and asks users for more
+  // than we need. COARSE must still be there, or the light would never anchor.
+  const merged = path.join(ANDROID_APP_BUILD, 'intermediates', 'merged_manifest')
+  // Pick the MOST RECENT merged manifest. The build dir keeps both debug and
+  // release variants, and auditing a stale one silently passes a check against a
+  // build that no longer exists.
+  let manifestFile = null
+  let newest = -1
+  if (existsSync(merged)) {
+    for (const dir of readdirSync(merged)) {
+      for (const sub of readdirSync(path.join(merged, dir))) {
+        const p = path.join(merged, dir, sub, 'AndroidManifest.xml')
+        if (!existsSync(p)) continue
+        const m = statSync(p).mtimeMs
+        if (m > newest) { newest = m; manifestFile = p }
+      }
+    }
+  }
+  check('a merged AndroidManifest is available to audit', !!manifestFile, manifestFile || 'run gradlew first')
+  if (manifestFile) {
+    const xml = readFileSync(manifestFile, 'utf8')
+    check('the shipped manifest does NOT request ACCESS_FINE_LOCATION',
+      !/android\.permission\.ACCESS_FINE_LOCATION/.test(xml))
+    check('the shipped manifest still requests ACCESS_COARSE_LOCATION',
+      /android\.permission\.ACCESS_COARSE_LOCATION/.test(xml))
+    check('the shipped manifest requests no camera or microphone',
+      !/android\.permission\.(CAMERA|RECORD_AUDIO)/.test(xml))
+  }
 
   const manifestPath = path.join(DIST, 'audio', 'manifest.json')
   const androidManifestPath = path.join(ANDROID_PUBLIC, 'audio', 'manifest.json')

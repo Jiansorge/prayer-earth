@@ -53,8 +53,15 @@
          Capacitor's WebView bridge requests both, and graceful-degrades to
          coarse-only on Android 12+. The app never sends precise coordinates:
          client.js rounds to one decimal and the server stores ~110km cells. -->
+    <!-- Location is used only to anchor your light on the map, and the app asks
+         for a COARSE fix: sync/client.js sets enableHighAccuracy:false and rounds
+         to 0.1 degrees (~11km) before anything is sent, and the server only ever
+         receives a 1-degree grid cell. ACCESS_FINE_LOCATION was removed because
+         the app has no use for a precise fix - requesting it would have asked
+         users for more than we use and misstated the Play data-safety form.
+         If permission is refused, sync/client.js falls back to the centre of the
+         device's timezone, so a prayer is never lost. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-feature android:name="android.hardware.location" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 </manifest>

@@ -313,6 +313,39 @@ const testCryptoSupport = async () => {
   log(`crypto support: ${JSON.stringify(caps)}`)
 }
 
+const testLocationCoarse = async () => {
+  // ACCESS_FINE_LOCATION was removed: the app only ever used a coarse fix
+  // (enableHighAccuracy:false, rounded to 0.1 deg), and the shipped manifest is
+  // asserted separately in test-android-assets.mjs.
+  //
+  // youLoc is deliberately null when there is no real fix. ensureLocation() only
+  // publishes a position to the store on the GPS-success path, so the "you are
+  // here" ring is never drawn at a guessed city -- the world's light still uses
+  // the timezone anchor, but the app does not pretend to know where you are.
+  // So assert the INVARIANT (null, or a real coarse coordinate), not a value.
+  const loc = await cdp.evaluate(`(() => {
+    const s = window.__store.getState()
+    return { youLoc: s.youLoc }
+  })()`)
+  const l = loc.youLoc
+  log(`youLoc: ${JSON.stringify(l)} (null is correct without a real fix)`)
+  check('youLoc is either unset or a real coarse coordinate',
+    l === null || (Number.isFinite(l.lat) && Number.isFinite(l.lon) &&
+      Math.abs(l.lat) <= 90 && Math.abs(l.lon) <= 180),
+    JSON.stringify(l))
+  if (l) {
+    check('a real fix is rounded to a coarse 0.1 degree',
+      Math.abs(l.lat * 10 - Math.round(l.lat * 10)) < 1e-9, `lat=${l.lat}`)
+  }
+  const perms = await cdp.evaluate(`(async () => {
+    try {
+      const p = navigator.permissions && navigator.permissions.query({ name: 'geolocation' })
+      return p ? (await p).state : 'unknown'
+    } catch (e) { return 'unsupported' }
+  })()`)
+  log(`geolocation permission state: ${perms}`)
+}
+
 const testSentinel = async (key, value) => {
   const stored = await cdp.evaluate(`localStorage.getItem(${JSON.stringify(key)})`)
   check('app data survives APK reinstall', stored === value, `stored=${stored}`)
@@ -509,6 +542,7 @@ try {
   await testDeepLink()
   await testLifecycle()
   await testCryptoSupport()
+  await testLocationCoarse()
   await testBackup()
   log(`failures=${failures}`)
 } catch (error) {

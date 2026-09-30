@@ -21,6 +21,8 @@ jobs:
         run: node scripts/audit-build.mjs
       - name: Server integration tests
         run: node scripts/test-server.mjs
+      - name: Unit + i18n-placeholder guards
+        run: node scripts/test-units.mjs
       - name: i18n audit
         run: node scripts/audit-i18n.mjs
       - name: Prayer language/translation audit

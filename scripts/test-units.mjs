@@ -1,0 +1,136 @@
+// Pass-2 coverage: three gaps this audit found that nothing was guarding.
+//
+//  1. i18n placeholders. translate() substitutes {name} params, and when a caller
+//     forgets the params object it leaves the literal "{n}" in the interface. A
+//     static check finds every t('key') call that omits params for a key that
+//     actually has a placeholder -- the bug class, not one instance.
+//  2. profanity.sanitizeName. The user's display name is shown to other people
+//     while they pray, so this is a moderation function and it had no test at
+//     all. Pure module, so it runs without a browser.
+//  3. testHooks must never grow a RUNTIME gate. It is build-time only now; a
+//     previous version keyed on ?peTest=1 and shipped that to production. This
+//     asserts the source cannot regress to reading the URL or a query param.
+
+import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { sanitizeName } from '../src/shared/profanity.js'
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+
+const results = []
+const check = (name, pass, extra = '') => {
+  results.push({ name, pass })
+  console.log(`[units] ${pass ? 'PASS' : 'FAIL'}  ${name}${extra ? '  ' + extra : ''}`)
+}
+
+const walk = (dir, out = []) => {
+  for (const f of readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, f.name)
+    if (f.isDirectory()) walk(p, out)
+    else if (/\.(js|jsx)$/.test(f.name)) out.push(p)
+  }
+  return out
+}
+
+const srcFiles = walk(path.join(ROOT, 'src'))
+
+// --- 1. i18n placeholders -----------------------------------------------------
+{
+  // Which keys declare a {placeholder}?
+  const placeholders = new Map() // key -> Set(paramNames)
+  for (const file of readdirSync(path.join(ROOT, 'src', 'locales'))) {
+    if (!file.endsWith('.js')) continue
+    const text = readFileSync(path.join(ROOT, 'src', 'locales', file), 'utf8')
+    for (const m of text.matchAll(/'([\w.]+)'\s*:\s*'([^']*)'/g)) {
+      const params = [...m[2].matchAll(/\{(\w+)\}/g)].map((p) => p[1])
+      if (params.length) {
+        if (!placeholders.has(m[1])) placeholders.set(m[1], new Set())
+        for (const p of params) placeholders.get(m[1]).add(p)
+      }
+    }
+  }
+  check('some keys use placeholders (guard is meaningful)', placeholders.size > 0,
+    `${placeholders.size} keys`)
+
+  // Every t('key') / translate('key') call site: does it pass params?
+  const offenders = []
+  for (const file of srcFiles) {
+    const text = readFileSync(file, 'utf8')
+    for (const m of text.matchAll(/\bt\(\s*'([\w.]+)'(\s*[,)])/g)) {
+      const key = m[1]
+      if (!placeholders.has(key)) continue
+      // m[2] is ',' (params passed) or ')' (no params).
+      if (m[2] === ')') offenders.push(`${path.relative(ROOT, file)}: t('${key}')`)
+    }
+  }
+  check('no t(key) call omits params for a key that has a placeholder',
+    offenders.length === 0, offenders.join(' | ') || 'checked all call sites')
+
+  // And the reverse hazard: a caller passing params to a key with none is dead
+  // code, and usually a typo'd key name.
+  const bogus = []
+  for (const file of srcFiles) {
+    const text = readFileSync(file, 'utf8')
+    for (const m of text.matchAll(/\bt\(\s*'([\w.]+)'\s*,\s*\{/g)) {
+      if (!placeholders.has(m[1])) bogus.push(`${path.relative(ROOT, file)}: t('${m[1]}', {...})`)
+    }
+  }
+  check('no t(key, params) call targets a key with no placeholder (typo guard)',
+    bogus.length === 0, bogus.join(' | ') || 'none')
+}
+
+// --- 2. profanity.sanitizeName ----------------------------------------------
+{
+  check('rejects a plainly profane name', sanitizeName('fuck') === '')
+  check('rejects a profane name among several words', sanitizeName('holy shit') === '')
+  check('rejects leetspeak evasion (sh1t)', sanitizeName('sh1t') === '')
+  check('rejects symbol evasion (f.u.c.k)', sanitizeName('f.u.c.k') === '')
+  check('rejects currency evasion (@ss)', sanitizeName('@ss') === '')
+  check('rejects a slur', sanitizeName('nigger') === '')
+  check('allows an ordinary name', sanitizeName('River') === 'River')
+  check('allows a name containing a blocked substring as a whole word',
+    sanitizeName('Bass') === 'Bass', sanitizeName('Bass'))
+  check('allows a name with a blocked word inside a longer word',
+    sanitizeName('Classic') === 'Classic', sanitizeName('Classic'))
+  check('truncates to 24 characters', sanitizeName('x'.repeat(40)).length === 24)
+  check('trims surrounding whitespace', sanitizeName('  Ana  ') === 'Ana')
+  check('returns empty for empty input', sanitizeName('') === '')
+  check('returns empty for whitespace-only input', sanitizeName('   ') === '')
+  check('tolerates null/undefined without throwing',
+    sanitizeName(null) === '' && sanitizeName(undefined) === '')
+  // The app must never echo raw markup from a chosen name.
+  check('does not strip angle brackets (caller must escape when rendering)',
+    sanitizeName('<b>x</b>') === '<b>x</b>', 'rendered via React, so this is escaped')
+}
+
+// --- 3. testHooks must stay build-time only ---------------------------------
+{
+  // Strip comments first. The historical `?peTest=1` incident is *documented* in
+  // these files, so a naive substring scan flags its own explanation.
+  const stripComments = (text) =>
+    text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1')
+
+  const text = readFileSync(path.join(ROOT, 'src', 'shared', 'testHooks.js'), 'utf8')
+  check('testHooks does not read the URL or a query param',
+    !/location\.search|URLSearchParams|searchParams|peTest/.test(stripComments(text)))
+  check('testHooks gates on import.meta.env only',
+    /import\.meta\.env/.test(stripComments(text)))
+  // And no executable code anywhere in src may reintroduce a runtime gate.
+  const offenders = []
+  for (const file of srcFiles) {
+    if (stripComments(readFileSync(file, 'utf8')).includes('peTest')) {
+      offenders.push(path.relative(ROOT, file))
+    }
+  }
+  check('no executable source reintroduces the peTest query param', offenders.length === 0,
+    offenders.join(' | ') || 'none')
+}
+
+const failed = results.filter((r) => !r.pass)
+console.log(`\n[units] ${results.length - failed.length}/${results.length} passed`)
+if (failed.length) {
+  console.log('[units] FAILED:\n' + failed.map((f) => '  - ' + f.name).join('\n'))
+  process.exit(1)
+}
+void existsSync

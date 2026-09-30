@@ -629,7 +629,7 @@ const countedRef = useRef(false)
              pointerEvents: 'none'
            }}
          >
-           ✶ {reflection} {t('prayer.today')} — your prayer is carried.
+            ✶ {reflection} {t('prayer.today', { n: prayerToday.toLocaleString() })} — your prayer is carried.
          </div>
        )}
        <div className="back-row">
@@ -748,7 +748,7 @@ aria-label={t('prayer.prev')}
           </span>
           <span
             className="praying-now-total"
-            title={t('prayer.today')}
+            title={t('prayer.today', { n: prayerToday.toLocaleString() })}
             style={{
               textShadow: `0 0 ${5 + Math.min(1, Math.log10(prayerToday + 2) / 5) * 12}px rgba(232,196,122,${0.25 + Math.min(1, Math.log10(prayerToday + 2) / 5) * 0.6})`
             }}
