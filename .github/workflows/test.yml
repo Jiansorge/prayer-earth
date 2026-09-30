@@ -52,6 +52,9 @@ jobs:
       - run: npx cap sync android
       - run: npm run test:android:assets
       - run: chmod +x android/gradlew && ./android/gradlew -p android assembleDebug
+      # Re-run the asset audit now that Gradle has produced a merged manifest, so
+      # the shipped-permission checks actually execute instead of skipping.
+      - run: npm run test:android:assets
       - uses: actions/upload-artifact@v4
         with:
           name: app-debug

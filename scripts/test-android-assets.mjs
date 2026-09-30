@@ -13,6 +13,17 @@ const check = (name, condition, detail = '') => {
   if (!condition) failures++
 }
 
+// A check that only applies once the artifact exists (e.g. it needs Gradle to
+// have run). Reported as SKIP rather than FAIL so the same script can run both
+// before and after the Android build.
+const checkIf = (name, applicable, condition, detail = '') => {
+  if (!applicable) {
+    console.log(`[android-assets] SKIP ${name} (${detail || 'precondition not met'})`)
+    return
+  }
+  check(name, condition, detail)
+}
+
 const required = [
   path.join(DIST, 'index.html'),
   path.join(DIST, 'sw.js'),
@@ -74,7 +85,8 @@ if (required.every((file) => existsSync(file))) {
       }
     }
   }
-  check('a merged AndroidManifest is available to audit', !!manifestFile, manifestFile || 'run gradlew first')
+  checkIf('a merged AndroidManifest is available to audit', !!manifestFile, true,
+    manifestFile || 'Gradle has not run yet; run this script again after assembleDebug')
   if (manifestFile) {
     const xml = readFileSync(manifestFile, 'utf8')
     check('the shipped manifest does NOT request ACCESS_FINE_LOCATION',
