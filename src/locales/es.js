@@ -404,4 +404,5 @@ export default {
   'sound.ambient': 'Volumen del sonido ambiente',
   'sound.speed': 'Velocidad',
   'settings.saveFailed': 'Tus recuentos de oración no se están guardando en este dispositivo. Libera espacio o prueba otro navegador: la sesión actual sigue contando.',
+  'settings.dataQuarantined': 'Una parte de tus datos guardados no se pudo leer, así que se conservó una copia en lugar de eliminarla. Las nuevas entradas ya no pueden reducir tu total.',
 };

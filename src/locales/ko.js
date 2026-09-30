@@ -310,4 +310,5 @@ export default {
   'sound.ambient': '환경 소리 음량',
   'sound.speed': '속도',
   'settings.saveFailed': '이 기기에서 기도 횟수가 저장되지 않습니다. 저장 공간을 확보하거나 다른 브라우저를 사용해 보세요 — 현재 세션은 계속 기록됩니다.',
+  'settings.dataQuarantined': '저장된 데이터 일부를 읽을 수 없어 삭제하지 않고 사본으로 보관했습니다. 이제 새로운 기록이 합계를 줄일 수 없습니다.',
 };

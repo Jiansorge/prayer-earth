@@ -402,4 +402,5 @@ export default {
   'sound.ambient': 'Lautstärke der Umgebungsgeräusche',
   'sound.speed': 'Geschwindigkeit',
   'settings.saveFailed': 'Deine Gebetszähler werden auf diesem Gerät nicht gespeichert. Schaffe Speicher oder nutze einen anderen Browser — die aktuelle Sitzung zählt weiter.',
+  'settings.dataQuarantined': 'Ein Teil deiner gespeicherten Daten war unlesbar, deshalb wurde eine Kopie davon aufbewahrt, statt sie zu löschen. Neue Einträge können deinen Zähler nicht verringern.',
 };

@@ -274,7 +274,82 @@ const SUITE = `(async () => {
     const raw = localStorage.getItem('prayer-earth-v1')
     persisted = raw ? JSON.parse(raw).state.localPrayerSeconds : -1
   } catch (e) { persisted = -2 }
-  t('a restored value reaches localStorage', persisted === 7777, 'got ' + persisted)
+  // The storage layer now refuses to write a value lower than what is already
+  // stored (see "the store itself must never persist a loss" below), so a
+  // restore can only raise the persisted total, never lower it. Assert that.
+  t('a restored value reaches localStorage without lowering the stored total',
+    persisted >= 7777, 'got ' + persisted)
+
+  // --- the store itself must never persist a loss ------------------------
+  // This is the systemic guarantee. A test once wiped real prayer data off a
+  // physical phone; these assert the persistence layer refuses to shrink stored
+  // data no matter what it is asked to write.
+  {
+    const KEY = 'prayer-earth-v1'
+    const { safeStorage } = await import('/src/store.js')
+    const read = () => JSON.parse(localStorage.getItem(KEY))
+
+    // Build up a known baseline and let it reach disk.
+    useStore.setState({
+      localPrayerSeconds: 6000, prayerCompletions: { mani: 40 },
+      bestStreak: 9, streak: 3, anonId: 'anon-keep'
+    })
+    await new Promise((r) => setTimeout(r, 500))
+    const before = read().state
+    t('the baseline is persisted before we try to shrink it',
+      before.localPrayerSeconds >= 6000, 'disk=' + before.localPrayerSeconds)
+
+    // Now ask the store to write something much smaller, the way a bug would.
+    useStore.setState({ localPrayerSeconds: 1, prayerCompletions: {}, bestStreak: 0, streak: 0 })
+    await new Promise((r) => setTimeout(r, 500))
+    const after = read().state
+    t('a write cannot reduce the persisted prayer seconds',
+      after.localPrayerSeconds >= before.localPrayerSeconds,
+      before.localPrayerSeconds + ' -> ' + after.localPrayerSeconds)
+    t('a write cannot erase a persisted prayer count',
+      (after.prayerCompletions || {}).mani >= (before.prayerCompletions || {}).mani,
+      'mani=' + (after.prayerCompletions || {}).mani)
+    t('a write cannot reduce the persisted best streak',
+      after.bestStreak >= before.bestStreak, before.bestStreak + ' -> ' + after.bestStreak)
+    t('a write cannot drop the anonId (which would orphan server history)',
+      after.anonId === 'anon-keep', 'anon=' + after.anonId)
+
+    // neverLoseData directly, so the guarantee is pinned even if the store's
+    // write path changes: a lower payload must be folded up, not written down.
+    const lower = JSON.stringify({ version: 2, state: { localPrayerSeconds: 2, prayerCompletions: { mani: 1 } } })
+    const higher = safeStorage.setItem.length // (unused, keeps the linter quiet about safeStorage)
+    void higher
+    const merged = (await import('/src/store.js')).neverLoseData(KEY, lower)
+    const mergedState = JSON.parse(merged).state
+    t('neverLoseData folds a lower payload up to the stored value',
+      mergedState.localPrayerSeconds >= before.localPrayerSeconds,
+      'got ' + mergedState.localPrayerSeconds)
+    t('neverLoseData keeps the larger prayer count',
+      (mergedState.prayerCompletions || {}).mani >= (before.prayerCompletions || {}).mani,
+      'mani=' + (mergedState.prayerCompletions || {}).mani)
+
+    // Quarantine only fires on READ (rehydrate), so drive safeStorage.getItem
+    // with an unreadable value - the path a real corrupt write takes on launch.
+    const UNREADABLE = KEY + '.unreadable'
+    localStorage.removeItem(UNREADABLE)
+    localStorage.removeItem(UNREADABLE + '.count')
+    useStore.setState({ dataQuarantined: false })
+    localStorage.setItem(KEY, '{"state":{"localPrayerSeconds":')
+    const readBack = safeStorage.getItem(KEY)
+    const kept = localStorage.getItem(UNREADABLE)
+    t('an unreadable value is not handed to the app as valid state', readBack === null)
+    t('an unreadable saved value is preserved for recovery',
+      typeof kept === 'string' && kept.indexOf('localPrayerSeconds') !== -1,
+      kept ? 'kept ' + kept.length + 'b' : 'LOST')
+    t('the app records that it quarantined data',
+      useStore.getState().dataQuarantined === true)
+    t('the number of quarantined writes is counted',
+      Number(localStorage.getItem(UNREADABLE + '.count')) >= 1,
+      'count=' + localStorage.getItem(UNREADABLE + '.count'))
+    localStorage.removeItem(UNREADABLE)
+    localStorage.removeItem(UNREADABLE + '.count')
+    useStore.setState({ dataQuarantined: false })
+  }
 
   return out
 })()`

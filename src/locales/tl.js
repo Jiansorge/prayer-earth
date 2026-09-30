@@ -377,4 +377,5 @@ export default {
   'sound.ambient': 'Lakas ng tunog na kapaligitan',
   'sound.speed': 'Bilis',
   'settings.saveFailed': 'Hindi nai-save ang iyong mga bilang ng dasal sa device na ito. Mag-clear ng espasyo o subukan ang ibang browser — kasalukuyang session ay nagbibilang pa rin.',
+  'settings.dataQuarantined': 'Hindi mabasa ang ilang bahagi ng iyong naka-save na datos, kaya pinananatili ang kopya sa halip na burahin. Hindi na makakabawasan ng bagong tala ang iyong kabuuan.',
 };

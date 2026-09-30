@@ -609,6 +609,41 @@ const testBackdropThemes = async () => {
     info.width > 0 && info.height > 0, JSON.stringify(info))
 }
 
+// A blanket no-loss invariant for the whole suite.
+//
+// The destructive corruption test already snapshots and restores, and the store
+// now refuses to persist a lower value than what is stored. But a FUTURE test
+// could still wipe a real phone's data, and the emulator cannot catch that
+// because it has no data to lose. So capture the app's totals before anything
+// runs and re-check at the very end: if any test anywhere in this suite reduced
+// the user's prayer data, the suite fails loudly instead of quietly costing
+// someone their history.
+const noLossBaseline = { value: null }
+
+const captureNoLossBaseline = async () => {
+  noLossBaseline.value = await cdp.evaluate(`(() => {
+    const s = window.__store.getState()
+    return { seconds: s.localPrayerSeconds, mani: (s.prayerCompletions || {}).mani || 0, anon: s.anonId }
+  })()`)
+  log(`no-loss baseline: ${JSON.stringify(noLossBaseline.value)}`)
+}
+
+const assertNoDataLoss = async () => {
+  const now = await cdp.evaluate(`(() => {
+    const s = window.__store.getState()
+    return { seconds: s.localPrayerSeconds, mani: (s.prayerCompletions || {}).mani || 0, anon: s.anonId }
+  })()`)
+  const before = noLossBaseline.value
+  if (!before) { check('no-loss baseline was captured', false, 'nothing to compare against'); return }
+  log(`no-loss final: ${JSON.stringify(now)}`)
+  check('NO TEST IN THIS SUITE REDUCED THE USER PRAYER DATA (seconds)',
+    now.seconds >= before.seconds, `${before.seconds} -> ${now.seconds}`)
+  check('NO TEST IN THIS SUITE ERASED A PRAYER COUNT',
+    now.mani >= before.mani, `mani ${before.mani} -> ${now.mani}`)
+  check('NO TEST IN THIS SUITE CHANGED THE ANONYMOUS ID',
+    !before.anon || now.anon === before.anon, `${before.anon} -> ${now.anon}`)
+}
+
 const testSentinel = async (key, value) => {
   const stored = await cdp.evaluate(`localStorage.getItem(${JSON.stringify(key)})`)
   check('app data survives APK reinstall', stored === value, `stored=${stored}`)
@@ -791,6 +826,9 @@ try {
   launch()
   cdp = await connect()
   await enableTestBridge()
+  // Snapshot the real totals now, so the suite can prove at the end that nothing
+  // it did reduced the user's data.
+  await captureNoLossBaseline()
 
   const key = '__android-smoke-upgrade'
   const value = `${Date.now()}`
@@ -827,6 +865,8 @@ try {
   // localStorage entry and reloads, which wipes the counters and anonId that
   // testBackup (and the user on a real device) still need.
   await testCorruptStorageRecovery()
+  // Final, suite-wide invariant: nothing in here may have cost the user data.
+  await assertNoDataLoss()
   log(`failures=${failures}`)
 } catch (error) {
   check('Android smoke completed', false, error.message)

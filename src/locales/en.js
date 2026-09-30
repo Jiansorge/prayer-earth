@@ -373,4 +373,5 @@ export default {
   'sound.ambient': 'Ambient sound volume',
   'sound.speed': 'Speed',
   'settings.saveFailed': 'Your prayer counts are not being saved on this device. Free up some storage or try a different browser — your current session is still counting.',
+  'settings.dataQuarantined': 'Some of your saved data could not be read, so a copy of it was kept instead of being deleted. New entries can no longer reduce your total.',
 };

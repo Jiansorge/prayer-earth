@@ -53,6 +53,7 @@ export default function SettingsSheet() {
   const open = useStore((s) => s.settingsOpen)
   const setOpen = useStore((s) => s.setSettingsOpen)
   const persistFailed = useStore((s) => s.persistFailed)
+  const dataQuarantined = useStore((s) => s.dataQuarantined)
   const voiceURI = useStore((s) => s.voiceURI)
   const setVoiceURI = useStore((s) => s.setVoiceURI)
   const speechRate = useStore((s) => s.speechRate)
@@ -345,6 +346,12 @@ export default function SettingsSheet() {
         {persistFailed && (
           <div className="save-warning" role="alert">
             {t('settings.saveFailed')}
+          </div>
+        )}
+
+        {dataQuarantined && (
+          <div className="save-warning" role="alert">
+            {t('settings.dataQuarantined')}
           </div>
         )}
 

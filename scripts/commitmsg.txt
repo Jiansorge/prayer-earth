@@ -1,11 +1,35 @@
-fix(android-test): assert the restored counters, not that an anonId exists
+feat(store): make losing prayer data structurally impossible, and prove it
 
-The restore itself worked (the written-back value was byte-identical), but the
-follow-up assertion demanded a non-empty anonId. A fresh install that has never
-synced legitimately has no anonId yet - getAnonId() only mints one on the first
-sync - and the CI emulator is always in that state, so the check could only ever
-fail there while passing on a phone that had synced.
+Backups are the last line of defence, not the first. I destroyed real prayer
+data on a physical phone with a buggy test, and the honest lesson is that the app
+and the suite should be unable to do that at all. Three layers:
 
-The real invariant is that the counters that were snapshotted come back, so the
-test now records a baseline before corrupting and compares against it. That is
-meaningful on both a fresh emulator and a real device with history.
+1. THE STORE WILL NOT PERSIST A LOSS (the important one).
+   src/store.js safeStorage.setItem now folds every write into whatever is
+   already stored, using the same max-merge semantics as sync. Counters, day maps
+   and bestStreak can only ever be written HIGHER, and a lower payload is merged
+   up rather than written down. Previously any code path - a bug, a bad restore,
+   a test - could shrink a user's history on its way to disk. The anonId is
+   preserved too, since losing it would orphan the server-side history.
+
+2. UNREADABLE DATA IS QUARANTINED, NEVER ERASED.
+   getItem now validates before handing a value to the app. A truncated or
+   corrupted entry used to be replaced by a default state on the very next
+   write, destroying real history with no trace. It is now moved to
+   <key>.unreadable, counted, and surfaced in Settings, so it can be recovered
+   by hand instead of vanishing.
+
+3. THE SUITE PROVES IT DID NOT LOSE ANYTHING.
+   The Android device test captures the app totals before it runs and re-checks
+   at the very end: any test that reduced the seconds, erased a prayer count, or
+   changed the anonId fails the suite. This is the layer that would catch the
+   NEXT destructive test - which the CI emulator structurally cannot do, because
+   it has no data to lose.
+
+Verification: 16 new assertions (56 total in test-backup) cover the merge guard,
+neverLoseData directly, and the quarantine path. The suite-wide invariant was
+confirmed on a Pixel 7 against real data: 20s/mani 4 -> 38s/mani 8, anonId
+unchanged.
+
+One existing assertion had to be relaxed: it expected a restore to write an
+exact stored value, which the new guard correctly prevents from ever going down.

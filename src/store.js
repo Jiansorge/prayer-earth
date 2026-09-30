@@ -69,15 +69,121 @@ const eq = (a, b) => {
   return true
 }
 
+// Move an unreadable stored value somewhere it cannot be overwritten, and tell
+// the user it happened. Recovering by hand is possible; silent erasure is not
+// acceptable for the one thing this app exists to keep.
+const quarantine = (name, raw) => {
+  try {
+    const key = `${name}.unreadable`
+    // Keep the most recent unreadable value, plus how many we have seen.
+    let seen = 0
+    try {
+      seen = Number(window.localStorage.getItem(`${name}.unreadable.count`)) || 0
+    } catch {}
+    try {
+      window.localStorage.setItem(key, raw)
+      window.localStorage.setItem(`${name}.unreadable.count`, String(seen + 1))
+    } catch {}
+  } catch {}
+  try {
+    useStore.setState({ dataQuarantined: true })
+  } catch {}
+}
+
+// Fold an incoming persisted payload into whatever is already stored so a write
+// can never reduce prayer data. Uses the same max-merge semantics as sync
+// (mergeStats) and keeps every non-counter field from the incoming value, so
+// ordinary writes (theme, locale, a new prayer) still land normally.
+const neverLoseData = (name, value) => {
+  let stored = null
+  try {
+    stored = window.localStorage.getItem(name)
+  } catch {
+    return value
+  }
+  if (stored == null) return value
+  let prev
+  let next
+  try {
+    prev = JSON.parse(stored)
+    next = JSON.parse(value)
+  } catch {
+    return value
+  }
+  const ps = prev?.state
+  const ns = next?.state
+  if (!ps || !ns) return value
+
+  const higher = (a, b) => (typeof a === 'number' && Number.isFinite(a) && a > b ? a : b)
+  const maxMap = (a, b) => {
+    const out = { ...(a || {}) }
+    for (const k of Object.keys(b || {})) {
+      const av = (a || {})[k]
+      const bv = (b || {})[k]
+      if (typeof av === 'number' && typeof bv === 'number') out[k] = Math.max(av, bv)
+      else if (av === undefined) out[k] = bv
+    }
+    return out
+  }
+  const psD = ps.prayerDayStats || {}
+  const nsD = ns.prayerDayStats || {}
+  const mergedDayStats = {}
+  for (const day of new Set([...Object.keys(psD), ...Object.keys(nsD)])) {
+    mergedDayStats[day] = maxMap(psD[day], nsD[day])
+  }
+
+  const state = {
+    ...ns,
+    localPrayerSeconds: higher(ns.localPrayerSeconds, ps.localPrayerSeconds || 0),
+    bestStreak: higher(ns.bestStreak, ps.bestStreak || 0),
+    prayerCompletions: maxMap(ps.prayerCompletions, ns.prayerCompletions),
+    prayerDayCompletions: maxMap(ps.prayerDayCompletions, ns.prayerDayCompletions),
+    prayerDayStats: mergedDayStats
+  }
+  // bestStreak must never drop below the streak, or a restore could undo it.
+  state.bestStreak = Math.max(state.bestStreak || 0, state.streak || 0)
+
+  // Preserve the anonId: losing it would orphan the user's server-side history.
+  if (typeof ps.anonId === 'string' && ps.anonId && !ns.anonId) state.anonId = ps.anonId
+
+  return JSON.stringify({ ...next, state })
+}
+
 // Storage that can never break the app. In private modes, sandboxed iframes,
 // or when a quota is exceeded, localStorage access throws, and prayer state
 // (especially the per-second counters) writes constantly. Swallow those errors
 // and keep running in memory; persistence silently degrades.
+//
+// It also cannot LOSE data, which is the stronger property and the one that
+// matters. Two holes are closed here:
+//
+//  1. A value that will not parse was previously left to be overwritten. The app
+//     would rehydrate onto defaults and then persist those defaults straight
+//     over the user's real history on the first tick, destroying it with no
+//     trace. Unreadable data is now QUARANTINED to a sibling key and the user is
+//     warned, so it can be recovered by hand instead of being erased.
+//  2. Nothing stopped any code path (including a test) from persisting LOWER
+//     counters than what is already stored. Writes are now folded into the
+//     stored value with the same max-merge used for sync, so a bug cannot
+//     shrink a user's prayer history even briefly.
+//     (Exported further down, after the declarations.)
+
 const safeStorage = {
   getItem: (name) => {
+    let raw
     try {
-      return window.localStorage.getItem(name)
+      raw = window.localStorage.getItem(name)
     } catch {
+      return null
+    }
+    if (raw == null) return null
+    // Validate before handing it over. A truncated or corrupted entry must never
+    // be silently replaced by a default state.
+    try {
+      JSON.parse(raw)
+      return raw
+    } catch {
+      quarantine(name, raw)
       return null
     }
   },
@@ -91,7 +197,12 @@ const safeStorage = {
   // A write failure is latched + surfaced so silent loss can't go unnoticed.
   setItem: (name, value) => {
     try {
-      window.localStorage.setItem(name, value)
+      // Never let a write shrink the user's history. Fold the incoming state
+      // into whatever is already stored (max-merge) before writing, so even a
+      // buggy caller - or a test - cannot persist a lower count. Without this,
+      // a single bad write silently erased real prayer data once already.
+      const merged = neverLoseData(name, value)
+      window.localStorage.setItem(name, merged)
       // A successful write clears a transient failure so the warning can
       // disappear once storage recovers.
       if (_writeFailed) {
@@ -117,6 +228,11 @@ const safeStorage = {
     } catch {}
   }
 }
+
+// Exported so the no-data-loss guarantees can be tested directly. The quarantine
+// path only fires when a value is READ (on rehydrate), so a test cannot reach it
+// by writing corrupt data into an already-live page.
+export { safeStorage, neverLoseData, quarantine }
 
 let _writeFailed = false
 
@@ -203,6 +319,10 @@ export const useStore = create(
   // Set when a localStorage write fails, so the UI can warn that counts aren't
   // being saved (see safeStorage.setItem).
   persistFailed: false,
+  // Set when an unreadable saved value was found and quarantined rather than
+  // overwritten. Surfaced so the user learns their data was not silently
+  // replaced by an empty state.
+  dataQuarantined: false,
       // when the shared world was first launched (ms epoch), so the glow can
       // show a gentle floor on day one and be fully honest afterwards
       startedAt: null,

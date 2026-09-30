@@ -309,4 +309,5 @@ export default {
   'sound.ambient': 'Volume del suono ambientale',
   'sound.speed': 'Velocità',
   'settings.saveFailed': 'I tuoi contatori di preghiera non vengono salvati su questo dispositivo. Libera spazio o prova un altro browser: la sessione corrente continua a contare.',
+  'settings.dataQuarantined': 'Una parte dei tuoi dati salvati non era leggibile, quindi ne è stata conservata una copia invece di eliminarla. Le nuove voci non possono più ridurre il tuo totale.',
 };

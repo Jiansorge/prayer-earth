@@ -402,4 +402,5 @@ export default {
   'sound.ambient': 'Volume du son ambiant',
   'sound.speed': 'Vitesse',
   'settings.saveFailed': 'Vos compteurs de prière ne sont pas enregistrés sur cet appareil. Libérez de l\'espace ou essayez un autre navigateur — la session en cours continue de compter.',
+  'settings.dataQuarantined': 'Certaines de vos données enregistrées étaient illisibles ; une copie a donc été conservée au lieu d’être supprimée. Les nouvelles écritures ne peuvent plus réduire votre total.',
 };

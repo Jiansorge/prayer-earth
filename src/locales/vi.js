@@ -405,4 +405,5 @@ export default {
   'sound.ambient': 'Âm lượng âm thanh',
   'sound.speed': 'Tốc độ',
   'settings.saveFailed': 'Bộ đếm lời cầu nguyện của bạn không được lưu trên thiết bị này. Hãy giải phóng dung lượng hoặc thử trình duyệt khác — phiên hiện tại vẫn đang đếm.',
+  'settings.dataQuarantined': 'Một phần dữ liệu đã lưu không đọc được, nên chúng tôi giữ lại một bản sao thay vì xóa. Các lượt ghi mới không thể làm giảm tổng của bạn nữa.',
 };
