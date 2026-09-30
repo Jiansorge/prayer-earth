@@ -37,7 +37,9 @@ if (run([path.join(ROOT, 'node_modules', 'vite', 'bin', 'vite.js'), 'build', '--
 if (run([path.join(ROOT, 'scripts', 'inline-css.mjs')]).status !== 0) process.exit(1)
 
 banner('auditing the built bundle (a test hook here is a hard failure)')
-if (run([path.join(ROOT, 'scripts', 'audit-build.mjs')]).status !== 0) {
+// AUDIT_REQUIRE_NO_HOOKS makes the hook check an assertion rather than a note,
+// so this build cannot pass with a hook in it.
+if (run([path.join(ROOT, 'scripts', 'audit-build.mjs')], { AUDIT_REQUIRE_NO_HOOKS: '1' }).status !== 0) {
   console.error('\n[release] REFUSING TO PRODUCE A RELEASE: the bundle failed the build audit.')
   console.error('[release] Fix the failing check, or use `npm run build:capacitor` for local/device builds.')
   process.exit(1)
