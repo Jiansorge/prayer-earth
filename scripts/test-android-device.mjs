@@ -476,30 +476,32 @@ const testAmbientAndStreak = async () => {
   check('the ambient engine accepts a preset + level on device', audible.ok, JSON.stringify(audible))
 
   // --- streak behaves the same as the web ---
+  // Same seeding as the web suite: a continuation needs a non-zero starting
+  // streak, otherwise "yesterday" can only ever produce 1 and the assertion
+  // would be testing nothing.
   const streak = await cdp.evaluate(`(() => {
     const s = window.__store
-    const day = (offset) => {
-      const d = new Date()
-      d.setUTCDate(d.getUTCDate() - offset)
-      return d.toISOString().slice(0, 10)
-    }
-    s.setState({ streak: 0, lastPrayedDay: '', bestStreak: 0 })
+    const key = (t) => t.getUTCFullYear() + '-' + String(t.getUTCMonth() + 1).padStart(2, '0') + '-' + String(t.getUTCDate()).padStart(2, '0')
+    const day = (offset) => { const d = new Date(); d.setUTCDate(d.getUTCDate() - offset); return key(d) }
+    s.setState({ streak: 0, bestStreak: 0, lastPrayedDay: null })
     s.getState().markPrayedToday()
     const first = s.getState().streak
-    s.getState().markPrayedToday() // same day again must be idempotent
+    s.getState().markPrayedToday()
     const sameDay = s.getState().streak
-    s.setState({ streak: 0, lastPrayedDay: day(1), bestStreak: 1 })
+    s.setState({ streak: 1, bestStreak: 1, lastPrayedDay: day(1) })
     s.getState().markPrayedToday()
     const continued = s.getState().streak
-    s.setState({ streak: 0, lastPrayedDay: day(3), bestStreak: 3 })
+    const best = s.getState().bestStreak
+    s.setState({ streak: 0, bestStreak: 0, lastPrayedDay: day(3) })
     s.getState().markPrayedToday()
     const broken = s.getState().streak
-    return { first, sameDay, continued, broken }
+    return { first, sameDay, continued, best, broken }
   })()`)
   log(`streak on device: ${JSON.stringify(streak)}`)
   check('first day of prayer starts a streak', streak.first === 1, JSON.stringify(streak))
   check('praying twice in one day does not double-count', streak.sameDay === 1, JSON.stringify(streak))
   check('yesterday continues the streak', streak.continued === 2, JSON.stringify(streak))
+  check('the best streak tracks the high water mark', streak.best === 2, JSON.stringify(streak))
   check('a missed day restarts the streak at 1', streak.broken === 1, JSON.stringify(streak))
 
   // Streak probing above mutated counters. That is safe by construction: every
