@@ -55,7 +55,7 @@ jobs:
       # Re-run the asset audit now that Gradle has produced a merged manifest, so
       # the shipped-permission checks actually execute instead of skipping.
       - run: npm run test:android:assets
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
@@ -71,7 +71,7 @@ jobs:
           chmod +x android/gradlew && ./android/gradlew -p android assembleDebug
           cp android/app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/old.apk"
           echo "built old.apk versionCode=$((VC-1)) (current=$VC)"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: app-old
           path: ${{ runner.temp }}/old.apk
