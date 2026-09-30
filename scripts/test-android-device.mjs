@@ -753,8 +753,11 @@ try {
   await testLocationCoarse()
   await testExportCapabilities()
   await testAmbientAndStreak()
-  await testCorruptStorageRecovery()
   await testBackup()
+  // DESTRUCTIVE, so it must run last: it deliberately writes a corrupt
+  // localStorage entry and reloads, which wipes the counters and anonId that
+  // testBackup (and the user on a real device) still need.
+  await testCorruptStorageRecovery()
   log(`failures=${failures}`)
 } catch (error) {
   check('Android smoke completed', false, error.message)
