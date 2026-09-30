@@ -66,6 +66,8 @@ export default {
   'settings.backupRestoreFile': 'バックアップファイルを選択',
   'settings.backupRestored': '復元しました。祈りが戻りました。',
   'settings.backupInvalid': '有効なリカバリコードではありません。',
+  'settings.backupDamaged': 'リカバリコードがコピー中に破損しました。もう一度コピーしてやり直してください。',
+
   'settings.backupCorrupt': 'コードが破損しているか読み取れません。',
   'settings.backupShared': '共有を開きました。コードを安全な場所に保存してください。',
   'settings.backupShowHint': '自動コピー・保存できませんでした。下のリカバリコードをコピーして保管してください。',

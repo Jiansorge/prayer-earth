@@ -45,9 +45,36 @@ const b64decode = (b64) => {
   return new TextDecoder().decode(bytes)
 }
 
+// CRC-32 (IEEE), used ONLY to catch accidental corruption -- a truncated paste,
+// a mangled character, a half-copied line. It is explicitly not a security
+// control: it is trivially forgeable, and anyone able to craft a code could
+// equally hand over a well-formed one. The server already guards the shared
+// world totals against junk, so the realistic harm this prevents is a user
+// restoring subtly wrong data and not finding out for weeks.
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256)
+  for (let n = 0; n < 256; n++) {
+    let c = n
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
+    t[n] = c >>> 0
+  }
+  return t
+})()
+
+export function crc32(str) {
+  let c = 0xffffffff
+  for (let i = 0; i < str.length; i++) {
+    c = CRC_TABLE[(c ^ str.charCodeAt(i)) & 0xff] ^ (c >>> 8)
+  }
+  return (c ^ 0xffffffff) >>> 0
+}
+
 // Build the recovery code string for the current device.
 export function buildBackupCode() {
-  const json = JSON.stringify(payloadFrom(useStore.getState()))
+  const body = payloadFrom(useStore.getState())
+  // Checksum the body WITHOUT the checksum field, so verification is a pure
+  // function of what we actually stored.
+  const json = JSON.stringify({ ...body, crc: crc32(JSON.stringify(body)) })
   return PREFIX + b64encode(json)
 }
 
@@ -67,6 +94,14 @@ export function parseBackupCode(code) {
     throw new Error('corrupt')
   }
   if (!obj || obj.v !== VERSION || typeof obj !== 'object') throw new Error('corrupt')
+  // Integrity check. Without it, a code truncated mid-copy can still decode to
+  // syntactically valid JSON with some fields missing or half-merged, and the
+  // user would only discover the loss later. A checksum field from a pre-checksum
+  // build is accepted so an older code still restores.
+  if (Number.isFinite(obj.crc)) {
+    const { crc, ...body } = obj
+    if (crc32(JSON.stringify(body)) !== crc) throw new Error('damaged')
+  }
   return obj
 }
 

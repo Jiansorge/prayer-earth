@@ -88,6 +88,8 @@ export default {
   'settings.backupRestoreFile': 'Choose a backup file',
   'settings.backupRestored': 'Restored. Your prayers are back.',
   'settings.backupInvalid': 'That is not a valid recovery code.',
+  'settings.backupDamaged': 'The recovery code got damaged in transit. Copy it again and try once more.',
+
   'settings.backupCorrupt': 'The code is damaged or unreadable.',
   'settings.backupShared': 'Share sheet opened. Save the code somewhere safe.',
   'settings.backupShowHint': 'Could not copy or download automatically. Copy the code below and keep it safe.',

@@ -83,6 +83,8 @@ export default {
   'settings.backupRestoreFile': 'Choisir un fichier de sauvegarde',
   'settings.backupRestored': 'Restauré. Vos prières sont de retour.',
   'settings.backupInvalid': 'Ce n\'est pas un code de récupération valide.',
+  'settings.backupDamaged': 'Le code de récupération a été abîmé lors de la copie. Copiez-le à nouveau et réessayez.',
+
   'settings.backupCorrupt': 'Le code est endommagé ou illisible.',
   'settings.backupShared': 'Partage ouvert. Conservez le code en lieu sûr.',
   'settings.backupShowHint': 'Copie ou téléchargement impossible. Copiez le code ci-dessous et conservez-le.',

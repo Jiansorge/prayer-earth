@@ -83,6 +83,8 @@ export default {
   'settings.backupRestoreFile': 'Sicherungsdatei wählen',
   'settings.backupRestored': 'Wiederhergestellt. Deine Gebete sind zurück.',
   'settings.backupInvalid': 'Das ist kein gültiger Wiederherstellungscode.',
+  'settings.backupDamaged': 'Der Wiederherstellungscode wurde beim Kopieren beschädigt. Kopiere ihn erneut und versuche es noch einmal.',
+
   'settings.backupCorrupt': 'Der Code ist beschädigt oder unlesbar.',
   'settings.backupShared': 'Teilen geöffnet. Bewahre den Code sicher auf.',
   'settings.backupShowHint': 'Kopieren oder Download war nicht möglich. Kopiere den Code unten und bewahre ihn auf.',

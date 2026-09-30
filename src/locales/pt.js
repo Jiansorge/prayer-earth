@@ -66,6 +66,8 @@ export default {
   'settings.backupRestoreFile': 'Escolher arquivo de backup',
   'settings.backupRestored': 'Restaurado. Suas orações voltaram.',
   'settings.backupInvalid': 'Isso não é um código de recuperação válido.',
+  'settings.backupDamaged': 'O código de recuperação foi danificado durante a cópia. Copie-o novamente e tente outra vez.',
+
   'settings.backupCorrupt': 'O código está danificado ou ilegível.',
   'settings.backupShared': 'Folha de compartilhamento aberta. Guarde o código em lugar seguro.',
   'settings.backupShowHint': 'Não foi possível copiar ou baixar. Copie o código abaixo e guarde-o.',

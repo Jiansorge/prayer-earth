@@ -66,6 +66,8 @@ export default {
   'settings.backupRestoreFile': '选择备份文件',
   'settings.backupRestored': '已恢复。你的祈祷已回来。',
   'settings.backupInvalid': '这不是有效的恢复码。',
+  'settings.backupDamaged': '恢复码在复制过程中损坏了。请重新复制一次再试。',
+
   'settings.backupCorrupt': '恢复码已损坏或无法读取。',
   'settings.backupShared': '已打开分享面板。请将恢复码保存在安全的地方。',
   'settings.backupShowHint': '无法自动复制或下载。请复制下面的恢复码并妥善保存。',

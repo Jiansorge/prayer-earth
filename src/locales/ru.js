@@ -66,6 +66,8 @@ export default {
   'settings.backupRestoreFile': 'Выбрать файл копии',
   'settings.backupRestored': 'Восстановлено. Ваши молитвы вернулись.',
   'settings.backupInvalid': 'Это не действительный код восстановления.',
+  'settings.backupDamaged': 'Код восстановления повредился при копировании. Скопируйте его заново и попробуйте ещё раз.',
+
   'settings.backupCorrupt': 'Код повреждён или не читается.',
   'settings.backupShared': 'Открыто меню «Поделиться». Сохраните код в надёжном месте.',
   'settings.backupShowHint': 'Не удалось скопировать или скачать. Скопируйте код ниже и сохраните его.',

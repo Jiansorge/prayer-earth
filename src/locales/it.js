@@ -66,6 +66,8 @@ export default {
   'settings.backupRestoreFile': 'Scegli un file di backup',
   'settings.backupRestored': 'Ripristinato. Le tue preghiere sono tornate.',
   'settings.backupInvalid': 'Questo non è un codice di recupero valido.',
+  'settings.backupDamaged': 'Il codice di recupero si è danneggiato durante la copia. Copialo di nuovo e riprova.',
+
   'settings.backupCorrupt': 'Il codice è danneggiato o illeggibile.',
   'settings.backupShared': 'Condivisione aperta. Salva il codice in un posto sicuro.',
   'settings.backupShowHint': 'Impossibile copiare o scaricare. Copia il codice qui sotto e conservalo.',

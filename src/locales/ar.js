@@ -66,6 +66,8 @@ export default {
   'settings.backupRestoreFile': 'اختيار ملف نسخة',
   'settings.backupRestored': 'تمت الاستعادة. عادت صلواتك.',
   'settings.backupInvalid': 'هذا ليس رمز استرداد صالح.',
+  'settings.backupDamaged': 'تلف رمز الاسترداد أثناء النسخ. انسخه من جديد وحاول مرة أخرى.',
+
   'settings.backupCorrupt': 'الرمز تالف أو غير مقروء.',
   'settings.backupShared': 'تم فتح المشاركة. احفظ الكود في مكان آمن.',
   'settings.backupShowHint': 'تعذّر النسخ أو التنزيل تلقائيًا. انسخ الكود أدناه واحفظه.',

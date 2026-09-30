@@ -88,6 +88,8 @@ export default {
   'settings.backupRestoreFile': 'Chọn tệp sao lưu',
   'settings.backupRestored': 'Đã khôi phục. Những lời cầu nguyện của bạn đã trở lại.',
   'settings.backupInvalid': 'Đó không phải mã khôi phục hợp lệ.',
+  'settings.backupDamaged': 'Mã khôi phục bị hỏng khi sao chép. Hãy sao chép lại và thử lần nữa.',
+
   'settings.backupCorrupt': 'Mã bị hỏng hoặc không đọc được.',
   'settings.backupShared': 'Đã mở bảng chia sẻ. Hãy lưu mã ở nơi an toàn.',
   'settings.backupShowHint': 'Không thể sao chép hoặc tải xuống. Hãy sao chép mã bên dưới và lưu lại.',

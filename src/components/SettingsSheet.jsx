@@ -195,7 +195,14 @@ export default function SettingsSheet() {
         } catch {}
       }
     } catch (e) {
-      flashBackup(false, e?.message === 'notBackup' ? 'settings.backupInvalid' : 'settings.backupCorrupt')
+      // Distinguish "this isn't a backup at all" from "this backup got damaged
+      // in transit" -- the second is recoverable by pasting a fresh copy, so
+      // saying so is the difference between a dead end and a fix.
+      const key =
+        e?.message === 'notBackup' ? 'settings.backupInvalid'
+        : e?.message === 'damaged' ? 'settings.backupDamaged'
+        : 'settings.backupCorrupt'
+      flashBackup(false, key)
     }
   }
 

@@ -212,6 +212,51 @@ const SUITE = `(async () => {
   t('rejects an oversized paste without decoding it', tryParse('JP1:' + 'A'.repeat(600 * 1024)) === 'corrupt')
   t('a failed restore leaves data untouched', useStore.getState().localPrayerSeconds === before)
 
+  // --- integrity: a mangled code must be REJECTED, never half-restored ---
+  // The realistic failure is a code truncated or partly retyped in transit.
+  // Without a checksum that can decode to valid-looking JSON with some fields
+  // missing, and the user would only find out weeks later.
+  const good = buildBackupCode()
+  const decodeToObj = (c) => JSON.parse(new TextDecoder().decode(
+    Uint8Array.from(atob(c.slice(4)), ch => ch.charCodeAt(0))))
+  const reencode = (o) => 'JP1:' + btoa(String.fromCharCode(
+    ...new TextEncoder().encode(JSON.stringify(o))))
+
+  t('a well-formed code passes the integrity check',
+    tryParse(good) !== 'damaged' && tryParse(good) !== 'corrupt')
+
+  // 1) Truncation: lose the tail of the base64.
+  const truncated = good.slice(0, good.length - 40)
+  t('a truncated code is rejected', tryParse(truncated) === 'damaged' || tryParse(truncated) === 'corrupt',
+    'got ' + tryParse(truncated))
+
+  // 2) A single flipped character in the base64 body.
+  const body = good.slice(4)
+  const swapped = body.slice(0, 6) + (body[6] === 'A' ? 'B' : 'A') + body.slice(7)
+  t('a one-character corruption is caught',
+    tryParse('JP1:' + swapped) === 'damaged' || tryParse('JP1:' + swapped) === 'corrupt',
+    'got ' + tryParse('JP1:' + swapped))
+
+  // 3) A silently edited field (someone bumps their own numbers in a hex editor).
+  const obj = decodeToObj(good)
+  obj.localPrayerSeconds = 999999999
+  t('an edited field fails the checksum', tryParse(reencode(obj)) === 'damaged')
+
+  // 4) A dropped field is caught too -- this is the case that would silently
+  //    lose a day map.
+  const dropped = decodeToObj(good)
+  delete dropped.prayerDayCompletions
+  t('a dropped field fails the checksum', tryParse(reencode(dropped)) === 'damaged')
+
+  // 5) Backwards compatibility: a code made before the checksum existed must
+  //    still restore, so nobody is locked out of their own backup.
+  const legacy = decodeToObj(good)
+  delete legacy.crc
+  t('a pre-checksum code still parses', tryParse(reencode(legacy)) !== 'damaged')
+
+  // 6) A failed integrity check must not have touched state.
+  t('a damaged restore leaves data untouched', useStore.getState().localPrayerSeconds === before)
+
   // --- privacy: the code must not carry identity or UI prefs ---
   reset({ profile: 'Alice', theme: 'dark', lang: 'fr', anonId: 'anon-abc', localPrayerSeconds: 10 })
   const priv = parseBackupCode(buildBackupCode())

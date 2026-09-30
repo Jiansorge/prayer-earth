@@ -88,6 +88,8 @@ export default {
   'settings.backupRestoreFile': 'Pumili ng backup file',
   'settings.backupRestored': 'Na-restore. Naibalik ang iyong mga dasal.',
   'settings.backupInvalid': 'Hindi ito wastong recovery code.',
+  'settings.backupDamaged': 'Nasira ang recovery code habang kinopya. Kopyahin itong muli at subukan muli.',
+
   'settings.backupCorrupt': 'Sira o hindi mabasa ang code.',
   'settings.backupShared': 'Na-open ang share sheet. I-save ang code sa ligtas na lugar.',
   'settings.backupShowHint': 'Hindi makopya o ma-download nang automatic. Kopyahin ang code sa ibaba at itago.',
