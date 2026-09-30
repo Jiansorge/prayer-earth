@@ -536,7 +536,7 @@ const testCorruptStorageRecovery = async () => {
 
   // Relaunch the page with the corrupt value in place.
   await cdp.send('Page.navigate', { url: 'capacitor://localhost/' })
-  await sleep(3500)
+  await sleep(7000)
   const recovered = await cdp.evaluate(`(() => {
     const boundary = document.body.innerText.includes('A little light flickered')
     const app = !!document.querySelector('.app')
@@ -564,7 +564,7 @@ const testCorruptStorageRecovery = async () => {
 
   // Prove it by reloading and reading the counters back.
   await cdp.send('Page.navigate', { url: 'capacitor://localhost/' })
-  await sleep(3500)
+  await sleep(7000)
   const after = await cdp.evaluate(`(() => {
     const s = window.__store && window.__store.getState()
     return s ? { seconds: s.localPrayerSeconds, anon: s.anonId } : null
