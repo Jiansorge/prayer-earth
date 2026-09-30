@@ -44,30 +44,54 @@ app-links chooser because `autoVerify` is intentionally off. To remove the choos
 
 ## 5. Build & publish
 ```bash
-# For the PUBLIC production release, make sure test hooks are OFF first:
-#   edit .env.capacitor  ->  VITE_TEST_HOOKS=false  (or delete the line)
-# (Internal-test builds may keep them on; see below.)
-npm run build:capacitor && npx cap sync android
+# Use the release build. It forces the test hooks OFF and refuses to produce a
+# bundle that still contains them, so you cannot ship the backdoor by accident.
+npm run build:release
+npx cap sync android
 cd android && ./gradlew bundleRelease   # .aab for Play
 ```
-Upload the `.aab` to the Play Console.
+Upload `android/app/build/outputs/bundle/release/app-release.aab` to the Play Console.
+
+Verify your signing identity any time (it never prints the password):
+```bash
+node scripts/check-signing.mjs
+```
 
 ## Test-observability hooks (security)
 The app exposes `window.__store` / `__speech` / `__ambient` (full read/write
-handles on state + audio) ONLY when built with test hooks on:
-- Vite **dev** server → always on (browser test suite needs it).
+handles on prayer state and audio) ONLY when built with test hooks on:
+- Vite **dev** server → always on (the browser test suite needs it).
 - `VITE_TEST_HOOKS=true` → on for instrumented Android/Capacitor builds used by
-  the on-device smoke test. This is currently set in `.env.capacitor`.
+  the on-device smoke test. This is set in `.env.capacitor`.
 
-They are gated at **build time** now (a previous version used a runtime
-`?peTest=1` URL param that shipped in the production web bundle and was
-reachable via a crafted link — that hole is closed). For your **public Play
-release**, set `VITE_TEST_HOOKS=false` in `.env.capacitor` so the shipped app has
-no test handles. (Internal testing builds can keep them on.)
+They are gated at **build time** (a previous version gated on a runtime
+`?peTest=1` URL param that shipped in the production web bundle and was reachable
+via a crafted link — that hole is closed).
+
+**Use `npm run build:release` for anything you publish.** `npm run build:capacitor`
+deliberately leaves the hooks ON for the device smoke test, so building with it
+and uploading that `dist` would ship `window.__store` to the public app. The
+release script overrides the flag and then runs `scripts/audit-build.mjs`, which
+fails the build if any hook is present — you do not have to remember.
+
+## Protecting against re-uploads (honest scope)
+The app ships free and stays free. You cannot stop someone repackaging the APK —
+any Android build can be unpacked, and the app's own code is already minified, so
+a copy is not a readable source drop. What is in place:
+- `scripts/audit-build.mjs` asserts no test hooks and that app code is minified,
+  so the published bundle is not an easier target than it needs to be.
+- Settings → About carries attribution ("Free, always") and a report-a-copy link
+  (`https://joining-palms.app/legal#report`), which is what makes a Play takedown
+  straightforward if a copy is published.
+
+Neither is a wall. Treat them as a speed bump plus a paper trail.
 
 ## Notes
-- `versionCode 24` / `versionName 1.0.1` in `android/app/build.gradle` — bump the
+- `versionCode 24` / `versionName 1.0.0` in `android/app/build.gradle` — bump the
   code for every Play upload (it must strictly increase).
+- The release keystore is the one unrecoverable asset: if it is lost, Play rejects
+  every future update of the listing. Back it up in two places, and keep the
+  password in a password manager — not only on the machine that built it.
 - Prayer audio (~112 MB) is bundled in the APK for offline use and is also pushed to
   the CDN. The 9 Gurmukhi Sikh mantras have no free neural voice and use on-device
   TTS by design.

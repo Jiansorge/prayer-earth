@@ -86,6 +86,8 @@ export default {
   'settings.installHintIos': '「共有」をタップして「ホーム画面に追加」を選択してください。',
   'settings.installHintBrowser': 'ブラウザのメニューを開き、「ホーム画面に追加」を選んでください。',
   'settings.legal': 'プライバシーと配慮',
+  'settings.madeBy': 'Joining Palms の人々によって、愛を込めて。ずっと無料です。',
+  'settings.reportCopy': 'このアプリの再投稿を見つけたら、お知らせください。',
   'settings.donateLabel': 'Joining Palms を支援する',
   'settings.donateHint': 'すべての寄付がこのアプリを無料・個人情報保護・広告なしに保ちます。アカウントやメールは不要です。',
   'settings.donateButton': 'Joining Palms を支援する',

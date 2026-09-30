@@ -249,6 +249,8 @@ export default {
   'profile.color': 'ཁྱེད་ཀྱི་འོད།',
   'profile.you': 'ཁྱེད་རང་།',
   'settings.legal': 'སྒེར་གྱོང་དང་བརྩི་སྲུང་།',
+  'settings.madeBy': 'དགའ་བསུ་གསར་དུ་Joining Palms གྲགས་པའིས་བཟོས། ཚེ་རིང་དང་ནས་རིན་མེད་ཀྱི་ཡིན།',
+  'settings.reportCopy': 'འདི་ལྟའི་ཁྱད་འཚལ་ཡོངས་སུ་བསྐྱེད་པའི་ཤག་འཛིན་མ་རྙེད་ན། བརྗོད་པ་འདུག',
   'legal.title': 'སྒེར་གྱོང་དང་བརྩི་སྲུང་།',
   'legal.wellnessTitle': 'བདེ་སྐྱིད་སྐོར་གྱི་གསལ་བཤད།',
   'legal.wellnessBody':

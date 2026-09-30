@@ -86,6 +86,8 @@ export default {
   'settings.installHintIos': '点击「分享」，然后选择「添加到主屏幕」。',
   'settings.installHintBrowser': '打开浏览器菜单，然后选择「添加到主屏幕」。',
   'settings.legal': '隐私与关怀',
+  'settings.madeBy': '由 Joining Palms 的人们用爱制作。永远免费。',
+  'settings.reportCopy': '发现有人重新发布此应用？请向我们举报。',
   'settings.sharePrayerLabel': '分享一段祈祷',
   'settings.sharePrayerHint': '为「{title}」制作一张卡片，别人扫码即可加入。',
   'settings.sharePrayerHintNone': '请先打开一段祈祷，然后再为它制作卡片。',

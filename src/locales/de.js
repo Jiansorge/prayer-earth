@@ -103,6 +103,8 @@ export default {
   'settings.installHintIos': 'Tippe auf „Teilen" und dann auf „Zum Home-Bildschirm hinzufügen".',
   'settings.installHintBrowser': 'Öffne das Browsermenü und wähle „Zum Home-Bildschirm hinzufügen".',
   'settings.legal': 'Datenschutz & Fürsorge',
+  'settings.madeBy': 'Mit Liebe von den Machern von Joining Palms erstellt. Für immer kostenlos.',
+  'settings.reportCopy': 'Eine neu veröffentlichte Kopie gefunden? Bitte melden.',
   'settings.sharePrayerLabel': 'Ein Gebet teilen',
   'settings.sharePrayerHint':
     'Erstelle eine Karte für „{title}“, damit jemand per Scan mitbeten kann.',

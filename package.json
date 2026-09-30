@@ -30,7 +30,8 @@
     "test:earth": "node scripts/test-earth.mjs",
     "capture:demo": "node scripts/capture-demo.mjs",
     "audit:prayers": "node scripts/audit-prayers.mjs",
-    "test:backup": "node scripts/test-backup.mjs"
+    "test:backup": "node scripts/test-backup.mjs",
+    "build:release": "node scripts/build-release.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",

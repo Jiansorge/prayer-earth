@@ -233,6 +233,19 @@ ok(
     return typeof code === 'string' && code.startsWith('JP1:') && code.length > 20
   })()`)
 )
+// Attribution: the app is free and stays free, and the About section must name
+// the authors and offer a route to report a re-upload. Honest scope -- this
+// cannot stop an APK repackage, but it is what makes a takedown easy.
+ok(
+  'about section carries attribution',
+  settingsOpen && (await c.eval(`document.body.innerText.toLowerCase().includes('free, always')`))
+)
+ok(
+  'about section offers a report-a-copy link',
+  settingsOpen &&
+    (await c.eval(`!!document.querySelector('.field-report')`)) &&
+    (await c.eval(`(document.querySelector('.field-report')?.getAttribute('href') || '').includes('joining-palms.app')`))
+)
 // Regression: ambient.ensure() must ALWAYS return a thenable. When it was a
 // plain function returning undefined, playback.js's `ambient.ensure().catch()`
 // threw and broke the nav play button. Lock the contract.

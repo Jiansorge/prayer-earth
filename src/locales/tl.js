@@ -248,6 +248,8 @@ export default {
   'profile.color': 'Ang iyong liwanag',
   'profile.you': 'ikaw',
   'settings.legal': 'Privacy at pangangalaga',
+  'settings.madeBy': 'Ginawa nang may pagmamahal ng mga gumawa ng Joining Palms. Libre, permanent.',
+  'settings.reportCopy': 'May nahanap kang muling na-publish na kopya? I-report, pakiusap.',
   'legal.title': 'Privacy at pangangalaga',
   'legal.wellnessTitle': 'Isang paalala tungkol sa kagalingan',
   'legal.wellnessBody': 'Ang Joining Palms ay isang lugar para sa tahimik na pagninilay at koneksyon, hindi para sa pangangalagang medikal, sikolohikal, o krisis. Hindi ito nagdi-diagnose o gumagamot ng anumang karamdaman. Kung nasa kagipitan ka, mangyaring makipag-ugnayan sa isang kwalipikadong propesyonal sa kalusugan o sa lokal na hotline para sa krisis. Pakialagaan din ang iyong katawan: panatilihing komportable ang volume, at huwag gamitin ang app habang nagmamaneho o nagpapatakbo ng makinarya.',

@@ -103,6 +103,8 @@ export default {
   'settings.installHintIos': 'Toca Compartir y luego \u201cAñadir a pantalla de inicio\u201d.',
   'settings.installHintBrowser': 'Abre el menú del navegador y elige \u201cAñadir a pantalla de inicio\u201d.',
   'settings.legal': 'Privacidad y atención',
+  'settings.madeBy': 'Hecho con amor por la gente de Joining Palms. Gratis, siempre.',
+  'settings.reportCopy': '¿Has encontrado una copia republicada? Denúnciala, por favor.',
   'settings.sharePrayerLabel': 'Compartir una oración',
   'settings.sharePrayerHint':
     'Haz una tarjeta de "{title}" para que alguien se una escaneándola.',

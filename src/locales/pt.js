@@ -86,6 +86,8 @@ export default {
   'settings.installHintIos': 'Toque em Compartilhar e depois em "Adicionar à tela inicial".',
   'settings.installHintBrowser': 'Abra o menu do navegador e escolha "Adicionar à tela inicial".',
   'settings.legal': 'Privacidade e cuidado',
+  'settings.madeBy': 'Feito com amor por quem criou o Joining Palms. Grátis, sempre.',
+  'settings.reportCopy': 'Encontrou uma cópia republicada? Denuncie, por favor.',
   'prayer.muted': 'Silenciado',
   'settings.sharePrayerLabel': 'Compartilhar uma oração',
   'settings.sharePrayerHint': 'Crie um cartão para "{title}" para que alguém entre escaneando-o.',

@@ -248,6 +248,8 @@ export default {
   'profile.color': 'Your light',
   'profile.you': 'you',
   'settings.legal': 'Privacy & care',
+  'settings.madeBy': 'Made with love by the people of Joining Palms. Free, always.',
+  'settings.reportCopy': 'Found a re-upload of this app? Please report it.',
   'legal.title': 'Privacy & care',
   'legal.wellnessTitle': 'A note on wellbeing',
   'legal.wellnessBody': 'Joining Palms is a place for quiet reflection and connection, not medical, psychological, or crisis care. It does not diagnose or treat any condition. If you are in distress, please reach out to a qualified health professional or a local crisis line. Please also look after your body: keep volume comfortable, and don\u2019t use the app while driving or operating machinery.',

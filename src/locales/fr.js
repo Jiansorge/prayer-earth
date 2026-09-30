@@ -99,6 +99,8 @@ export default {
   'settings.backupSumGained': '+{time} ajoutés à vos totaux',
   'settings.secAbout': 'À propos',
   'settings.legal': 'Confidentialité et bienveillance',
+  'settings.madeBy': 'Fait avec amour par celles et ceux de Joining Palms. Gratuit, pour toujours.',
+  'settings.reportCopy': 'Une copie republiée de cette application ? Signalez-la.',
   'settings.installApp': 'Ajouter à l\u2019écran d\u2019accueil',
   'settings.installHint': 'Installez Joining Palms comme une application native — aucun magasin d\u2019applications nécessaire.',
   'settings.installHintIos': 'Touchez Partager puis « Ajouter à l\u2019écran d\u2019accueil ».',

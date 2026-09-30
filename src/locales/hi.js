@@ -106,6 +106,8 @@ export default {
   'settings.donateHint': 'हर योगदान इसे मुफ़्त, निजी और विज्ञापन-मुक्त बनाए रखता है। किसी खाते या ईमेल की ज़रूरत नहीं।',
   'settings.donateButton': 'Joining Palms का समर्थन करें',
   'settings.legal': 'गोपनीयता और देखभाल',
+  'settings.madeBy': 'Joining Palms के लोगों ने प्यार से बनाया। हमेशा के लिए निःशुल्क।',
+  'settings.reportCopy': 'इस ऐप की दोबारा पोस्टिंग मिली? कृपया रिपोर्ट करें।',
   'settings.sharePrayerLabel': 'प्रार्थना साझा करें',
   'settings.sharePrayerHint':
     '"{title}" के लिए एक कार्ड बनाएँ ताकि कोई उसे स्कैन करके जुड़ सके।',

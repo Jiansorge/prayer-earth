@@ -40,6 +40,9 @@ const fmtDuration = (secs) => {
 // localhost/dev/standalone host the app happens to be running on — a copied
 // `window.location.origin` would hand someone a dead "localhost" link.
 const APP_ORIGIN = 'https://joining-palms.app'
+// Where someone goes if they find a re-upload of this app. Free and open, so it
+// works for anyone who needs it.
+const REPORT_URL = 'https://joining-palms.app/legal#report'
 // Play-Store listing URL, supplied at build time via VITE_PLAY_STORE_URL once
 // the listing is live (the deploy sets it alongside VITE_SYNC_ENGINE). When it
 // is unset (null) the share row shows a "coming soon" note instead of a dead
@@ -596,6 +599,19 @@ export default function SettingsSheet() {
         <button className="field-btn" onClick={() => setLegalOpen(true)}>
           {t('settings.legal')}
         </button>
+
+        {/* Attribution + a way to report a re-upload. Honest scope: the app
+            ships free and stays free. This cannot stop someone repackaging an
+            APK -- any Android build can be unpacked -- but it puts the author's
+            name and a reporting route inside the app itself, which is what makes
+            a takedown straightforward if a copy is published. */}
+        <div className="field-hint" style={{ marginTop: 14 }}>{t('settings.madeBy')}</div>
+        <button className="field-url" onClick={() => shareApp('web')} title={APP_ORIGIN}>
+          {APP_ORIGIN}
+        </button>
+        <a className="field-report" href={REPORT_URL} target="_blank" rel="noreferrer noopener">
+          {t('settings.reportCopy')}
+        </a>
 
         {!isAppShell() && !isMobile() && (
           <button

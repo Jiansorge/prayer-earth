@@ -89,6 +89,8 @@ export default {
   'settings.donateHint': '모든 기부는 이 앱을 무료로, 사생활 보호로, 광고 없이 유지합니다. 계정이나 이메일이 필요 없습니다.',
   'settings.donateButton': 'Joining Palms 지원하기',
   'settings.legal': '개인정보 보호와 돌봄',
+  'settings.madeBy': 'Joining Palms의 사람들이 사랑으로 만들었습니다. 항상 무료입니다.',
+  'settings.reportCopy': '이 앱의 재게시를 발견했다면 제보해 주세요.',
   'settings.sharePrayerLabel': '기도 공유하기',
   'settings.sharePrayerHint': '「{title}」 카드를 만들어 누군가 스캔하여 참여하게 하세요.',
   'settings.sharePrayerHintNone': '먼저 기도를 열어 주세요, 그런 다음 카드를 만들 수 있어요.',

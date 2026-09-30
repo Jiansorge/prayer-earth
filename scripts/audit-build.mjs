@@ -68,5 +68,46 @@ if (swPresent) {
   }
 }
 
+// 3. No test hooks in a production bundle. window.__store / __speech /
+// __ambient are full read/write handles on prayer state and the audio engines,
+// so shipping one hands a stranger the user's data and their identity. They are
+// gated at build time (shared/testHooks.js); this asserts the gate actually held
+// for whatever was just built, so a stray VITE_TEST_HOOKS=true can never reach
+// the Play build unnoticed. A previous version gated on a `?peTest=1` URL param
+// and shipped it -- this check exists so that class of mistake cannot recur.
+{
+  const leaks = []
+  for (const file of readdirSync(assetDir)) {
+    if (!file.endsWith('.js')) continue
+    const source = readFileSync(path.join(assetDir, file), 'utf8')
+    // `__speechAudio` is the hidden <audio> element's DOM id, not the hook.
+    for (const hook of ['__store', '__speech', '__ambient']) {
+      const re = new RegExp(`window\\s*\\.\\s*${hook}\\b|\\b${hook}\\s*=`)
+      if (re.test(source)) leaks.push(`${file}: ${hook}`)
+    }
+  }
+  check('no test hooks (window.__store/__speech/__ambient) in the production bundle',
+    leaks.length === 0, leaks.join(' | ') || 'clean')
+}
+
+// 4. The app's own code must be minified, so a copy of the Play build is not a
+// readable source drop. Third-party vendor chunks (notably three.js) are
+// open-source and readable by nature, so they are exempt -- chasing them would
+// only add build fragility for no confidentiality gain.
+{
+  const appChunks = readdirSync(assetDir).filter((f) => f.endsWith('.js') && !f.startsWith('three-'))
+  const readable = []
+  for (const file of appChunks) {
+    const source = readFileSync(path.join(assetDir, file), 'utf8')
+    const lines = source.split('\n').length
+    // A minified chunk is a handful of very long lines. A file with many short
+    // lines is unminified app code.
+    const longest = Math.max(...source.split('\n').map((l) => l.length))
+    if (lines > 40 && longest < 2000) readable.push(`${file} (${lines} lines, longest ${longest})`)
+  }
+  check('app code is minified (no readable source drop)', readable.length === 0,
+    readable.join(' | ') || `${appChunks.length} chunks checked`)
+}
+
 console.log(fails === 0 ? '\n[audit] ALL CHECKS PASSED' : `\n[audit] ${fails} check(s) FAILED`)
 process.exit(fails === 0 ? 0 : 1)

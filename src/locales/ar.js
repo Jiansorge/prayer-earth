@@ -86,6 +86,8 @@ export default {
   'settings.installHintIos': 'اضغط على مشاركة ثم اختر «أضف إلى الشاشة الرئيسية».',
   'settings.installHintBrowser': 'افتح قائمة المتصفح ثم اختر «أضف إلى الشاشة الرئيسية».',
   'settings.legal': 'الخصوصية والعناية',
+  'settings.madeBy': 'صُنع بحب بواسطة مؤلفي Joining Palms. مجاني للأبد.',
+  'settings.reportCopy': 'هل وجدت نسخة مُعاد نشرها من هذا التطبيق؟ أبلغ عن ذلك.',
   'settings.donateLabel': 'ادعم Joining Palms',
   'settings.donateHint': 'كل مساهمة تُبقي هذا التطبيق مجانيًا وخاصًا وخاليًا من الإعلانات. لا حاجة إلى حساب أو بريد إلكتروني.',
   'settings.donateButton': 'ادعم Joining Palms',

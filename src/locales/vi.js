@@ -251,6 +251,8 @@ export default {
   'profile.color': 'Ánh sáng của bạn',
   'profile.you': 'bạn',
   'settings.legal': 'Quyền riêng tư và sự chăm sóc',
+  'settings.madeBy': 'Được làm bằng tình yêu bởi những người tạo ra Joining Palms. Miễn phí, mãi mãi.',
+  'settings.reportCopy': 'Thấy bản sao được đăng lại? Xin báo giúp chúng tôi.',
   'legal.title': 'Quyền riêng tư và sự chăm sóc',
   'legal.wellnessTitle': 'Lưu ý về sức khỏe và tinh thần',
   'legal.wellnessBody':

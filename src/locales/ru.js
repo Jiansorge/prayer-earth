@@ -86,6 +86,8 @@ export default {
   'settings.installHintIos': 'Нажмите «Поделиться», затем «На главный экран».',
   'settings.installHintBrowser': 'Откройте меню браузера и выберите «На главный экран».',
   'settings.legal': 'Конфиденциальность и забота',
+  'settings.madeBy': 'Сделано с любовью теми, кто создал Joining Palms. Всегда бесплатно.',
+  'settings.reportCopy': 'Нашли повторную публикацию? Пожалуйста, сообщите.',
   'settings.sharePrayerLabel': 'Поделиться молитвой',
   'settings.sharePrayerHint': 'Создайте карточку для «{title}», чтобы кто-то присоединился, отсканировав её.',
   'settings.sharePrayerHintNone': 'Сначала откройте молитву, затем создайте для неё карточку.',

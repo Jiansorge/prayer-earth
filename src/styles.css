@@ -2027,6 +2027,20 @@ html[dir='rtl'] .chooser-arrow.right {
   border-color: rgba(232, 196, 122, 0.5);
 }
 
+/* Attribution + report-a-copy link in Settings -> About. */
+.field-report {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--ink-dim);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.field-report:hover {
+  color: var(--gold-soft);
+}
+
 /* What a restore actually brought back. Pasting a recovery code is otherwise a
    leap of faith, so spell out the contents instead of just saying "Restored." */
 .backup-summary {

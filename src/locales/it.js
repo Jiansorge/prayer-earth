@@ -86,6 +86,8 @@ export default {
   'settings.installHintIos': 'Tocca Condividi e poi \u201cAggiungi alla schermata Home\u201d.',
   'settings.installHintBrowser': 'Apri il menu del browser e scegli \u201cAggiungi alla schermata Home\u201d.',
   'settings.legal': 'Privacy e cura',
+  'settings.madeBy': 'Fatto con amore da chi ha creato Joining Palms. Gratis, per sempre.',
+  'settings.reportCopy': 'Hai trovato una copia ripubblicata? Segnalala, per favore.',
   'prayer.muted': 'Silenziato',
   'theme.dawn': 'Alba',
   'settings.sharePrayerLabel': 'Condividi una preghiera',
