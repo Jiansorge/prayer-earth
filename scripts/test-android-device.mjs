@@ -512,16 +512,27 @@ const testAmbientAndStreak = async () => {
 
 // A corrupt localStorage entry is a realistic phone failure (interrupted write,
 // or a bad restore). The app must recover rather than white-screen.
+//
+// DESTRUCTIVE, so it snapshots and restores the whole store around the test.
+// An earlier version wrote the corrupt value and reloaded without restoring,
+// which WIPED the real user's prayer data when this suite ran against a physical
+// phone. A test must never cost the user their history, so the snapshot is
+// mandatory and the restore is verified, not assumed.
 const testCorruptStorageRecovery = async () => {
-  const result = await cdp.evaluate(`(() => {
-    const KEY = 'prayer-earth-v1'
-    const good = localStorage.getItem(KEY)
-    try {
-      localStorage.setItem(KEY, '{"state":{"localPrayerSeconds":')
-    } catch (e) { return { skipped: 'localStorage unavailable' } }
-    return { seeded: true, hadData: !!good }
+  const KEY = 'prayer-earth-v1'
+  // Hold the snapshot in NODE, not on window: the test reloads the page, which
+  // destroys the JS context, so a window-level backup would not survive. An
+  // earlier version did exactly that and wiped the real user's prayer data when
+  // this suite ran against a physical phone.
+  const saved = await cdp.evaluate(`(() => localStorage.getItem(${JSON.stringify(KEY)}))()`)
+  if (!saved) { check('corrupt storage test ran', true, 'no existing data to protect'); return }
+  check('snapshot taken before the destructive test', typeof saved === 'string' && saved.length > 20,
+    `${String(saved).length} bytes`)
+
+  const seeded = await cdp.evaluate(`(() => {
+    try { localStorage.setItem('prayer-earth-v1', '{"state":{"localPrayerSeconds":'); return true } catch (e) { return false }
   })()`)
-  if (result.skipped) { check('corrupt storage test ran', true, result.skipped); return }
+  if (!seeded) { check('corrupt storage test ran', true, 'localStorage unavailable'); return }
 
   // Relaunch the page with the corrupt value in place.
   await cdp.send('Page.navigate', { url: 'capacitor://localhost/' })
@@ -537,8 +548,29 @@ const testCorruptStorageRecovery = async () => {
   check('a corrupt localStorage entry does not white-screen the app',
     recovered.app && !recovered.boundary, JSON.stringify(recovered))
   check('the store still loads with sane counters after corruption',
-    recovered.seconds === null || Number.isFinite(recovered.seconds) && recovered.seconds >= 0,
+    recovered.seconds === null || (Number.isFinite(recovered.seconds) && recovered.seconds >= 0),
     String(recovered.seconds))
+
+  // RESTORE, using the node-side snapshot.
+  const restored = await cdp.evaluate(`(() => {
+    try {
+      localStorage.setItem('prayer-earth-v1', ${JSON.stringify(saved)})
+      return localStorage.getItem('prayer-earth-v1') === ${JSON.stringify(saved)}
+    } catch (e) { return 'threw: ' + String(e).slice(0, 60) }
+  })()`)
+  log(`corrupt-storage restore: ${restored}`)
+  check('the original prayer data is written back after the corruption test',
+    restored === true, String(restored))
+
+  // Prove it by reloading and reading the counters back.
+  await cdp.send('Page.navigate', { url: 'capacitor://localhost/' })
+  await sleep(3500)
+  const after = await cdp.evaluate(`(() => {
+    const s = window.__store && window.__store.getState()
+    return s ? { seconds: s.localPrayerSeconds, anon: s.anonId } : null
+  })()`)
+  check('the user data survives the whole corruption test',
+    !!after && after.seconds > 0 && !!after.anon, JSON.stringify(after))
 }
 
 // The web suite walks all six themes. Doing that here is not worth it: cycling
