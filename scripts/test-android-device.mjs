@@ -534,6 +534,16 @@ const testCorruptStorageRecovery = async () => {
   })()`)
   if (!seeded) { check('corrupt storage test ran', true, 'localStorage unavailable'); return }
 
+  // Remember what the store held, so the restore can be checked against the real
+  // invariant: the same counters come back. Do NOT assert an anonId exists - a
+  // fresh install that has never synced legitimately has none, and the emulator
+  // is always in that state.
+  const baseline = await cdp.evaluate(`(() => {
+    const s = window.__store.getState()
+    return { seconds: s.localPrayerSeconds, mani: (s.prayerCompletions || {}).mani || 0 }
+  })()`)
+  log(`corrupt-storage baseline: ${JSON.stringify(baseline)}`)
+
   // Relaunch the page with the corrupt value in place.
   await cdp.send('Page.navigate', { url: 'capacitor://localhost/' })
   await sleep(7000)
@@ -567,10 +577,11 @@ const testCorruptStorageRecovery = async () => {
   await sleep(7000)
   const after = await cdp.evaluate(`(() => {
     const s = window.__store && window.__store.getState()
-    return s ? { seconds: s.localPrayerSeconds, anon: s.anonId } : null
+    return s ? { seconds: s.localPrayerSeconds, mani: (s.prayerCompletions || {}).mani || 0 } : null
   })()`)
   check('the user data survives the whole corruption test',
-    !!after && after.seconds > 0 && !!after.anon, JSON.stringify(after))
+    !!after && after.seconds >= baseline.seconds && after.mani >= baseline.mani,
+    `baseline=${JSON.stringify(baseline)} after=${JSON.stringify(after)}`)
 }
 
 // The web suite walks all six themes. Doing that here is not worth it: cycling

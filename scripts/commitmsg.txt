@@ -1,8 +1,11 @@
-fix(android-test): give the corruption test room to reload
+fix(android-test): assert the restored counters, not that an anonId exists
 
-The test now performs three page reloads (corrupt, verify recovery, verify
-restore), and the CI emulator could not hydrate the store fast enough between
-them, so a Runtime.evaluate timed out and failed android-smoke. Raised the settle
-time after each reload from 3.5s to 7s. It had passed on the physical phone,
-where hydration is fast - another case where only the emulator surfaces the
-timing.
+The restore itself worked (the written-back value was byte-identical), but the
+follow-up assertion demanded a non-empty anonId. A fresh install that has never
+synced legitimately has no anonId yet - getAnonId() only mints one on the first
+sync - and the CI emulator is always in that state, so the check could only ever
+fail there while passing on a phone that had synced.
+
+The real invariant is that the counters that were snapshotted come back, so the
+test now records a baseline before corrupting and compares against it. That is
+meaningful on both a fresh emulator and a real device with history.
