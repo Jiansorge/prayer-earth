@@ -541,6 +541,33 @@ const testCorruptStorageRecovery = async () => {
     String(recovered.seconds))
 }
 
+// The web suite verifies every theme mounts its backdrop. On a phone a missing
+// canvas is not cosmetic -- it is a black screen -- so assert each theme mounts
+// a real, sized canvas without taking screenshots.
+const testBackdropThemes = async () => {
+  const themes = ['mystic', 'nature', 'space', 'temple', 'ocean', 'dawn']
+  for (const th of themes) {
+    const ok = await cdp.evaluate(`(async () => {
+      const store = window.__store
+      const original = store.getState().theme
+      try {
+        store.getState().setTheme('${th}')
+        // Wait a frame for the canvas to mount and lay out.
+        await new Promise(r => setTimeout(r, 700))
+        const canvases = [...document.querySelectorAll('canvas.${th}-backdrop')]
+        return {
+          count: canvases.length,
+          width: canvases[0] ? canvases[0].clientWidth : 0,
+          height: canvases[0] ? canvases[0].clientHeight : 0
+        }
+      } catch (e) { return { error: String(e).slice(0, 70) } }
+      finally { store.getState().setTheme(original) }
+    })()`)
+    check(`theme ${th} mounts a sized backdrop canvas on device`,
+      ok.count === 1 && ok.width > 100 && ok.height > 100, JSON.stringify(ok))
+  }
+}
+
 const testSentinel = async (key, value) => {
   const stored = await cdp.evaluate(`localStorage.getItem(${JSON.stringify(key)})`)
   check('app data survives APK reinstall', stored === value, `stored=${stored}`)
@@ -753,6 +780,7 @@ try {
   await testLocationCoarse()
   await testExportCapabilities()
   await testAmbientAndStreak()
+  await testBackdropThemes()
   await testBackup()
   // DESTRUCTIVE, so it must run last: it deliberately writes a corrupt
   // localStorage entry and reloads, which wipes the counters and anonId that

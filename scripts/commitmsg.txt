@@ -1,22 +1,7 @@
-test(android): mirror the web suite's ambient, streak and corruption coverage
+test(android): assert every theme mounts a sized backdrop canvas
 
-scripts/compare-test-coverage.mjs diffs what each platform asserts. Four topics
-were covered on the web only, and a phone is the worst place to leave any of
-them unverified:
-
-- ambient / sound controls. A built-in speaker is the hardest audio case, and
-  ambient is the most-reported feature. Now asserts the device has a Web Audio
-  context, the 7 beds and the voice/ambient sliders are present, and the engine
-  accepts a preset + level (and the originals are restored).
-- streak. first day starts at 1, praying twice in one day is idempotent,
-  yesterday continues, a missed day restarts at 1. The store keys streak days in
-  UTC, so the test seeds UTC dates.
-- corrupt localStorage. A truncated entry is a realistic phone failure (an
-  interrupted write, or a bad restore). The page is reloaded with a corrupt value
-  in place and must recover without a white screen or a NaN counter.
-- app-shell vs web, which the previous commit fixed and is now pinned from both
-  sides: the browser test asserts Download and Keyboard shortcuts are present,
-  the Android suite asserts the impossible download is absent.
-
-compare-test-coverage.mjs is committed as the tool that produced the list, so
-the diff can be re-run whenever a test is added rather than rediscovered later.
+The last web-only gap in scripts/compare-test-coverage.mjs. On a phone a missing
+backdrop canvas is not cosmetic - it is a black screen - so each theme is set in
+turn and asserted to mount exactly one correctly sized canvas, with the user's
+original theme restored afterwards. No screenshots, so it stays cheap enough for
+the smoke suite.
