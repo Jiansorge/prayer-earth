@@ -269,6 +269,8 @@ export default {
     'Die Live-Präsenz wird nur aufbewahrt, solange eine Sitzung aktiv ist, und normalerweise nach etwa 60 Sekunden ohne Aktualisierung entfernt. Der Feed der letzten Aktivitäten ist ein begrenztes In-Memory-Fenster. Zusätzlich kann die App eine zufällige anonyme Gerätekennung und Lebenszeit-Zähler senden, damit die Summen über Sitzungen hinweg zusammengeführt werden können; diese dauerhaften Datensätze enthalten keinen gewählten Namen, keine E-Mail und keinen präzisen Standort, aber das Löschen der Browserdaten entfernt sie nicht automatisch. Kontaktiere uns, um nach einem Datensatz zu fragen.',
   'legal.priv9':
     'Der Anzeigename, den du in den Einstellungen wählst, wird anderen während des Betens angezeigt, genau wie ein Benutzername. Verwende jeden Namen, niemals einen echten.',
+  'legal.priv10': 'Wir verwenden datenschutzfreundliche, cookiefreie Webanalyse (Cloudflare Web Analytics), um Besuche zu zählen und die Leistung zu messen. Sie setzt keine Cookies, erstellt kein Profil und verfolgt dich nicht über andere Websites. Sie wird nie verwendet, um zu sehen, welche Gebete du wählst. Du kannst sie vollständig blockieren; die App funktioniert genau gleich.',
+  'legal.priv11': 'Dein Standort wird nur genutzt, um dein Licht auf der Karte zu platzieren, und zwar nur ungefähr. Die App fragt Android nach einem ungefähren Standort, rundet ihn, und der Server erhält eine Rasterzelle statt deiner Koordinaten. Wir fordern keinen präzisen Standort an und speichern keinen. Wenn du ablehnst, wird die Region stattdessen aus der Zeitzone deines Geräts angenähert, sodass kein Gebet verloren geht.',
   'legal.contactEmail': 'care@joining-palms.app',
   'legal.termsTitle': 'Nutzungsbedingungen',
   'legal.termsBody':

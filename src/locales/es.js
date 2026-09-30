@@ -269,6 +269,8 @@ export default {
     'La presencia en vivo se mantiene solo mientras una sesión está activa y normalmente se elimina después de unos 60 segundos sin actualización. El flujo de actividad reciente es una ventana limitada en memoria. Por otra parte, la app puede enviar un identificador de dispositivo anónimo y aleatorio y contadores de por vida para que los totales puedan unificarse entre sesiones; esos registros duraderos no contienen nombre elegido, correo ni ubicación precisa, pero borrar el almacenamiento del navegador no los elimina automáticamente. Contáctanos para consultar sobre un registro de datos.',
   'legal.priv9':
     'El nombre visible que elijas en Ajustes se muestra a los demás mientras rezas, igual que un nombre de usuario: usa cualquier nombre, nunca uno real.',
+  'legal.priv10': 'Usamos analítica web respetuosa con la privacidad y sin cookies (Cloudflare Web Analytics) para contar visitas y medir el rendimiento. No coloca cookies, no crea perfiles y no te sigue por otros sitios. Nunca se usa para saber qué rezas eliges. Puedes bloquearlo por completo y la app funciona igual.',
+  'legal.priv11': 'Tu ubicación se usa solo para colocar tu luz en el mapa, y solo de forma aproximada. La app pide a Android una ubicación aproximada, la redondea, y el servidor recibe una celda de la cuadrícula en lugar de tus coordenadas. No solicitamos ni almacenamos una ubicación precisa. Si la rechazas, la región se aproxima a partir de la zona horaria de tu dispositivo, así que nunca se pierde una oración.',
   'legal.contactEmail': 'care@joining-palms.app',
   'legal.termsTitle': 'Términos',
   'legal.termsBody':

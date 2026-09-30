@@ -272,6 +272,8 @@ export default {
     'Sự hiện diện trực tiếp chỉ được giữ trong khi một phiên đang hoạt động và thường bị quét bỏ sau khoảng 60 giây không có cập nhật. Dòng hoạt động gần đây là một cửa sổ bộ nhớ có giới hạn. Riêng biệt, ứng dụng có thể gửi một định danh thiết bị ẩn danh ngẫu nhiên và các bộ đếm trọn đời để tổng số có thể hợp nhất qua các phiên; những bản ghi bền vững này không chứa tên đã chọn, email hoặc vị trí chính xác, nhưng việc xóa bộ nhớ trình duyệt không tự động xóa chúng. Hãy liên hệ với chúng tôi để hỏi về một bản ghi dữ liệu.',
   'legal.priv9':
     'Tên hiển thị bạn chọn trong Cài đặt được hiển thị cho người khác trong khi bạn cầu nguyện, giống hệt như một tên người dùng; hãy dùng bất kỳ tên nào, nhưng đừng bao giờ dùng tên thật.',
+  'legal.priv10': 'Chúng tôi dùng phân tích web tôn trọng quyền riêng tư và không dùng cookie (Cloudflare Web Analytics) để đếm lượt truy cập và đo hiệu năng. Nó không đặt cookie, không tạo hồ sơ, và không theo dõi bạn trên các trang khác. Nó không bao giờ được dùng để biết bạn chọn lời cầu nguyện nào. Bạn có thể chặn hoàn toàn và ứng dụng vẫn hoạt động y hệt.',
+  'legal.priv11': 'Vị trí của bạn chỉ được dùng để đặt ánh sáng của bạn lên bản đồ, và chỉ ở mức tổng quát. Ứng dụng yêu cầu Android một vị trí gần đúng, làm tròn nó, và máy chủ nhận một ô lưới thay vì tọa độ của bạn. Chúng tôi không yêu cầu cũng không lưu vị trí chính xác. Nếu bạn từ chối, khu vực sẽ được ước lượng từ múi giờ của thiết bị, nên lời cầu nguyện không bao giờ bị mất.',
   'legal.contactEmail': 'care@joining-palms.app',
   'legal.termsTitle': 'Điều khoản',
   'legal.termsBody':
