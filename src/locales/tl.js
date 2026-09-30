@@ -93,6 +93,8 @@ export default {
   'settings.backupCorrupt': 'Sira o hindi mabasa ang code.',
   'settings.backupShared': 'Na-open ang share sheet. I-save ang code sa ligtas na lugar.',
   'settings.backupShowHint': 'Hindi makopya o ma-download nang automatic. Kopyahin ang code sa ibaba at itago.',
+  'settings.backupWhereToSave': 'Kopyahin ang code at i-paste sa notes app o password manager. Hindi makakapag-create ng file ang app na ito sa phone mo, kaya itago mo rin sa ibang ligtas na lugar.',
+  'settings.backupShowPlaceholder': 'Lalabas dito ang iyong recovery code kung hindi makakopya.',
   'settings.backupNoop': 'Nasaun na ang lahat ng nasa backup na iyon sa device na ito. Walang nabawasan.',
   'settings.backupSummaryTitle': 'Ano ang na-restore',
   'settings.backupSumCompletions': 'Mga dasal',

@@ -88,6 +88,8 @@ export default {
   'settings.backupCorrupt': 'कोड क्षतिग्रस्त या अपठनीय है।',
   'settings.backupShared': 'शेयर खोला गया। कोड किसी सुरक्षित जगह रखें।',
   'settings.backupShowHint': 'अपने आप कॉपी या डाउनलोड नहीं हो सका। नीचे का कोड कॉपी करके सुरक्षित रखें।',
+  'settings.backupWhereToSave': 'कोड कॉपी करके किसी नोट्स ऐप या पासवर्ड मैनेजर में पेस्ट करें। यह ऐप आपके फ़ोन में फ़ाइल नहीं बना सकता, इसलिए उसे कहीं सुरक्षित भी रखें।',
+  'settings.backupShowPlaceholder': 'कॉपी न हो पाए तो आपका रिकवरी कोड यहाँ दिखाई देगा।',
   'settings.backupNoop': 'इस डिवाइस पर वह सब कुछ पहले से मौजूद था। कुछ भी घटाया नहीं गया।',
   'settings.backupSummaryTitle': 'क्या बहाल हुआ',
   'settings.backupSumCompletions': 'प्रार्थनाएँ',

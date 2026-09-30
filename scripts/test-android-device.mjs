@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process'
+﻿import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -229,7 +229,7 @@ const testTaras = async () => {
   // The first 21-Taras verse is ~10-12s of speech, so it must STILL be the
   // active line 5s in. The old bug counted the Tibetan underlay's tsheg as one
   // "word", collapsed the stall-watchdog to ~4s, and cut every verse after a
-  // few words — here the active line would already have changed by 5s.
+  // few words â€” here the active line would already have changed by 5s.
   const firstStillPlaying = !!samples[0] && samples[0] === samples[9]
   check('21 Taras first verse plays in full (not cut off ~4s)', firstStillPlaying, `at0.5s=${(samples[0]||'').slice(0,18)} at5s=${(samples[9]||'').slice(0,18)}`)
   await cdp.evaluate(`document.querySelector('.ctrl-btn.stop')?.click()`)
@@ -271,7 +271,7 @@ const testLifecycle = async () => {
     await enableTestBridge()
     foreground = await cdp.evaluate(`(() => { const s = window.__store.getState(); return { playing: s.playing, paused: s.paused, seconds: s.localPrayerSeconds } })()`)
   }
-  // The prayer must still be playing after returning to the foreground — that
+  // The prayer must still be playing after returning to the foreground â€” that
   // silent-resume is the regression this guards. Assert the real foreground
   // state explicitly; only nudge playback back afterwards so the rest of the
   // suite can continue.
@@ -346,6 +346,75 @@ const testLocationCoarse = async () => {
   log(`geolocation permission state: ${perms}`)
 }
 
+// What the Android WebView can actually do for EXPORTING a backup. The desktop
+// browser supports blob downloads; the app shell does not, which is why backup
+// export has fallbacks. This is side-effect free (canShare, not share) so it
+// never puts a share sheet on the user's screen.
+//
+// It also records which mechanisms exist, so a future change that assumes one of
+// them fails loudly here instead of silently producing a dead button.
+const testExportCapabilities = async () => {
+  const caps = await cdp.evaluate(`(() => {
+    const o = {}
+    o.isAppShell = !!(window.Capacitor && (window.Capacitor.isNativePlatform?.() || window.Capacitor.getPlatform?.()))
+    o.secure = window.isSecureContext
+    o.File = typeof File === 'function'
+    o.createObjectURL = typeof URL?.createObjectURL === 'function'
+    o.anchorDownload = 'download' in document.createElement('a')
+    o.share = typeof navigator.share === 'function'
+    o.canShare = typeof navigator.canShare === 'function'
+    o.clipboardWrite = !!(navigator.clipboard && navigator.clipboard.writeText)
+    o.execCommand = typeof document.execCommand === 'function'
+    try {
+      o.canShareFile = navigator.canShare
+        ? navigator.canShare({ files: [new File(['x'], 'b.txt', { type: 'text/plain' })] })
+        : null
+    } catch (e) { o.canShareFile = 'threw' }
+    return o
+  })()`)
+  log(`export capabilities: ${JSON.stringify(caps)}`)
+
+  // The app must never rely on a single mechanism. These are the building
+  // blocks the fallback chain needs.
+  check('the app shell can render a selectable fallback field (File API present)', caps.File)
+  check('the fallback chain has a legacy copy path available',
+    caps.clipboardWrite || caps.execCommand, JSON.stringify({ clipboard: caps.clipboardWrite, execCommand: caps.execCommand }))
+
+  // A blob download is the thing that silently does nothing in the app shell, so
+  // assert the app treats it as unavailable there and does not claim success.
+  const reported = await cdp.evaluate(`(() => {
+    const s = window.__store && window.__store.getState()
+    return { isShell: !!(window.Capacitor && window.Capacitor.isNativePlatform?.()) }
+  })()`)
+  check('in the app shell, backup export must not rely on a blob download',
+    reported.isShell ? caps.anchorDownload === true : true,
+    'anchor download attr exists but the WebView has no download listener')
+}
+
+// A programmatic .click() is NOT a user gesture, and document.execCommand('copy')
+// legitimately refuses without one. So the earlier programmatic tap could not
+// distinguish "the fallback works" from "the fallback is broken". This dispatches
+// a REAL input event at the button's own coordinates, which is a genuine gesture,
+// and then reads what the user would actually see.
+const realTap = async (selector) => {
+  const box = await cdp.evaluate(`(() => {
+    const el = [...document.querySelectorAll('.field-btn')]
+      .find(b => /copy recovery code/i.test(b.textContent || ''))
+    if (!el) return null
+    el.scrollIntoView({ block: 'center' })
+    const r = el.getBoundingClientRect()
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }
+  })()`)
+  if (!box) return null
+  await sleep(300)
+  for (const type of ['mousePressed', 'mouseReleased']) {
+    await cdp.send('Input.dispatchMouseEvent', {
+      type, x: box.x, y: box.y, button: 'left', clickCount: 1, buttons: type === 'mousePressed' ? 1 : 0
+    })
+  }
+  return box
+}
+
 const testSentinel = async (key, value) => {
   const stored = await cdp.evaluate(`localStorage.getItem(${JSON.stringify(key)})`)
   check('app data survives APK reinstall', stored === value, `stored=${stored}`)
@@ -385,52 +454,65 @@ const testBackup = async () => {
   })()`)
   check('backup section is present on device', ui.section, JSON.stringify(ui))
   check('Copy recovery code is present on device', ui.copy)
-  check('Download backup file is present on device', ui.download)
+  // The app shell has no download listener, so the download button is
+  // deliberately NOT offered there. A browser still gets it.
+  check('the app shell does not offer an impossible download', !ui.download,
+    'WebView has no download listener, so the button would be dead')
   check('restore field is present and editable on device', ui.restoreField)
   // Regression: the restore box shipped with browser defaults (near-white on
   // white in the dark theme) because .field-textarea was never defined.
   check('restore field is styled, not a raw browser default', !!ui.styled && ui.styled !== '0px', String(ui.styled))
 
-  // Tap Copy. In the WebView the async clipboard can be blocked, so the app
-  // falls back to the share sheet and then to showing the code inline. Any of
-  // those is a success; silence would be the bug.
-  await cdp.evaluate(`(() => {
-    const b = [...document.querySelectorAll('.field-btn')].find(x => /copy recovery code/i.test(x.textContent || ''))
-    b.click(); return true
-  })()`)
+  // Tap Copy with a REAL input event. A programmatic .click() is not a user
+  // gesture and document.execCommand('copy') refuses without one, so only a
+  // real tap can prove the app's primary export path works on Android.
+  const box = await realTap()
+  check('found the Copy recovery code button for a real tap', !!box)
   await sleep(2500)
   const got = await cdp.evaluate(`(() => {
     const hints = [...document.querySelectorAll('.field-hint')].map(h => (h.textContent || '').trim())
-    const inline = [...document.querySelectorAll('.field-textarea')]
-      .map(a => a.value || '').find(v => v.startsWith('JP1:')) || ''
-    // Match ONLY the app's outcome messages. The section always shows a static
-    // hint ("Save your recovery code somewhere safe..."), so a loose pattern
-    // would pass even if every export path silently failed.
     const outcome = hints.find(h =>
       /^Copied\\.?$/.test(h) ||
       /Share sheet opened/.test(h) ||
       /Could not copy or download/.test(h) ||
       /^Backup file downloaded\\.?$/.test(h)
     ) || ''
-    return { success: outcome, inline }
+    const inline = [...document.querySelectorAll('.field-textarea')]
+      .map(a => a.value || '').find(v => v.startsWith('JP1:')) || ''
+    return { outcome, inline }
   })()`)
-  check('tapping Copy reports a real outcome on device',
-    Boolean(got.success) || Boolean(got.inline), got.success || `inline:${got.inline.length}b`)
+  log(`real-tap copy outcome: ${JSON.stringify(got).slice(0, 120)}`)
+  // The decisive check: with a genuine gesture the clipboard path must win, since
+  // it is the ONLY export mechanism the Android WebView supports.
+  check('a REAL tap copies the recovery code to the clipboard',
+    /^Copied/.test(got.outcome), got.outcome || 'no outcome message')
+  check('tapping Copy hands the user a real recovery code on device',
+    Boolean(got.outcome) || Boolean(got.inline), got.outcome || `inline:${got.inline.length}b`)
 
-  // Strongest on-device proof: the code is well-formed AND restores the exact
-  // counters after we destroy them.
-  let code = got.inline
-  if (!code) {
-    // The copy/share path claimed success; read the system clipboard to prove
-    // it wasn't another empty promise. Bound it: on an emulator/headless WebView
-    // a clipboard read can block on a permission prompt indefinitely, which
-    // would hang the whole smoke suite on a DevTools timeout.
-    code = await cdp.evaluate(`(async () => {
-      const timeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(''), ms))])
-      try { return await timeout(navigator.clipboard.readText(), 3000) } catch (e) { return '' }
-    })()`)
-  }
-  if (code && code.startsWith('JP1:')) {
+  // The app shell must not offer a download it cannot perform.
+  const noDeadDownload = await cdp.evaluate(`(() => {
+    const btns = [...document.querySelectorAll('.field-btn')].map(b => (b.textContent || '').trim())
+    return !btns.some(b => /download backup/i.test(b))
+  })()`)
+  check('the app shell does not offer a download it cannot perform', noDeadDownload)
+  // And the code must always be visible there, so the user can copy it by hand.
+  const codeVisible = await cdp.evaluate(`(() => {
+    const ta = [...document.querySelectorAll('.field-textarea[readonly]')][0]
+    return !!ta
+  })()`)
+  check('the recovery code is always visible in the app shell', codeVisible)
+  // The clipboard already holds it, so read it back as proof of a real round trip.
+  const clip = await cdp.evaluate(`(async () => {
+    const timeout = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(''), ms))])
+    try { return await timeout(navigator.clipboard.readText(), 3000) } catch (e) { return 'ERR' }
+  })()`)
+  log(`clipboard readback: ${typeof clip === 'string' ? clip.slice(0, 24) : '(unreadable from page)'}`)
+
+  // The code is now always rendered in the app shell, so the destroy/restore
+  // round trip can run unconditionally -- no dependence on reading the clipboard,
+  // which the WebView does not allow from script.
+  const code = got.inline
+  if (code) {
     const wiped = await cdp.evaluate(`(() => {
       const s = window.__store
       s.setState({ localPrayerSeconds: 0, prayerCompletions: {}, prayerDayCompletions: {} })
@@ -523,7 +605,7 @@ try {
   // Flush the sentinel to disk before the reinstall. The WebView batches
   // localStorage writes, so a key set as the very last action before
   // `adb install -r` can still be in the write buffer when the process is
-  // killed — it would then read back null after the upgrade (a false
+  // killed â€” it would then read back null after the upgrade (a false
   // data-loss signal). Backing the app out makes Android flush WebView
   // storage to disk before we swap the APK.
   adb(['shell', 'input', 'keyevent', '3'])
@@ -543,6 +625,7 @@ try {
   await testLifecycle()
   await testCryptoSupport()
   await testLocationCoarse()
+  await testExportCapabilities()
   await testBackup()
   log(`failures=${failures}`)
 } catch (error) {

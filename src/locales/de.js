@@ -88,6 +88,8 @@ export default {
   'settings.backupCorrupt': 'Der Code ist beschädigt oder unlesbar.',
   'settings.backupShared': 'Teilen geöffnet. Bewahre den Code sicher auf.',
   'settings.backupShowHint': 'Kopieren oder Download war nicht möglich. Kopiere den Code unten und bewahre ihn auf.',
+  'settings.backupWhereToSave': 'Kopiere den Code und füge ihn in eine Notizen-App oder deinen Passwortmanager ein. Die App kann auf deinem Telefon keine Datei anlegen, also sichere ihn zusätzlich an einem sicheren Ort.',
+  'settings.backupShowPlaceholder': 'Der Wiederherstellungscode erscheint hier, falls das Kopieren nicht klappt.',
   'settings.backupNoop': 'Auf diesem Gerät stand das schon alles. Nichts wurde überschrieben.',
   'settings.backupSummaryTitle': 'Wiederhergestellt',
   'settings.backupSumCompletions': 'Gebete',

@@ -35,6 +35,11 @@ const walk = (dir, out = []) => {
 
 const srcFiles = walk(path.join(ROOT, 'src'))
 
+// Comments must be stripped before source scanning: these files document the
+// incidents they guard against, and a naive substring scan flags its own notes.
+const stripComments = (text) =>
+  text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, (m, p1) => p1)
+
 // --- 1. i18n placeholders -----------------------------------------------------
 {
   // Which keys declare a {placeholder}?
@@ -102,6 +107,35 @@ const srcFiles = walk(path.join(ROOT, 'src'))
   // The app must never echo raw markup from a chosen name.
   check('does not strip angle brackets (caller must escape when rendering)',
     sanitizeName('<b>x</b>') === '<b>x</b>', 'rendered via React, so this is escaped')
+}
+
+// --- 4. isAppShell must be FALSE in a browser ------------------------------
+// The regression: Capacitor core is bundled into the web build too, and there
+// getPlatform() returns the string 'web', which is truthy. Treating a truthy
+// getPlatform() as "native" made isAppShell() true in every browser, which
+// hid the Add-to-Home-Screen prompt on the web, disabled the physical-keyboard
+// shortcuts, and hid the keyboard help. This asserts the detection logic cannot
+// regress to a truthiness check.
+{
+  const text = readFileSync(path.join(ROOT, 'src', 'shared', 'mobile.js'), 'utf8')
+  const body = stripComments(text).match(/isAppShell\s*=\s*\(\)\s*=>([\s\S]*?)\n\s*\n|\n\nexport default/)?.[0] || text
+  check('isAppShell does not treat a truthy getPlatform() as native',
+    !/Capacitor\?\.getPlatform\?\.\(\)\s*\)?\s*$|!!window\.Capacitor\?\.getPlatform/.test(body),
+    'Capacitor.getPlatform() returns "web" in a browser, which is truthy')
+  check('isAppShell uses Capacitor.isNativePlatform()',
+    /Capacitor\?\.isNativePlatform\?\.\(\)/.test(stripComments(text)))
+
+  // And the web build must not be shipping the app-shell path.
+  const distIndex = path.join(ROOT, 'dist', 'index.html')
+  if (existsSync(distIndex)) {
+    const assets = readdirSync(path.join(ROOT, 'dist', 'assets'))
+      .filter((f) => f.endsWith('.js'))
+      .map((f) => readFileSync(path.join(ROOT, 'dist', 'assets', f), 'utf8'))
+      .join('\n')
+    check('the built bundle still contains the native-only install prompt',
+      assets.includes('install-banner') || assets.includes('beforeinstallprompt'),
+      'so the web platform is not silently treated as native')
+  }
 }
 
 // --- 3. testHooks must stay build-time only ---------------------------------

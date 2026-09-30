@@ -71,6 +71,8 @@ export default {
   'settings.backupCorrupt': 'コードが破損しているか読み取れません。',
   'settings.backupShared': '共有を開きました。コードを安全な場所に保存してください。',
   'settings.backupShowHint': '自動コピー・保存できませんでした。下のリカバリコードをコピーして保管してください。',
+  'settings.backupWhereToSave': 'コードをコピーして、メモアプリやパスワードマネージャーに貼り付けてください。このアプリはスマホ上にファイルを作成できないので、別の安全な場所にも保存してください。',
+  'settings.backupShowPlaceholder': 'コピーがうまくいかない場合、リカバリコードがここに表示されます。',
   'settings.backupNoop': 'この端末にはすでにそのバックアップの内容がすべてありました。減るものはありませんでした。',
   'settings.backupSummaryTitle': '復元されたもの',
   'settings.backupSumCompletions': '祈りの数',

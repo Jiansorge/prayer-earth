@@ -10,12 +10,17 @@ export const isIos = () =>
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 
 // True when running inside the native Capacitor app shell (Android APK /
-// iOS IPA), not a regular browser tab. The shell has no browser UI to
-// install onto, so the 'Add to home screen' prompt and its hints must be
-// hidden in that environment.
+// iOS IPA), not a regular browser tab or an installed PWA.
+//
+// Use Capacitor's own isNativePlatform(), which correctly returns
+// getPlatform() !== 'web'. Do NOT treat a truthy getPlatform() as native:
+// Capacitor core is bundled into the web build too, where getPlatform() returns
+// the string 'web' -- which is truthy. Testing its truthiness made this function
+// return true in every normal browser, which inverted all the native-only
+// affordances: the "Add to Home Screen" prompt was hidden on the web (where it
+// matters most), the physical-keyboard shortcuts were disabled on the web, and
+// the keyboard help was unreachable.
 export const isAppShell = () =>
-  !!window.Capacitor?.isNativePlatform?.() ||
-  !!window.Capacitor?.getPlatform?.() ||
-  !!window.CapacitorAndroid
+  !!window.Capacitor?.isNativePlatform?.() || !!window.CapacitorAndroid
 
 export default { isMobile, isIos, isAppShell }

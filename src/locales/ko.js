@@ -71,6 +71,8 @@ export default {
   'settings.backupCorrupt': '코드가 손상되었거나 읽을 수 없습니다.',
   'settings.backupShared': '공유 시트를 열었습니다. 코드를 안전한 곳에 보관하세요.',
   'settings.backupShowHint': '자동 복사나 저장이 되지 않았습니다. 아래 코드를 복사해 보관하세요.',
+  'settings.backupWhereToSave': '코드를 복사해 메모 앱이나 비밀번호 관리자에 붙여넣으세요. 이 앱은 휴대폰에 파일을 만들 수 없으니, 다른 안전한 곳에도 따로 보관하세요.',
+  'settings.backupShowPlaceholder': '복사가 되지 않으면 복구 코드가 여기에 표시됩니다.',
   'settings.backupNoop': '이 기기에 이미 그 백업의 모든 내용이 있었습니다. 줄어든 것은 없습니다.',
   'settings.backupSummaryTitle': '복원된 내용',
   'settings.backupSumCompletions': '기도',

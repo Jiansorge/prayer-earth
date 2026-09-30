@@ -88,6 +88,8 @@ export default {
   'settings.backupCorrupt': 'Le code est endommagé ou illisible.',
   'settings.backupShared': 'Partage ouvert. Conservez le code en lieu sûr.',
   'settings.backupShowHint': 'Copie ou téléchargement impossible. Copiez le code ci-dessous et conservez-le.',
+  'settings.backupWhereToSave': 'Copiez le code et collez-le dans une application de notes ou votre gestionnaire de mots de passe. Cette application ne peut pas créer de fichier sur votre téléphone : conservez-le aussi ailleurs, en lieu sûr.',
+  'settings.backupShowPlaceholder': 'Votre code de récupération apparaîtra ici si la copie échoue.',
   'settings.backupNoop': 'Cet appareil contenait déjà tout ce que cette sauvegarde. Rien n’a été réduit.',
   'settings.backupSummaryTitle': 'Ce qui a été restauré',
   'settings.backupSumCompletions': 'Prières',

@@ -71,6 +71,8 @@ export default {
   'settings.backupCorrupt': '恢复码已损坏或无法读取。',
   'settings.backupShared': '已打开分享面板。请将恢复码保存在安全的地方。',
   'settings.backupShowHint': '无法自动复制或下载。请复制下面的恢复码并妥善保存。',
+  'settings.backupWhereToSave': '复制恢复码，粘贴到备忘录应用或密码管理器中。本应用无法在你的手机上创建文件，请另存到其他安全的地方。',
+  'settings.backupShowPlaceholder': '如果复制失败，恢复码会显示在这里。',
   'settings.backupSummaryTitle': '已恢复的内容',
   'settings.backupSumCompletions': '祈祷次数',
   'settings.backupSumTime': '时长',

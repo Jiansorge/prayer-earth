@@ -93,6 +93,8 @@ export default {
   'settings.backupCorrupt': 'Mã bị hỏng hoặc không đọc được.',
   'settings.backupShared': 'Đã mở bảng chia sẻ. Hãy lưu mã ở nơi an toàn.',
   'settings.backupShowHint': 'Không thể sao chép hoặc tải xuống. Hãy sao chép mã bên dưới và lưu lại.',
+  'settings.backupWhereToSave': 'Hãy sao chép mã và dán vào ứng dụng ghi chú hoặc trình quản lý mật khẩu. Ứng dụng này không tạo được tệp trên điện thoại, vì vậy hãy lưu ở một nơi an toàn khác.',
+  'settings.backupShowPlaceholder': 'Mã khôi phục của bạn sẽ hiện ở đây nếu không sao chép được.',
   'settings.backupNoop': 'Thiết bị này đã có sẵn mọi thứ trong bản sao lưu đó. Không có gì bị giảm.',
   'settings.backupSummaryTitle': 'Đã khôi phục gì',
   'settings.backupSumCompletions': 'Lời cầu nguyện',

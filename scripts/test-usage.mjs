@@ -213,11 +213,18 @@ ok(
   // innerText reflects the CSS text-transform, so match case-insensitively.
   settingsOpen && (await c.eval(`document.body.innerText.toLowerCase().includes('backup & restore')`))
 )
+const backupButtons = settingsOpen
+  ? await c.eval(`[...document.querySelectorAll('.field-btn')].map(b => (b.innerText || '').trim()).join(' | ')`)
+  : ''
 ok(
   'settings offers copy + download recovery',
   settingsOpen &&
-    (await c.eval(`[...document.querySelectorAll('.field-btn')].some(b => b.innerText.includes('Copy recovery code'))`)) &&
-    (await c.eval(`[...document.querySelectorAll('.field-btn')].some(b => b.innerText.includes('Download backup file'))`))
+    // innerText reflects the CSS text-transform (uppercase), so match
+    // case-insensitively.
+    (await c.eval(`[...document.querySelectorAll('.field-btn')].some(b => /copy recovery code/i.test(b.innerText))`)) &&
+    // In a browser the download genuinely works, so it should be offered here.
+    (await c.eval(`[...document.querySelectorAll('.field-btn')].some(b => /download backup file/i.test(b.innerText))`)),
+  backupButtons.slice(0, 300)
 )
 ok(
   'settings offers a restore-from-code path',

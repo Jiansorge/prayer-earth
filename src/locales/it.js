@@ -71,6 +71,8 @@ export default {
   'settings.backupCorrupt': 'Il codice è danneggiato o illeggibile.',
   'settings.backupShared': 'Condivisione aperta. Salva il codice in un posto sicuro.',
   'settings.backupShowHint': 'Impossibile copiare o scaricare. Copia il codice qui sotto e conservalo.',
+  'settings.backupWhereToSave': 'Copia il codice e incollalo in un app per le note o nel tuo gestore di password. Questa app non può creare un file sul telefono, quindi conservalo anche altrove, in un posto sicuro.',
+  'settings.backupShowPlaceholder': 'Il tuo codice di recupero apparirà qui se la copia non funziona.',
   'settings.backupNoop': 'Questo dispositivo aveva già tutto ciò che conteneva il backup. Nulla è stato ridotto.',
   'settings.backupSummaryTitle': 'Che cosa è stato ripristinato',
   'settings.backupSumCompletions': 'Preghiere',

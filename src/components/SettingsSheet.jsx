@@ -154,12 +154,16 @@ export default function SettingsSheet() {
 
   const downloadBackup = () => {
     const code = buildBackupCode()
-    // A blob + <a download> does nothing in the Android WebView (no download
-    // listener), and the old code still reported success -- so a user backing up
-    // before losing a phone was told "downloaded" and got no file at all. Only
-    // claim success when the browser actually took it; otherwise show the code
-    // in a selectable field, which always works.
-    let downloaded = false
+    // Measured on a Pixel 7: the Android WebView has NO download listener, so a
+    // blob + <a download> does nothing at all while the old code still reported
+    // success. It also has no navigator.share and no async clipboard. The only
+    // mechanism that works there is the legacy execCommand copy, which needs a
+    // real user gesture. So on Android the code is always shown inline, and the
+    // download button is not offered at all rather than being a dead control.
+    if (isAppShell()) {
+      setBackupCode(code)
+      return
+    }
     try {
       const blob = new Blob([code], { type: 'text/plain' })
       const url = URL.createObjectURL(blob)
@@ -170,13 +174,10 @@ export default function SettingsSheet() {
       a.click()
       a.remove()
       setTimeout(() => URL.revokeObjectURL(url), 1000)
-      downloaded = true
-    } catch {}
-    if (downloaded && !isAppShell()) {
       flashBackup(true, 'settings.backupDownloaded')
-      return
+    } catch {
+      setBackupCode(code)
     }
-    setBackupCode(code)
   }
 
   const doRestore = (code) => {
@@ -220,6 +221,16 @@ export default function SettingsSheet() {
   }
 
   useEffect(() => () => clearTimeout(previewTimer.current), [])
+
+  // In the app shell the recovery code is shown as soon as Settings opens,
+  // rather than only after a copy failure. The Android WebView can only copy it
+  // via a legacy execCommand path that needs a real tap, so leaving the code
+  // hidden behind that one button meant a user whose tap did not register saw
+  // nothing at all. Showing it costs nothing and makes the backup readable.
+  useEffect(() => {
+    if (!open || !isAppShell()) return
+    setBackupCode(buildBackupCode())
+  }, [open])
 
   useEffect(() => {
     const load = () => setVoices([...speech.voices])
@@ -459,17 +470,28 @@ export default function SettingsSheet() {
         <button className="field-btn" onClick={copyBackup}>
           {backupCopied ? t('settings.copied') : t('settings.backupCopy')}
         </button>
-        <button className="field-btn" onClick={downloadBackup} style={{ marginTop: 8 }}>
-          {t('settings.backupDownload')}
-        </button>
-        {backupCode && (
+        {/* The app shell cannot download files (no download listener in the
+            Android WebView), so offering the button there would be a control
+            that silently does nothing. In a browser it works, so it stays. */}
+        {!isAppShell() && (
+          <button className="field-btn" onClick={downloadBackup} style={{ marginTop: 8 }}>
+            {t('settings.backupDownload')}
+          </button>
+        )}
+        {isAppShell() && (
+          <div className="field-hint" style={{ marginTop: 10 }}>{t('settings.backupWhereToSave')}</div>
+        )}
+        {(backupCode || isAppShell()) && (
           <>
-            <div className="field-hint" style={{ marginTop: 10 }}>{t('settings.backupShowHint')}</div>
+            {!isAppShell() && (
+              <div className="field-hint" style={{ marginTop: 10 }}>{t('settings.backupShowHint')}</div>
+            )}
             <textarea
               className="field-textarea"
               value={backupCode}
               readOnly
               rows={4}
+              placeholder={t('settings.backupShowPlaceholder')}
               onFocus={(e) => e.target.select()}
             />
           </>

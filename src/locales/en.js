@@ -93,6 +93,8 @@ export default {
   'settings.backupCorrupt': 'The code is damaged or unreadable.',
   'settings.backupShared': 'Share sheet opened. Save the code somewhere safe.',
   'settings.backupShowHint': 'Could not copy or download automatically. Copy the code below and keep it safe.',
+  'settings.backupWhereToSave': 'Copy the code and paste it into a notes app or your password manager. This app cannot create a file on your phone, so keep it somewhere else safe too.',
+  'settings.backupShowPlaceholder': 'Your recovery code will appear here if copying does not work.',
   'settings.backupNoop': 'This device already had everything in that backup. Nothing was lowered.',
   'settings.backupSummaryTitle': 'What was restored',
   'settings.backupSumCompletions': 'Prayers',

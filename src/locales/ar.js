@@ -71,6 +71,8 @@ export default {
   'settings.backupCorrupt': 'الرمز تالف أو غير مقروء.',
   'settings.backupShared': 'تم فتح المشاركة. احفظ الكود في مكان آمن.',
   'settings.backupShowHint': 'تعذّر النسخ أو التنزيل تلقائيًا. انسخ الكود أدناه واحفظه.',
+  'settings.backupWhereToSave': 'انسخ الرمز والصقه في تطبيق الملاحظات أو مدير كلمات المرور. لا يمكن لهذا التطبيق إنشاء ملف على هاتفك، لذا احفظه في مكان آخر آمن.',
+  'settings.backupShowPlaceholder': 'سيظهر رمز الاسترداد هنا عند فشل النسخ.',
   'settings.backupNoop': 'كان هذا الجهاز يحتوي على كل ما في تلك النسخة الاحتياطية بالفعل. لم يتم إنقاص أي شيء.',
   'settings.backupSummaryTitle': 'ما تم استعادته',
   'settings.backupSumCompletions': 'صلوات',
