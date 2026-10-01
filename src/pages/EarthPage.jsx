@@ -2,16 +2,9 @@ import React, { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { EarthScene, supportsWebGL2 } from '../three/EarthScene.js'
 import { useT } from '../i18n.js'
+import StaticEarth from '../components/StaticEarth.jsx'
 
 const WorldFeed = lazy(() => import('../components/WorldFeed.jsx'))
-
-function StaticEarth() {
-  return (
-    <div className="earth-fallback" role="img" aria-label="Earth">
-      <div className="earth-fallback-globe" />
-    </div>
-  )
-}
 
 export default function EarthPage() {
   const mountRef = useRef(null)

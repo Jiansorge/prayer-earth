@@ -1579,7 +1579,13 @@ html[dir='rtl'] .chooser-arrow.right {
     radial-gradient(ellipse at center, #162b54 0%, #09152f 42%, #030712 78%);
 }
 
-.earth-fallback-globe {
+/* --- static globe: the no-WebGL path (LibreWolf, low-core devices) --------
+   Built from the same equirectangular land mask the WebGL scene samples, so
+   the fallback has real coastlines and the live prayer lights rather than a
+   plain sphere. It used to be three hard-coded ellipses, which meant everyone
+   on a WebGL-blocked browser saw no lights at all. */
+
+.efg {
   position: absolute;
   left: 50%;
   top: 52%;
@@ -1587,29 +1593,127 @@ html[dir='rtl'] .chooser-arrow.right {
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
+  overflow: hidden;
+  /* ocean body */
   background:
-    radial-gradient(ellipse at 34% 28%, rgba(157, 218, 190, 0.8) 0 7%, transparent 8%),
-    radial-gradient(ellipse at 62% 35%, rgba(91, 164, 141, 0.75) 0 12%, transparent 13%),
-    radial-gradient(ellipse at 43% 62%, rgba(75, 145, 128, 0.76) 0 10%, transparent 11%),
-    radial-gradient(circle at 35% 30%, #2c8e83 0%, #164d62 42%, #071a36 72%, #020713 100%);
-  box-shadow: 0 0 45px rgba(74, 170, 255, 0.3), inset -30px -24px 45px rgba(0, 0, 0, 0.65);
+    radial-gradient(circle at 34% 28%, #1d5f6d 0%, #123f63 46%, #08203f 74%, #030b1c 100%);
+  box-shadow:
+    0 0 70px rgba(74, 170, 255, 0.22),
+    0 0 140px rgba(120, 90, 200, 0.14);
 }
 
-.earth-fallback-globe::after {
-  content: '';
+.earth-fallback-compact .efg {
+  width: min(74vmin, 92vw);
+  opacity: 0.75;
+}
+
+/* Two copies of the map side by side, slid leftwards: the classic CSS globe.
+   200% width with the map at 50% means the repeat is seamless. */
+.efg-spin {
   position: absolute;
-  inset: 8%;
-  border: 1px solid rgba(151, 221, 255, 0.22);
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  animation-name: efg-rotate;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+@keyframes efg-rotate {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* prefers-reduced-motion: the spin is decorative, so drop it and centre the map. */
+@media (prefers-reduced-motion: reduce) {
+  .efg-spin {
+    animation: none;
+    width: 100%;
+  }
+}
+
+/* The mask is white land on black ocean. `screen` keeps the land and lets the
+   ocean body through, and the filter tints white into the app's own green. */
+.efg-land {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/land-mask.png');
+  background-size: 50% 100%;
+  background-repeat: repeat-x;
+  mix-blend-mode: screen;
+  filter: grayscale(1) sepia(0.5) saturate(1.6) hue-rotate(88deg) brightness(0.85);
+  opacity: 0.5;
+}
+
+.efg-lights {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.efg-light {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
   border-radius: 50%;
-  box-shadow: inset 0 0 22px rgba(120, 203, 255, 0.18);
+  background: #fff7e4;
+  box-shadow:
+    0 0 6px 2px rgba(223, 176, 92, 0.75),
+    0 0 16px 5px rgba(223, 176, 92, 0.32);
+  opacity: 0.95;
 }
 
-.earth-fallback-backdrop {
-  opacity: 0.62;
+.efg-light-you {
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  background: #fff;
+  box-shadow:
+    0 0 10px 3px rgba(255, 244, 214, 0.9),
+    0 0 26px 9px rgba(223, 176, 92, 0.45);
+  animation: efg-pulse 2.6s ease-in-out infinite;
 }
 
-.earth-fallback-backdrop .earth-fallback-globe {
-  width: min(76vmin, 92vw);
+@keyframes efg-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  50%      { transform: scale(1.35); opacity: 0.7; }
+}
+
+/* Sphere shading: lit from the upper left, falling into shadow lower right, so
+   a flat strip still reads as a sphere. Static - it must not spin. */
+.efg-shade {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 46%),
+    radial-gradient(circle at 68% 78%, rgba(2, 6, 18, 0.72) 0%, rgba(2, 6, 18, 0) 58%);
+}
+
+.efg-atmo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(127, 201, 160, 0.32),
+    inset 0 0 34px rgba(10, 30, 24, 0.55),
+    inset -22px -18px 48px rgba(0, 0, 0, 0.6);
+}
+
+/* The backdrop variant sits behind the prayer view, so it is dimmer. */
+.earth-fallback-compact .efg {
+  width: min(74vmin, 96vw);
+  opacity: 0.5;
 }
 
 /* static (reduced-motion / low-power) starfield: sits where the live WebGL

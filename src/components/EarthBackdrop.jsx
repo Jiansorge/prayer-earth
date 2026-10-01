@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { EarthScene, supportsWebGL2 } from '../three/EarthScene.js'
+import StaticEarth from './StaticEarth.jsx'
 
 // A quiet, translucent Earth behind the prayer view. Its coastlines glow a
 // little brighter as collective prayer accumulates, it rotates slowly, and it
@@ -60,9 +61,7 @@ export default function EarthBackdrop() {
   return (
     <div className="earth-backdrop" aria-hidden="true">
       {staticMode || failed ? (
-        <div className="earth-fallback earth-fallback-backdrop">
-          <div className="earth-fallback-globe" />
-        </div>
+        <StaticEarth compact />
       ) : (
         <div ref={mountRef} className="earth-backdrop-canvas" />
       )}

@@ -364,28 +364,6 @@ export default function SettingsSheet() {
 
         <div className="field-divider" />
 
-        {/* Presence is the one thing here that other people can see, so it is
-            opt-in and states plainly what leaves the device. It sits directly
-            under the profile because it is what publishes that profile. */}
-        <label className="field-label section" htmlFor="share-presence">
-          {t('settings.secPresence')}
-        </label>
-        <div className="presence-row">
-          <input
-            id="share-presence"
-            type="checkbox"
-            className="presence-toggle"
-            checked={!!sharePresence}
-            onChange={(e) => syncClient.setPresenceSharing(e.target.checked)}
-          />
-          <label htmlFor="share-presence" className="presence-label">
-            <span className="presence-title">{t('settings.sharePresence')}</span>
-            <span className="field-hint">{t('settings.sharePresenceHint')}</span>
-          </label>
-        </div>
-
-        <div className="field-divider" />
-
         <label className="field-label section">{t('settings.secPraying')}</label>
 
         {/* If localStorage writes are failing, the user's prayer counts are not
@@ -504,6 +482,27 @@ export default function SettingsSheet() {
         >
           {t('settings.showQr')}
         </button>
+
+        {/* Presence is the one thing here that other people can see, so it is
+            opt-in and states plainly what leaves the device. It sits with the
+            other sharing controls because that is what it is: another way of
+            being visible, not a profile setting. */}
+        <label className="field-label section" htmlFor="share-presence">
+          {t('settings.secPresence')}
+        </label>
+        <div className="presence-row">
+          <input
+            id="share-presence"
+            type="checkbox"
+            className="presence-toggle"
+            checked={!!sharePresence}
+            onChange={(e) => syncClient.setPresenceSharing(e.target.checked)}
+          />
+          <label htmlFor="share-presence" className="presence-label">
+            <span className="presence-title">{t('settings.sharePresence')}</span>
+            <span className="field-hint">{t('settings.sharePresenceHint')}</span>
+          </label>
+        </div>
 
         <label className="field-label">{t('settings.shareAppLabel')}</label>
         <div className="field-hint">

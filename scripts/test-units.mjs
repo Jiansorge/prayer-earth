@@ -190,6 +190,52 @@ const stripComments = (text) =>
     `gain(0.9,vol=0)=${gainFor(0.9, 1, 0)}`)
 }
 
+// 5. The static Earth fallback must be a real part of the product. LibreWolf
+//    blocks WebGL by default, so every one of its users lands here, and the
+//    old version was a bare sphere with no coastlines and no prayer lights.
+{
+  const file = path.join(ROOT, 'src/components/StaticEarth.jsx')
+  const s = readFileSync(file, 'utf8')
+  const cssAll = readFileSync(path.join(ROOT, 'src/styles.css'), 'utf8')
+  check('the no-WebGL Earth uses the real land mask',
+    /url\(['"]\/land-mask\.png['"]\)/.test(cssAll))
+  check('the no-WebGL Earth draws the live prayer lights',
+    /useStore\(\(s\) => s\.lights\)/.test(s) && /efg-light/.test(s))
+  check('the no-WebGL Earth is used by both the page and the backdrop',
+    /StaticEarth/.test(readFileSync(path.join(ROOT, 'src/pages/EarthPage.jsx'), 'utf8')) &&
+      /StaticEarth/.test(readFileSync(path.join(ROOT, 'src/components/EarthBackdrop.jsx'), 'utf8')))
+  check('the old bare-sphere fallback is gone',
+    !/\.earth-fallback-globe/.test(cssAll))
+
+  // The lights must sit on the same lon/lat mapping the WebGL scene uses.
+  const xFor = (lon) => ((lon + 180) / 360) * 200
+  const yFor = (lat) => ((90 - lat) / 180) * 100
+  check('lights at lon 0 / lat 0 land mid-globe',
+    xFor(0) === 100 && yFor(0) === 50,
+    `x=${xFor(0)} y=${yFor(0)}`)
+  check('the mapping spans exactly two wrapped copies',
+    xFor(-180) === 0 && xFor(180) === 200 && yFor(90) === 0 && yFor(-90) === 100)
+
+  // Rotation is decorative, so reduced-motion must switch it off.
+  const css = readFileSync(path.join(ROOT, 'src/styles.css'), 'utf8')
+  check('the static globe honours prefers-reduced-motion',
+    /@media \(prefers-reduced-motion: reduce\)[\s\S]{0,400}\.efg-spin[\s\S]{0,120}animation:\s*none/.test(css))
+}
+
+// 6. Fading the ambient bed DOWN must be fast. setTargetAtTime is an
+//    exponential approach, so a 0.8s constant only closes ~63% of the gap in
+//    0.8s, which is why stop and pause felt like they were hanging on.
+{
+  const src = readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8')
+  check('the master gain no longer uses a slow exponential fade',
+    !/master\.gain\.setTargetAtTime/.test(src))
+  check('falling volume uses a short linear ramp',
+    /linearRampToValueAtTime\(target, t \+/.test(src),
+    'no linear ramp on the fall')
+  check('rising volume still swells gently',
+    /setTargetAtTime\(target, t, 0\.8\)/.test(src))
+}
+
 const failed = results.filter((r) => !r.pass)
 console.log(`\n[units] ${results.length - failed.length}/${results.length} passed`)
 if (failed.length) {

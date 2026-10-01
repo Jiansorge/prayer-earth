@@ -301,6 +301,28 @@ export class AmbientEngine {
     this.buildPreset(next)
   }
 
+  // Moving the bed up is a slow swell so a prayer arrives gently; moving it
+  // down is fast, because waiting several seconds for silence after pressing
+  // stop reads as the app being stuck rather than as a fade.
+  //
+  // setTargetAtTime is an exponential approach: at a 0.8s constant it has only
+  // closed ~63% of the gap after 0.8s and ~95% after 2.4s, which is why
+  // stopping used to take seconds to actually go quiet. A short linear ramp is
+  // used for every fall instead.
+  _rampMaster(target) {
+    if (!this.master || !this.ctx) return
+    const g = this.master.gain
+    const t = this.ctx.currentTime
+    const rising = target > g.value
+    if (rising) {
+      g.setTargetAtTime(target, t, 0.8)
+      return
+    }
+    g.cancelScheduledValues(t)
+    g.setValueAtTime(g.value, t)
+    g.linearRampToValueAtTime(target, t + (target <= 0.0002 ? 0.22 : 0.3))
+  }
+
   setLevel(level) {
     this.level = Math.max(0, Math.min(1, level))
     if (this.master && this.ctx) {
@@ -315,7 +337,7 @@ export class AmbientEngine {
       // could ever reach silence - which is why stopping a prayer left the bed
       // at roughly half volume instead of stopping it.
       const target = this.level * 7.5 * (0.2 + 0.8 * user) * this.vol
-      this.master.gain.setTargetAtTime(target, this.ctx.currentTime, 0.8)
+      this._rampMaster(target)
     }
   }
 
@@ -430,7 +452,9 @@ export class AmbientEngine {
   stop() {
     this.running = false
     if (this.master && this.ctx) {
-      this.master.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.5)
+      // Fast linear fade, not the old 0.5s exponential: pressing stop should
+      // feel instant, and an exponential tail lingers audibly.
+      this._rampMaster(0.0001)
     }
   }
 }
