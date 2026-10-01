@@ -124,7 +124,7 @@ const countedRef = useRef(false)
         s.setPaused(true)
         s.setPraying(false)
         syncClient.presenceNow()
-        ambient.setLevel(0.35)
+        ambient.setLevel(0)
       }
     }
     return () => ch.close()
@@ -317,10 +317,12 @@ const countedRef = useRef(false)
         useStore.getState().setCurrentPhrase(null)
         setFinished(true)
         setActive(null)
-        setChantMode(false)
-        setChantReason(null)
-        ambient.setLevel(0.4)
-        ambient.ring(0.8)
+setChantMode(false)
+    setChantReason(null)
+    // The prayer is over, so the bed goes quiet. The completion bell is a
+    // one-shot through its own bus and is unaffected by the bed level.
+    ambient.setLevel(0)
+    ambient.ring(0.8)
       }
     }
     speech.start(opts)
@@ -476,7 +478,7 @@ const countedRef = useRef(false)
     setActive(null)
     setChantMode(false)
     setChantReason(null)
-    ambient.setLevel(0.35)
+    ambient.setLevel(0)
   }
 
   // Count prayer seconds while playing, through the shared store clock so the
@@ -503,7 +505,7 @@ const countedRef = useRef(false)
       setPaused(true)
       setPraying(false)
       syncClient.presenceNow()
-      ambient.setLevel(0.35)
+      ambient.setLevel(0)
     } else {
       // Resume. If the job died (we left the tab and came back), start fresh.
       if (!speech.resume()) {

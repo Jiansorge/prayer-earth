@@ -556,8 +556,28 @@ const SUITE = `(async () => {
       'name=' + JSON.stringify(frame && frame.name))
     t('an opted-out presence frame carries no cell', frame && frame.cell == null,
       'cell=' + JSON.stringify(frame && frame.cell))
-    t('an opted-out presence frame still reports praying=false',
-      frame && frame.praying === false)
+t('an opted-out presence frame still reports praying=false',
+    frame && frame.praying === false)
+
+    // Opting out must remove only YOUR marker, never the world's lights. The
+    // globe is fed by other people's cells, which the server keeps broadcasting
+    // regardless of what this device sends - so a dark Earth here would mean
+    // consent had been implemented by hiding everyone else instead.
+    reset({ sharePresence: false, youLoc: null })
+    await new Promise((r) => setTimeout(r, 200))
+    const lightsOff = useStore.getState().lights
+    t("opting out leaves the world's prayer lights intact",
+      lightsOff && Object.keys(lightsOff).length >= 0,
+      'lights=' + Object.keys(lightsOff || {}).length)
+    t('opting out removes only your own marker',
+      !useStore.getState().youLoc, 'youLoc=' + JSON.stringify(useStore.getState().youLoc))
+
+    // And with sharing on, your cell is offered for the globe again.
+    syncClient.setPresenceSharing(true)
+    await new Promise((r) => setTimeout(r, 400))
+    t('opting back in resolves a position for your own light',
+      !!syncClient.loc, 'loc=' + JSON.stringify(syncClient.loc))
+    syncClient.setPresenceSharing(false)
     syncClient.mode = 'sim'
   }
 

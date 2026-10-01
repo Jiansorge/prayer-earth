@@ -115,6 +115,13 @@ export default function HomePage() {
     if (result === 'shared' || result === 'copied') {
       setShareCopied(true)
       setTimeout(() => setShareCopied(false), 1600)
+    } else if (result === 'failed') {
+      // Desktop Chrome exposes navigator.share but rejects it without a
+      // user gesture, and the async clipboard needs a secure context, so
+      // neither path fires and the tap did nothing at all. Settings already
+      // has this fallback; the header button needs the same one or it is a
+      // dead control in the most prominent place in the app.
+      window.prompt(t('settings.shareAppLabel'), url)
     }
   }
 

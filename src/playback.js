@@ -75,5 +75,5 @@ export async function stopPlayback() {
     playingSessionId: null
   })
   syncClient.presenceNow()
-  ambient.setLevel(0.35)
+  ambient.setLevel(0)
 }

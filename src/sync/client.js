@@ -175,8 +175,11 @@ class SyncClient {
   applyPresenceConsent() {
     const s = useStore.getState()
     if (!s.sharePresence) {
-      // Drop the fix, and clear the "you are here" ring, so nothing derived from
-      // a position the user has since withdrawn is left on screen.
+      // Withdraw: drop the fix and clear the "you are here" ring, so nothing
+      // derived from a position the user has since declined is left on screen.
+      //
+      // this.loc stays null, which is what keeps the location permission from
+      // being requested at all while sharing is off.
       this.loc = null
       useStore.getState().setYouLoc(null)
       this.name = ''

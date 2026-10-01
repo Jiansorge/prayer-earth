@@ -310,7 +310,11 @@ export class AmbientEngine {
       // beds now carry broadband noise + midrange harmonics, and the master is
       // run loud behind the limiter (which is set to catch peaks). At full the
       // slider this reaches ~7 during prayer.
-      const target = (1.0 + this.level * 6.5) * (0.2 + 0.8 * user) * this.vol
+      // Scales from true silence at 0 to the prayer bed at 1. The previous
+      // (1.0 + level * 6.5) form had a floor of 1.0, so no value of `level`
+      // could ever reach silence - which is why stopping a prayer left the bed
+      // at roughly half volume instead of stopping it.
+      const target = this.level * 7.5 * (0.2 + 0.8 * user) * this.vol
       this.master.gain.setTargetAtTime(target, this.ctx.currentTime, 0.8)
     }
   }

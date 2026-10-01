@@ -43,7 +43,13 @@ export async function shareLink({ title, text, url } = {}) {
       return 'shared'
     } catch (err) {
       // The user dismissing the sheet is a normal outcome, not a failure.
-      if (err?.name === 'AbortError' || err?.name === 'NotAllowedError') return 'cancelled'
+      if (err?.name === 'AbortError') return 'cancelled'
+      // NotAllowedError is deliberately NOT treated as a dismissal. Desktop
+      // Chrome exposes navigator.share but rejects it with NotAllowedError
+      // when there is no user gesture, and that is indistinguishable from a
+      // cancel at this layer. Returning 'cancelled' made the caller give up
+      // silently, so a refused share became a button that did nothing; fall
+      // through to copying instead, which always does something visible.
       // Any other error: fall through to copying.
     }
   }

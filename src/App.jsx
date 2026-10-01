@@ -105,7 +105,7 @@ export default function App() {
   // Begin the global connection and let the ambient engine breathe quietly.
   useEffect(() => {
     syncClient.start()
-    ambient.setLevel(0.35)
+    ambient.setLevel(0)
     return () => {
       syncClient.stop()
       ambient.stop()

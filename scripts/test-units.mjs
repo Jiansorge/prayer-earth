@@ -161,6 +161,35 @@ const stripComments = (text) =>
     offenders.join(' | ') || 'none')
 }
 
+// 4. The ambient bed must be able to reach silence. Its gain mapping used to be
+//    (1.0 + level * 6.5), which has a floor of 1.0, so no value of `level` could
+//    ever be quiet: stopping or pausing a prayer left the bed playing at roughly
+//    half volume. This checks the mapping itself, because the symptom is silence
+//    that a UI test cannot easily hear.
+{
+  const src = readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8')
+  const m = src.match(/const target = ([^\n]+)/)
+  const expr = m ? m[1].trim() : ''
+  const gainFor = (level, user = 1, vol = 1) => {
+    // eslint-disable-next-line no-new-func
+    return Function(
+      'level',
+      'user',
+      'vol',
+      `return ${expr.replace(/this\.level/g, 'level').replace(/this\.vol/g, 'vol')}`
+    )(level, user, vol)
+  }
+  check('the ambient gain mapping has no floor that blocks silence',
+    expr !== '' && gainFor(0) === 0,
+    `expr="${expr}" gain(0)=${gainFor(0)}`)
+  check('the ambient bed is still audible at full prayer level',
+    gainFor(0.9) > 5,
+    `gain(0.9)=${gainFor(0.9).toFixed(2)}`)
+  check('muting the app silences the bed',
+    gainFor(0.9, 1, 0) === 0,
+    `gain(0.9,vol=0)=${gainFor(0.9, 1, 0)}`)
+}
+
 const failed = results.filter((r) => !r.pass)
 console.log(`\n[units] ${results.length - failed.length}/${results.length} passed`)
 if (failed.length) {
