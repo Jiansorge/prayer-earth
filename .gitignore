@@ -39,3 +39,14 @@ android/app/src/main/assets/public/
 # transient local logs from the dev server / device tests
 scripts/_*.log
 scripts/_*.err
+
+# Local scratch: generated screenshots and icon experiments. Only the curated
+# store art under public/ is tracked, so everything else is ignored by default
+# rather than relying on each being remembered.
+*.png
+!public/icons/*.png
+!public/og-card.png
+!public/kofi6.png
+!public/land-mask.png
+!public/screenshot.png
+*.pnm

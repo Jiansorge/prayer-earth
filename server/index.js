@@ -234,10 +234,30 @@ async function handleTTS(urlPath, req, res) {
 // Delete the record for an anonymous identity, proving ownership with the
 // delete token. The raw token is never stored, only its hash, and the compare
 // is constant-time so this endpoint cannot be walked toward a valid token.
+// Brute-force budget for /delete, mirroring the Worker's DELETE_RATE_MAX. The
+// dev server binds to every interface and has no Origin check, so without this a
+// machine on the same network could grind through tokens against a known anonId.
+const deleteRateBuckets = new Map()
+function deleteRateLimited(key, max = 5, windowMs = 60000) {
+  const now = Date.now()
+  for (const [k, v] of deleteRateBuckets) if (now - v.start >= windowMs) deleteRateBuckets.delete(k)
+  const b = deleteRateBuckets.get(key)
+  if (!b) {
+    deleteRateBuckets.set(key, { start: now, n: 1 })
+    return false
+  }
+  b.n += 1
+  return b.n > max
+}
+
 async function handleDelete(req, res) {
   const send = (obj, status = 200) => {
     res.writeHead(status, { 'Content-Type': 'application/json', 'cache-control': 'no-store' })
     res.end(JSON.stringify(obj))
+  }
+  if (deleteRateLimited(req.socket.remoteAddress || 'unknown')) {
+    send({ ok: false, error: 'rate_limited' }, 429)
+    return
   }
   let body
   try {
@@ -256,7 +276,7 @@ async function handleDelete(req, res) {
   const given = await sha256Hex(token)
   // Unknown id, no registered token, or a mismatch all give the same answer, so
   // this cannot be used to discover which anonymous ids exist.
-  if (!rec || !rec.tokenHash || rec.tokenHash !== given) {
+  if (!rec || !rec.tokenHash || !safeEqual(rec.tokenHash, given)) {
     send({ ok: false, error: 'not_found' }, 404)
     return
   }
@@ -293,6 +313,17 @@ async function sha256Hex(text) {
   const data = new TextEncoder().encode(text)
   const digest = await crypto.subtle.digest('SHA-256', data)
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+// Constant-time string compare, so a wrong delete token cannot be recovered a
+// character at a time by timing the response. Mirrors safeEqual() in the Worker;
+// kept local because the dev server must not import across the two repos.
+function safeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return diff === 0
 }
 
 async function serveStatic(req, res) {

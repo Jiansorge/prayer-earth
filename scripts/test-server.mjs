@@ -190,6 +190,8 @@ const totalsBefore = state?.totals?.prayers
 // 1) A wrong token must be refused, and must not delete.
 const wrong = await post({ anonId: DELETE_ID, token: 'not-the-right-token' })
 ok('a wrong delete token is refused', wrong.status === 404 && wrong.json?.ok === false, JSON.stringify(wrong.json))
+
+
 send(ws, { type: 'sync', anonId: DELETE_ID, token: DELETE_TOKEN, stats: { localPrayerSeconds: 4242 } })
 await sleep(300)
 ok('the record survives a wrong-token attempt', (state?.people ?? 1) > 0, `people=${state?.people}`)
@@ -235,6 +237,58 @@ try {
 } catch (e) {
   ok('server persists aggregate seconds on shutdown', false, e.message)
 }
+// The delete rate limiter lives in the server process that just exited, so this
+// has to run against a fresh instance. Kept last because it deliberately burns
+// the whole per-IP budget.
+{
+  const srv2 = spawn(process.execPath, ['server/index.js'], {
+    cwd: process.cwd(),
+    stdio: process.env.PE_TEST_VERBOSE ? 'inherit' : 'ignore',
+    env: {
+      ...process.env,
+      PORT: String(PORT + 1),
+      PE_DATA_FILE: DATA_FILE + '.rl',
+      PE_PEOPLE_FILE: PEOPLE_FILE + '.rl'
+    }
+  })
+  await new Promise((r) => {
+    const t = setTimeout(r, 4000)
+    srv2.once('exit', () => {
+      clearTimeout(t)
+      r()
+    })
+    // Poll until it answers, since stdio may be discarded.
+    const poll = setInterval(async () => {
+      try {
+        const res = await fetch(`http://localhost:${PORT + 1}/health`)
+        if (res.ok) {
+          clearInterval(poll)
+          clearTimeout(t)
+          r()
+        }
+      } catch {}
+    }, 200)
+  })
+  const post2 = async (b) => {
+    const r = await fetch(`http://localhost:${PORT + 1}/delete`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(b)
+    })
+    let j = null
+    try { j = await r.json() } catch {}
+    return { status: r.status, json: j }
+  }
+  const codes = []
+  for (let i = 0; i < 12; i++) codes.push((await post2({ anonId: 'flood-target', token: 'guess-' + i })).status)
+  ok(
+    'a flood of wrong tokens is rate limited',
+    codes.includes(429) && codes[0] === 404,
+    JSON.stringify(codes)
+  )
+  srv2.kill()
+}
+
 try {
   rmSync(dataPath, { force: true })
   rmSync(peoplePath, { force: true })
