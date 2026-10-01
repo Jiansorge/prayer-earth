@@ -666,12 +666,18 @@ await c.eval(`(() => {
   return true
 })()`)
 {
+  // Consent BEFORE praying, which is the order a user follows: a feed entry
   // is stamped with the name that was current when the prayer started.
   const settingsUp = await openSettings()
-  const control = await c.eval(`(() => {
-    const el = document.querySelector('#share-presence')
-    return !!(el && el.type === 'checkbox' && document.querySelector('.presence-title'))
-  })()`)
+  // Wait for the control instead of sampling once. openSettings returns on the
+  // first .sheet match, which may be a different sheet, so reading the DOM
+  // straight after is a race that CI loses and a slow local run happens to win.
+  const controlFound = await c.waitFor(
+    `!!(document.querySelector('#share-presence') && document.querySelector('.presence-title'))`,
+    10000
+  )
+  const control =
+    controlFound && (await c.eval(`document.querySelector('#share-presence').type === 'checkbox'`))
   await c.eval(`document.querySelector('#share-presence')?.click()`)
   const consented = await c.waitFor(`window.__store.getState().sharePresence === true`, 5000)
   await closeSettings()
