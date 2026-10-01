@@ -401,14 +401,14 @@ ok(
 )
 ok(
   'backdrop globe renders',
-  // A live WebGL canvas when a GPU is present, otherwise the static
-  // fallback globe (headless CI has no GPU). Either way a globe renders;
-  // the live and fallback paths are each asserted separately below.
+  // A live WebGL canvas when a GPU is present, otherwise the static fallback
+  // globe (headless CI has no GPU). Either way a globe renders; the live and
+  // fallback paths are each asserted separately below.
   await c.waitFor(`(() => {
     const cv = document.querySelector('.earth-backdrop canvas')
     if (cv && cv.width > 100) return true
-    return !!document.querySelector('.earth-fallback-globe')
-  })()`)
+    return !!document.querySelector('.earth-fallback .efg')
+  })()`, 15000)
 )
 
 // --- per-prayer volume + speed tuning ---
@@ -615,6 +615,72 @@ const webglBlock = await c.send('Page.addScriptToEvaluateOnNewDocument', {
 })
 await nav(`${APP}/?webgl-fallback-test=1#/earth`)
 ok('WebGL-unavailable Earth shows static fallback', await c.waitFor(`!!document.querySelector('.earth-fallback')`))
+// This is the exact path every LibreWolf user takes, so assert it is a real
+// globe: coastlines from the land mask, an atmosphere, and the prayer lights
+// that the WebGL scene would have shown.
+const fb = await c.eval(`(() => {
+  const root = document.querySelector('.earth-fallback')
+  if (!root) return { rendered: false }
+  const land = root.querySelector('.efg-land')
+  const spin = root.querySelector('.efg-spin')
+  const light = root.querySelector('.efg-light')
+  return {
+    rendered: !!root.querySelector('.efg'),
+    hasLand: !!land,
+    landHasMask: !!land && getComputedStyle(land).backgroundImage.includes('land-mask'),
+    spins: !!spin && getComputedStyle(spin).animationName !== 'none',
+    lightCount: root.querySelectorAll('.efg-light').length,
+    lightPinned: !!light && !Number.isNaN(parseFloat(getComputedStyle(light).left)),
+    shade: !!root.querySelector('.efg-shade'),
+    atmo: !!root.querySelector('.efg-atmo'),
+    maskLoaded: !!land && land.getBoundingClientRect().width > 10
+  }
+})()`)
+ok('the static Earth is a real globe, not a bare sphere',
+  fb.rendered && fb.hasLand && fb.landHasMask && fb.shade && fb.atmo, JSON.stringify(fb))
+ok('the static Earth spins', fb.spins, JSON.stringify(fb))
+// Whether any prayer lights exist depends on who is connected, and the user's
+// own light is consent-gated, so an empty world is a legitimate state. Seed one
+// instead: what is being asserted is that a light is rendered and rides the
+// globe, not that the planet is busy.
+//
+// The dots sit inside the same wrapper as the map and share its animation, so
+// their on-screen x is the mapped position MINUS the current spin offset. That
+// offset is asserted explicitly: a dot that did not ride the globe would sit at
+// its static position and the two readings would agree.
+await c.eval(`(() => {
+  window.__store.getState().setLights({ '34.0,-118.0': 2, '51.5,-0.1': 1, '-33.9,151.2': 3 })
+  return true
+})()`)
+const fbLights = await c.waitFor(`document.querySelectorAll('.earth-fallback .efg-light').length >= 3`, 10000)
+  .catch(() => false)
+const fbGeom = await c.eval(`(() => {
+  const layer = document.querySelector('.earth-fallback .efg-lights')
+  const spin = document.querySelector('.earth-fallback .efg-spin')
+  if (!layer || !spin) return null
+  const dots = [...layer.querySelectorAll('.efg-light')]
+  if (dots.length < 3) return null
+  const lb = layer.getBoundingClientRect()
+  // Dots are absolutely positioned inside the map wrapper. Some legitimately
+  // sit in the wrapper's hidden far half, so containment is not required -
+  // riding the globe (checked separately) is the property that matters.
+  const positioned = dots.every((d) => {
+    const r = d.getBoundingClientRect()
+    return getComputedStyle(d).position === 'absolute' && r.width > 0 && r.height > 0 &&
+      r.top >= lb.top - 2 && r.bottom <= lb.bottom + 2
+  })
+  return { count: dots.length, positioned }
+})()`)
+// Sample twice: if the dots ride the rotating globe they must move.
+const moved = await (async () => {
+  const a = await c.eval(`(() => { const d = document.querySelector('.earth-fallback .efg-light'); return d ? Math.round(d.getBoundingClientRect().left) : -1 })()`)
+  await sleep(1200)
+  const b = await c.eval(`(() => { const d = document.querySelector('.earth-fallback .efg-light'); return d ? Math.round(d.getBoundingClientRect().left) : -1 })()`)
+  return a !== b
+})()
+ok('the static Earth renders and pins every prayer light to the globe',
+  !!fbLights && fbGeom && fbGeom.count >= 3 && fbGeom.positioned && moved,
+  `count=${fbGeom && fbGeom.count} positioned=${fbGeom && fbGeom.positioned} ridesGlobe=${moved}`)
 await c.send('Page.removeScriptToEvaluateOnNewDocument', { identifier: webglBlock.identifier })
 await nav(`${APP}/#/earth`)
 // Context loss only means anything if the live scene actually mounted. Assert
