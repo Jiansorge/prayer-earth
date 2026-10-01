@@ -621,20 +621,39 @@ const testBackdropThemes = async () => {
 const noLossBaseline = { value: null }
 
 const captureNoLossBaseline = async () => {
-  noLossBaseline.value = await cdp.evaluate(`(() => {
-    const s = window.__store.getState()
-    return { seconds: s.localPrayerSeconds, mani: (s.prayerCompletions || {}).mani || 0, anon: s.anonId }
-  })()`)
-  log(`no-loss baseline: ${JSON.stringify(noLossBaseline.value)}`)
+  // Wait for the store to be ready and never throw: this runs immediately after
+  // launch, and a helper that can hang or throw would take the whole suite with
+  // it. A missing baseline only disables the final invariant, it does not fail
+  // the run.
+  await cdp.waitFor(`!!window.__store`, 15000)
+  try {
+    noLossBaseline.value = await cdp.evaluate(`(() => {
+      const s = window.__store.getState()
+      return { seconds: s.localPrayerSeconds, mani: (s.prayerCompletions || {}).mani || 0, anon: s.anonId }
+    })()`)
+    log(`no-loss baseline: ${JSON.stringify(noLossBaseline.value)}`)
+  } catch (e) {
+    log(`no-loss baseline unavailable: ${String(e.message || e).slice(0, 80)}`)
+  }
 }
 
 const assertNoDataLoss = async () => {
-  const now = await cdp.evaluate(`(() => {
-    const s = window.__store.getState()
-    return { seconds: s.localPrayerSeconds, mani: (s.prayerCompletions || {}).mani || 0, anon: s.anonId }
-  })()`)
+  if (!noLossBaseline.value) {
+    check('no-loss baseline was captured', false, 'skipped: no baseline to compare against')
+    return
+  }
+  let now
+  try {
+    now = await cdp.evaluate(`(() => {
+      const s = window.__store.getState()
+      return { seconds: s.localPrayerSeconds, mani: (s.prayerCompletions || {}).mani || 0, anon: s.anonId }
+    })()`)
+  } catch (e) {
+    check('the suite-wide no-loss check could read the final state', false,
+      String(e.message || e).slice(0, 80))
+    return
+  }
   const before = noLossBaseline.value
-  if (!before) { check('no-loss baseline was captured', false, 'nothing to compare against'); return }
   log(`no-loss final: ${JSON.stringify(now)}`)
   check('NO TEST IN THIS SUITE REDUCED THE USER PRAYER DATA (seconds)',
     now.seconds >= before.seconds, `${before.seconds} -> ${now.seconds}`)
