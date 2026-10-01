@@ -2027,6 +2027,30 @@ html[dir='rtl'] .chooser-arrow.right {
   border-color: rgba(232, 196, 122, 0.5);
 }
 
+/* Destructive confirmation block (Settings -> delete my data). */
+.field-btn-danger {
+  border-color: rgba(255, 150, 130, 0.45);
+  background: rgba(255, 120, 100, 0.1);
+  color: #ffb4a2;
+}
+
+.field-btn-danger:hover {
+  border-color: rgba(255, 150, 130, 0.7);
+  background: rgba(255, 120, 100, 0.16);
+}
+
+.field-btn-danger:disabled {
+  opacity: 0.5;
+}
+
+.delete-panel {
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px solid rgba(255, 150, 130, 0.35);
+  border-radius: 14px;
+  background: rgba(255, 120, 100, 0.06);
+}
+
 /* Attribution + report-a-copy link in Settings -> About. */
 .field-report {
   display: block;

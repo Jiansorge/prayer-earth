@@ -14,6 +14,7 @@ import { isMobile, isIos, isAppShell } from '../shared/mobile.js'
 import { CANONICAL_ORIGIN } from '../shared/canonical.js'
 import { shareLink, copyText } from '../shared/share.js'
 import { buildBackupCode, parseBackupCode, applyBackup } from '../shared/backup.js'
+import { requestDeletion, forgetIdentity } from '../shared/deletion.js'
 import { syncClient } from '../sync/client.js'
 
 const isInstalled = () =>
@@ -84,6 +85,9 @@ export default function SettingsSheet() {
   const [backupCode, setBackupCode] = useState('') // shown when copy/download can't work
   const [backupSummary, setBackupSummary] = useState(null)
   const [anonCopied, setAnonCopied] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteBusy, setDeleteBusy] = useState(false)
+  const [deleteResult, setDeleteResult] = useState(null)
   const fileRef = useRef(null)
   const [installed, setInstalled] = useState(false)
   const [showIosTip, setShowIosTip] = useState(false)
@@ -215,6 +219,18 @@ export default function SettingsSheet() {
         : 'settings.backupCorrupt'
       flashBackup(false, key)
     }
+  }
+
+  // Self-service deletion. The request only leaves the device after an
+  // explicit confirmation, and the local wipe happens ONLY once the server has
+  // confirmed - so a failed or offline request never costs the user their data.
+  const doDelete = async () => {
+    setDeleteBusy(true)
+    const outcome = await requestDeletion()
+    setDeleteBusy(false)
+    if (outcome === 'deleted') forgetIdentity()
+    setDeleteOpen(false)
+    setDeleteResult(outcome)
   }
 
   const restoreFromFile = (e) => {
@@ -545,6 +561,44 @@ export default function SettingsSheet() {
         >
           {t('settings.deleteDataLink')}
         </a>
+
+        {/* Self-service deletion: no email, no waiting. The request only goes
+            out after an explicit confirmation, because it is irreversible, and
+            the local wipe only happens once the server has confirmed. */}
+        {!deleteOpen && !deleteResult && (
+          <button
+            className="field-btn field-btn-danger"
+            onClick={() => { setDeleteOpen(true); setBackupMsg(null) }}
+            style={{ marginTop: 8 }}
+          >
+            {t('settings.deleteDataButton')}
+          </button>
+        )}
+
+        {deleteOpen && !deleteResult && (
+          <div className="delete-panel" role="alertdialog" aria-label={t('settings.deleteDataButton')}>
+            <div className="field-hint">{t('settings.deleteDataConfirmHint')}</div>
+            <button
+              className="field-btn field-btn-danger"
+              disabled={deleteBusy}
+              onClick={doDelete}
+            >
+              {deleteBusy ? t('settings.deleteDataWorking') : t('settings.deleteDataConfirm')}
+            </button>
+            <button className="field-btn" onClick={() => setDeleteOpen(false)} style={{ marginTop: 8 }}>
+              {t('settings.deleteDataCancel')}
+            </button>
+            <a className="field-report" href={DELETE_DATA_URL} target="_blank" rel="noreferrer noopener">
+              {t('settings.deleteDataManual')}
+            </a>
+          </div>
+        )}
+
+        {deleteResult && (
+          <div className="field-hint" style={{ marginTop: 10, color: deleteResult === 'deleted' ? 'var(--ok,#7fc9a0)' : 'var(--warn,#ffb4a2)' }}>
+            {t(`settings.deleteResult.${deleteResult}`)}
+          </div>
+        )}
         <textarea
           className="field-textarea"
           value={restoreText}

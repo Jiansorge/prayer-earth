@@ -231,6 +231,70 @@ async function handleTTS(urlPath, req, res) {
 // Serve the built app. Hash-named assets are cacheable forever; everything
 // else (index.html, sw.js) is served fresh. Unknown paths fall back to
 // index.html so deep links never 404 (routing is hash-based anyway).
+// Delete the record for an anonymous identity, proving ownership with the
+// delete token. The raw token is never stored, only its hash, and the compare
+// is constant-time so this endpoint cannot be walked toward a valid token.
+async function handleDelete(req, res) {
+  const send = (obj, status = 200) => {
+    res.writeHead(status, { 'Content-Type': 'application/json', 'cache-control': 'no-store' })
+    res.end(JSON.stringify(obj))
+  }
+  let body
+  try {
+    body = await readJsonBody(req)
+  } catch {
+    send({ ok: false, error: 'bad_request' }, 400)
+    return
+  }
+  const anonId = typeof body?.anonId === 'string' ? body.anonId.slice(0, 64) : ''
+  const token = typeof body?.token === 'string' ? body.token.slice(0, 128) : ''
+  if (!anonId || !token) {
+    send({ ok: false, error: 'bad_request' }, 400)
+    return
+  }
+  const rec = peopleSync[anonId]
+  const given = await sha256Hex(token)
+  // Unknown id, no registered token, or a mismatch all give the same answer, so
+  // this cannot be used to discover which anonymous ids exist.
+  if (!rec || !rec.tokenHash || rec.tokenHash !== given) {
+    send({ ok: false, error: 'not_found' }, 404)
+    return
+  }
+  delete peopleSync[anonId]
+  savePeople()
+  send({ ok: true, deleted: true })
+}
+
+function readJsonBody(req, limit = 4096) {
+  return new Promise((resolve, reject) => {
+    let size = 0
+    const chunks = []
+    req.on('data', (c) => {
+      size += c.length
+      if (size > limit) {
+        reject(new Error('too large'))
+        req.destroy()
+        return
+      }
+      chunks.push(c)
+    })
+    req.on('end', () => {
+      try {
+        resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'))
+      } catch (e) {
+        reject(e)
+      }
+    })
+    req.on('error', reject)
+  })
+}
+
+async function sha256Hex(text) {
+  const data = new TextEncoder().encode(text)
+  const digest = await crypto.subtle.digest('SHA-256', data)
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
 async function serveStatic(req, res) {
   let urlPath = '/'
   try {
@@ -243,6 +307,13 @@ async function serveStatic(req, res) {
   }
   if (urlPath === '/api/tts') {
     await handleTTS(urlPath, req, res)
+    return
+  }
+  // Self-service data deletion, mirroring the Cloudflare Worker's /delete so
+  // local development and the automated tests exercise the real behaviour
+  // instead of only the static-file path.
+  if (urlPath === '/delete' && req.method === 'POST') {
+    await handleDelete(req, res)
     return
   }
   const filePath = normalize(join(DIST, urlPath))
@@ -618,8 +689,8 @@ wss.on('connection', (ws, req) => {
     lon: null
   })
 
-  ws.on('message', (raw) => {
-    if (msgLimited(ws)) return
+  // async because the sync branch hashes the delete token before storing it.
+  ws.on('message', async (raw) => {    if (msgLimited(ws)) return
     try {
       const msg = JSON.parse(raw.toString())
       if (msg.type === 'presence') {
@@ -691,6 +762,12 @@ wss.on('connection', (ws, req) => {
           // the retention prune with a '9999-12-31' day.
           const stats = sanitizeStats(msg.stats)
           const merged = mergeStats(peopleSync[id] || {}, stats)
+          // Register the delete-token hash on first sync so the account can later
+          // self-serve deletion. Only ever SET, never merged, so a replayed sync
+          // cannot swap in a different token and inherit delete rights.
+          if (typeof msg.token === 'string' && msg.token && msg.token.length <= 128 && !merged.tokenHash) {
+            merged.tokenHash = await sha256Hex(msg.token)
+          }
           peopleSync[id] = merged
           savePeople()
           ws.send(JSON.stringify({ type: 'sync', stats: merged }))

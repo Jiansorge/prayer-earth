@@ -663,6 +663,115 @@ const assertNoDataLoss = async () => {
     !before.anon || now.anon === before.anon, `${before.anon} -> ${now.anon}`)
 }
 
+// Self-service deletion on the real device, with a stubbed transport so the test
+// never touches production. What matters here is the app-shell half: the button
+// exists, the confirmation gates an irreversible action, and a refused or failed
+// request leaves the user's data completely intact. The HTTP contract itself is
+// proven against a live server in test-server.mjs.
+const testSelfServiceDeletion = async () => {
+  await cdp.evaluate(`(() => {
+    const btn = [...document.querySelectorAll('button,[role="button"]')]
+      .find(b => /settings|⚙/i.test(b.getAttribute('aria-label') || b.title || ''))
+    if (btn) btn.click()
+    return !!btn
+  })()`)
+  await cdp.waitFor(`!!document.querySelector('.field-btn')`, 8000)
+
+  const ui = await cdp.evaluate(`(() => {
+    const btns = [...document.querySelectorAll('.field-btn')].map(b => (b.textContent || '').trim())
+    return {
+      hasButton: btns.some(b => /delete my data permanently/i.test(b)),
+      hasLink: [...document.querySelectorAll('a')].some(a => /delete-data\\.html/.test(a.getAttribute('href') || ''))
+    }
+  })()`)
+  check('the app shell offers self-service deletion', ui.hasButton, JSON.stringify(ui))
+  check('the app shell links to the deletion page', ui.hasLink, JSON.stringify(ui))
+
+  // Seed data, so a wipe would be visible. The real values are captured first and
+  // restored at the end - leaving the seeded numbers behind would quietly
+  // corrupt every test that runs after this one.
+  const saved = await cdp.evaluate(`(() => {
+    const s = window.__store.getState()
+    window.__deleteSaved = {
+      localPrayerSeconds: s.localPrayerSeconds,
+      prayerCompletions: JSON.parse(JSON.stringify(s.prayerCompletions || {})),
+      bestStreak: s.bestStreak
+    }
+    window.__store.setState({ localPrayerSeconds: 2468, prayerCompletions: { mani: 11 }, bestStreak: 4 })
+    return window.__deleteSaved
+  })()`)
+  void saved
+  await sleep(400)
+
+  // The destructive button must NOT act immediately; it opens a confirmation.
+  await cdp.evaluate(`(() => {
+    const b = [...document.querySelectorAll('.field-btn')].find(x => /delete my data permanently/i.test(x.textContent || ''))
+    if (b) b.click()
+    return !!b
+  })()`)
+  await sleep(700)
+  const confirm = await cdp.evaluate(`(() => {
+    const s = window.__store.getState()
+    return {
+      hasPanel: !!document.querySelector('.delete-panel'),
+      hasConfirm: [...document.querySelectorAll('.field-btn')].some(b => /^yes, delete my data$/i.test((b.textContent || '').trim())),
+      seconds: s.localPrayerSeconds
+    }
+  })()`)
+  check('deleting asks for confirmation first (it is irreversible)',
+    confirm.hasPanel && confirm.hasConfirm, JSON.stringify(confirm))
+  check('merely opening the confirm panel changes nothing',
+    confirm.seconds === 2468, 'seconds=' + confirm.seconds)
+
+  // A refused request (404) must leave the data completely intact. This calls
+  // the REAL client function via the build-time test hook - an earlier version
+  // imported the bundle, silently caught the failure, and then counted
+  // "no-module" as a pass, which proved nothing at all.
+  const refused = await cdp.evaluate(`(async () => {
+    if (!window.__deletion) return { missing: true }
+    const real = window.fetch
+    window.fetch = (u, i) => String(u).includes('/delete')
+      ? Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({ ok: false }) })
+      : real(u, i)
+    let outcome
+    try { outcome = await window.__deletion.requestDeletion() } catch (e) { outcome = 'threw:' + e.message }
+    window.fetch = real
+    const s = window.__store.getState()
+    return { outcome, seconds: s.localPrayerSeconds }
+  })()`)
+  check('the deletion test hook is available in this build', !refused.missing, JSON.stringify(refused))
+  check('a refused deletion is reported as "nothing deleted"',
+    refused.outcome === 'not_found', 'outcome=' + refused.outcome)
+  check('a refused deletion leaves the device data intact',
+    refused.seconds === 2468, 'seconds=' + refused.seconds)
+
+  // An unreachable server must be equally non-destructive: the user asked to
+  // delete, we could not confirm it, so their data must still be there.
+  const offline = await cdp.evaluate(`(async () => {
+    const real = window.fetch
+    window.fetch = (u, i) => String(u).includes('/delete')
+      ? Promise.reject(new Error('offline'))
+      : real(u, i)
+    let outcome
+    try { outcome = await window.__deletion.requestDeletion() } catch (e) { outcome = 'threw:' + e.message }
+    window.fetch = real
+    return { outcome, seconds: window.__store.getState().localPrayerSeconds }
+  })()`)
+  check('an unreachable server reads as "offline", not as success',
+    offline.outcome === 'offline', 'outcome=' + offline.outcome)
+  check('an unreachable server leaves the device data intact',
+    offline.seconds === 2468, 'seconds=' + offline.seconds)
+
+  // Put the device's real numbers back.
+  await cdp.evaluate(`(() => {
+    const saved = window.__deleteSaved
+    if (saved) window.__store.setState(saved)
+    delete window.__deleteSaved
+    return window.__store.getState().localPrayerSeconds
+  })()`)
+  await sleep(400)
+}
+
 const testSentinel = async (key, value) => {
   const stored = await cdp.evaluate(`localStorage.getItem(${JSON.stringify(key)})`)
   check('app data survives APK reinstall', stored === value, `stored=${stored}`)
@@ -883,6 +992,7 @@ try {
   // DESTRUCTIVE, so it must run last: it deliberately writes a corrupt
   // localStorage entry and reloads, which wipes the counters and anonId that
   // testBackup (and the user on a real device) still need.
+  await testSelfServiceDeletion()
   await testCorruptStorageRecovery()
   // Final, suite-wide invariant: nothing in here may have cost the user data.
   await assertNoDataLoss()

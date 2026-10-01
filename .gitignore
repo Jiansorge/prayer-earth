@@ -19,6 +19,7 @@ android/key.properties
 # Generated store legal pages (rebuilt from src/locales at build time)
 public/privacy.html
 public/terms.html
+public/delete-data.html
 
 # Godot import artifacts (accidentally copied in from the healing game)
 *.import

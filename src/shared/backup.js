@@ -22,6 +22,10 @@ function payloadFrom(state) {
   return {
     v: VERSION,
     anonId: state.anonId,
+    // Carried so that restoring onto a new phone still allows self-service
+    // deletion: whoever holds the recovery code holds the deletion capability,
+    // which is the correct ownership model for a no-account app.
+    deleteToken: state.deleteToken,
     firstSeen: state.firstSeen,
     prayerCompletions: state.prayerCompletions,
     prayerDayCompletions: state.prayerDayCompletions,
@@ -155,6 +159,11 @@ export function applyBackup(payload) {
   // Adopt the backed-up anonId so synced history follows the restored identity.
   if (typeof payload.anonId === 'string' && payload.anonId && payload.anonId !== s.anonId) {
     next.anonId = payload.anonId
+  }
+  // Likewise the deletion token, so a restored device can delete its own record
+  // without falling back to the emailed route.
+  if (typeof payload.deleteToken === 'string' && payload.deleteToken) {
+    next.deleteToken = payload.deleteToken
   }
   if (Number.isFinite(payload.firstSeen) && (!s.firstSeen || payload.firstSeen < s.firstSeen)) {
     next.firstSeen = payload.firstSeen

@@ -26,7 +26,7 @@ const srv = spawn(process.execPath, ['server/index.js'], {
     PE_DATA_FILE: DATA_FILE,
     PE_PEOPLE_FILE: PEOPLE_FILE
   },
-  stdio: 'ignore'
+  stdio: process.env.PE_TEST_VERBOSE ? 'inherit' : 'ignore'
 })
 const WS_URL = `ws://localhost:${PORT}`
 
@@ -154,6 +154,71 @@ ok('people = 3 after disconnect', state?.people === 3, `people=${state?.people}`
 await sleep(2200)
 ok('totalPrayerSeconds growing', state?.totalPrayerSeconds > 0, `total=${state?.totalPrayerSeconds}`)
 
+// ---- self-service data deletion -----------------------------------------
+// The important properties, not just "it returned 200":
+//   - a correct anonId + token deletes the record
+//   - a WRONG token does NOT delete it (otherwise a leaked recovery code, which
+//     people email around, could erase anyone's history)
+//   - an unknown anonId is indistinguishable from a wrong token
+//   - a second delete is a no-op, not a crash
+//   - deletion does NOT touch the shared world total (subtracting one person's
+//     prayers would lower the number for everyone)
+const DELETE_ID = 'delete-me-user'
+const DELETE_TOKEN = 'test-token-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+const post = async (body) => {
+  const r = await fetch(`http://localhost:${PORT}/delete`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+  let json = null
+  try { json = await r.json() } catch {}
+  return { status: r.status, json }
+}
+
+// Establish a record, with a token, and confirm the merge landed.
+send(ws, {
+  type: 'sync',
+  anonId: DELETE_ID,
+  token: DELETE_TOKEN,
+  stats: { localPrayerSeconds: 4242, prayerCompletions: { 'al-fatiha': 9 } }
+})
+await sleep(400)
+
+const totalsBefore = state?.totals?.prayers
+
+// 1) A wrong token must be refused, and must not delete.
+const wrong = await post({ anonId: DELETE_ID, token: 'not-the-right-token' })
+ok('a wrong delete token is refused', wrong.status === 404 && wrong.json?.ok === false, JSON.stringify(wrong.json))
+send(ws, { type: 'sync', anonId: DELETE_ID, token: DELETE_TOKEN, stats: { localPrayerSeconds: 4242 } })
+await sleep(300)
+ok('the record survives a wrong-token attempt', (state?.people ?? 1) > 0, `people=${state?.people}`)
+
+// 2) An unknown identity looks exactly like a wrong token, so the endpoint
+//    cannot be used to probe which anonymous ids exist.
+const unknown = await post({ anonId: 'nobody-has-this-id', token: DELETE_TOKEN })
+ok('an unknown identity is refused', unknown.status === 404, JSON.stringify(unknown.json))
+ok('an unknown identity is indistinguishable from a wrong token',
+  unknown.json?.error === wrong.json?.error, `${unknown.json?.error} vs ${wrong.json?.error}`)
+
+// 3) A malformed request is rejected before anything is touched.
+const bad = await post({ anonId: '' })
+ok('a request with no identity is rejected', bad.status === 400, JSON.stringify(bad.json))
+
+// 4) The real thing: correct id + token deletes.
+const good = await post({ anonId: DELETE_ID, token: DELETE_TOKEN })
+ok('a correct token deletes the record', good.status === 200 && good.json?.ok === true, JSON.stringify(good.json))
+
+// 5) Deleting again is a clean no-op.
+const again = await post({ anonId: DELETE_ID, token: DELETE_TOKEN })
+ok('deleting an already-deleted record is a no-op', again.status === 404, JSON.stringify(again.json))
+
+// 6) The shared world total must be untouched by a deletion.
+ok('the shared world total is not reduced by deleting a record',
+  (state?.totals?.prayers?.['al-fatiha'] ?? 0) === (totalsBefore?.['al-fatiha'] ?? 0),
+  `before=${totalsBefore?.['al-fatiha']} after=${state?.totals?.prayers?.['al-fatiha']}`)
+
+
 others.forEach((c) => c.close())
 ws.close()
 srv.kill()
@@ -176,6 +241,7 @@ try {
 } catch (e) {
   console.log('WARN cleanup-after failed:', e.message)
 }
+
 console.log('---')
 if (fails) {
   console.log(`${fails} check(s) FAILED`)

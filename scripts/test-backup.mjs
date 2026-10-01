@@ -376,6 +376,100 @@ const SUITE = `(async () => {
       'navigator.storage.persist must exist for this guarantee to mean anything')
   }
 
+  const cdpEval = async (expr) => (await page.evaluate(expr))
+
+  // --- self-service deletion --------------------------------------------
+  // The real HTTP contract (wrong token refused, correct token deletes, the
+  // world total untouched) is proven end-to-end in test-server.mjs against a
+  // live server. Here the transport is stubbed inside the page so this suite
+  // never calls production, and we assert how the CLIENT reads each outcome -
+  // which is the part that would otherwise silently lose the user's data.
+  {
+    const { requestDeletion, forgetIdentity, newDeleteToken } = await import('/src/shared/deletion.js')
+
+    // Real entropy, or the security claim is fiction.
+    const tokA = newDeleteToken()
+    const tokB = newDeleteToken()
+    t('the delete token is high-entropy and unique',
+      tokA.length >= 40 && tokB.length >= 40 && tokA !== tokB, 'len=' + tokA.length)
+    t('the delete token is URL-safe', /^[A-Za-z0-9_-]+$/.test(tokA))
+    // Minted on demand by the store, the same way a real first sync would.
+    t('the store mints and keeps a delete token for the identity',
+      (() => {
+        const minted = useStore.getState().getDeleteToken()
+        return typeof minted === 'string' && minted.length >= 40 &&
+          useStore.getState().deleteToken === minted
+      })(),
+      'len=' + String(useStore.getState().deleteToken || '').length)
+
+    // A token must travel in the backup, or a restored phone could not self-serve.
+    reset({ localPrayerSeconds: 500, prayerCompletions: { mani: 2 }, anonId: 'anon-del-test', deleteToken: tokA })
+    const codeWithToken = buildBackupCode()
+    const decoded = JSON.parse(new TextDecoder().decode(
+      Uint8Array.from(atob(codeWithToken.slice(4)), (c) => c.charCodeAt(0))))
+    t('the backup carries the delete token', decoded.deleteToken === tokA,
+      'len=' + String(decoded.deleteToken || '').length)
+    // Build the code FIRST, then change identity - otherwise the code is built
+    // from the already-overwritten token and proves nothing.
+    reset({ anonId: 'someone-else', deleteToken: tokB })
+    applyBackup(parseBackupCode(codeWithToken))
+    t('restoring a backup restores the ability to self-serve',
+      useStore.getState().deleteToken === tokA,
+      'got len=' + String(useStore.getState().deleteToken || '').length)
+
+    // Stub the transport in page scope. Only /delete is intercepted, so a
+    // genuine failure elsewhere still surfaces as a real network error.
+    const realFetch = window.fetch
+    const stub = (handler) => {
+      window.fetch = function (input, init) {
+        const u = typeof input === 'string' ? input : (input && input.url) || ''
+        if (String(u).indexOf('/delete') !== -1) return handler()
+        return realFetch.call(window, input, init)
+      }
+    }
+
+    reset({ anonId: 'anon-e2e-delete', deleteToken: tokA, localPrayerSeconds: 1234 })
+    await new Promise((r) => setTimeout(r, 300))
+
+    // 404 (wrong or unknown token) must read as "nothing was deleted".
+    stub(() => Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({ ok: false }) }))
+    t('a 404 reads as nothing-deleted, never as success',
+      (await requestDeletion()) === 'not_found')
+    t('a refused deletion leaves the local data completely intact',
+      useStore.getState().localPrayerSeconds === 1234,
+      'seconds=' + useStore.getState().localPrayerSeconds)
+
+    // A network failure must not delete anything either.
+    stub(() => Promise.reject(new Error('offline')))
+    t('a network failure reads as offline, not as success',
+      (await requestDeletion()) === 'offline')
+    t('an offline attempt leaves the local data intact',
+      useStore.getState().localPrayerSeconds === 1234)
+
+    // A confirmed deletion is the ONLY path that wipes locally.
+    stub(() => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ ok: true }) }))
+    const outcome = await requestDeletion()
+    t('a confirmed deletion reports success', outcome === 'deleted', 'outcome=' + outcome)
+    window.fetch = realFetch
+
+    // forgetIdentity must give a genuinely fresh start. It removes the stored
+    // key FIRST, because the write guard would otherwise merge the zeroed state
+    // back up to the old totals and the wipe would silently do nothing.
+    useStore.setState({ localPrayerSeconds: 4321, prayerCompletions: { mani: 7 }, bestStreak: 3 })
+    await new Promise((r) => setTimeout(r, 300))
+    forgetIdentity()
+    await new Promise((r) => setTimeout(r, 400))
+    const after = useStore.getState()
+    t('forgetIdentity resets the local counters to zero', after.localPrayerSeconds === 0,
+      'seconds=' + after.localPrayerSeconds)
+    t('forgetIdentity clears the prayer counts', Object.keys(after.prayerCompletions || {}).length === 0)
+    t('forgetIdentity mints a NEW anonymous id', !!after.anonId && after.anonId !== 'anon-e2e-delete', after.anonId)
+    t('forgetIdentity mints a NEW delete token', !!after.deleteToken && after.deleteToken !== tokA)
+    const raw = JSON.parse(localStorage.getItem('prayer-earth-v1') || '{}')
+    t('the wipe reaches storage, not just memory',
+      (raw.state && raw.state.localPrayerSeconds) === 0,
+      'disk=' + (raw.state ? raw.state.localPrayerSeconds : 'none'))
+  }
   return out
 })()`
 

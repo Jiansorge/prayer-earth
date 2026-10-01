@@ -364,7 +364,15 @@ class SyncClient {
     if (this.mode !== 'live') return
     try {
       const s = useStore.getState()
-      this.engine.send({ type: C_SYNC, anonId: s.getAnonId(), stats: s.getSyncStats() })
+      this.engine.send({
+      type: C_SYNC,
+      anonId: s.getAnonId(),
+      // Carried so the server can store a hash of it, which is what makes
+      // self-service deletion possible later without a second identity secret
+      // being the anonId itself.
+      token: s.getSyncToken(),
+      stats: s.getSyncStats()
+    })
     } catch {}
   }
 

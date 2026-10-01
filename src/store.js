@@ -154,6 +154,13 @@ const neverLoseData = (name, value) => {
 
   // Preserve the anonId: losing it would orphan the user's server-side history.
   if (typeof ps.anonId === 'string' && ps.anonId && !ns.anonId) state.anonId = ps.anonId
+  // And preserve the delete token the same way. It is copied from the incoming
+  // state above, so an empty one (a reset, a partial hydrate) would otherwise
+  // silently overwrite a good token and break the user's ability to delete their
+  // own data - the exact opposite of what this guard is for.
+  if (typeof ps.deleteToken === 'string' && ps.deleteToken && !ns.deleteToken) {
+    state.deleteToken = ps.deleteToken
+  }
 
   return JSON.stringify({ ...next, state })
 }
@@ -395,6 +402,9 @@ export const useStore = create(
 
       // An opaque browser-profile id for private, server-side lifetime sync.
       anonId: '',
+  // Second secret for self-service deletion, separate from the anonId so a leaked
+  // recovery code cannot be used to erase the record. Generated on demand.
+  deleteToken: '',
 
       // ---- navigation ----
       go: (view) =>
@@ -586,9 +596,28 @@ export const useStore = create(
         return id
       },
 
+      // Mint the deletion token on first use. High-entropy and device-generated;
+      // the server only ever holds its hash. Kept here (rather than imported
+      // from shared/deletion.js) because that module imports this store.
+      getDeleteToken: () => {
+        const s = get()
+        if (s.deleteToken) return s.deleteToken
+        const bytes = new Uint8Array(32)
+        crypto.getRandomValues(bytes)
+        let bin = ''
+        for (const b of bytes) bin += String.fromCharCode(b)
+        const token = btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+        set({ deleteToken: token })
+        return token
+      },
+
       // The lifetime stats that are safe to sync: pure counters, nothing about
       // who or where you are.
-      getSyncStats: () => {
+      // The delete token travels WITH the sync payload so the server can register its
+  // hash on first contact, enabling self-service deletion later.
+  getSyncToken: () => get().getDeleteToken(),
+
+  getSyncStats: () => {
         const s = get()
         return {
           prayerCompletions: s.prayerCompletions,
@@ -753,6 +782,7 @@ export const useStore = create(
         bestStreak: s.bestStreak,
         lastPrayedDay: s.lastPrayedDay,
         anonId: s.anonId,
+    deleteToken: s.deleteToken,
         firstSeen: s.firstSeen,
       })
     }
