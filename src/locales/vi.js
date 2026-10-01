@@ -406,4 +406,6 @@ export default {
   'sound.speed': 'Tốc độ',
   'settings.saveFailed': 'Bộ đếm lời cầu nguyện của bạn không được lưu trên thiết bị này. Hãy giải phóng dung lượng hoặc thử trình duyệt khác — phiên hiện tại vẫn đang đếm.',
   'settings.dataQuarantined': 'Một phần dữ liệu đã lưu không đọc được, nên chúng tôi giữ lại một bản sao thay vì xóa. Các lượt ghi mới không thể làm giảm tổng của bạn nữa.',
+  'settings.dataPreservationFailed': 'Một phần dữ liệu đã lưu không đọc được và chúng tôi cũng không lưu được bản sao. Bạn đã bắt đầu lại từ đầu — hãy sao lưu thường xuyên.',
+  'settings.storageNotPersisted': 'Trình duyệt của bạn không cấp kho lưu trữ lâu dài, nên lịch sử này có thể bị xóa tự động. Hãy sao lưu.',
 };

@@ -405,4 +405,6 @@ export default {
   'sound.speed': 'Velocidad',
   'settings.saveFailed': 'Tus recuentos de oración no se están guardando en este dispositivo. Libera espacio o prueba otro navegador: la sesión actual sigue contando.',
   'settings.dataQuarantined': 'Una parte de tus datos guardados no se pudo leer, así que se conservó una copia en lugar de eliminarla. Las nuevas entradas ya no pueden reducir tu total.',
+  'settings.dataPreservationFailed': 'Una parte de tus datos guardados no se pudo leer y tampoco pudimos conservar una copia. Has empezado de cero: haz copias de seguridad con regularidad.',
+  'settings.storageNotPersisted': 'Tu navegador no concedió almacenamiento persistente, por lo que este historial podría borrarse automáticamente. Haz una copia de seguridad.',
 };

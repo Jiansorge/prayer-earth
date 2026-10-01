@@ -311,4 +311,6 @@ export default {
   'sound.speed': '속도',
   'settings.saveFailed': '이 기기에서 기도 횟수가 저장되지 않습니다. 저장 공간을 확보하거나 다른 브라우저를 사용해 보세요 — 현재 세션은 계속 기록됩니다.',
   'settings.dataQuarantined': '저장된 데이터 일부를 읽을 수 없어 삭제하지 않고 사본으로 보관했습니다. 이제 새로운 기록이 합계를 줄일 수 없습니다.',
+  'settings.dataPreservationFailed': '저장된 데이터 일부를 읽을 수 없었고 사본도 보관하지 못했습니다. 처음부터 다시 시작하게 되었으니, 지금부터 정기적으로 백업해 주세요.',
+  'settings.storageNotPersisted': '브라우저가 영구 저장소를 허용하지 않아 이 기록이 자동으로 삭제될 수 있습니다. 백업을 해주세요.',
 };

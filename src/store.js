@@ -72,22 +72,31 @@ const eq = (a, b) => {
 // Move an unreadable stored value somewhere it cannot be overwritten, and tell
 // the user it happened. Recovering by hand is possible; silent erasure is not
 // acceptable for the one thing this app exists to keep.
+//
+// Returns true when the value was actually preserved. The caller relies on that:
+// if this fails, the app knows it is about to overwrite unreadable data with a
+// default state, and says so instead of pretending the data is safe.
 const quarantine = (name, raw) => {
+  let preserved = false
   try {
     const key = `${name}.unreadable`
-    // Keep the most recent unreadable value, plus how many we have seen.
     let seen = 0
     try {
-      seen = Number(window.localStorage.getItem(`${name}.unreadable.count`)) || 0
+      seen = Number(window.localStorage.getItem(`${key}.count`)) || 0
     } catch {}
-    try {
-      window.localStorage.setItem(key, raw)
-      window.localStorage.setItem(`${name}.unreadable.count`, String(seen + 1))
-    } catch {}
-  } catch {}
+    window.localStorage.setItem(key, raw)
+    window.localStorage.setItem(`${key}.count`, String(seen + 1))
+    preserved = true
+  } catch {
+    // Out of quota, or storage unavailable. Do NOT silently drop it: the app is
+    // about to start from defaults, so the user must be told their previous
+    // value could not be preserved.
+    preserved = false
+  }
   try {
-    useStore.setState({ dataQuarantined: true })
+    useStore.setState({ dataQuarantined: true, dataPreservationFailed: !preserved })
   } catch {}
+  return preserved
 }
 
 // Fold an incoming persisted payload into whatever is already stored so a write
@@ -323,6 +332,13 @@ export const useStore = create(
   // overwritten. Surfaced so the user learns their data was not silently
   // replaced by an empty state.
   dataQuarantined: false,
+  // Set when that quarantine itself could not be written (e.g. storage full).
+  // This is the worst case: the app is about to start from defaults over data
+  // we could not even preserve. It must be said out loud, not swallowed.
+  dataPreservationFailed: false,
+  // Whether the browser granted persistent storage. Null until it answers.
+  // The web app is only as safe as this, so it is tracked rather than assumed.
+  storagePersisted: null,
       // when the shared world was first launched (ms epoch), so the glow can
       // show a gentle floor on day one and be fully honest afterwards
       startedAt: null,
@@ -794,5 +810,31 @@ if (typeof document !== 'undefined') {
   if (typeof window !== 'undefined') {
     window.addEventListener('pagehide', creditPrayerClock)
   }
+}
+
+// Ask the browser to make this origin's storage PERSISTENT.
+//
+// Without this, the web app's prayer history is only ordinary localStorage, and
+// browsers are permitted - and do - evict that for sites they judge low
+// priority, under disk pressure, or after months of no visit. For an app whose
+// entire promise is "your prayers are never lost", that is an unacceptable
+// dependency on the user's luck. persist() is a one-line, no-permission request;
+// the browser may decline, so the result is recorded rather than assumed.
+//
+// (The Android build writes to the app's private storage, which the OS does not
+// evict, so this only affects the web app.)
+if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
+  try {
+    const ask = navigator.storage.persist()
+    if (ask && typeof ask.then === 'function') {
+      ask
+        .then((granted) => {
+          try {
+            useStore.setState({ storagePersisted: granted === true })
+          } catch {}
+        })
+        .catch(() => {})
+    }
+  } catch {}
 }
 

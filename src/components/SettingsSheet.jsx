@@ -54,6 +54,8 @@ export default function SettingsSheet() {
   const setOpen = useStore((s) => s.setSettingsOpen)
   const persistFailed = useStore((s) => s.persistFailed)
   const dataQuarantined = useStore((s) => s.dataQuarantined)
+  const dataPreservationFailed = useStore((s) => s.dataPreservationFailed)
+  const storagePersisted = useStore((s) => s.storagePersisted)
   const voiceURI = useStore((s) => s.voiceURI)
   const setVoiceURI = useStore((s) => s.setVoiceURI)
   const speechRate = useStore((s) => s.speechRate)
@@ -351,7 +353,15 @@ export default function SettingsSheet() {
 
         {dataQuarantined && (
           <div className="save-warning" role="alert">
-            {t('settings.dataQuarantined')}
+            {dataPreservationFailed
+              ? t('settings.dataPreservationFailed')
+              : t('settings.dataQuarantined')}
+          </div>
+        )}
+
+        {storagePersisted === false && !isAppShell() && (
+          <div className="save-warning" role="status">
+            {t('settings.storageNotPersisted')}
           </div>
         )}
 

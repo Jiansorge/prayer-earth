@@ -312,4 +312,6 @@ export default {
   'sound.speed': '速度',
   'settings.saveFailed': '此设备上未能保存你的祈祷计数。请释放一些空间或换用其他浏览器——当前会话仍在计数。',
   'settings.dataQuarantined': '部分已保存的数据无法读取，因此我们保留了副本而不是将其删除。之后的新记录不会再减少你的总数。',
+  'settings.dataPreservationFailed': '部分已保存的数据无法读取，我们也未能保留其副本。您已从头开始——请从现在起定期备份。',
+  'settings.storageNotPersisted': '浏览器未授予持久存储，因此此历史记录可能会被自动清除。请先备份。',
 };

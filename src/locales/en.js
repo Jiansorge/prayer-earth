@@ -374,4 +374,6 @@ export default {
   'sound.speed': 'Speed',
   'settings.saveFailed': 'Your prayer counts are not being saved on this device. Free up some storage or try a different browser — your current session is still counting.',
   'settings.dataQuarantined': 'Some of your saved data could not be read, so a copy of it was kept instead of being deleted. New entries can no longer reduce your total.',
+  'settings.dataPreservationFailed': 'Some of your saved data could not be read, and we could not keep a copy of it either. You have started fresh - please back up regularly from now on.',
+  'settings.storageNotPersisted': 'Your browser did not grant persistent storage, so this history could be cleared automatically. Please make a backup.',
 };

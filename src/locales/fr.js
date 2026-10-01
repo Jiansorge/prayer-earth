@@ -403,4 +403,6 @@ export default {
   'sound.speed': 'Vitesse',
   'settings.saveFailed': 'Vos compteurs de prière ne sont pas enregistrés sur cet appareil. Libérez de l\'espace ou essayez un autre navigateur — la session en cours continue de compter.',
   'settings.dataQuarantined': 'Certaines de vos données enregistrées étaient illisibles ; une copie a donc été conservée au lieu d’être supprimée. Les nouvelles écritures ne peuvent plus réduire votre total.',
+  'settings.dataPreservationFailed': 'Certaines de vos données enregistrées étaient illisibles et nous n’avons pas pu en garder de copie. Vous repartez de zéro : faites des sauvegardes régulières.',
+  'settings.storageNotPersisted': 'Votre navigateur n’a pas accordé de stockage persistant : cet historique pourrait être effacé automatiquement. Faites une sauvegarde.',
 };

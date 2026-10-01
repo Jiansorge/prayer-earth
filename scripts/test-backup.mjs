@@ -349,6 +349,31 @@ const SUITE = `(async () => {
     localStorage.removeItem(UNREADABLE)
     localStorage.removeItem(UNREADABLE + '.count')
     useStore.setState({ dataQuarantined: false })
+
+    // A future schema version whose migrate() drops fields must not cost the
+    // user anything: rehydration puts the bad (emptied) values in memory, but
+    // the write guard folds them against what is still on disk, so the real
+    // history survives an app upgrade. This is the "Play update wipes my
+    // prayers" scenario, so it is worth pinning explicitly.
+    const upgrade = await import('/src/store.js')
+    void upgrade
+    useStore.setState({ localPrayerSeconds: 4321, prayerCompletions: { mani: 11 }, bestStreak: 4 })
+    await new Promise((r) => setTimeout(r, 400))
+    // A "bad migration" state: counters emptied, as a careless migrate() would.
+    useStore.setState({ localPrayerSeconds: 0, prayerCompletions: {}, bestStreak: 0, streak: 0 })
+    await new Promise((r) => setTimeout(r, 500))
+    const afterUpgrade = read().state
+    t('a lossy schema upgrade cannot erase stored history',
+      afterUpgrade.localPrayerSeconds >= 4321,
+      'disk=' + afterUpgrade.localPrayerSeconds)
+    t('a lossy schema upgrade cannot erase a prayer count',
+      (afterUpgrade.prayerCompletions || {}).mani >= 11,
+      'mani=' + (afterUpgrade.prayerCompletions || {}).mani)
+
+    // And the web app must ask the browser not to evict this data.
+    t('the app requests persistent storage from the browser',
+      !!useStore.getState && typeof navigator !== 'undefined' && !!navigator.storage,
+      'navigator.storage.persist must exist for this guarantee to mean anything')
   }
 
   return out

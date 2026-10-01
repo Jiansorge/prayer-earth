@@ -1,35 +1,37 @@
-feat(store): make losing prayer data structurally impossible, and prove it
+fix(store): close the two remaining ways values could be erased
 
-Backups are the last line of defence, not the first. I destroyed real prayer
-data on a physical phone with a buggy test, and the honest lesson is that the app
-and the suite should be unable to do that at all. Three layers:
+A five-pass review of the value-preservation guarantees, each pass hunting a
+different loss vector. Two real holes found, both now closed.
 
-1. THE STORE WILL NOT PERSIST A LOSS (the important one).
-   src/store.js safeStorage.setItem now folds every write into whatever is
-   already stored, using the same max-merge semantics as sync. Counters, day maps
-   and bestStreak can only ever be written HIGHER, and a lower payload is merged
-   up rather than written down. Previously any code path - a bug, a bad restore,
-   a test - could shrink a user's history on its way to disk. The anonId is
-   preserved too, since losing it would orphan the server-side history.
+HOLE 1 - the quarantine could itself silently fail.
+The unreadable-value quarantine swallowed every error, so if the copy could not
+be written (storage full, private mode) the app still returned null, rehydrated
+onto defaults, and overwrote the unreadable value on the next tick: the exact
+destruction the quarantine exists to prevent. quarantine() now reports whether
+it preserved anything, and a failure raises dataPreservationFailed, which is
+surfaced with its own message rather than a reassuring "we saved a copy".
 
-2. UNREADABLE DATA IS QUARANTINED, NEVER ERASED.
-   getItem now validates before handing a value to the app. A truncated or
-   corrupted entry used to be replaced by a default state on the very next
-   write, destroying real history with no trace. It is now moved to
-   <key>.unreadable, counted, and surfaced in Settings, so it can be recovered
-   by hand instead of vanishing.
+HOLE 2 - the web app never asked the browser to keep the data.
+localStorage is evictable. Browsers may and do clear it for sites they judge
+low priority, under disk pressure, or after long absence, and the app never
+asked otherwise. For a product whose entire promise is that prayer history is
+never lost, that is an unacceptable dependency on luck. The app now calls
+navigator.storage.persist() at startup and records the answer, warning the user
+in Settings if it was refused. (The Android build writes to app-private storage,
+which the OS does not evict, so this is a web-only hole - confirmed by the
+existing merged-manifest audit.)
 
-3. THE SUITE PROVES IT DID NOT LOSE ANYTHING.
-   The Android device test captures the app totals before it runs and re-checks
-   at the very end: any test that reduced the seconds, erased a prayer count, or
-   changed the anonId fails the suite. This is the layer that would catch the
-   NEXT destructive test - which the CI emulator structurally cannot do, because
-   it has no data to lose.
+Verified clean on the other passes, rather than assumed:
+- no clear/reset/wipe path exists anywhere in src (the only .clear() is an audio
+  buffer)
+- setProfile merges a patch, and setPrayerTotals/setSpiritTotals already
+  max-merge, so neither can zero data
+- Android persists synchronously with no debounce, so a hard process kill
+  cannot lose a write
+- prayerDayStats[day][prayerId] is a plain number, so the two-level max-merge in
+  neverLoseData is correct for it
 
-Verification: 16 new assertions (56 total in test-backup) cover the merge guard,
-neverLoseData directly, and the quarantine path. The suite-wide invariant was
-confirmed on a Pixel 7 against real data: 20s/mani 4 -> 38s/mani 8, anonId
-unchanged.
-
-One existing assertion had to be relaxed: it expected a restore to write an
-exact stored value, which the new guard correctly prevents from ever going down.
+Plus an explicit test for the case that was only reasoned about: a lossy schema
+upgrade (a future migrate() that drops fields) rehydrates emptied counters into
+memory, and the write guard folds them against what is on disk, so a Play update
+cannot erase history. 59 assertions now.
