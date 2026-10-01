@@ -140,13 +140,7 @@ class SyncClient {
 
   start() {
     this.stop()
-    this.ensureLocation()
-    // settle on a stable name the very first time (the random one is saved so
-    // the world knows you the next time you arrive)
-    if (!useStore.getState().profile.name) {
-      useStore.getState().setProfile({ name: pickName() })
-    }
-    this.name = profileName()
+    this.applyPresenceConsent()
     this.connect()
     // when the tab comes back, sync anything prayed while it was away
     this._vis = () => {
@@ -172,6 +166,40 @@ class SyncClient {
   // are. If it's not granted or available, fall back to a stable stand-in
   // city so your prayer still lands somewhere on the map. This is fully
   // local, no location ever leaves the device.
+  // Reconcile local consent with what we actually request and transmit.
+  //
+  // Presence is opt-in, so the location permission must not be requested and no
+  // name may be invented until the user has actually said yes. Reused when the
+  // toggle flips mid-session, so turning it off takes effect immediately rather
+  // than at the next launch.
+  applyPresenceConsent() {
+    const s = useStore.getState()
+    if (!s.sharePresence) {
+      // Drop the fix, and clear the "you are here" ring, so nothing derived from
+      // a position the user has since withdrawn is left on screen.
+      this.loc = null
+      useStore.getState().setYouLoc(null)
+      this.name = ''
+      return
+    }
+    this.ensureLocation()
+    // settle on a stable name the very first time (the random one is saved so
+    // the world knows you the next time you arrive)
+    if (!useStore.getState().profile.name) {
+      useStore.getState().setProfile({ name: pickName() })
+    }
+    this.name = profileName()
+  }
+
+  // Called by the Settings toggle. Re-broadcasts straight away so withdrawing
+  // consent does not leave the previous name and cell live on the server until
+  // the next 30 s tick.
+  setPresenceSharing(on) {
+    useStore.getState().setSharePresence(on)
+    this.applyPresenceConsent()
+    if (this.mode === 'live') this.sendPresence()
+  }
+
   ensureLocation() {
     // The "you are here" ring is only ever shown for a REAL position. A
     // fallback city is an anonymous guess for the world's light; we never
@@ -328,6 +356,22 @@ class SyncClient {
     if (this.mode !== 'live') {
       // Offline, keep the local world in sync with the user's own prayer.
       if (this.mode === 'sim' && this.sim) this.simState()
+      return
+    }
+    // Nothing identifying goes out unless the user opted in. We still send a
+    // presence frame (all nulls) while opted out, because an explicit
+    // withdrawal is what clears the name and cell the server may already hold
+    // for this session - silence would just let the last values linger.
+    if (!s.sharePresence) {
+      this.engine.send({
+        type: C_PRESENCE,
+        praying: false,
+        prayerId: null,
+        spiritId: null,
+        sessionId: null,
+        name: null,
+        cell: null
+      })
       return
     }
     const grid = this.loc ? this.gridLoc(this.loc) : null

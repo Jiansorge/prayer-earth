@@ -35,6 +35,20 @@ function WorldFeed({ limit = 10, compact = false }) {
     [feed, limit]
   )
 
+  // Presence is opt-in, so a brand-new user legitimately sees nobody. Saying so
+  // is better than an empty panel that looks broken, and it points at the one
+  // control that changes it.
+  if (!items.length && !useStore.getState().sharePresence) {
+    return (
+      <div className="world-feed compact-only">
+        <div className="world-feed-title">
+          <span className="feed-pulse" /> {t('feed.prayingNow')}
+        </div>
+        <div className="world-feed-empty">{t('feed.presenceOff')}</div>
+      </div>
+    )
+  }
+
   if (!items.length) return null
 
   return (

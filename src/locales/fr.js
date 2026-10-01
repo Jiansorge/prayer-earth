@@ -280,14 +280,12 @@ export default {
   'legal.priv5': 'Nous ne vendons pas de données et n\u2019affichons pas de publicité.',
   'legal.priv6':
     'Quand vous vous connectez, les serveurs voient brièvement une adresse réseau et peuvent traiter des données dans des centres de données situés hors de votre pays. Notre fournisseur d\u2019hébergement et de CDN (Cloudflare) est conforme au GDPR.',
-  'legal.priv7':
-    'Joining Palms ne collecte aucune information personnelle auprès des enfants et peut être utilisé par des personnes de tous âges.',
+'legal.priv7': 'Joining Palms ne collecte aucune information personnelle sur les enfants. Comme l’application peut afficher un nom et une région à d’autres personnes, nous la proposons aux adultes sur Google Play. Si un enfant utilise la version web, un adulte doit la configurer et décider de ce qui est partagé.',
   'legal.priv8':
     'La présence en direct n\u2019est conservée que pendant qu\u2019une session est active et est normalement purgée après environ 60 secondes sans mise à jour. Le fil d\u2019activité récente est une fenêtre en mémoire limitée. Séparément, l\u2019app peut envoyer un identifiant d\u2019appareil aléatoire et anonyme et des compteurs à vie afin que les totaux puissent se fusionner entre les sessions ; ces enregistrements durables ne contiennent ni nom choisi, ni e-mail, ni position précise, mais vider le stockage du navigateur ne les supprime pas automatiquement. Contactez-nous pour toute question sur un enregistrement de données.',
-  'legal.priv9':
-    'Le nom affiché que vous choisissez dans les paramètres est montré aux autres pendant que vous priez, exactement comme un nom d\u2019utilisateur : utilisez n\u2019importe quel nom, jamais un vrai.',
+'legal.priv9': 'Le nom affiché que vous choisissez dans les Réglages est montré aux autres pendant que vous priez, exactement comme un nom d’utilisateur : choisissez-en un librement, jamais le vôtre. Si vous le laissez vide, un nom inventé est utilisé. Cela n’arrive que tant que « Montrer ma prière aux autres » est activé. C’est désactivé par défaut, et tant que c’est le cas, votre nom n’est envoyé nulle part.',
   'legal.priv10': 'Nous utilisons une analyse web respectueuse de la vie privée et sans cookies (Cloudflare Web Analytics) pour compter les visites et mesurer les performances. Elle ne dépose aucun cookie, ne construit aucun profil et ne vous suit pas sur d’autres sites. Elle n’est jamais utilisée pour savoir quelles priez vous choisissez. Vous pouvez la bloquer totalement, l’application fonctionne à l’identique.',
-  'legal.priv11': 'Votre position sert uniquement à placer votre lumière sur la carte, et seulement de façon approximative. L’application demande à Android une position approximative, l’arrondit, et le serveur reçoit une case de grille plutôt que vos coordonnées. Nous ne demandons ni ne conservons de position précise. Si vous refusez, la région est approximée à partir du fuseau horaire de votre appareil, de sorte qu’une prière n’est jamais perdue.',
+'legal.priv11': 'Votre position sert uniquement à placer votre lumière sur la carte, et seulement tant que « Montrer ma prière aux autres » est activé. L’application demande à Android une position approximative, l’arrondit, et le serveur reçoit une cellule d’environ 100 km plutôt que vos coordonnées. Nous ne demandons ni ne conservons de position précise. Si vous refusez, la région est déduite du fuseau horaire de votre appareil, afin qu’aucune prière ne soit perdue.',
   'legal.contactEmail': 'care@joining-palms.app',
   'legal.termsTitle': 'Conditions',
   'legal.termsBody':
@@ -296,8 +294,7 @@ export default {
     'Joining Palms est un lieu calme pour prier ensemble avec le monde. Cette page explique, en langage simple, ce que l\u2019app sait de vous et comment elle l\u2019utilise.',
   'legal.pWhatTitle': 'Ce que nous collectons',
   'legal.pUseTitle': 'Comment c\u2019est utilisé',
-  'legal.pUseBody':
-    'Votre présence anonyme (un nom inventé et une région approximative) n\u2019est montrée aux autres que comme une lumière sur la Terre. Quand vous n\u2019accordez pas la permission de localisation, la région est approximée à partir de votre fuseau horaire — toujours approximative, jamais une adresse précise. Rien n\u2019est vendu ni partagé avec des annonceurs.',
+'legal.pUseBody': 'Votre présence n’est publiée que si vous activez « Montrer ma prière aux autres » dans les Réglages. Tant qu’il est actif, les personnes qui prient à cet instant peuvent voir le nom que vous avez choisi et une région d’environ 100 km autour de vous, dans le fil du monde et sous forme de lumière sur la Terre. Ce nom et cette région ne sont conservés qu’en mémoire pendant la session et sont supprimés après environ 60 secondes. Rien n’est vendu ni partagé avec des annonceurs.',
   'legal.pRightsTitle': 'Vos droits',
   'legal.pRightsBody':
     'Comme la plupart de vos données ne quittent jamais votre appareil, vous les contrôlez déjà : vider le stockage du navigateur supprime votre historique de prières et vos préférences. Vous pouvez cesser d\u2019utiliser l\u2019app à tout moment.',
@@ -419,4 +416,8 @@ export default {
   'settings.dataQuarantined': 'Certaines de vos données enregistrées étaient illisibles ; une copie a donc été conservée au lieu d’être supprimée. Les nouvelles écritures ne peuvent plus réduire votre total.',
   'settings.dataPreservationFailed': 'Certaines de vos données enregistrées étaient illisibles et nous n’avons pas pu en garder de copie. Vous repartez de zéro : faites des sauvegardes régulières.',
   'settings.storageNotPersisted': 'Votre navigateur n’a pas accordé de stockage persistant : cet historique pourrait être effacé automatiquement. Faites une sauvegarde.',
+  'settings.secPresence': 'Partage',
+  'settings.sharePresence': 'Montrer ma prière aux autres',
+  'settings.sharePresenceHint': "Lorsque cette option est désactivée, rien à votre sujet n'est envoyé : ni nom, ni région, et l'application ne demande jamais votre position. Activée, le nom que vous avez choisi et une zone d'environ 100 km autour de vous apparaissent dans le fil du monde pendant votre prière. Votre historique et vos sauvegardes ne sont jamais affectés.",
+  'feed.presenceOff': 'Vous priez en privé. Activez « Montrer ma prière aux autres » dans les Réglages pour apparaître ici.',
 };

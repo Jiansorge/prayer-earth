@@ -280,13 +280,12 @@ export default {
   'legal.priv5': 'No vendemos datos ni mostramos anuncios.',
   'legal.priv6':
     'Cuando te conectas, los servidores ven brevemente una dirección de red y pueden procesar datos en centros de datos fuera de tu país. Nuestro proveedor de alojamiento y CDN (Cloudflare) cumple con el GDPR.',
-  'legal.priv7': 'Joining Palms no recopila información personal de los niños y puede ser utilizado por personas de todas las edades.',
+'legal.priv7': 'Joining Palms no recopila información personal de menores. Como puede mostrar un nombre y una región a otras personas, en Google Play lo ofrecemos a adultos. Si un menor usa la versión web, un adulto debe configurarla y decidir qué se comparte.',
   'legal.priv8':
     'La presencia en vivo se mantiene solo mientras una sesión está activa y normalmente se elimina después de unos 60 segundos sin actualización. El flujo de actividad reciente es una ventana limitada en memoria. Por otra parte, la app puede enviar un identificador de dispositivo anónimo y aleatorio y contadores de por vida para que los totales puedan unificarse entre sesiones; esos registros duraderos no contienen nombre elegido, correo ni ubicación precisa, pero borrar el almacenamiento del navegador no los elimina automáticamente. Contáctanos para consultar sobre un registro de datos.',
-  'legal.priv9':
-    'El nombre visible que elijas en Ajustes se muestra a los demás mientras rezas, igual que un nombre de usuario: usa cualquier nombre, nunca uno real.',
+'legal.priv9': 'El nombre que eliges en Ajustes se muestra a otras personas mientras rezas, igual que un nombre de usuario: usa cualquier nombre, nunca el real. Si lo dejas vacío, se usa uno inventado. Esto solo ocurre mientras «Mostrar mi oración a los demás» está activado. Está desactivado hasta que lo actives, y mientras lo esté, tu nombre no se envía a ninguna parte.',
   'legal.priv10': 'Usamos analítica web respetuosa con la privacidad y sin cookies (Cloudflare Web Analytics) para contar visitas y medir el rendimiento. No coloca cookies, no crea perfiles y no te sigue por otros sitios. Nunca se usa para saber qué rezas eliges. Puedes bloquearlo por completo y la app funciona igual.',
-  'legal.priv11': 'Tu ubicación se usa solo para colocar tu luz en el mapa, y solo de forma aproximada. La app pide a Android una ubicación aproximada, la redondea, y el servidor recibe una celda de la cuadrícula en lugar de tus coordenadas. No solicitamos ni almacenamos una ubicación precisa. Si la rechazas, la región se aproxima a partir de la zona horaria de tu dispositivo, así que nunca se pierde una oración.',
+'legal.priv11': 'Tu ubicación solo se usa para colocar tu luz en el mapa, y solo mientras «Mostrar mi oración a los demás» está activado. La app pide a Android una ubicación aproximada, la redondea y el servidor recibe una celda de unos 100 km en lugar de tus coordenadas. No solicitamos ni almacenamos una ubicación precisa. Si la rechazas, la región se aproxima a partir de la zona horaria de tu dispositivo, para que nunca se pierda una oración.',
   'legal.contactEmail': 'care@joining-palms.app',
   'legal.termsTitle': 'Términos',
   'legal.termsBody':
@@ -295,8 +294,7 @@ export default {
     'Joining Palms es un lugar tranquilo para rezar junto con el mundo. Esta página explica, en lenguaje sencillo, qué sabe la app sobre ti y cómo se usa.',
   'legal.pWhatTitle': 'Qué recopilamos',
   'legal.pUseTitle': 'Cómo se usa',
-  'legal.pUseBody':
-    'Tu presencia anónima (un nombre inventado y una región aproximada) se muestra a los demás solo como una luz en la Tierra. Cuando no concedes permiso de ubicación, la región se aproxima a partir de tu zona horaria — sigue siendo aproximada, nunca una dirección precisa. Nada se vende ni se comparte con anunciantes.',
+'legal.pUseBody': 'Tu presencia no se publica salvo que actives «Mostrar mi oración a los demás» en Ajustes. Mientras está activo, quienes rezan en ese momento pueden ver el nombre que elegiste y una región de unos 100 km a tu alrededor, tanto en el feed mundial como en la luz del mapa. Ese nombre y esa región se guardan solo en memoria mientras dura la sesión y normalmente se borran tras unos 60 segundos. No se vende nada ni se comparte con anunciantes.',
   'legal.pRightsTitle': 'Tus derechos',
   'legal.pRightsBody':
     'Como la mayor parte de tus datos nunca sale de tu dispositivo, ya los controlas: borrar el almacenamiento del navegador elimina tu historial de oraciones y tus preferencias. Puedes dejar de usar la app en cualquier momento.',
@@ -421,4 +419,8 @@ export default {
   'settings.dataQuarantined': 'Una parte de tus datos guardados no se pudo leer, así que se conservó una copia en lugar de eliminarla. Las nuevas entradas ya no pueden reducir tu total.',
   'settings.dataPreservationFailed': 'Una parte de tus datos guardados no se pudo leer y tampoco pudimos conservar una copia. Has empezado de cero: haz copias de seguridad con regularidad.',
   'settings.storageNotPersisted': 'Tu navegador no concedió almacenamiento persistente, por lo que este historial podría borrarse automáticamente. Haz una copia de seguridad.',
+  'settings.secPresence': 'Compartir',
+  'settings.sharePresence': 'Mostrar mi oración a los demás',
+  'settings.sharePresenceHint': 'Cuando está desactivado, no se envía nada sobre ti: ni nombre ni región, y la aplicación nunca pide tu ubicación. Cuando está activado, el nombre que elegiste y un área de unos 100 km a tu alrededor aparecen en el feed mundial mientras rezas. Tu registro de oración y tus copias de seguridad nunca se ven afectados.',
+  'feed.presenceOff': 'Estás rezando en privado. Activa «Mostrar mi oración a los demás» en Ajustes para aparecer aquí.',
 };

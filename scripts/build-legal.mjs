@@ -207,12 +207,25 @@ writeFileSync(
 // address serves the privacy policy, the terms and this page.)
 
 const deleteBody = `
-      <p><strong>Joining Palms has no accounts, no sign-in, and no email address.</strong>
-      We identify your records only by a random anonymous ID that was generated
-      on your device. To delete them, we need that ID, and you are the only
-      person who has it.</p>
+      <p><strong>The fastest way is the app itself.</strong> Joining Palms has no
+      accounts and no sign-in, so there is nothing to log out of &mdash; but you
+      can erase your own data yourself, without emailing anyone and without
+      waiting.</p>
 
-      <h2>1. Get your anonymous ID</h2>
+      <h2>1. Delete it in the app</h2>
+      <p>Open <strong>Joining Palms</strong> &rarr; <strong>Settings</strong> &rarr;
+      <strong>Delete my data permanently</strong>, then confirm. The app asks the
+      server to erase your record and clears the data on your device once the
+      server confirms. If the request cannot be completed, nothing is deleted and
+      your data stays exactly where it is.</p>
+      <p>You will get a new anonymous ID afterwards and start fresh.</p>
+
+      <h2>If you cannot use the app</h2>
+      <p>Joining Palms identifies your records only by a random anonymous ID
+      generated on your device, and you are the only person who has it. To have
+      us delete it manually:</p>
+
+      <h3>Get your anonymous ID</h3>
       <p>Open <strong>Joining Palms</strong> &rarr; <strong>Settings</strong> &rarr;
       <strong>Backup &amp; restore</strong>, then tap
       <strong>Copy anonymous ID</strong> and paste the code here in your email.</p>
@@ -220,13 +233,13 @@ const deleteBody = `
       well: Settings &rarr; Backup &amp; restore &rarr; <strong>Copy recovery code</strong>,
       and email us the whole thing. It contains the same anonymous ID.</p>
 
-      <h2>2. Send it to us</h2>
+      <h3>Send it to us</h3>
       <p>Email <a href="mailto:${CONTACT}?subject=Delete%20my%20Joining%20Palms%20data">${CONTACT}</a>
       with the subject <strong>Delete my Joining Palms data</strong> and the
       anonymous ID in the body. No other information is needed, and we will not
       ask you for one.</p>
 
-      <h2>3. We delete it</h2>
+      <h3>We delete it</h3>
       <p>We remove the record within <strong>30 days</strong> and email you to
       confirm once it is gone. If we cannot find a record for the ID you sent, we
       will tell you that too.</p>

@@ -283,13 +283,12 @@ export default {
   'legal.priv5': 'Chúng tôi không bán dữ liệu và không hiển thị quảng cáo.',
   'legal.priv6':
     'Khi bạn kết nối, các máy chủ thoáng thấy một địa chỉ mạng và có thể xử lý dữ liệu tại các trung tâm dữ liệu ngoài quốc gia của bạn. Nhà cung cấp lưu trữ và CDN của chúng tôi (Cloudflare) tuân thủ GDPR.',
-  'legal.priv7': 'Joining Palms không thu thập thông tin cá nhân nào từ trẻ em và có thể được sử dụng bởi mọi lứa tuổi.',
+'legal.priv7': 'Joining Palms không thu thập thông tin cá nhân từ trẻ em. Vì ứng dụng có thể hiện tên hiển thị và khu vực cho người khác, chúng tôi cung cấp nó cho người lớn trên Google Play. Nếu trẻ em dùng bản web, nên có người lớn thiết lập và quyết định chia sẻ gì.',
   'legal.priv8':
     'Sự hiện diện trực tiếp chỉ được giữ trong khi một phiên đang hoạt động và thường bị quét bỏ sau khoảng 60 giây không có cập nhật. Dòng hoạt động gần đây là một cửa sổ bộ nhớ có giới hạn. Riêng biệt, ứng dụng có thể gửi một định danh thiết bị ẩn danh ngẫu nhiên và các bộ đếm trọn đời để tổng số có thể hợp nhất qua các phiên; những bản ghi bền vững này không chứa tên đã chọn, email hoặc vị trí chính xác, nhưng việc xóa bộ nhớ trình duyệt không tự động xóa chúng. Hãy liên hệ với chúng tôi để hỏi về một bản ghi dữ liệu.',
-  'legal.priv9':
-    'Tên hiển thị bạn chọn trong Cài đặt được hiển thị cho người khác trong khi bạn cầu nguyện, giống hệt như một tên người dùng; hãy dùng bất kỳ tên nào, nhưng đừng bao giờ dùng tên thật.',
+'legal.priv9': 'Tên hiển thị bạn chọn trong Cài đặt sẽ hiện với người khác khi bạn cầu xin, giống hệt một tên người dùng — hãy chọn bất kỳ tên nào, tuyệt đối không dùng tên thật. Nếu để trống, một tên được nghĩ ra sẽ được dùng. Điều này chỉ xảy ra khi “Cho người khác thấy lời cầu xin của tôi” đang bật. Mặc định nó tắt, và khi tắt, tên của bạn không được gửi đi đâu cả.',
   'legal.priv10': 'Chúng tôi dùng phân tích web tôn trọng quyền riêng tư và không dùng cookie (Cloudflare Web Analytics) để đếm lượt truy cập và đo hiệu năng. Nó không đặt cookie, không tạo hồ sơ, và không theo dõi bạn trên các trang khác. Nó không bao giờ được dùng để biết bạn chọn lời cầu nguyện nào. Bạn có thể chặn hoàn toàn và ứng dụng vẫn hoạt động y hệt.',
-  'legal.priv11': 'Vị trí của bạn chỉ được dùng để đặt ánh sáng của bạn lên bản đồ, và chỉ ở mức tổng quát. Ứng dụng yêu cầu Android một vị trí gần đúng, làm tròn nó, và máy chủ nhận một ô lưới thay vì tọa độ của bạn. Chúng tôi không yêu cầu cũng không lưu vị trí chính xác. Nếu bạn từ chối, khu vực sẽ được ước lượng từ múi giờ của thiết bị, nên lời cầu nguyện không bao giờ bị mất.',
+'legal.priv11': 'Vị trí của bạn chỉ dùng để đặt ánh sáng của bạn lên bản đồ, và chỉ khi “Cho người khác thấy lời cầu xin của tôi” đang bật. Ứng dụng hỏi Android vị trí gần đúng, làm tròn nó, và máy chủ nhận một ô lưới khoảng 100 km thay vì tọa độ của bạn. Chúng tôi không yêu cầu cũng không lưu vị trí chính xác. Nếu bạn từ chối, khu vực được ước lượng từ múi giờ của thiết bị, để không lời cầu xin nào bị mất.',
   'legal.contactEmail': 'care@joining-palms.app',
   'legal.termsTitle': 'Điều khoản',
   'legal.termsBody':
@@ -298,8 +297,7 @@ export default {
     'Joining Palms là một nơi lặng lẽ để cầu nguyện cùng thế giới. Trang này giải thích, bằng ngôn ngữ đơn giản, những gì ứng dụng biết về bạn và cách nó được sử dụng.',
   'legal.pWhatTitle': 'Những gì chúng tôi thu thập',
   'legal.pUseTitle': 'Cách dữ liệu được sử dụng',
-  'legal.pUseBody':
-    'Sự hiện diện ẩn danh của bạn (một cái tên tự đặt và một vùng thô) được hiển thị cho người khác chỉ như một ánh sáng trên Trái Đất. Khi bạn không cấp quyền định vị, vùng được ước lượng từ múi giờ của bạn — vẫn thô, không bao giờ là một địa chỉ chính xác. Không có gì được bán hoặc chia sẻ với các nhà quảng cáo.',
+'legal.pUseBody': 'Sự hiện diện của bạn hoàn toàn không được công bố trừ khi bạn bật “Cho người khác thấy lời cầu xin của tôi” trong Cài đặt. Khi đang bật, những người đang cầu xin vào thời điểm đó có thể thấy tên hiển thị bạn đã chọn và khu vực khoảng 100 km quanh bạn, cả trong bảng thế giới lẫn dưới dạng một ánh sáng trên bản đồ. Tên và khu vực đó chỉ nằm trong bộ nhớ suốt phiên và thường bị xóa sau khoảng 60 giây. Không có gì được bán hoặc chia sẻ với nhà quảng cáo.',
   'legal.pRightsTitle': 'Quyền của bạn',
   'legal.pRightsBody':
     'Vì hầu hết dữ liệu của bạn không bao giờ rời khỏi thiết bị, bạn đã kiểm soát nó: xóa bộ nhớ trình duyệt sẽ xóa lịch sử cầu nguyện và tùy chọn của bạn. Bạn có thể ngừng sử dụng ứng dụng bất cứ lúc nào.',
@@ -422,4 +420,8 @@ export default {
   'settings.dataQuarantined': 'Một phần dữ liệu đã lưu không đọc được, nên chúng tôi giữ lại một bản sao thay vì xóa. Các lượt ghi mới không thể làm giảm tổng của bạn nữa.',
   'settings.dataPreservationFailed': 'Một phần dữ liệu đã lưu không đọc được và chúng tôi cũng không lưu được bản sao. Bạn đã bắt đầu lại từ đầu — hãy sao lưu thường xuyên.',
   'settings.storageNotPersisted': 'Trình duyệt của bạn không cấp kho lưu trữ lâu dài, nên lịch sử này có thể bị xóa tự động. Hãy sao lưu.',
+  'settings.secPresence': 'Chia sẻ',
+  'settings.sharePresence': 'Cho người khác thấy lời cầu xin của tôi',
+  'settings.sharePresenceHint': 'Khi tắt, không có gì về bạn được gửi đi: không tên, không khu vực, và ứng dụng không bao giờ hỏi vị trí của bạn. Khi bật, tên bạn đã chọn và khu vực khoảng 100 km quanh bạn sẽ xuất hiện trong bảng thế giới trong lúc bạn cầu xin. Lịch sử cầu xin và bản sao lưu của bạn không bao giờ bị ảnh hưởng.',
+  'feed.presenceOff': 'Bạn đang cầu xin riêng tư. Bật “Cho người khác thấy lời cầu xin của tôi” trong Cài đặt để xuất hiện ở đây.',
 };

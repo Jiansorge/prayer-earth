@@ -280,13 +280,12 @@ export default {
   'legal.priv5': 'Wir verkaufen keine Daten und zeigen keine Werbung.',
   'legal.priv6':
     'Wenn du dich verbindest, sehen die Server kurzzeitig eine Netzwerkadresse und können Daten in Rechenzentren außerhalb deines Landes verarbeiten. Unser Hosting- und CDN-Anbieter (Cloudflare) ist GDPR-konform.',
-  'legal.priv7': 'Joining Palms erhebt keine personenbezogenen Daten von Kindern und kann von Menschen jeden Alters genutzt werden.',
+'legal.priv7': 'Joining Palms erhebt keine personenbezogenen Daten von Kindern. Da die App anderen Menschen einen Anzeigenamen und eine Region zeigen kann, bieten wir sie auf Google Play nur für Erwachsene an. Nutzt ein Kind die Webversion, sollte ein Erwachsener sie einrichten und entscheiden, was geteilt wird.',
   'legal.priv8':
     'Die Live-Präsenz wird nur aufbewahrt, solange eine Sitzung aktiv ist, und normalerweise nach etwa 60 Sekunden ohne Aktualisierung entfernt. Der Feed der letzten Aktivitäten ist ein begrenztes In-Memory-Fenster. Zusätzlich kann die App eine zufällige anonyme Gerätekennung und Lebenszeit-Zähler senden, damit die Summen über Sitzungen hinweg zusammengeführt werden können; diese dauerhaften Datensätze enthalten keinen gewählten Namen, keine E-Mail und keinen präzisen Standort, aber das Löschen der Browserdaten entfernt sie nicht automatisch. Kontaktiere uns, um nach einem Datensatz zu fragen.',
-  'legal.priv9':
-    'Der Anzeigename, den du in den Einstellungen wählst, wird anderen während des Betens angezeigt, genau wie ein Benutzername. Verwende jeden Namen, niemals einen echten.',
+'legal.priv9': 'Der Anzeigename, den du in den Einstellungen wählst, wird anderen Menschen gezeigt, während du betest – genau wie ein Benutzername. Verwende also einen beliebigen Namen, niemals deinen echten. Lässt du ihn leer, wird ein erfundener Name verwendet. Das geschieht nur, solange „Mein Gebet anderen zeigen“ eingeschaltet ist. standardmäßig ist es aus, und solange es aus ist, wird dein Name nirgendwohin gesendet.',
   'legal.priv10': 'Wir verwenden datenschutzfreundliche, cookiefreie Webanalyse (Cloudflare Web Analytics), um Besuche zu zählen und die Leistung zu messen. Sie setzt keine Cookies, erstellt kein Profil und verfolgt dich nicht über andere Websites. Sie wird nie verwendet, um zu sehen, welche Gebete du wählst. Du kannst sie vollständig blockieren; die App funktioniert genau gleich.',
-  'legal.priv11': 'Dein Standort wird nur genutzt, um dein Licht auf der Karte zu platzieren, und zwar nur ungefähr. Die App fragt Android nach einem ungefähren Standort, rundet ihn, und der Server erhält eine Rasterzelle statt deiner Koordinaten. Wir fordern keinen präzisen Standort an und speichern keinen. Wenn du ablehnst, wird die Region stattdessen aus der Zeitzone deines Geräts angenähert, sodass kein Gebet verloren geht.',
+'legal.priv11': 'Dein Standort wird nur genutzt, um dein Licht auf der Karte zu platzieren, und nur solange „Mein Gebet anderen zeigen“ eingeschaltet ist. Die App fragt Android nach einem ungefähren Standort, rundet ihn, und der Server erhält eine Rasterzelle von etwa 100 km statt deiner Koordinaten. Wir fordern keinen präzisen Standort an und speichern ihn nicht. Wenn du ablehnst, wird die Region stattdessen aus der Zeitzone deines Geräts abgeleitet, sodass nie ein Gebet verloren geht.',
   'legal.contactEmail': 'care@joining-palms.app',
   'legal.termsTitle': 'Nutzungsbedingungen',
   'legal.termsBody':
@@ -295,8 +294,7 @@ export default {
     'Joining Palms ist ein stiller Ort, um gemeinsam mit der Welt zu beten. Diese Seite erklärt in einfacher Sprache, was die App über dich weiß und wie es verwendet wird.',
   'legal.pWhatTitle': 'Was wir erheben',
   'legal.pUseTitle': 'Wie es verwendet wird',
-  'legal.pUseBody':
-    'Deine anonyme Präsenz (ein erfundener Name und eine grobe Region) wird anderen nur als Licht auf der Erde angezeigt. Wenn du keine Standortberechtigung erteilst, wird die Region aus deiner Zeitzone abgeleitet — weiterhin grob, niemals eine präzise Adresse. Es wird nichts verkauft oder mit Werbetreibenden geteilt.',
+'legal.pUseBody': 'Deine Anwesenheit wird gar nicht veröffentlicht, außer du schaltest „Mein Gebet anderen zeigen“ in den Einstellungen ein. Solange es eingeschaltet ist, können Menschen, die gerade beten, den von dir gewählten Anzeigenamen und eine Region von etwa 100 km um dich sehen – sowohl im Welt-Feed als auch als Licht auf der Erde. Name und Region werden nur im Arbeitsspeicher für die Dauer der Sitzung gehalten und nach etwa 60 Sekunden entfernt. Nichts wird verkauft oder an Werbetreibende weitergegeben.',
   'legal.pRightsTitle': 'Deine Rechte',
   'legal.pRightsBody':
     'Da der größte Teil deiner Daten dein Gerät nie verlässt, hast du bereits die Kontrolle darüber: Das Löschen der Browserdaten entfernt deine Gebetshistorie und deine Einstellungen. Du kannst die Nutzung der App jederzeit beenden.',
@@ -419,4 +417,8 @@ export default {
   'settings.dataQuarantined': 'Ein Teil deiner gespeicherten Daten war unlesbar, deshalb wurde eine Kopie davon aufbewahrt, statt sie zu löschen. Neue Einträge können deinen Zähler nicht verringern.',
   'settings.dataPreservationFailed': 'Ein Teil deiner gespeicherten Daten war unlesbar und wir konnten keine Kopie aufbewahren. Beginne neu und sichere deine Daten regelmäßig.',
   'settings.storageNotPersisted': 'Dein Browser hat keinen dauerhaften Speicher gewährt, daher könnte dein Gebetsverlauf automatisch gelöscht werden. Sichere ihn jetzt.',
+  'settings.secPresence': 'Teilen',
+  'settings.sharePresence': 'Mein Gebet anderen zeigen',
+  'settings.sharePresenceHint': 'Ist dies aus, wird nichts über dich gesendet: kein Name, keine Region, und die App fragt niemals nach deinem Standort. Ist es an, erscheinen der von dir gewählte Name und ein Gebiet von etwa 100 km um dich herum im Welt-Feed, solange du betest. Dein Gebetsprotokoll und deine Backups sind nie betroffen.',
+  'feed.presenceOff': 'Du betest privat. Aktiviere „Mein Gebet anderen zeigen“ in den Einstellungen, um hier zu erscheinen.',
 };

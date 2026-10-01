@@ -370,6 +370,18 @@ export const useStore = create(
 
       localPrayerSeconds: 0,
       loopOn: true,
+      // Whether your prayer is shown to other people, and whether the app is
+      // allowed to work out where you are.
+      //
+      // Default OFF. Presence publishes a display name and a ~111 km grid cell
+      // to everyone connected, which is the most identifying thing this app
+      // does - far more than the anonymous ID, which never leaves the server.
+      // Opting in has to be a real choice, so nothing is requested and nothing
+      // is sent until you turn it on. Your own prayer record, streaks and
+      // backups are unaffected either way.
+      sharePresence: false,
+      setSharePresence: (on) => set({ sharePresence: !!on }),
+
       voiceURI: null,
       // per-prayer static voice choice (keys are prayer ids, values are voice ids)
       prayerVoices: {},
@@ -769,6 +781,9 @@ export const useStore = create(
         locale: s.locale,
         theme: s.theme,
         profile: s.profile,
+        // Persisted, or consent would silently reset to "off" on every reload
+        // and a user who chose to share would have to opt in again each time.
+        sharePresence: s.sharePresence,
         prayerCompletions: s.prayerCompletions,
         prayerDayCompletions: s.prayerDayCompletions,
         prayerDayStats: s.prayerDayStats,

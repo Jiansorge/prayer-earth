@@ -1926,6 +1926,49 @@ html[dir='rtl'] .chooser-arrow.right {
   line-height: 1.5;  margin-bottom: 8px;
 }
 
+/* Presence opt-in. The checkbox is the control; the label wraps both the title
+   and the explanation so the whole row is a tap target, and the hint sits under
+   the title rather than beside it. */
+.presence-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 2px 0 4px;
+}
+
+.presence-toggle {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  margin: 1px 0 0;
+  accent-color: var(--accent-1);
+  cursor: pointer;
+}
+
+.presence-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.presence-title {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.presence-label .field-hint {
+  margin-bottom: 0;
+}
+
+.world-feed-empty {
+  padding: 10px 12px 12px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(241, 245, 232, 0.72);
+}
+
 .field-select {
   width: 100%;
   padding: 12px 14px;

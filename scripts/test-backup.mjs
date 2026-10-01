@@ -509,6 +509,58 @@ const SUITE = `(async () => {
       (raw.state && raw.state.localPrayerSeconds) === 0,
       'disk=' + (raw.state ? raw.state.localPrayerSeconds : 'none'))
   }
+  // --- presence consent ------------------------------------------------------
+  // Presence publishes a name and a ~111 km cell to every connected client, so
+  // it must be genuinely opt-in: nothing requested, nothing sent, and turning it
+  // off must actively withdraw what the server already holds.
+  {
+    t('presence is OFF by default (no name or region published without consent)',
+      useStore.getState().sharePresence === false,
+      'sharePresence=' + useStore.getState().sharePresence)
+
+    // The auto-assigned pseudonym is itself a disclosure: the old code invented a
+    // name for you on first launch, so there was always something to publish.
+    const { syncClient } = await import('/src/sync/client.js')
+    t('a location is not resolved while presence is off',
+      !syncClient.loc, 'loc=' + JSON.stringify(syncClient.loc))
+    t('the app does not invent a name while presence is off',
+      !useStore.getState().profile.name || !syncClient.name,
+      'name=' + JSON.stringify(useStore.getState().profile.name))
+
+    // Consent must survive a reload, or a user who opted in would silently have
+    // to choose again every launch.
+    reset({ localPrayerSeconds: 3, sharePresence: true })
+    await new Promise((r) => setTimeout(r, 300))
+    const raw = JSON.parse(localStorage.getItem('prayer-earth-v1') || '{}')
+    t('the presence choice is persisted', raw.state?.sharePresence === true,
+      'persisted=' + raw.state?.sharePresence)
+
+    // Withdrawing must clear the local trace of a position the user has revoked.
+    reset({ sharePresence: false, youLoc: { lat: 10, lon: 10 } })
+    syncClient.setPresenceSharing(false)
+    await new Promise((r) => setTimeout(r, 200))
+    t('withdrawing presence clears the resolved position',
+      !syncClient.loc && !useStore.getState().youLoc,
+      'youLoc=' + JSON.stringify(useStore.getState().youLoc))
+
+    // And the wire payload itself: the frame sent while opted out must carry no
+    // name and no cell, or the server keeps broadcasting the last values.
+    const sent = []
+    const realSend = syncClient.engine.send.bind(syncClient.engine)
+    syncClient.mode = 'live'
+    syncClient.engine.send = (m) => sent.push(m)
+    syncClient.sendPresence()
+    syncClient.engine.send = realSend
+    const frame = sent[sent.length - 1]
+    t('an opted-out presence frame carries no name', frame && frame.name == null,
+      'name=' + JSON.stringify(frame && frame.name))
+    t('an opted-out presence frame carries no cell', frame && frame.cell == null,
+      'cell=' + JSON.stringify(frame && frame.cell))
+    t('an opted-out presence frame still reports praying=false',
+      frame && frame.praying === false)
+    syncClient.mode = 'sim'
+  }
+
   return out
 })()`
 
