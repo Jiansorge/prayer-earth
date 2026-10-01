@@ -40,6 +40,9 @@ android/app/src/main/assets/public/
 scripts/_*.log
 scripts/_*.err
 
+# Generated store-listing art (rebuild with: node scripts/build-feature-graphic.mjs)
+dist-store/
+
 # Local scratch: generated screenshots and icon experiments. Only the curated
 # store art under public/ is tracked, so everything else is ignored by default
 # rather than relying on each being remembered.
