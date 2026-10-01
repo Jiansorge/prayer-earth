@@ -762,6 +762,32 @@ const testSelfServiceDeletion = async () => {
   check('an unreachable server leaves the device data intact',
     offline.seconds === 2468, 'seconds=' + offline.seconds)
 
+  // Regression, found by this job failing on CI: a device that installed before
+  // deletion existed has no token in storage. It must still reach the server.
+  // An early return reported "nothing found" without asking, so the button did
+  // nothing and the only route left was the email fallback.
+  const noToken = await cdp.evaluate(`(async () => {
+    const real = window.fetch
+    let contacted = 0
+    window.fetch = (u, i) => {
+      if (String(u).includes('/delete')) {
+        contacted++
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ ok: true }) })
+      }
+      return real(u, i)
+    }
+    window.__store.setState({ deleteToken: '' })
+    let outcome
+    try { outcome = await window.__deletion.requestDeletion() } catch (e) { outcome = 'threw:' + e.message }
+    const minted = window.__store.getState().deleteToken
+    window.fetch = real
+    return { contacted, outcome, mintedLen: String(minted || '').length }
+  })()`)
+  check('a device with no stored token still contacts the server',
+    noToken.contacted === 1, 'requests=' + noToken.contacted + ' outcome=' + noToken.outcome)
+  check('a device with no stored token gets one minted for the attempt',
+    noToken.mintedLen >= 40, 'len=' + noToken.mintedLen)
+
   // Put the device's real numbers back.
   await cdp.evaluate(`(() => {
     const saved = window.__deleteSaved

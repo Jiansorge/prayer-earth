@@ -55,8 +55,14 @@ const syncBase = () => {
 export async function requestDeletion() {
   const state = useStore.getState()
   const anonId = state.anonId
-  const token = state.deleteToken
-  if (!anonId || !token) return 'not_found'
+  if (!anonId) return 'not_found'
+  // Mint the token on demand rather than bailing out. A device that installed
+  // before this feature has no token in storage, and an early return here told
+  // the user "we could not find your data" without ever contacting the server -
+  // so the button silently did nothing and the only route left was the email
+  // fallback this feature exists to remove.
+  const token = state.deleteToken || state.getDeleteToken()
+  if (!token) return 'not_found'
 
   let res
   try {

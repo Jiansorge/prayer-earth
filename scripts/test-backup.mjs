@@ -450,6 +450,27 @@ const SUITE = `(async () => {
     stub(() => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ ok: true }) }))
     const outcome = await requestDeletion()
     t('a confirmed deletion reports success', outcome === 'deleted', 'outcome=' + outcome)
+
+    // Regression: a device that installed before this feature has no token in
+    // storage. It must still CONTACT the server - an early return reported
+    // "nothing found" without asking, so the button silently did nothing and the
+    // only route left was the email fallback.
+    let contacted = 0
+    reset({ anonId: 'anon-no-token', deleteToken: '', localPrayerSeconds: 55 })
+    window.fetch = function (input, init) {
+      const u = typeof input === 'string' ? input : (input && input.url) || ''
+      if (String(u).indexOf('/delete') !== -1) {
+        contacted++
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ ok: true }) })
+      }
+      return realFetch.call(window, input, init)
+    }
+    const minted = await requestDeletion()
+    t('a device with no stored token still contacts the server',
+      contacted === 1, 'requests=' + contacted + ' outcome=' + minted)
+    t('a device with no stored token gets a token minted for the attempt',
+      typeof useStore.getState().deleteToken === 'string' &&
+        useStore.getState().deleteToken.length >= 40)
     window.fetch = realFetch
 
     // forgetIdentity must give a genuinely fresh start. It removes the stored
