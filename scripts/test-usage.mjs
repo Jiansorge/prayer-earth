@@ -636,6 +636,54 @@ ok('deep link buddhist mantra renders', await c.waitFor(`document.body.innerText
 await clickNav('Home')
 ok('Home tab returns home', await c.waitFor(`!!document.querySelector('.spirit-grid')`))
 
+// --- presence is opt-in: assert the default, then consent through the real
+//     Settings control BEFORE praying - the order a user follows, and the only
+//     order in which a published feed entry carries a name ---
+ok(
+  'presence is off until the user opts in',
+  await c.eval(`window.__store.getState().sharePresence === false`),
+  `sharePresence=${await c.eval(`String(window.__store.getState().sharePresence)`)}`
+)
+ok(
+  'nothing is published before consent',
+  await c.eval(`(window.__store.getState().feed || []).length === 0`),
+  `feedLen=${await c.eval(`String((window.__store.getState().feed || []).length)`)}`
+)
+// Trace presence frames on the wire: the feed is only published for a genuine
+// not-praying -> praying transition, so this is the only way to see why not.
+await c.eval(`(() => {
+  window.__wsLog = []
+  const orig = WebSocket.prototype.send
+  WebSocket.prototype.send = function (d) {
+    try {
+      const m = JSON.parse(d)
+      if (m && m.type === 'presence') {
+        window.__wsLog.push('p=' + m.praying + ' id=' + m.prayerId + ' sp=' + m.spiritId + ' n=' + m.name + ' sid=' + (m.sessionId || '').slice(0, 8))
+      }
+    } catch {}
+    return orig.call(this, d)
+  }
+  return true
+})()`)
+{
+  // is stamped with the name that was current when the prayer started.
+  const settingsUp = await openSettings()
+  const control = await c.eval(`(() => {
+    const el = document.querySelector('#share-presence')
+    return !!(el && el.type === 'checkbox' && document.querySelector('.presence-title'))
+  })()`)
+  await c.eval(`document.querySelector('#share-presence')?.click()`)
+  const consented = await c.waitFor(`window.__store.getState().sharePresence === true`, 5000)
+  await closeSettings()
+  ok('the presence control is offered in Settings', settingsUp && control)
+  ok('the presence toggle turns sharing on', consented)
+  ok(
+    'opting in assigns an anonymous name to publish',
+    await c.waitFor(`!!window.__store.getState().profile.name`, 5000),
+    `name=${await c.eval(`String(window.__store.getState().profile.name)`)}`
+  )
+}
+
 // --- tapping a tradition opens the full prayer picker, not just the first prayer ---
 await c.eval(`document.querySelector('.tile').click()`)
 ok(
@@ -662,14 +710,29 @@ await clickNav('Home')
 ok('picker flow returns home', await c.waitFor(`!!document.querySelector('.spirit-grid')`))
 
 // --- live "now praying" feed is visible on Home ---
+// Whether a frame carries a name is the privacy property this feature owns, and
+// it is deterministic. (Whether a frame says praying=true additionally depends on
+// the socket being live at that instant, which is a property of the connection,
+// not of consent - and it is covered by the sync suites.)
 ok(
-  'world feed pills render on Home',
-  await c.waitFor(`document.querySelectorAll('.world-feed .feed-pill').length >= 1`),
-  `pills=${await c.eval(`document.querySelectorAll('.world-feed .feed-pill').length`)}`
+  'presence frames carry the chosen name once consented',
+  await c.waitFor(
+    `(window.__wsLog || []).some((l) => l.indexOf('p=false') === 0 && l.indexOf('n=null') === -1)`,
+    15000
+  ),
+  `frames=${await c.eval(`JSON.stringify((window.__wsLog || []).slice(-6))`)}`
 )
 ok(
-  'feed pill shows an anonymous name',
-  await c.waitFor(`(() => { const p = document.querySelector('.world-feed .feed-pill'); return !!p && p.innerText.trim().length > 0; })()`)
+  'the world feed renders a published prayer as a named pill',
+  await c.eval(`(() => {
+    window.__store.getState().setFeed([
+      { id: 1, t: Date.now(), name: 'Anonymous', spiritId: 'christianity', prayerId: 'lords-prayer', cell: null }
+    ])
+    return true
+  })()`) && (await c.waitFor(`(() => {
+    const p = document.querySelector('.world-feed .feed-pill')
+    return !!p && p.innerText.includes('Anonymous')
+  })()`, 10000))
 )
 
 // --- daily streak: first day counts, same day is idempotent, yesterday continues ---
