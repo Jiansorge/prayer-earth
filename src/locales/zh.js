@@ -70,6 +70,7 @@ export default {
   'settings.deleteDataWorking': '正在删除…',
   'settings.deleteDataManual': '或通过邮件申请删除',
   'settings.deleteResult.deleted': '你的数据已删除。祈祷记录已被清除，你将重新开始。',
+  'settings.deleteResult.local_only': '此设备从未同步过，因此服务器上没有需要删除的记录。此设备上保存的所有数据已删除，您将从头开始。',
   'settings.deleteResult.not_found': '服务器无法识别此身份，因此未删除任何内容。数据可能已复制到新设备。请使用申请链接。',
   'settings.deleteResult.offline': '无法连接服务器。没有发送任何内容，也没有删除任何内容。请联网后重试。',
   'settings.deleteResult.error': '出现问题。未删除任何内容。请稍后重试，或使用申请链接。',

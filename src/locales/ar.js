@@ -70,6 +70,7 @@ export default {
   'settings.deleteDataWorking': 'جارٍ الحذف…',
   'settings.deleteDataManual': 'أو اطلب الحذف بالبريد الإلكتروني',
   'settings.deleteResult.deleted': 'تم حذف بياناتك. فُقد سجلّ صلاتك وأنت تبدأ من جديد.',
+  'settings.deleteResult.local_only': 'لم يحدث مزامنة لهذا الجهاز من قبل، لذا لم يكن هناك أي سجل على الخادم لمسحه. تم حذف كل ما هو مخزن على هذا الجهاز وأنت تبدأ من جديد.',
   'settings.deleteResult.not_found': 'لم نتعرّف على هذه الهوية على الخادم، فلم يُحذف شيء. قد تكون الملفات نُسخت على جهاز جديد. استخدم رابط طلب الحذف.',
   'settings.deleteResult.offline': 'تعذّر الوصول إلى الخادم. لم يُرسل أي طلب ولم يُحذف شيء. حاول مجددًا عند الاتصال.',
   'settings.deleteResult.error': 'حدث خطأ. لم يُحذف شيء. جرّب لاحقًا أو استخدم رابط طلب الحذف.',

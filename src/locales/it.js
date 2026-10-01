@@ -70,6 +70,7 @@ export default {
   'settings.deleteDataWorking': 'Eliminazione…',
   'settings.deleteDataManual': 'Oppure richiedi l’eliminazione via e-mail',
   'settings.deleteResult.deleted': 'I tuoi dati sono stati eliminati. Il tuo registro di preghiere è sparito e ricominci da zero.',
+  'settings.deleteResult.local_only': "Questo dispositivo non è mai stato sincronizzato, quindi non c'era alcun record sul server da eliminare. Tutto ciò che è memorizzato su questo dispositivo è stato eliminato e riparti da zero.",
   'settings.deleteResult.not_found': 'Il server non ha riconosciuto questa identità, quindi non è stato eliminato nulla. I dati potrebbero essere stati copiati su un nuovo dispositivo. Usa il link di richiesta.',
   'settings.deleteResult.offline': 'Impossibile raggiungere il server. Nulla è stato inviato né eliminato. Riprova quando sei online.',
   'settings.deleteResult.error': 'Qualcosa è andato storto. Non è stato eliminato nulla. Riprova più tardi o usa il link di richiesta.',

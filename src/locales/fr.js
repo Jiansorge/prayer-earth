@@ -87,6 +87,7 @@ export default {
   'settings.deleteDataWorking': 'Suppression…',
   'settings.deleteDataManual': 'Ou demander la suppression par e-mail',
   'settings.deleteResult.deleted': 'Vos données ont été supprimées. Votre historique de prières est effacé et vous repartez de zéro.',
+  'settings.deleteResult.local_only': "Cet appareil n'a jamais été synchronisé : il n'y avait donc aucun enregistrement sur le serveur à supprimer. Tout ce qui est stocké sur cet appareil a été effacé et vous repartez de zéro.",
   'settings.deleteResult.not_found': 'Le serveur ne reconnaît pas cette identité, rien n’a donc été supprimé. Les données ont peut-être été copiées sur un nouvel appareil. Utilisez le lien de demande.',
   'settings.deleteResult.offline': 'Impossible de joindre le serveur. Rien n’a été envoyé ni supprimé. Réessayez une fois en ligne.',
   'settings.deleteResult.error': 'Une erreur est survenue. Rien n’a été supprimé. Réessayez plus tard ou utilisez le lien de demande.',

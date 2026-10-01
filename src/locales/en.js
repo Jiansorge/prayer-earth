@@ -92,6 +92,7 @@ export default {
   'settings.deleteDataWorking': 'Deleting…',
   'settings.deleteDataManual': 'Or request deletion by email',
   'settings.deleteResult.deleted': 'Your data has been deleted. Your prayer record is gone and you are starting fresh.',
+  'settings.deleteResult.local_only': 'This device had never synced, so there was no record on the server to erase. Everything stored on this device has been deleted and you are starting fresh.',
   'settings.deleteResult.not_found': 'The server did not recognise this identity, so nothing was deleted. The data may have been copied to a new device. Use the request link instead.',
   'settings.deleteResult.offline': 'Could not reach the server. Nothing was sent and nothing was deleted. Try again when you are online.',
   'settings.deleteResult.error': 'Something went wrong. Nothing was deleted. Try again later, or use the request link.',

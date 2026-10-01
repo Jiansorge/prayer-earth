@@ -70,6 +70,7 @@ export default {
   'settings.deleteDataWorking': 'A eliminar…',
   'settings.deleteDataManual': 'Ou pedir a eliminação por e-mail',
   'settings.deleteResult.deleted': 'Os teus dados foram eliminados. O teu registo de orações desapareceu e recomeças do zero.',
+  'settings.deleteResult.local_only': 'Este dispositivo nunca foi sincronizado, por isso não havia nenhum registo no servidor para apagar. Tudo o que estava guardado neste dispositivo foi eliminado e estás a recomeçar.',
   'settings.deleteResult.not_found': 'O servidor não reconheceu esta identidade, por isso nada foi eliminado. Os dados podem ter sido copiados para um novo dispositivo. Usa a ligação de pedido.',
   'settings.deleteResult.offline': 'Não foi possível contactar o servidor. Nada foi enviado nem eliminado. Tenta novamente quando estiveres online.',
   'settings.deleteResult.error': 'Algo correu mal. Nada foi eliminado. Tenta mais tarde ou usa a ligação de pedido.',

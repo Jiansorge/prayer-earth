@@ -473,6 +473,24 @@ const SUITE = `(async () => {
         useStore.getState().deleteToken.length >= 40)
     window.fetch = realFetch
 
+    // A device that has NEVER synced has no anonId, so no record could be named.
+    // That must be reported distinctly: not "not found" about a request that was
+    // never sent, and not "deleted", which would claim a server-side deletion
+    // that did not happen.
+    let neverContacted = 0
+    reset({ anonId: '', deleteToken: '' })
+    window.fetch = function (input, init) {
+      const u = typeof input === 'string' ? input : (input && input.url) || ''
+      if (String(u).indexOf('/delete') !== -1) { neverContacted++; return realFetch.call(window, input, init) }
+      return realFetch.call(window, input, init)
+    }
+    const neverSynced = await requestDeletion()
+    t('a device that never synced reports local_only, not not_found',
+      neverSynced === 'local_only', 'outcome=' + neverSynced)
+    t('a device that never synced does not pretend to contact the server',
+      neverContacted === 0, 'requests=' + neverContacted)
+    window.fetch = realFetch
+
     // forgetIdentity must give a genuinely fresh start. It removes the stored
     // key FIRST, because the write guard would otherwise merge the zeroed state
     // back up to the old totals and the wipe would silently do nothing.

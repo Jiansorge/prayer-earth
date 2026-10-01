@@ -87,6 +87,7 @@ export default {
   'settings.deleteDataWorking': 'Eliminando…',
   'settings.deleteDataManual': 'O solicitar la eliminación por correo',
   'settings.deleteResult.deleted': 'Tus datos han sido eliminados. Tu registro de oraciones ya no existe y empiezas de nuevo.',
+  'settings.deleteResult.local_only': 'Este dispositivo nunca se había sincronizado, así que no había ningún registro en el servidor que borrar. Todo lo almacenado en este dispositivo se ha eliminado y empiezas de nuevo.',
   'settings.deleteResult.not_found': 'El servidor no reconoció esta identidad, así que no se eliminó nada. Puede que los datos se copiaron a un dispositivo nuevo. Usa el enlace de solicitud.',
   'settings.deleteResult.offline': 'No se pudo contactar con el servidor. No se envió nada y no se eliminó nada. Inténtalo de nuevo cuando tengas conexión.',
   'settings.deleteResult.error': 'Algo salió mal. No se eliminó nada. Inténtalo más tarde o usa el enlace de solicitud.',

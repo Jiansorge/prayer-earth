@@ -47,15 +47,24 @@ const syncBase = () => {
 //
 // Resolves to one of:
 //   'deleted'     - gone, confirmed by the server
+//   'local_only'  - this device never synced, so there is no server record that
+//                   could be named. Nothing was removed from the server because
+//                   there is provably nothing there; the local wipe still runs.
+//                   Deliberately NOT reported as 'deleted', because that would
+//                   claim a server-side deletion that never happened.
 //   'not_found'   - the server did not recognise this identity/token, so nothing
-//                   was changed. Either this device has never synced, or the
-//                   token was lost, so the emailed route is the fallback.
+//                   was changed. Either this device has not synced since
+//                   self-service existed, or the token was lost, so the emailed
+//                   route is the fallback.
 //   'offline'     - no network; nothing was sent
 //   'error'       - anything else
 export async function requestDeletion() {
   const state = useStore.getState()
   const anonId = state.anonId
-  if (!anonId) return 'not_found'
+  // No identity means no synced history to erase, and nothing that could be
+  // named on the server. Reporting 'not_found' here left the user pressing a
+  // button that did nothing at all, with no idea why.
+  if (!anonId) return 'local_only'
   // Mint the token on demand rather than bailing out. A device that installed
   // before this feature has no token in storage, and an early return here told
   // the user "we could not find your data" without ever contacting the server -

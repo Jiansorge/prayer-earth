@@ -695,9 +695,18 @@ const testSelfServiceDeletion = async () => {
     window.__deleteSaved = {
       localPrayerSeconds: s.localPrayerSeconds,
       prayerCompletions: JSON.parse(JSON.stringify(s.prayerCompletions || {})),
-      bestStreak: s.bestStreak
+      bestStreak: s.bestStreak,
+      anonId: s.anonId
     }
-    window.__store.setState({ localPrayerSeconds: 2468, prayerCompletions: { mani: 11 }, bestStreak: 4 })
+    // Seed an anonId too. A device that has never synced has none, and that is
+    // a separate case tested below - without one, the network paths below would
+    // all short-circuit before reaching fetch.
+    window.__store.setState({
+      localPrayerSeconds: 2468,
+      prayerCompletions: { mani: 11 },
+      bestStreak: 4,
+      anonId: 'android-delete-test'
+    })
     return window.__deleteSaved
   })()`)
   void saved
@@ -787,6 +796,27 @@ const testSelfServiceDeletion = async () => {
     noToken.contacted === 1, 'requests=' + noToken.contacted + ' outcome=' + noToken.outcome)
   check('a device with no stored token gets one minted for the attempt',
     noToken.mintedLen >= 40, 'len=' + noToken.mintedLen)
+
+  // A device that has NEVER synced has no anonId at all, so there is no record
+  // that could be named. That must wipe locally and say so plainly, rather than
+  // reporting "not found" about a request that was never made - and it must not
+  // claim a server-side deletion that never happened.
+  const neverSynced = await cdp.evaluate(`(async () => {
+    const real = window.fetch
+    let contacted = 0
+    window.fetch = (u, i) => {
+      if (String(u).includes('/delete')) { contacted++; return real(u, i) }
+      return real(u, i)
+    }
+    window.__store.setState({ anonId: '', deleteToken: '', localPrayerSeconds: 999 })
+    const outcome = await window.__deletion.requestDeletion()
+    window.fetch = real
+    return { contacted, outcome }
+  })()`)
+  check('a device that never synced reports local_only, not not_found',
+    neverSynced.outcome === 'local_only', 'outcome=' + neverSynced.outcome)
+  check('a device that never synced does not pretend to contact the server',
+    neverSynced.contacted === 0, 'requests=' + neverSynced.contacted)
 
   // Put the device's real numbers back.
   await cdp.evaluate(`(() => {

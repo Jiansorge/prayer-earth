@@ -70,6 +70,7 @@ export default {
   'settings.deleteDataWorking': '削除中…',
   'settings.deleteDataManual': 'メールで削除を依頼する',
   'settings.deleteResult.deleted': 'データを削除しました。祈りの記録は失われ、最初からやり直します。',
+  'settings.deleteResult.local_only': 'この端末はこれまで同期されたことがなかったため、サーバーに削除すべき記録はありませんでした。この端末に保存されていたすべてのデータを削除しました。これから新しいスタートです。',
   'settings.deleteResult.not_found': 'サーバーがこの識別子を認識しませんでした。何も削除されていません。データが新しい端末にコピーされている可能性があります。リクエストリンクをご利用ください。',
   'settings.deleteResult.offline': 'サーバーに接続できませんでした。何も送信されず、何も削除されていません。オンライン時に再試行してください。',
   'settings.deleteResult.error': '問題が発生しました。何も削除されていません。後で再試行するか、リクエストリンクをご利用ください。',

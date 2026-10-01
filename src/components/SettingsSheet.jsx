@@ -228,7 +228,9 @@ export default function SettingsSheet() {
     setDeleteBusy(true)
     const outcome = await requestDeletion()
     setDeleteBusy(false)
-    if (outcome === 'deleted') forgetIdentity()
+    // 'local_only' also wipes: there was no synced record to erase, so the only
+    // data that exists is the local copy and the user asked for it to go.
+    if (outcome === 'deleted' || outcome === 'local_only') forgetIdentity()
     setDeleteOpen(false)
     setDeleteResult(outcome)
   }
