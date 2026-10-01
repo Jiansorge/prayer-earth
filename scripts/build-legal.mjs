@@ -196,4 +196,90 @@ writeFileSync(
   })
 )
 
-console.log('[build-legal] wrote public/privacy.html and public/terms.html')
+// A standalone, plain-HTML data-deletion request page.
+//
+// Play requires this URL on the store listing: it must name the app, give the
+// steps prominently, and state what is deleted, what is kept, and any retention
+// period. It is a static file rather than a route in the SPA so the link keeps
+// working even if the app bundle fails to load, and it is generated here so the
+// privacy policy and this page can never drift apart.
+// (CONTACT is already defined above from legal.contactEmail, so the same
+// address serves the privacy policy, the terms and this page.)
+
+const deleteBody = `
+      <p><strong>Joining Palms has no accounts, no sign-in, and no email address.</strong>
+      We identify your records only by a random anonymous ID that was generated
+      on your device. To delete them, we need that ID, and you are the only
+      person who has it.</p>
+
+      <h2>1. Get your anonymous ID</h2>
+      <p>Open <strong>Joining Palms</strong> &rarr; <strong>Settings</strong> &rarr;
+      <strong>Backup &amp; restore</strong>, then tap
+      <strong>Copy anonymous ID</strong> and paste the code here in your email.</p>
+      <p>If you cannot find that button, a <strong>recovery code</strong> works just as
+      well: Settings &rarr; Backup &amp; restore &rarr; <strong>Copy recovery code</strong>,
+      and email us the whole thing. It contains the same anonymous ID.</p>
+
+      <h2>2. Send it to us</h2>
+      <p>Email <a href="mailto:${CONTACT}?subject=Delete%20my%20Joining%20Palms%20data">${CONTACT}</a>
+      with the subject <strong>Delete my Joining Palms data</strong> and the
+      anonymous ID in the body. No other information is needed, and we will not
+      ask you for one.</p>
+
+      <h2>3. We delete it</h2>
+      <p>We remove the record within <strong>30 days</strong> and email you to
+      confirm once it is gone. If we cannot find a record for the ID you sent, we
+      will tell you that too.</p>
+
+      <h2>What we delete</h2>
+      <ul>
+        <li>Your lifetime prayer record: the anonymous ID, prayer counts, total
+            prayer time, your streak and best streak, and your per-day history.</li>
+        <li>The rate-limiting entry held against that anonymous ID.</li>
+        <li>Your live presence on the map and your entry in the activity feed.
+            These are held only while the app is open and are normally removed
+            within <strong>60 seconds</strong> of you stopping.</li>
+      </ul>
+
+      <h2>What we keep, and why</h2>
+      <ul>
+        <li><strong>The worldwide prayer total.</strong> This is a single running
+            total shared by every person using the app. Prayers already added to
+            it cannot be subtracted without lowering the number for everyone
+            else, so that aggregate figure remains unchanged. It cannot be traced
+            back to you.</li>
+        <li><strong>Backups you made yourself.</strong> Recovery codes and backup
+            files live on your device. We never receive them unless you choose to
+            email one to us.</li>
+        <li><strong>Network information such as your IP address</strong> may be
+            retained briefly by our hosting provider for security and abuse
+            prevention. This is kept separately from your prayer record and holds
+            no prayer data.</li>
+      </ul>
+
+      <h2>Data still on your device</h2>
+      <p>Deleting your server record does not erase what is already on your
+      phone or browser &mdash; that is stored locally, not on our servers. To remove
+      it, clear the app's storage in your Android Settings, or clear site data for
+      joining-palms.app in your browser. Once you clear it, the recovery code is
+      your only copy.</p>
+
+      <h2>Retention summary</h2>
+      <ul>
+        <li>Live presence and activity feed: about 60 seconds.</li>
+        <li>Your lifetime prayer record: kept while you use the app; deleted
+            within 30 days of a request.</li>
+        <li>Worldwide prayer total: retained, anonymous and not attributable.</li>
+      </ul>`
+
+writeFileSync(
+  path.join(OUT_DIR, 'delete-data.html'),
+  page({
+    title: 'delete-data',
+    heading: 'Delete your Joining Palms data',
+    description: 'How to request deletion of your Joining Palms prayer data, what is deleted, and what is kept.',
+    body: deleteBody
+  })
+)
+
+console.log('[build-legal] wrote public/privacy.html, public/terms.html and public/delete-data.html')

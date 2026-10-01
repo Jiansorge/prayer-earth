@@ -253,6 +253,26 @@ ok(
     (await c.eval(`!!document.querySelector('.field-report')`)) &&
     (await c.eval(`(document.querySelector('.field-report')?.getAttribute('href') || '').includes('joining-palms.app')`))
 )
+// The Play data-deletion page tells people to copy their anonymous ID from here.
+// If that button disappears, the published instructions become a dead end, so
+// assert both the button and the link to the page.
+ok(
+  'settings offers a copy-anonymous-id button for deletion requests',
+  settingsOpen &&
+    (await c.eval(`[...document.querySelectorAll('.field-btn')].some(b => /copy anonymous id/i.test(b.innerText))`))
+)
+ok(
+  'settings links to the data-deletion page',
+  settingsOpen &&
+    (await c.eval(`[...document.querySelectorAll('a')].some(a => /delete-data\.html/.test(a.getAttribute('href') || ''))`))
+)
+ok(
+  'the anonymous ID is retrievable for a deletion request',
+  await c.eval(`(() => {
+    const id = window.__store.getState().getAnonId()
+    return typeof id === 'string' && id.length > 4
+  })()`)
+)
 // Regression: ambient.ensure() must ALWAYS return a thenable. When it was a
 // plain function returning undefined, playback.js's `ambient.ensure().catch()`
 // threw and broke the nav play button. Lock the contract.

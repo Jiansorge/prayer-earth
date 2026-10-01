@@ -42,6 +42,9 @@ const fmtDuration = (secs) => {
 const APP_ORIGIN = 'https://joining-palms.app'
 // Where someone goes if they find a re-upload of this app. Free and open, so it
 // works for anyone who needs it.
+const DELETE_DATA_URL = 'https://joining-palms.app/delete-data.html'
+// Where someone goes if they find a re-upload of this app. Free and open, so it
+// works for anyone who needs it.
 const REPORT_URL = 'https://joining-palms.app/legal#report'
 // Play-Store listing URL, supplied at build time via VITE_PLAY_STORE_URL once
 // the listing is live (the deploy sets it alongside VITE_SYNC_ENGINE). When it
@@ -79,7 +82,8 @@ export default function SettingsSheet() {
   const [backupMsg, setBackupMsg] = useState(null) // { ok: bool, key: string }
   const [restoreText, setRestoreText] = useState('')
   const [backupCode, setBackupCode] = useState('') // shown when copy/download can't work
-  const [backupSummary, setBackupSummary] = useState(null) // what a restore actually did
+  const [backupSummary, setBackupSummary] = useState(null)
+  const [anonCopied, setAnonCopied] = useState(false)
   const fileRef = useRef(null)
   const [installed, setInstalled] = useState(false)
   const [showIosTip, setShowIosTip] = useState(false)
@@ -516,6 +520,31 @@ export default function SettingsSheet() {
 
         <label className="field-label" style={{ marginTop: 18 }}>{t('settings.backupRestoreLabel')}</label>
         <div className="field-hint">{t('settings.backupRestoreHint')}</div>
+
+        {/* The data-deletion page on our Play listing tells people to copy this
+            ID, so it must exist here. The anonymous ID is the only way we can
+            identify a record to erase, and the user is the only one who has it. */}
+        <div className="field-hint" style={{ marginTop: 12 }}>{t('settings.myDataHint')}</div>
+        <button
+          className="field-btn"
+          onClick={() => {
+            const id = useStore.getState().getAnonId()
+            copyText(id).then((ok) => {
+              setAnonCopied(ok)
+              if (!ok) setBackupCode(id)
+            })
+          }}
+        >
+          {anonCopied ? t('settings.copied') : t('settings.copyAnonId')}
+        </button>
+        <a
+          className="field-report"
+          href={DELETE_DATA_URL}
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          {t('settings.deleteDataLink')}
+        </a>
         <textarea
           className="field-textarea"
           value={restoreText}
