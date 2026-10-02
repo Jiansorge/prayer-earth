@@ -72,6 +72,8 @@ export default {
   'settings.deleteResult.deleted': '데이터가 삭제되었습니다. 기도 기록이 사라지고 처음부터 다시 시작합니다.',
   'settings.deleteResult.local_only': '이 기기는 아직 동기화한 적이 없어 서버에 삭제할 기록이 없었습니다. 이 기기에 저장된 모든 데이터가 삭제되었으며 새로 시작합니다.',
   'settings.deleteResult.not_found': '서버가 이 식별자를 인식하지 못해 삭제되지 않았습니다. 데이터가 새 기기로 복사되었을 수 있습니다. 요청 링크를 이용하세요.',
+  'settings.deleteDeviceOnly': '이 기기의 데이터만 삭제',
+  'settings.deleteResult.device_only': '이 기기의 데이터가 삭제되었습니다. 서버에 연결하지 못했기 때문에 이미 업로드된 데이터가 남아 있을 수 있습니다. 아래 요청 링크를 사용하거나 온라인일 때 다시 시도하세요.',
   'settings.deleteResult.offline': '서버에 연결하지 못했습니다. 아무것도 전송하거나 삭제하지 않았습니다. 온라인 상태에서 다시 시도하세요.',
   'settings.deleteResult.error': '문제가 발생했습니다. 아무것도 삭제하지 않았습니다. 나중에 다시 시도하거나 요청 링크를 이용하세요.',
   'settings.backupRestoreHint': '코드를 붙여넣거나 파일을 선택하세요. 백업은 병합되어 기도가 사라지지 않습니다.',

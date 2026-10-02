@@ -301,26 +301,21 @@ export class AmbientEngine {
     this.buildPreset(next)
   }
 
-  // Moving the bed up is a slow swell so a prayer arrives gently; moving it
-  // down is fast, because waiting several seconds for silence after pressing
-  // stop reads as the app being stuck rather than as a fade.
+  // Moving the bed up is a slow swell so a prayer arrives gently; moving it down
+  // is fast, because waiting several seconds for silence after pressing stop
+  // reads as the app being stuck rather than as a fade.
   //
-  // setTargetAtTime is an exponential approach: at a 0.8s constant it has only
-  // closed ~63% of the gap after 0.8s and ~95% after 2.4s, which is why
-  // stopping used to take seconds to actually go quiet. A short linear ramp is
-  // used for every fall instead.
+  // Both directions use setTargetAtTime. The previous fall did
+  // cancelScheduledValues + setValueAtTime(gain.value) + linearRamp, which was
+  // fast but risked an audible click: AudioParam.value during an active
+  // automation is not reliably the instantaneous value across engines, so the
+  // ramp could resume from the wrong point and jump. A short exponential
+  // constant has no such discontinuity - it starts from wherever the parameter
+  // actually is - and ~63% of the gap is gone in 70 ms.
   _rampMaster(target) {
     if (!this.master || !this.ctx) return
-    const g = this.master.gain
-    const t = this.ctx.currentTime
-    const rising = target > g.value
-    if (rising) {
-      g.setTargetAtTime(target, t, 0.8)
-      return
-    }
-    g.cancelScheduledValues(t)
-    g.setValueAtTime(g.value, t)
-    g.linearRampToValueAtTime(target, t + (target <= 0.0002 ? 0.22 : 0.3))
+    const rising = target > this.master.gain.value
+    this.master.gain.setTargetAtTime(target, this.ctx.currentTime, rising ? 0.8 : 0.07)
   }
 
   setLevel(level) {

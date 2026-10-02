@@ -94,6 +94,8 @@ export default {
   'settings.deleteResult.deleted': 'Nabura na ang iyong data. Wala na ang iyong tala ng dasal at sisimulan ka ulit.',
   'settings.deleteResult.local_only': 'Hindi pa nais-sync ang device na ito, kaya walang record sa server na tatanggalin. Natanggal ang lahat ng data na nakaimbak dito sa device at magsisimula ka na ulit.',
   'settings.deleteResult.not_found': 'Hindi kinilala ng server ang pagkakakilanlan na ito, kaya walang nabura. Maaaring nakopya ang data sa bagong device. Gamitin ang link ng kahilingan.',
+  'settings.deleteDeviceOnly': 'Burahin lamang ang datos sa device na ito',
+  'settings.deleteResult.device_only': 'Nabura na ang datos sa device na ito. Hindi namin maabot ang server, kaya posibleng nananatili pa rin ang mga datos na na-upload — gamitin ang link ng kahilingan sa ibaba, o subukan muli kapag online ka na.',
   'settings.deleteResult.offline': 'Hindi maabot ang server. Walang ipinadala at walang nabura. Subukan muli kapag online ka.',
   'settings.deleteResult.error': 'May nagkamali. Walang nabura. Subukan muli sa bandang huli o gamitin ang link ng kahilingan.',
   'settings.backupRestoreHint': 'Mag-paste ng recovery code o pumili ng file. Nagme-merge ang backups, hindi mo mawawalan ng dasal.',

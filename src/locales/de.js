@@ -89,6 +89,8 @@ export default {
   'settings.deleteResult.deleted': 'Deine Daten wurden gelöscht. Dein Gebetsverlauf ist fort und du startest neu.',
   'settings.deleteResult.local_only': 'Dieses Gerät wurde noch nie synchronisiert, daher gab es keinen Datensatz auf dem Server zu löschen. Alles auf diesem Gerät wurde gelöscht und du beginnst neu.',
   'settings.deleteResult.not_found': 'Diese Identität war dem Server nicht bekannt, daher wurde nichts gelöscht. Vielleicht wurden die Daten auf ein neues Gerät kopiert. Nutze den Anfrage-Link.',
+  'settings.deleteDeviceOnly': 'Nur die Daten auf diesem Gerät löschen',
+  'settings.deleteResult.device_only': 'Die Daten auf diesem Gerät wurden gelöscht. Wir konnten den Server nicht erreichen, deshalb könnten bereits hochgeladene Daten noch vorhanden sein – nutze den Anfrage-Link unten oder versuche es erneut, wenn du online bist.',
   'settings.deleteResult.offline': 'Der Server war nicht erreichbar. Es wurde nichts gesendet und nichts gelöscht. Versuche es erneut, wenn du online bist.',
   'settings.deleteResult.error': 'Ein Fehler ist aufgetreten. Es wurde nichts gelöscht. Später erneut versuchen oder den Anfrage-Link nutzen.',
   'settings.backupRestoreHint': 'Code einfügen oder Datei wählen. Sicherungen werden zusammengeführt, du verlierst kein Gebet.',

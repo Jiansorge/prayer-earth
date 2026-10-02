@@ -216,24 +216,65 @@ const stripComments = (text) =>
   check('the mapping spans exactly two wrapped copies',
     xFor(-180) === 0 && xFor(180) === 200 && yFor(90) === 0 && yFor(-90) === 100)
 
+  // The globe has ~23,760 possible cells. The WebGL path pools sprites, so the
+  // fallback has to cap too - it runs on four-core-and-down devices, which are
+  // the least able to absorb thousands of animated DOM nodes.
+  const MAX_DOTS = 256
+  const MAX_M = (s.match(/const MAX = (\d+)/) || [])[1]
+  check('the fallback caps its rendered dots', /const MAX_DOTS = \d+/.test(s))
+  // The two renderers must not drift apart: EarthScene.js builds a sprite pool of
+  // MAX and the fallback builds MAX_DOTS nodes. If one is raised without the
+  // other, the fallback silently becomes the slowest path on the hardware it
+  // exists to serve.
+  const scene = readFileSync(path.join(ROOT, 'src/three/EarthScene.js'), 'utf8')
+  const webglMax = Number((scene.match(/const MAX = (\d+)/) || [])[1])
+  const domMax = Number((s.match(/const MAX_DOTS = (\d+)/) || [])[1])
+  check('both renderers define a cap', webglMax > 0 && domMax > 0, `webgl=${webglMax} dom=${domMax}`)
+  check('the fallback cap matches the WebGL sprite pool', webglMax === domMax, `webgl=${webglMax} dom=${domMax}`)
+  void MAX_DOTS
+  void MAX_M
+
   // Rotation is decorative, so reduced-motion must switch it off.
   const css = readFileSync(path.join(ROOT, 'src/styles.css'), 'utf8')
   check('the static globe honours prefers-reduced-motion',
     /@media \(prefers-reduced-motion: reduce\)[\s\S]{0,400}\.efg-spin[\s\S]{0,120}animation:\s*none/.test(css))
 }
 
-// 6. Fading the ambient bed DOWN must be fast. setTargetAtTime is an
-//    exponential approach, so a 0.8s constant only closes ~63% of the gap in
-//    0.8s, which is why stop and pause felt like they were hanging on.
+// 5b. A geolocation fix can arrive long after consent was withdrawn, so every
+//     path that can produce a position has to be guarded by a consent
+//     generation. This is a static check because the race needs a real browser.
+{
+  const src = readFileSync(path.join(ROOT, 'src/sync/client.js'), 'utf8')
+  const fn = src.match(/ensureLocation\(\)\s*\{[\s\S]{0,2600}?\n  \}/)
+  const body = fn ? fn[0] : ''
+  check('consent changes bump a generation counter', /_consentGen/.test(src))
+  check('a stale fix is discarded', /stale\(\)\s*\)\s*return/.test(body))
+  check('the geolocation success path is guarded', /const done = \(pos\) => \{\s*if \(stale\(\)\) return/.test(body))
+  // Every fallback path must go through the guarded closure. Asserting the mere
+  // absence of fallbackLoc() would be wrong - it legitimately appears inside
+  // that closure - so count the call sites instead: there must be exactly one,
+  // and it must sit behind the stale check.
+  const fallbackCalls = (body.match(/this\.fallbackLoc\(\)/g) || []).length
+  check('there is exactly one fallbackLoc call site', fallbackCalls === 1, `found ${fallbackCalls}`)
+  check('the geolocation DENIED path is guarded too',
+    /const fallback = \(\) => \{\s*if \(stale\(\)\) return\s*this\.fallbackLoc\(\)/.test(body))
+  // And the native/plugin error path must call the closure, not fallbackLoc.
+  check('the native geolocation error path goes through the guard',
+    /\.catch\(fallback\)/.test(body) && !/\.catch\(\(\) => \{[^}]*this\.fallbackLoc/.test(body))
+}
+
+// 6. Fading the ambient bed DOWN must be fast, and must not be able to click.
 {
   const src = readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8')
-  check('the master gain no longer uses a slow exponential fade',
-    !/master\.gain\.setTargetAtTime/.test(src))
-  check('falling volume uses a short linear ramp',
-    /linearRampToValueAtTime\(target, t \+/.test(src),
-    'no linear ramp on the fall')
-  check('rising volume still swells gently',
-    /setTargetAtTime\(target, t, 0\.8\)/.test(src))
+  const ramp = src.match(/_rampMaster\(target\)\s*\{[\s\S]{0,600}?\n  \}/)
+  const body = ramp ? ramp[0] : ''
+  // A short exponential reaches ~63% of the gap in 70 ms and, unlike
+  // cancelScheduledValues + setValueAtTime(gain.value), cannot resume from a
+  // stale reading and jump.
+  check('the fall uses a short time constant', /setTargetAtTime\([^)]*,\s*rising\s*\?\s*0\.8\s*:\s*0\.0?\d/.test(body), body.slice(0, 160))
+  check('the fade does not cancel-and-resume from gain.value (click risk)',
+    !/cancelScheduledValues/.test(body) && !/setValueAtTime\(g\.value/.test(body))
+  check('rising volume still swells gently', /0\.8/.test(body))
 }
 
 const failed = results.filter((r) => !r.pass)

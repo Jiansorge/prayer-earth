@@ -94,6 +94,8 @@ export default {
   'settings.deleteResult.deleted': 'Dữ liệu của bạn đã được xóa. Lịch sử lời cầu nguyện không còn và bạn bắt đầu lại.',
   'settings.deleteResult.local_only': 'Thiết bị này chưa từng đồng bộ, nên không có bản ghi nào trên máy chủ để xóa. Mọi thứ đã lưu trên thiết bị này đều đã bị xóa và bạn bắt đầu lại từ đầu.',
   'settings.deleteResult.not_found': 'Máy chủ không nhận ra danh tính này nên không có gì bị xóa. Dữ liệu có thể đã được sao chép sang thiết bị mới. Hãy dùng liên kết yêu cầu.',
+  'settings.deleteDeviceOnly': 'Chỉ xóa dữ liệu trên thiết bị này',
+  'settings.deleteResult.device_only': 'Dữ liệu trên thiết bị này đã được xóa. Chúng tôi không thể kết nối với máy chủ, nên dữ liệu đã tải lên có thể vẫn còn — hãy dùng liên kết yêu cầu bên dưới, hoặc thử lại khi bạn có mạng.',
   'settings.deleteResult.offline': 'Không thể kết nối máy chủ. Không có gì được gửi và không có gì bị xóa. Hãy thử lại khi có mạng.',
   'settings.deleteResult.error': 'Đã xảy ra lỗi. Không có gì bị xóa. Hãy thử lại sau hoặc dùng liên kết yêu cầu.',
   'settings.backupRestoreHint': 'Dán mã khôi phục hoặc chọn tệp. Các bản sao lưu được hợp nhất, bạn không bao giờ mất một lời cầu nguyện.',

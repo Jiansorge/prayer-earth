@@ -122,6 +122,15 @@ export default function SettingsSheet() {
     }
   }
 
+  // The escape hatch for someone who cannot reach the server. This clears only
+  // this device and says so plainly: whatever the server still holds is
+  // untouched, and we will say so rather than implying a full deletion.
+  const doDeleteLocalOnly = () => {
+    forgetIdentity()
+    setDeleteOpen(false)
+    setDeleteResult('device_only')
+  }
+
   const flashBackup = (ok, key) => {
     setBackupMsg({ ok, key })
     setTimeout(() => setBackupMsg(null), 4000)
@@ -619,9 +628,20 @@ export default function SettingsSheet() {
         )}
 
         {deleteResult && (
-          <div className="field-hint" style={{ marginTop: 10, color: deleteResult === 'deleted' ? 'var(--ok,#7fc9a0)' : 'var(--warn,#ffb4a2)' }}>
-            {t(`settings.deleteResult.${deleteResult}`)}
-          </div>
+          <>
+            <div className="field-hint" style={{ marginTop: 10, color: deleteResult === 'deleted' || deleteResult === 'local_only' || deleteResult === 'device_only' ? 'var(--ok,#7fc9a0)' : 'var(--warn,#ffb4a2)' }}>
+              {t(`settings.deleteResult.${deleteResult}`)}
+            </div>
+            {/* Being offline left a user with no way to erase anything at all -
+                the server could not be reached, and the only other route was
+                emailing us. The local copy is entirely theirs, so offer it
+                explicitly rather than refusing. */}
+            {deleteResult === 'offline' && (
+              <button className="field-btn" onClick={doDeleteLocalOnly} style={{ marginTop: 8 }}>
+                {t('settings.deleteDeviceOnly')}
+              </button>
+            )}
+          </>
         )}
         <textarea
           className="field-textarea"

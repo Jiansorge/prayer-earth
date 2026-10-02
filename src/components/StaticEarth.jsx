@@ -19,6 +19,12 @@ import { useStore } from '../store.js'
 
 const SPIN_SECONDS = 90
 
+// The globe has ~23,760 possible grid cells. The WebGL scene pools 256 sprites,
+// so the fallback has to cap too: this path is chosen precisely for
+// four-core-and-down devices, and rendering every occupied cell as an animated
+// DOM node is the one thing guaranteed to stall them.
+const MAX_DOTS = 256
+
 // lon/lat -> percentage across the 2x-wide wrapper. Mirrors the spherical
 // mapping in EarthScene.setLights: x = cos(lat)cos(lon), z = cos(lat)sin(lon),
 // reduced to the equirectangular case for a flat strip.
@@ -30,21 +36,27 @@ export default function StaticEarth({ compact = false }) {
   const youLoc = useStore((s) => s.youLoc)
 
   const dots = useMemo(() => {
-    const out = []
+    const cells = []
     for (const [key, n] of Object.entries(lights || {})) {
       const c = key.indexOf(',')
       if (c < 0) continue
       const lat = parseFloat(key.slice(0, c))
       const lon = parseFloat(key.slice(c + 1))
       if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue
-      out.push({
+      cells.push({
         key,
         left: xForLon(lon),
         top: yForLat(lat),
         weight: Math.min(3, Math.max(1, n))
       })
     }
-    return out
+    // Keep the busiest cells when there are more than the cap, so the globe
+    // still reads as inhabited rather than as an arbitrary sample.
+    if (cells.length > MAX_DOTS) {
+      cells.sort((a, b) => b.weight - a.weight)
+      cells.length = MAX_DOTS
+    }
+    return cells
   }, [lights])
 
   return (

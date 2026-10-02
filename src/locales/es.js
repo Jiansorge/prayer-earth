@@ -89,6 +89,8 @@ export default {
   'settings.deleteResult.deleted': 'Tus datos han sido eliminados. Tu registro de oraciones ya no existe y empiezas de nuevo.',
   'settings.deleteResult.local_only': 'Este dispositivo nunca se había sincronizado, así que no había ningún registro en el servidor que borrar. Todo lo almacenado en este dispositivo se ha eliminado y empiezas de nuevo.',
   'settings.deleteResult.not_found': 'El servidor no reconoció esta identidad, así que no se eliminó nada. Puede que los datos se copiaron a un dispositivo nuevo. Usa el enlace de solicitud.',
+  'settings.deleteDeviceOnly': 'Borrar solo los datos de este dispositivo',
+  'settings.deleteResult.device_only': 'Los datos de este dispositivo se han eliminado. No pudimos conectar con el servidor, así que puede que los datos ya subidos sigan ahí: usa el enlace de solicitud de abajo o inténtalo de nuevo cuando tengas conexión.',
   'settings.deleteResult.offline': 'No se pudo contactar con el servidor. No se envió nada y no se eliminó nada. Inténtalo de nuevo cuando tengas conexión.',
   'settings.deleteResult.error': 'Algo salió mal. No se eliminó nada. Inténtalo más tarde o usa el enlace de solicitud.',
   'settings.backupRestoreHint': 'Pega un código o elige un archivo. Las copias se fusionan, nunca pierdes una oración.',

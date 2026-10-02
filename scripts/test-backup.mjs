@@ -581,6 +581,84 @@ t('an opted-out presence frame still reports praying=false',
     syncClient.mode = 'sim'
   }
 
+  // --- gaps found in the bug pass -----------------------------------------
+  {
+    const { syncClient } = await import('/src/sync/client.js')
+    const realGeo = navigator.geolocation
+    const realCapGeo = window.Capacitor?.Plugins?.Geolocation
+
+    // 1) A geolocation fix can arrive long after consent was withdrawn, and
+    // used to set this.loc and re-show the "you are here" ring anyway.
+    //
+    // navigator.geolocation is a getter on Navigator.prototype, so plain
+    // assignment is silently ignored in Chromium. Without defineProperty the
+    // stub never installs and these assertions pass for the wrong reason - the
+    // real geolocation simply denies and the fallback path happens to agree.
+    let releaseGeo
+    const geoDescriptor = Object.getOwnPropertyDescriptor(Navigator.prototype, 'geolocation')
+    Object.defineProperty(Navigator.prototype, 'geolocation', {
+      configurable: true,
+      get: () => ({ getCurrentPosition: (ok) => { releaseGeo = ok } })
+    })
+    // The stub captures the success callback instead of invoking it, so the probe
+    // is "did control reach my function" (i.e. was releaseGeo assigned).
+    navigator.geolocation.getCurrentPosition(() => {})
+    t('the geolocation stub is really installed', typeof releaseGeo === 'function')
+    releaseGeo = null
+    reset({ sharePresence: true })
+    syncClient.setPresenceSharing(true)
+    t('opting in requests a position', typeof releaseGeo === 'function')
+    syncClient.setPresenceSharing(false)
+    const seconds = { latitude: 51.5074, longitude: -0.1278 }
+    releaseGeo && releaseGeo(seconds)
+    await new Promise((r) => setTimeout(r, 150))
+    t('a position arriving after withdrawal is discarded',
+      !syncClient.loc, 'loc=' + JSON.stringify(syncClient.loc))
+    t('a position arriving after withdrawal does not re-show the ring',
+      !useStore.getState().youLoc, 'youLoc=' + JSON.stringify(useStore.getState().youLoc))
+
+    // Same for the native plugin path.
+    let releaseCap
+    window.Capacitor = {
+      isNativePlatform: () => true,
+      Plugins: {
+        Geolocation: {
+          getCurrentPosition: () => ({ then: () => ({ catch: () => {} }), catch: (f) => { releaseCap = f } })
+        }
+      }
+    }
+    // Simulate the plugin resolving after the user opted out.
+    syncClient.setPresenceSharing(true)
+    syncClient.setPresenceSharing(false)
+    releaseCap && releaseCap(new Error('denied'))
+    await new Promise((r) => setTimeout(r, 150))
+    t('a late native fallback cannot restore a position after withdrawal',
+      !syncClient.loc, 'loc=' + JSON.stringify(syncClient.loc))
+    // Restore the real geolocation before anything else asks for a position.
+    if (geoDescriptor) Object.defineProperty(Navigator.prototype, 'geolocation', geoDescriptor)
+    else delete Navigator.prototype.geolocation
+    window.Capacitor = window.Capacitor || {}
+    window.Capacitor.isNativePlatform = realCapGeo ? () => true : () => false
+    void realGeo
+    syncClient.setPresenceSharing(false)
+    await new Promise((r) => setTimeout(r, 100))
+  }
+
+  // 2) An offline user must still be able to erase this device.
+  {
+    const { requestDeletion, forgetIdentity, newDeleteToken } = await import('/src/shared/deletion.js')
+    reset({ anonId: 'anon-offline-delete', deleteToken: newDeleteToken(), localPrayerSeconds: 99 })
+    const outcome = await requestDeletion()
+    t('an unreachable server is reported as offline, not as deleted',
+      outcome === 'offline', 'outcome=' + outcome)
+    t('an offline attempt does NOT wipe local data',
+      useStore.getState().localPrayerSeconds === 99,
+      'seconds=' + useStore.getState().localPrayerSeconds)
+    forgetIdentity()
+    t('the device can then be erased explicitly while still offline',
+      useStore.getState().localPrayerSeconds === 0)
+  }
+
   return out
 })()`
 

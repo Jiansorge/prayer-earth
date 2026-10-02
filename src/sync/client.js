@@ -174,6 +174,11 @@ class SyncClient {
   // than at the next launch.
   applyPresenceConsent() {
     const s = useStore.getState()
+    // Bump the consent generation on EVERY call. A geolocation fix is requested
+    // asynchronously and can arrive seconds later - or much later, while the
+    // permission dialog sits open - so without this a user who turned sharing
+    // off would still get their position resolved and published afterwards.
+    this._consentGen = (this._consentGen || 0) + 1
     if (!s.sharePresence) {
       // Withdraw: drop the fix and clear the "you are here" ring, so nothing
       // derived from a position the user has since declined is left on screen.
@@ -204,16 +209,26 @@ class SyncClient {
   }
 
   ensureLocation() {
+    // Any fix already in flight belongs to an older consent decision.
+    const gen = this._consentGen || 0
+    const stale = () => (this._consentGen || 0) !== gen
     // The "you are here" ring is only ever shown for a REAL position. A
     // fallback city is an anonymous guess for the world's light; we never
     // pretend a guess is where the person actually is.
     const publishReal = () => useStore.getState().setYouLoc(this.loc)
     const done = (pos) => {
+      if (stale()) return
       this.loc = {
         lat: +pos.coords.latitude.toFixed(1),
         lon: +pos.coords.longitude.toFixed(1)
       }
       publishReal()
+    }
+    // The timezone fallback resolves synchronously, but going through the same
+    // guard keeps one rule for every path that can produce a position.
+    const fallback = () => {
+      if (stale()) return
+      this.fallbackLoc()
     }
     if (window.Capacitor?.isNativePlatform?.()) {
       // On native, use the Geolocation plugin via Plugins registry (no
@@ -227,7 +242,7 @@ class SyncClient {
             enableHighAccuracy: false
           })
           .then(done)
-          .catch(() => this.fallbackLoc())
+          .catch(fallback)
         return
       }
     }
@@ -235,15 +250,13 @@ class SyncClient {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           done,
-          () => {
-            this.fallbackLoc()
-          },
+          fallback,
           { timeout: 8000, maximumAge: 600000, enableHighAccuracy: false }
         )
         return
       }
     } catch {}
-    this.fallbackLoc()
+    fallback()
   }
 
   fallbackLoc() {

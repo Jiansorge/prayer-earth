@@ -94,6 +94,8 @@ export default {
   'settings.deleteResult.deleted': 'Your data has been deleted. Your prayer record is gone and you are starting fresh.',
   'settings.deleteResult.local_only': 'This device had never synced, so there was no record on the server to erase. Everything stored on this device has been deleted and you are starting fresh.',
   'settings.deleteResult.not_found': 'The server did not recognise this identity, so nothing was deleted. The data may have been copied to a new device. Use the request link instead.',
+  'settings.deleteDeviceOnly': 'Delete the data on this device only',
+  'settings.deleteResult.device_only': 'The data on this device has been deleted. We could not reach the server, so anything already uploaded may still be there - use the request link below, or try again when you are online.',
   'settings.deleteResult.offline': 'Could not reach the server. Nothing was sent and nothing was deleted. Try again when you are online.',
   'settings.deleteResult.error': 'Something went wrong. Nothing was deleted. Try again later, or use the request link.',
   'settings.backupRestoreHint': 'Paste a recovery code or choose a file. Backups merge, so you never lose a prayer.',

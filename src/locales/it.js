@@ -72,6 +72,8 @@ export default {
   'settings.deleteResult.deleted': 'I tuoi dati sono stati eliminati. Il tuo registro di preghiere è sparito e ricominci da zero.',
   'settings.deleteResult.local_only': "Questo dispositivo non è mai stato sincronizzato, quindi non c'era alcun record sul server da eliminare. Tutto ciò che è memorizzato su questo dispositivo è stato eliminato e riparti da zero.",
   'settings.deleteResult.not_found': 'Il server non ha riconosciuto questa identità, quindi non è stato eliminato nulla. I dati potrebbero essere stati copiati su un nuovo dispositivo. Usa il link di richiesta.',
+  'settings.deleteDeviceOnly': 'Elimina solo i dati di questo dispositivo',
+  'settings.deleteResult.device_only': 'I dati di questo dispositivo sono stati eliminati. Non siamo riusciti a raggiungere il server, quindi i dati già caricati potrebbero essere ancora presenti: usa il link per richiedere la cancellazione qui sotto, oppure riprova quando sei online.',
   'settings.deleteResult.offline': 'Impossibile raggiungere il server. Nulla è stato inviato né eliminato. Riprova quando sei online.',
   'settings.deleteResult.error': 'Qualcosa è andato storto. Non è stato eliminato nulla. Riprova più tardi o usa il link di richiesta.',
   'settings.backupRestoreHint': 'Incolla un codice o scegli un file. I backup si uniscono, non perdi mai una preghiera.',

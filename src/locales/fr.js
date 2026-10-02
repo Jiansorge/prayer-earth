@@ -89,6 +89,8 @@ export default {
   'settings.deleteResult.deleted': 'Vos données ont été supprimées. Votre historique de prières est effacé et vous repartez de zéro.',
   'settings.deleteResult.local_only': "Cet appareil n'a jamais été synchronisé : il n'y avait donc aucun enregistrement sur le serveur à supprimer. Tout ce qui est stocké sur cet appareil a été effacé et vous repartez de zéro.",
   'settings.deleteResult.not_found': 'Le serveur ne reconnaît pas cette identité, rien n’a donc été supprimé. Les données ont peut-être été copiées sur un nouvel appareil. Utilisez le lien de demande.',
+  'settings.deleteDeviceOnly': 'Supprimer uniquement les données de cet appareil',
+  'settings.deleteResult.device_only': "Les données de cet appareil ont été effacées. Nous n'avons pas pu joindre le serveur, il se peut donc que des données déjà envoyées existent encore : utilisez le lien de demande ci-dessous, ou réessayez quand vous serez en ligne.",
   'settings.deleteResult.offline': 'Impossible de joindre le serveur. Rien n’a été envoyé ni supprimé. Réessayez une fois en ligne.',
   'settings.deleteResult.error': 'Une erreur est survenue. Rien n’a été supprimé. Réessayez plus tard ou utilisez le lien de demande.',
   'settings.backupRestoreHint': 'Collez un code ou choisissez un fichier. Les sauvegardes fusionnent, vous ne perdez jamais une prière.',
