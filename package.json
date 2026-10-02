@@ -34,7 +34,7 @@
     "build:release": "node scripts/build-release.mjs",
     "test:units": "node scripts/test-units.mjs",
     "check:signing": "node scripts/check-signing.mjs",
-    "build:feature-graphic": "node scripts/build-graphic-layers.mjs && node scripts/build-graphic-globe.mjs && node scripts/build-graphic-hands.mjs && node scripts/build-feature-graphic.mjs"
+    "build:feature-graphic": "node scripts/build-graphic-layers.mjs && node scripts/build-graphic-globe.mjs && node scripts/build-graphic-hands.mjs && node scripts/build-graphic-book.mjs && node scripts/build-feature-graphic.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",

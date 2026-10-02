@@ -5,9 +5,10 @@
 // and the same starfield. The globe is centred over South America so the middle
 // of the sphere is land rather than open ocean.
 //
-// The globe itself is pre-rendered by build-graphic-globe.mjs with sharp,
-// because compositing a sphere from equirectangular layers is far more
-// predictable in one pass than layered inside a single SVG.
+// The globe is pre-rendered by build-graphic-globe.mjs, the book by
+// build-graphic-book.mjs, and both are composited here. Everything is rasterised
+// at SS x supersampling and downsampled at the end: fine sheet edges, hairline
+// gold rules and 1px specular highlights all alias badly at 1:1.
 
 import sharp from 'sharp'
 import fs from 'node:fs'
@@ -15,8 +16,10 @@ import fs from 'node:fs'
 const { globe } = JSON.parse(fs.readFileSync('dist-store/globe.json', 'utf8'))
 const { hands: handsArt } = JSON.parse(fs.readFileSync('dist-store/hands.json', 'utf8'))
 
+const SS = 3 // supersample factor
 const W = 1024
 const H = 500
+const TITLE = 'Joining Palms'
 
 // Lifted from the app's own icon and Earth scene.
 const C = {
@@ -28,8 +31,20 @@ const C = {
   star: '#cfe6ff',
   aura: '#3fa9f5',
   auraSoft: '#8fd8ff',
-  ink: '#f2fbff',
   shade: '#01050e'
+}
+
+// Warm champagne metal for the wordmark. The ice-white of the first version was
+// indistinguishable from a plain flat fill; a warm metal against the cool navy
+// has somewhere to go. The values stay high: a darker "deep" tone turns the
+// whole wordmark olive and muddy at this size.
+const M = {
+  hi: '#ffffff',
+  bounce: '#fffaf0',
+  lit: '#f9efd8',
+  mid: '#e3cea4',
+  deep: '#bda87c',
+  edge: '#8e7c58'
 }
 
 const rand = (seed) => {
@@ -46,28 +61,70 @@ const stars = Array.from({ length: 340 }, () => {
   return `<circle cx="${x}" cy="${y}" r="${rad}" fill="${C.star}" opacity="${op}"/>`
 }).join('')
 
-// --- open spell book -----------------------------------------------------
-const book = `<g transform="translate(512 404)">
-  <ellipse cx="0" cy="-50" rx="256" ry="140" fill="url(#auraGrad)" opacity="0.6"/>
-  <path d="M 0 -4 C -64 -30 -140 -34 -210 -20 L -210 34 C -140 20 -64 20 0 38 Z" fill="url(#pageL)"/>
-  <path d="M 0 -4 C 64 -30 140 -34 210 -20 L 210 34 C 140 20 64 20 0 38 Z" fill="url(#pageR)"/>
-  <path d="M 0 -4 L 0 38" stroke="${C.aura}" stroke-opacity="0.55" stroke-width="1.8"/>
-  <g stroke="${C.aura}" stroke-opacity="0.5" stroke-width="2.6" stroke-linecap="round">
-    <path d="M -178 -8 L -44 2"/><path d="M -178 6 L -66 13"/><path d="M -156 19 L -44 24"/>
-    <path d="M 178 -8 L 44 2"/><path d="M 178 6 L 66 13"/><path d="M 156 19 L 44 24"/>
-  </g>
-  <ellipse cx="0" cy="14" rx="16" ry="34" fill="${C.coastHot}" opacity="0.65"/>
-  <g fill="${C.coastHot}">
-    <circle cx="-16" cy="-22" r="3.2" opacity="0.95"/>
-    <circle cx="8" cy="-36" r="2.3" opacity="0.85"/>
-    <circle cx="26" cy="-18" r="1.9" opacity="0.75"/>
-    <circle cx="-6" cy="-56" r="1.7" opacity="0.65"/>
-    <circle cx="20" cy="-68" r="1.4" opacity="0.55"/>
-    <circle cx="-26" cy="-44" r="1.2" opacity="0.5"/>
-  </g>
-</g>`
+// --- the wordmark -----------------------------------------------------------
+// Drawn as a stack rather than one fill: a cool glow behind, a dark cast that
+// gives it depth, the metal face, and a specular sweep across the upper third.
+// A single <text> with a gradient can only ever be flat, because a gradient
+// across the bounding box has no idea where the letterforms are.
+const TITLE_X = 512
+const TITLE_Y = 92
+const TITLE_SIZE = 78
+// Position is passed separately from the attributes: including x/y in the shared
+// string and then overriding them produces a duplicate attribute, which is an
+// XML parse error, not a warning.
+const TITLE_FONT = "Garamond, 'Palatino Linotype', Georgia, serif"
+const TITLE_ATTRS =
+  `font-family="${TITLE_FONT}" font-size="${TITLE_SIZE}" ` +
+  `letter-spacing="7" text-anchor="middle"`
+const at = (dx = 0, dy = 0, extra = '') =>
+  `<text ${TITLE_ATTRS} x="${(TITLE_X + dx).toFixed(2)}" y="${(TITLE_Y + dy).toFixed(2)}" ${extra}>${TITLE}</text>`
 
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+const wordmark = `
+  <defs>
+    <!-- The glyph shape as a mask. Embossing needs the highlight and shadow to
+         be clipped to the letterforms; without that they just smear either side
+         of the text and it still reads as a flat fill. -->
+    <mask id="tGlyphs" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}">
+      <rect width="${W}" height="${H}" fill="#000"/>
+      <text ${TITLE_ATTRS} x="${TITLE_X}" y="${TITLE_Y}" fill="#fff">${TITLE}</text>
+    </mask>
+
+    <!-- Brushed striations, masked to the glyphs. Fine vertical banding is what
+         separates cast metal from a flat gradient at this size. -->
+    <linearGradient id="tBrush" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.16"/>
+      <stop offset="18%" stop-color="#000" stop-opacity="0.1"/>
+      <stop offset="34%" stop-color="#fff" stop-opacity="0.13"/>
+      <stop offset="52%" stop-color="#000" stop-opacity="0.11"/>
+      <stop offset="70%" stop-color="#fff" stop-opacity="0.14"/>
+      <stop offset="86%" stop-color="#000" stop-opacity="0.09"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0.15"/>
+    </linearGradient>
+  </defs>
+
+  <g>
+    <!-- cool halo, so the letters sit in the same light as the globe -->
+    ${at(0, 0, `fill="${C.auraSoft}" opacity="0.4" filter="url(#tGlow)"`)}
+    <!-- cast shadow below and right: the letters stand off the background -->
+    ${at(2.4, 3.2, 'fill="#01030a" opacity="0.8" filter="url(#tSoft)"')}
+    <!-- the metal face -->
+    ${at(0, 0, 'fill="url(#tMetal)"')}
+    <!-- emboss: an inner shadow from a copy pushed down, and an inner highlight
+         from a copy pushed up, both clipped to the glyphs -->
+    <g mask="url(#tGlyphs)">
+      ${at(0, 2.2, 'fill="#4a3d24" opacity="0.5"')}
+      ${at(0, -2.2, 'fill="#fffdf2" opacity="0.72"')}
+      <rect width="${W}" height="${H}" fill="url(#tBrush)"/>
+    </g>
+    <!-- specular sweep across the letterforms -->
+    ${at(0, 0, 'fill="url(#tSpec)" opacity="0.8"')}
+    <!-- a cool rim along the top edge, the light bouncing back off the globe -->
+    ${at(-1, -1.2, 'fill="#bfe6ff" opacity="0.26"')}
+    <!-- and a thin dark contour so the wordmark holds on the brightest stars -->
+    ${at(0, 0, 'fill="none" stroke="#040a18" stroke-opacity="0.32" stroke-width="0.7"')}
+  </g>`
+
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W * SS}" height="${H * SS}" viewBox="0 0 ${W} ${H}">
   <defs>
     <linearGradient id="space" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="${C.space}"/>
@@ -83,28 +140,43 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" 
       <stop offset="55%" stop-color="${C.aura}" stop-opacity="0.34"/>
       <stop offset="100%" stop-color="${C.aura}" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="handFill" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#f4fdff" stop-opacity="0.97"/>
-      <stop offset="42%" stop-color="${C.auraSoft}" stop-opacity="0.8"/>
-      <stop offset="100%" stop-color="${C.aura}" stop-opacity="0.48"/>
+
+    <!-- Champagne metal, lit from above: bright cap, mid body, dark underside,
+         then the bounce from whatever is below. -->
+    <linearGradient id="tMetal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${M.hi}"/>
+      <stop offset="16%" stop-color="${M.bounce}"/>
+      <stop offset="33%" stop-color="${M.lit}"/>
+      <stop offset="52%" stop-color="${M.mid}"/>
+      <stop offset="70%" stop-color="${M.deep}"/>
+      <stop offset="84%" stop-color="${M.edge}"/>
+      <stop offset="95%" stop-color="${M.mid}"/>
+      <stop offset="100%" stop-color="${M.bounce}"/>
     </linearGradient>
-    <linearGradient id="pageL" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#f4fcff"/>
-      <stop offset="100%" stop-color="#a9cbe9"/>
+
+    <!-- The specular sweep. Placed against the letterform box rather than the
+         whole graphic, which is why it reads as metal catching a light rather
+         than as a diagonal band laid over the image. -->
+    <linearGradient id="tSpec" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="18%" stop-color="#ffffff" stop-opacity="0.42"/>
+      <stop offset="34%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="72%" stop-color="#ffe9bd" stop-opacity="0"/>
+      <stop offset="88%" stop-color="#ffe9bd" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.5"/>
     </linearGradient>
-    <linearGradient id="pageR" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#e9f7ff"/>
-      <stop offset="100%" stop-color="#8db4da"/>
-    </linearGradient>
-    <linearGradient id="titleG" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="${C.coastHot}"/>
-    </linearGradient>
+
     <filter id="soft" x="-70%" y="-70%" width="240%" height="240%">
       <feGaussianBlur stdDeviation="10"/>
     </filter>
     <filter id="softer" x="-80%" y="-80%" width="260%" height="260%">
       <feGaussianBlur stdDeviation="24"/>
+    </filter>
+    <filter id="tSoft" x="-20%" y="-40%" width="150%" height="200%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <filter id="tGlow" x="-30%" y="-60%" width="170%" height="240%">
+      <feGaussianBlur stdDeviation="9"/>
     </filter>
   </defs>
 
@@ -124,18 +196,44 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" 
   <ellipse cx="512" cy="252" rx="126" ry="128" fill="#03081c" opacity="0.55" filter="url(#softer)"/>
   <image href="${handsArt}" x="380" y="132" width="264" height="264"/>
 
-  ${book}
-  
-
-  <g font-family="Garamond, 'Palatino Linotype', Georgia, serif" text-anchor="middle">
-    <text x="512" y="90" font-size="80" letter-spacing="7" fill="url(#titleG)" filter="url(#soft)" opacity="0.8">Joining Palms</text>
-    <text x="512" y="90" font-size="80" letter-spacing="7" fill="url(#titleG)">Joining Palms</text>
-  </g>
+  ${wordmark}
 </svg>`
 
 fs.writeFileSync('dist-store/feature-graphic.svg', svg)
-await sharp(Buffer.from(svg)).flatten({ background: C.space }).removeAlpha().png({ compressionLevel: 9 })
+
+// The book is drawn at 3x in its own file. Trim it to its alpha bounds first so
+// placement is by the artwork rather than by the viewBox, then scale it so the
+// hands still read as rising out of it rather than being buried.
+const BOOK_W = 344
+const bookRaw = await sharp('dist-store/book.png')
+  .trim({ threshold: 1 })
+  .resize(BOOK_W * SS, null, { fit: 'inside' })
+  .png()
+  .toBuffer()
+const bookMeta = await sharp(bookRaw).metadata()
+const bookLeft = Math.round((W * SS) / 2 - bookMeta.width / 2)
+const bookTop = Math.round(H * SS - bookMeta.height - 14 * SS)
+if (bookLeft < 0 || bookTop < 0 || bookLeft + bookMeta.width > W * SS || bookTop + bookMeta.height > H * SS) {
+  throw new Error(
+    `book does not fit: ${bookLeft},${bookTop} ${bookMeta.width}x${bookMeta.height} into ${W * SS}x${H * SS}`
+  )
+}
+
+// Two passes, not one: sharp runs resize BEFORE composite, so compositing a
+// supersampled book onto an already-downsampled base is rejected as oversized.
+const composed = await sharp(Buffer.from(svg))
+  .composite([{ input: bookRaw, left: bookLeft, top: bookTop }])
+  .png()
+  .toBuffer()
+
+await sharp(composed)
+  .resize(W, H, { kernel: 'lanczos3' })
+  .flatten({ background: C.space })
+  .removeAlpha()
+  .png({ compressionLevel: 9 })
   .toFile('dist-store/feature-graphic.png')
 
 const m = await sharp('dist-store/feature-graphic.png').metadata()
-console.log(`feature-graphic.png  ${m.width}x${m.height}  ${Math.round(fs.statSync('dist-store/feature-graphic.png').size / 1024)}KB  channels=${m.channels}`)
+console.log(
+  `feature-graphic.png  ${m.width}x${m.height}  ${Math.round(fs.statSync('dist-store/feature-graphic.png').size / 1024)}KB  channels=${m.channels}`
+)
