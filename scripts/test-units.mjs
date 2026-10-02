@@ -263,7 +263,47 @@ const stripComments = (text) =>
     /\.catch\(fallback\)/.test(body) && !/\.catch\(\(\) => \{[^}]*this\.fallbackLoc/.test(body))
 }
 
-// 6. Fading the ambient bed DOWN must be fast, and must not be able to click.
+// 6. The deletion endpoint must be reached over HTTP, not on the socket URL.
+//
+// requestDeletion reused VITE_SYNC_URL, which is a wss:// URL meant for the
+// WebSocket. The fetch threw, the catch reported 'offline', and the app told
+// the user nothing was deleted - on every Android build, since the app shell is
+// the only build that sets VITE_SYNC_URL at all. Found on a device.
+//
+// This is a static check on purpose: in the browser test environment
+// VITE_SYNC_URL is unset, so the default https base is used there and the bug
+// is invisible. Only the source shows what the app shell will do.
+{
+  const src = readFileSync(path.join(ROOT, 'src/shared/deletion.js'), 'utf8')
+  const base = src.match(/const syncBase = \(\) => \{[\s\S]{0,700}?\n\}/)
+  const body = base ? base[0] : ''
+  check('the HTTP base is derived, not the socket URL verbatim',
+    /const syncBase = \(\)/.test(src))
+  check('a wss:// base is rewritten to https://',
+    /startsWith\('wss:\/\/'\)/.test(body) && /'https:\/\/'/.test(body), body.slice(0, 200))
+  check('a ws:// base is rewritten to http://',
+    /startsWith\('ws:\/\/'\)/.test(body) && /'http:\/\/'/.test(body))
+  check('the rewrite covers both schemes in one function',
+    /wss:\/\//.test(body) && /ws:\/\//.test(body) && /https:\/\//.test(body) && /http:\/\//.test(body))
+}
+
+// 7. The app shell must not be on an opaque origin.
+//
+// capacitor:// is a non-special scheme, so it is an opaque origin and every
+// browser serialises its Origin header as the literal string "null" - which the
+// sync engine must refuse, because every sandboxed iframe and file:// document
+// sends "null" too. androidScheme must therefore be https, giving a real,
+// allow-listable origin. Verified on a Pixel: with capacitor:// the device sent
+// "null" and could not connect at all.
+{
+  const cfg = readFileSync(path.join(ROOT, 'capacitor.config.json'), 'utf8')
+  const android = /"androidScheme"\s*:\s*"([^"]+)"/.exec(cfg)
+  check('the Android app shell has a real, allow-listable origin',
+    android && android[1] === 'https',
+    'androidScheme=' + (android ? android[1] : '(absent)'))
+  check('the Android app shell is not served from an opaque scheme',
+    !/androidScheme"\s*:\s*"capacitor"/.test(cfg))
+}
 {
   const src = readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8')
   const ramp = src.match(/_rampMaster\(target\)\s*\{[\s\S]{0,600}?\n  \}/)

@@ -659,6 +659,41 @@ t('an opted-out presence frame still reports praying=false',
       useStore.getState().localPrayerSeconds === 0)
   }
 
+  // --- the deletion endpoint's URL ------------------------------------------
+// Found by running the app on a phone: requestDeletion posted to the WebSocket
+// URL. VITE_SYNC_URL is a wss:// URL, so the fetch threw, the catch reported
+// 'offline', and the app told the user nothing had been deleted. The app shell
+// is the only build that sets VITE_SYNC_URL, which is why web - and therefore
+// this suite - was green throughout.
+{
+  const { requestDeletion } = await import('/src/shared/deletion.js')
+  const seen = []
+  const real = window.fetch
+  // Fully stubbed: nothing may leave the device. This suite never calls
+  // production, and a deletion request would be an especially bad exception.
+  window.fetch = (u, i) => {
+    seen.push(String(u))
+    return Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({ ok: false }) })
+  }
+  try { await requestDeletion() } catch {}
+  window.fetch = real
+
+  // No regex with an escaped slash in here: this whole suite is a TEMPLATE
+  // LITERAL, so a backslash sequence is consumed before the browser ever sees
+  // it. "/^https?:\/\//" arrives as "/^https?://" - the "//" starts a comment and
+  // silently eats the rest of the expression.
+  const isSocket = (u) => u.startsWith('ws' + 's://') || u.startsWith('ws://')
+  const isHttp = (u) => u.startsWith('https' + '://') || u.startsWith('http://')
+
+  t('the deletion request was actually attempted', seen.length > 0, JSON.stringify(seen.slice(0, 2)))
+  t('the deletion request is never sent to a WebSocket URL',
+    seen.length > 0 && !seen.some(isSocket),
+    JSON.stringify(seen))
+  t('the deletion request targets an HTTP(S) URL',
+    seen.length > 0 && seen.every(isHttp),
+    JSON.stringify(seen))
+}
+
   return out
 })()`
 

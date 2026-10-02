@@ -3,7 +3,7 @@
   "appName": "Joining Palms",
   "webDir": "dist",
   "server": {
-    "androidScheme": "capacitor",
+    "androidScheme": "https",
     "iosScheme": "capacitor"
   }
 }

@@ -37,10 +37,24 @@ export function newDeleteToken() {
 // The sync Worker, derived the same way the rest of the app derives it.
 const SYNC_ORIGIN = 'https://joining-palms.app'
 
+// The HTTP base for the deletion endpoint.
+//
+// This deliberately does NOT reuse the socket URL verbatim. VITE_SYNC_URL is a
+// ws:// or wss:// URL, because it is meant for the WebSocket. Posting to
+// "wss://joining-palms.app/delete" throws immediately, the catch reports
+// 'offline', and the app tells the user nothing was deleted - which is exactly
+// what happened on every Android build, since the app shell is the only build
+// that sets VITE_SYNC_URL at all.
+//
+// The socket and the HTTP API are served by the same host on the same port, so
+// the scheme is the only thing that needs changing.
 const syncBase = () => {
   const override = import.meta.env.VITE_SYNC_URL
-  if (override) return String(override).replace(/\/$/, '')
-  return SYNC_ORIGIN
+  let base = SYNC_ORIGIN
+  if (override) base = String(override).replace(/\/$/, '')
+  if (base.startsWith('wss://')) return 'https://' + base.slice('wss://'.length)
+  if (base.startsWith('ws://')) return 'http://' + base.slice('ws://'.length)
+  return base
 }
 
 // Ask the server to erase the record for this identity.

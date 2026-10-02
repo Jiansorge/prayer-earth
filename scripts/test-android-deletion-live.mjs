@@ -149,7 +149,15 @@ const syncThenDelete = `
   if (!synced) return { error: 'sync timed out' }
 
   // Now the REAL client deletion function, over the app's real HTTPS.
+  //
+  // requestDeletion reads the identity out of the store, so the store has to
+  // hold the disposable identity first. Without this the call deletes the
+  // APP's real account instead, and the resurrection probe below then examines
+  // a record that was never deleted - which looks exactly like a failure.
+  window.__store.setState({ anonId: anon, deleteToken: token, localPrayerSeconds: 29 })
   const out = await window.__deletion.requestDeletion()
+  // Leave the store as we found it.
+  window.__store.setState({ anonId: '', localPrayerSeconds: 0 })
   return { synced: true, seconds: synced.stats?.localPrayerSeconds, outcome: out }
 })()`
 
