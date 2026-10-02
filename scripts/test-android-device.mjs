@@ -1,5 +1,5 @@
 ﻿import { execFileSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import WebSocket from 'ws'
@@ -14,6 +14,17 @@ const ADB = process.env.ADB || (process.platform === 'win32'
   ? path.join(process.env.LOCALAPPDATA || '', 'Android', 'Sdk', 'platform-tools', 'adb.exe')
   : 'adb')
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+// The app shell's URL, derived from capacitor.config rather than hardcoded.
+//
+// This suite drives the WebView by hand and used to hardcode
+// capacitor://localhost/, which became a dead URL the moment androidScheme was
+// set to https. Deriving it means the two cannot drift apart again.
+const APP_SHELL_URL = (() => {
+  const cfg = JSON.parse(readFileSync(path.join(ROOT, 'capacitor.config.json'), 'utf8'))
+  const scheme = (cfg && cfg.server && cfg.server.androidScheme) || 'https'
+  return scheme + '://localhost/'
+})()
 let failures = 0
 let cdp = null
 let forwarded = false
@@ -164,7 +175,7 @@ const dismissOnboarding = async () => {
 const enableTestBridge = async () => {
   // The store hook is now gated at BUILD time (VITE_TEST_HOOKS=true in the
   // instrumented capacitor build); the old `?peTest=1` query param is gone.
-  await cdp.send('Page.navigate', { url: 'capacitor://localhost/' })
+  await cdp.send('Page.navigate', { url: APP_SHELL_URL })
   await cdp.waitFor(`document.readyState === 'complete' && !!document.querySelector('.app')`, 15000)
   await dismissOnboarding()
   await cdp.waitFor(`!!window.__store`, 15000)
@@ -199,7 +210,16 @@ const testAudio = async () => {
   if (state.element) check('audio element is not paused', state.paused === false, JSON.stringify(state))
   const exceptions = cdp.events.filter((event) => event.method === 'Runtime.exceptionThrown')
   const exceptionText = exceptions.map((event) => event.params?.exceptionDetails?.exception?.description || event.params?.exceptionDetails?.text || 'unknown').join(' | ')
-  const assetLogs = cdp.events.filter((event) => event.method === 'Log.entryAdded' && /capacitor:\/\/localhost\/assets|Unable to preload CSS|ERR_FILE_NOT_FOUND/i.test(event.params?.entry?.text || ''))
+  // Must match BOTH app-shell schemes. The shell is served from https://localhost
+// (capacitor.config androidScheme), and a filter that only knew the old
+// capacitor:// origin would quietly match nothing - a green check that can never
+// fail.
+const assetLogs = cdp.events.filter((event) =>
+    event.method === 'Log.entryAdded' &&
+    /(?:\/\/|capacitor:\/\/)localhost\/assets|Unable to preload CSS|ERR_FILE_NOT_FOUND/i.test(
+      event.params?.entry?.text || ''
+    )
+  )
   check('Android WebView has no uncaught exceptions', exceptions.length === 0, `exceptions=${exceptions.length}${exceptionText ? ` ${exceptionText}` : ''}`)
   check('Android WebView loads packaged assets', assetLogs.length === 0, `assetErrors=${assetLogs.length}`)
   await cdp.evaluate(`document.querySelector('.ctrl-btn.stop')?.click()`)
@@ -545,7 +565,7 @@ const testCorruptStorageRecovery = async () => {
   log(`corrupt-storage baseline: ${JSON.stringify(baseline)}`)
 
   // Relaunch the page with the corrupt value in place.
-  await cdp.send('Page.navigate', { url: 'capacitor://localhost/' })
+  await cdp.send('Page.navigate', { url: APP_SHELL_URL })
   await sleep(7000)
   const recovered = await cdp.evaluate(`(() => {
     const boundary = document.body.innerText.includes('A little light flickered')
@@ -573,7 +593,7 @@ const testCorruptStorageRecovery = async () => {
     restored === true, String(restored))
 
   // Prove it by reloading and reading the counters back.
-  await cdp.send('Page.navigate', { url: 'capacitor://localhost/' })
+  await cdp.send('Page.navigate', { url: APP_SHELL_URL })
   await sleep(7000)
   const after = await cdp.evaluate(`(() => {
     const s = window.__store && window.__store.getState()

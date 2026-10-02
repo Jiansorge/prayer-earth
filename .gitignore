@@ -54,3 +54,4 @@ dist-store/
 !public/screenshot.png
 *.pnm
 build-debug.log
+.aab-inspect/

@@ -85,9 +85,9 @@ for (const repo of REPOS) {
     for (const f of files) {
       if (!fs.statSync(f).isFile()) continue
       if (!/\.(mjs|js|ts|json|ya?ml)$/.test(f)) continue
-      // This audit necessarily names them to check for them; it is the check,
-      // not a leak path.
-      if (path.basename(f) === 'audit-repo-containment.mjs') continue
+      // This audit necessarily names them to check for them, as does the coverage
+      // audit that references them by area. They are the checks, not leak paths.
+      if (/audit-(repo-containment|coverage)\.mjs$/.test(path.basename(f))) continue
       const src = fs.readFileSync(f, 'utf8')
       for (const local of LOCAL) {
         if (src.includes(local + '/') || src.includes("'" + local + "'") || src.includes('"' + local + '"')) {

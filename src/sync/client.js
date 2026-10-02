@@ -83,11 +83,12 @@ const SIM_PEOPLE = [
 function defaultUrl() {
   const override = import.meta.env.VITE_SYNC_URL
   if (override) return override
-  // A Capacitor build's WebView origin is capacitor://localhost, so a
-  // location-derived URL would be the dead ws://localhost. If a build somehow
-  // reached native production without VITE_SYNC_URL (e.g. a plain `npm run
-  // build` + `cap sync` instead of `build:capacitor`), default to the real
-  // Worker rather than shipping a permanently-offline app.
+  // A Capacitor build's WebView serves the app from https://localhost (see
+  // capacitor.config androidScheme), so a location-derived URL would be the
+  // dead wss://localhost. If a build somehow reached native production without
+  // VITE_SYNC_URL (e.g. a plain `npm run build` + `cap sync` instead of
+  // `build:capacitor`), default to the real Worker rather than shipping a
+  // permanently-offline app.
   if (import.meta.env.PROD && window.Capacitor?.isNativePlatform?.()) {
     return 'wss://joining-palms.app'
   }
