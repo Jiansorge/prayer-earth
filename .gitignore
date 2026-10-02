@@ -53,3 +53,4 @@ dist-store/
 !public/land-mask.png
 !public/screenshot.png
 *.pnm
+build-debug.log
