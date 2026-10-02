@@ -63,7 +63,10 @@ const stars = Array.from({ length: 340 }, () => {
 // pattern from reading as a single flat grid. Deliberately not a flower-of-life
 // or a Metatron construction: the app carries 16 traditions, and both of those
 // belong to one each.
+// The globe is centred over South America so the middle of the sphere is land
+// rather than open ocean. Its centre is the anchor for the atmosphere.
 const G = { cx: 512, cy: 250 }
+const EARTH = { cx: 512, cy: 258, r: 146 }
 const geo = []
 
 function ring(sides, radius, rotDeg, width, opacity, nodes) {
@@ -158,8 +161,9 @@ const wordmark = `
   </defs>
 
   <g>
-    <!-- a wide, faint halo: this is a quiet wordmark, not a logo stamped on -->
-    ${at(0, 0, `fill="${C.aura}" opacity="0.3" filter="url(#tGlow)"`)}
+    <!-- the light around the wordmark: wide wash, then tight bright core -->
+    ${at(0, 0, `fill="#4aa8ff" opacity="0.5" filter="url(#tGlowWide)"`)}
+    ${at(0, 0, `fill="#9fdcff" opacity="0.62" filter="url(#tGlowTight)"`)}
     <!-- the soft shadow that lifts the letters off the starfield -->
     ${at(1.6, 2.6, 'fill="#01030a" opacity="0.62" filter="url(#tSoft)"')}
     <!-- a second, tighter shadow right under the baseline for contact -->
@@ -189,13 +193,33 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W * SS}" height="$
       <stop offset="100%" stop-color="${C.nebula}" stop-opacity="0"/>
     </radialGradient>
 
-    <!-- The gentle aura around the Earth. A wide, weak falloff: a tight one
-         reads as a hard rim on the sphere rather than as light in the air. -->
-    <radialGradient id="auraGrad" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="${C.auraSoft}" stop-opacity="0.34"/>
-      <stop offset="38%" stop-color="${C.aura}" stop-opacity="0.2"/>
-      <stop offset="72%" stop-color="${C.aura}" stop-opacity="0.07"/>
-      <stop offset="100%" stop-color="${C.aura}" stop-opacity="0"/>
+    <!-- The atmosphere around the Earth.
+         Three layers rather than one, because a single wide falloff either
+         hugs the limb as a hard rim or floods the frame - there is no radius
+         that reads as both "around the planet" and "in the air".
+           rim    - a thin bright limb right at the edge of the sphere
+           bloom  - the main glow, white into light blue
+           air    - a very wide, very weak wash that lifts the lattice out of
+                    the background without fogging it -->
+    <radialGradient id="rimGlow" gradientUnits="userSpaceOnUse" cx="${EARTH.cx}" cy="${EARTH.cy}" r="${EARTH.r + 34}">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="55%" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="74%" stop-color="#dff4ff" stop-opacity="0.62"/>
+      <stop offset="88%" stop-color="#8fd0ff" stop-opacity="0.26"/>
+      <stop offset="100%" stop-color="#4aa4ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bloomGlow" gradientUnits="userSpaceOnUse" cx="${EARTH.cx}" cy="${EARTH.cy}" r="${EARTH.r + 86}">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.34"/>
+      <stop offset="30%" stop-color="#eaf8ff" stop-opacity="0.3"/>
+      <stop offset="58%" stop-color="#9fd8ff" stop-opacity="0.19"/>
+      <stop offset="82%" stop-color="#5aa8f5" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#3a86e0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="airGlow" gradientUnits="userSpaceOnUse" cx="${EARTH.cx}" cy="${EARTH.cy}" r="${EARTH.r + 190}">
+      <stop offset="0%" stop-color="#bfe4ff" stop-opacity="0.13"/>
+      <stop offset="40%" stop-color="#8cc8ff" stop-opacity="0.07"/>
+      <stop offset="72%" stop-color="#5f9de8" stop-opacity="0.028"/>
+      <stop offset="100%" stop-color="#4a7fd0" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="geoGlow" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="${C.aura}" stop-opacity="0.2"/>
@@ -230,8 +254,14 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W * SS}" height="$
     <filter id="tSoft" x="-20%" y="-40%" width="150%" height="200%">
       <feGaussianBlur stdDeviation="3.2"/>
     </filter>
-    <filter id="tGlow" x="-30%" y="-60%" width="170%" height="240%">
-      <feGaussianBlur stdDeviation="10"/>
+    <!-- Two glows: a wide soft wash that lifts the wordmark off the starfield,
+         and a tighter brighter one that reads as light bending around the
+         letterforms. One blur alone reads either as haze or as a hard outline. -->
+    <filter id="tGlowWide" x="-45%" y="-90%" width="200%" height="290%">
+      <feGaussianBlur stdDeviation="16"/>
+    </filter>
+    <filter id="tGlowTight" x="-30%" y="-70%" width="170%" height="250%">
+      <feGaussianBlur stdDeviation="5"/>
     </filter>
   </defs>
 
@@ -243,9 +273,11 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W * SS}" height="$
   <!-- the geometric field, behind the sphere so only its outer rings show -->
   ${geometry}
 
-  <!-- the aura, then the Earth inside it -->
-  <circle cx="${G.cx}" cy="${G.cy}" r="292" fill="url(#auraGrad)" filter="url(#softer)"/>
+  <!-- the atmosphere, then the Earth inside it -->
+  <circle cx="${EARTH.cx}" cy="${EARTH.cy}" r="${EARTH.r + 190}" fill="url(#airGlow)"/>
+  <circle cx="${EARTH.cx}" cy="${EARTH.cy}" r="${EARTH.r + 86}" fill="url(#bloomGlow)" filter="url(#softer)"/>
   <image href="${globe}" x="366" y="112" width="292" height="292"/>
+  <circle cx="${EARTH.cx}" cy="${EARTH.cy}" r="${EARTH.r + 34}" fill="url(#rimGlow)" filter="url(#softer)"/>
 
   <!-- the app icon's own glowing hands, lifted out of its navy frame. A soft
        dark halo separates them from the lit globe so they read as being in
