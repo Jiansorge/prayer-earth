@@ -7,7 +7,9 @@ import path from 'node:path'
 // of test hooks, the permission set, and that the artifact is newer than the
 // sources it is supposed to contain.
 
-const AAB = path.resolve('android/app/build/outputs/bundle/release/app-release.aab')
+const AAB = path.resolve(
+  process.env.AAB || 'android/app/build/outputs/bundle/release/app-release.aab'
+)
 const JAVA = process.env.JAVA_HOME || ''
 const root = process.cwd()
 
@@ -81,9 +83,18 @@ ok(/assets\/public\/assets\/.*\.js/.test(entries), 'compiled JS is present')
 
 // Test hooks are gated by an env var at build time. Prove it is OFF in the
 // artifact we are about to ship, rather than trusting the build command.
+// Note the `base/` prefix: everything in an AAB is nested under base/, and a
+// filter missing it yields an EMPTY list. That is not a harmless typo - every
+// "the shipped bundle does not contain X" check then passes on an empty string,
+// including the test-hook check, which is the one that matters most here.
+//
+// The trailing \r? matters too: on Windows `jar tf` emits CRLF, so a plain $
+// never matches and the filter returns nothing. That is exactly what happened,
+// and it is why these checks were green for so long.
 const jsFiles = entries
-  .split('\n')
-  .filter((f) => /^assets\/public\/assets\/.*\.js$/.test(f))
+  .split(/\r?\n/)
+  .map((f) => f.trim())
+  .filter((f) => /^base\/assets\/public\/assets\/.*\.js$/.test(f))
 const tmp = path.resolve('.aab-inspect')
 // spawnSync reports ENOENT - misleadingly - when the cwd does not exist, so
 // this must be created rather than assumed.
@@ -92,6 +103,13 @@ execFileSync(bin('jar'), ['xf', AAB, ...jsFiles], { cwd: tmp, stdio: 'ignore' })
 const bundleText = jsFiles
   .map((f) => readFileSync(path.join(tmp, f), 'utf8'))
   .join('\n')
+
+// Never let the checks below run on nothing. Every one of them is a
+// "the shipped bundle does not contain X" assertion, and an empty subject makes
+// all of them true.
+ok(jsFiles.length > 0, 'found the compiled JS inside the AAB', `${jsFiles.length} files`)
+ok(bundleText.length > 100000, 'the extracted bundle is substantial', `${bundleText.length} chars`)
+ok(bundleText.includes('localStorage'), 'the extracted bundle really is the app')
 ok(
   !bundleText.includes('__TEST_HOOKS_ENABLED'),
   'test hooks are compiled out',
@@ -101,6 +119,38 @@ ok(
   !/window\.__deletion\s*=/.test(bundleText),
   'the deletion test hook is not exposed in the shipped app'
 )
+
+// The delete call site must resolve against an HTTP(S) base.
+//
+// This is the bug that shipped: VITE_SYNC_URL is a wss:// URL used for the
+// socket, and the Play build - the ONLY build that sets it, because it alone
+// uses `--mode capacitor` - was reusing it for the HTTP POST. The fetch threw,
+// the catch reported 'offline', and the app said nothing was deleted. Web was
+// never affected, which is exactly why no test caught it.
+//
+// Checking the emitted artifact rather than the source is the point: the two
+// builds genuinely differ here, so only one of them can be judged from source.
+{
+  const at = bundleText.indexOf('/delete')
+  ok(at > 0, 'the shipped bundle contains the delete call', 'not found')
+  if (at > 0) {
+    const callSite = bundleText.slice(Math.max(0, at - 500), at)
+    ok(
+      !/wss:\/\/[^"'`]*\/delete/.test(callSite) && !callSite.includes('wss://joining-palms.app/delete'),
+      'the delete call does not resolve against a WebSocket URL',
+      callSite.slice(-160).replace(/\s+/g, ' ')
+    )
+    // And the scheme rewrite must be present, since that is what fixes it.
+    // Quote-agnostic: the minifier is free to use ' " or ` and does not promise
+    // to be stable across versions, so pinning one of them would make this
+    // check fail for cosmetic reasons and get "fixed" by loosening it.
+    ok(
+      bundleText.includes('wss://') && /startsWith\([`'"]wss:\/\/[`'"]\)/.test(bundleText),
+      'the shipped bundle rewrites wss:// to https:// for the HTTP call',
+      bundleText.includes('wss://') ? 'no startsWith("wss://") found in the bundle' : 'no wss:// at all'
+    )
+  }
+}
 
 // Permissions: coarse location only, and only because presence is opt-in.
 ok(

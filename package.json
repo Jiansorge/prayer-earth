@@ -37,7 +37,8 @@
     "build:feature-graphic": "node scripts/build-graphic-layers.mjs && node scripts/build-graphic-globe.mjs && node scripts/build-graphic-hands.mjs && node scripts/build-feature-graphic.mjs",
     "audit:graphic": "node scripts/audit-graphic.mjs",
     "audit:coverage": "node scripts/audit-coverage.mjs",
-    "audit:containment": "node scripts/audit-repo-containment.mjs"
+    "audit:containment": "node scripts/audit-repo-containment.mjs",
+    "verify:aab-guard": "node scripts/verify-aab-guard.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",
