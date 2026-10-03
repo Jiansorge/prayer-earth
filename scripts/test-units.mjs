@@ -287,7 +287,40 @@ const stripComments = (text) =>
     /wss:\/\//.test(body) && /ws:\/\//.test(body) && /https:\/\//.test(body) && /http:\/\//.test(body))
 }
 
-// 7. The app shell must not be on an opaque origin.
+// 8. Every link off the device must actually work on a device.
+//
+// <a target="_blank"> is DEAD in the Android WebView: it does not create a
+// second window, so the tap does nothing. On the web the identical markup works,
+// which is why the report-a-re-upload link, the delete-data link, the manual
+// deletion link and both Ko-fi buttons were all dead on a phone.
+{
+  const sheet = readFileSync(path.join(ROOT, 'src/components/SettingsSheet.jsx'), 'utf8')
+  check(
+    'the settings sheet has no target=_blank links',
+    !/target="_blank"/.test(sheet),
+    'remaining: ' + (sheet.match(/target="_blank"/g) || []).length
+  )
+  check('external links go through openExternal', /openExternal\(/.test(sheet))
+  check('openExternal is imported', /from '\.\.\/shared\/openExternal\.js'/.test(sheet))
+
+  const helper = readFileSync(path.join(ROOT, 'src/shared/openExternal.js'), 'utf8')
+  check('openExternal uses the Capacitor Browser plugin', /Plugins\?\.Browser/.test(helper))
+  check('openExternal falls back rather than leaving a dead tap', /window\.location\.assign/.test(helper))
+  // It must not statically import the plugin, or the web shim ships to the web
+  // bundle for no reason.
+  check('openExternal resolves the plugin at call time, not by import',
+    !/^import .*@capacitor\/browser/m.test(helper))
+
+  // And the mail link, which had its own bug: assigning href during the click
+  // is too late, the browser has already followed href="#".
+  const email = readFileSync(path.join(ROOT, 'src/components/ObfuscatedEmail.jsx'), 'utf8')
+  check('the mail link prevents the default before assigning mailto',
+    /e\.preventDefault\(\)/.test(email))
+  check('the mail link assigns the mailto explicitly',
+    /location\.assign\(`mailto:/.test(email))
+  check('the mail link no longer assigns href during the click',
+    !/currentTarget\.href\s*=\s*`mailto:/.test(email))
+}
 //
 // capacitor:// is a non-special scheme, so it is an opaque origin and every
 // browser serialises its Origin header as the literal string "null" - which the

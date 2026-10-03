@@ -1,6 +1,7 @@
 ﻿import React, { startTransition, useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { speech, CHANT_VOICE } from '../audio/speech.js'
+import { openExternal } from '../shared/openExternal.js'
 import { ambient } from '../audio/ambience.js'
 import SoundControls from './SoundControls.jsx'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
@@ -586,14 +587,9 @@ export default function SettingsSheet() {
         >
           {anonCopied ? t('settings.copied') : t('settings.copyAnonId')}
         </button>
-        <a
-          className="field-report"
-          href={DELETE_DATA_URL}
-          target="_blank"
-          rel="noreferrer noopener"
-        >
+        <button type="button" className="field-report" onClick={() => openExternal(DELETE_DATA_URL)}>
           {t('settings.deleteDataLink')}
-        </a>
+        </button>
 
         {/* Self-service deletion: no email, no waiting. The request only goes
             out after an explicit confirmation, because it is irreversible, and
@@ -621,9 +617,9 @@ export default function SettingsSheet() {
             <button className="field-btn" onClick={() => setDeleteOpen(false)} style={{ marginTop: 8 }}>
               {t('settings.deleteDataCancel')}
             </button>
-            <a className="field-report" href={DELETE_DATA_URL} target="_blank" rel="noreferrer noopener">
+            <button type="button" className="field-report" onClick={() => openExternal(DELETE_DATA_URL)}>
               {t('settings.deleteDataManual')}
-            </a>
+            </button>
           </div>
         )}
 
@@ -751,12 +747,12 @@ export default function SettingsSheet() {
         <label className="field-label section">{t('settings.donateLabel')}</label>
         <div className="field-hint">{t('settings.donateHint')}</div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <a className="field-btn" href={DONATE_URL} target="_blank" rel="noopener noreferrer" style={{ flex: 1 }}>
+          <button type="button" className="field-btn" onClick={() => openExternal(DONATE_URL)} style={{ flex: 1 }}>
             {t('settings.donateButton')}
-          </a>
-          <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Ko-fi — joiningpalms" title="Ko-fi — joiningpalms" style={{ flex: '0 0 auto', display: 'inline-flex' }}>
+          </button>
+          <button type="button" onClick={() => openExternal(DONATE_URL)} aria-label="Ko-fi — joiningpalms" title="Ko-fi — joiningpalms" style={{ flex: '0 0 auto', display: 'inline-flex', background: 'none', border: 0, padding: 0, cursor: 'pointer' }}>
             <img src="/kofi6.png" alt="Support on Ko-fi" style={{ height: 36, border: 0, display: 'block' }} loading="lazy" />
-          </a>
+          </button>
         </div>
 
         <div className="field-divider" />
@@ -776,9 +772,9 @@ export default function SettingsSheet() {
         <button className="field-url" onClick={() => shareApp('web')} title={APP_ORIGIN}>
           {APP_ORIGIN}
         </button>
-        <a className="field-report" href={REPORT_URL} target="_blank" rel="noreferrer noopener">
+        <button type="button" className="field-report" onClick={() => openExternal(REPORT_URL)}>
           {t('settings.reportCopy')}
-        </a>
+        </button>
 
         {!isAppShell() && !isMobile() && (
           <button
