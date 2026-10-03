@@ -15,9 +15,15 @@ export default function ObfuscatedEmail({ className }) {
   const [built, setBuilt] = useState(false)
   const address = `${local}@${domain}.${tld}`
   const handleClick = (e) => {
-    // build the mailto on first interaction (never a static href to scrape)
-    e.currentTarget.href = `mailto:${address}`
+    // preventDefault is load-bearing. The old version assigned
+    // e.currentTarget.href = mailto:... inside the click handler, by which point
+    // the browser had ALREADY followed href="#" - so the assignment came too
+    // late and no mail client ever opened. It "worked" in a desktop browser by
+    // luck and did nothing at all in the Android WebView, which is where the
+    // report-a-re-upload link was reported broken.
+    e.preventDefault()
     setBuilt(true)
+    window.location.assign(`mailto:${address}`)
   }
 
   return (

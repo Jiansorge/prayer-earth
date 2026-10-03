@@ -48,6 +48,9 @@ export class AmbientEngine {
         this.limiter.connect(this.ctx.destination)
         this.master = this.ctx.createGain()
         this.master.gain.value = 0
+        // A new context means the old scheduled target is meaningless; without
+        // this the first ramp of the new graph would be skipped.
+        this._lastRampTarget = null
         this.master.connect(this.limiter)
         // Chant/bell bus: routed to the limiter (not the bed fader). Gated only
         // by the true mute — so the "soft chant" fallback and welcome bell stay
@@ -315,6 +318,18 @@ export class AmbientEngine {
   _rampMaster(target) {
     if (!this.master || !this.ctx) return
     const rising = target > this.master.gain.value
+    // Skip when we are already heading to (or sitting at) this exact target.
+    //
+    // Re-issuing setTargetAtTime with the SAME value is not a no-op: it restarts
+    // the exponential from wherever the parameter currently is, so a stream of
+    // identical calls (any re-render that re-applies the level) makes the gain
+    // visibly and audibly step toward the target instead of settling. That is
+    // the clicking heard while scrolling the settings sheet mid-prayer.
+    //
+    // Compared against the value we last SCHEDULED, not the live parameter: the
+    // live reading is exactly what is mid-ramp and would defeat the check.
+    if (this._lastRampTarget === target) return
+    this._lastRampTarget = target
     this.master.gain.setTargetAtTime(target, this.ctx.currentTime, rising ? 0.8 : 0.07)
   }
 

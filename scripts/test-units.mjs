@@ -306,7 +306,7 @@ const stripComments = (text) =>
 }
 {
   const src = readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8')
-  const ramp = src.match(/_rampMaster\(target\)\s*\{[\s\S]{0,600}?\n  \}/)
+  const ramp = src.match(/_rampMaster\(target\)\s*\{[\s\S]{0,2000}?\n  \}/)
   const body = ramp ? ramp[0] : ''
   // A short exponential reaches ~63% of the gap in 70 ms and, unlike
   // cancelScheduledValues + setValueAtTime(gain.value), cannot resume from a
@@ -315,6 +315,16 @@ const stripComments = (text) =>
   check('the fade does not cancel-and-resume from gain.value (click risk)',
     !/cancelScheduledValues/.test(body) && !/setValueAtTime\(g\.value/.test(body))
   check('rising volume still swells gently', /0\.8/.test(body))
+  // Repeated identical setLevel calls must not re-issue setTargetAtTime: that
+  // restarts the exponential from the current value, so the gain steps instead
+  // of settling - the clicking heard while scrolling the settings sheet
+  // mid-prayer.
+  check('an identical gain target is not re-scheduled',
+    /_lastRampTarget === target\) return/.test(body),
+    'no idempotency guard on the ramp')
+  check('the guard is cleared when a new audio graph is built',
+    /this\.master\s*=\s*this\.ctx\.createGain\(\)[\s\S]{0,200}_lastRampTarget = null/.test(src),
+    'a new AudioContext would inherit a stale target and never ramp')
 }
 
 const failed = results.filter((r) => !r.pass)
