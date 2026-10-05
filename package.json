@@ -38,6 +38,10 @@
     "audit:graphic": "node scripts/audit-graphic.mjs",
     "audit:coverage": "node scripts/audit-coverage.mjs",
     "audit:containment": "node scripts/audit-repo-containment.mjs",
+    "audit:i18n": "node scripts/audit-i18n-deep.mjs",
+    "test:locale-map": "node scripts/test-locale-mapping.mjs",
+    "store:listing": "node scripts/store-listing.mjs",
+    "build:play-translations": "node scripts/build-play-translations.mjs",
     "verify:aab-guard": "node scripts/verify-aab-guard.mjs"
   },
   "dependencies": {
