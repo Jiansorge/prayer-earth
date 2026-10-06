@@ -15,6 +15,19 @@ const ADB = process.env.ADB || (process.platform === 'win32'
   : 'adb')
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
+// Settings sub-panels replace the main list rather than pushing onto it, so
+// whichever panel the previous test left open has to be closed before a row is
+// clickable. Returns true when the main list is showing.
+const ensureMainList = async () => {
+  for (let i = 0; i < 4; i++) {
+    const hasBack = await cdp.evaluate(`!!document.querySelector('.settings-back')`)
+    if (!hasBack) return true
+    await cdp.evaluate(`document.querySelector('.settings-back')?.click()`)
+    await sleep(300)
+  }
+  return !(await cdp.evaluate(`!!document.querySelector('.settings-panel')`))
+}
+
 // The app shell's URL, derived from capacitor.config rather than hardcoded.
 //
 // This suite drives the WebView by hand and used to hardcode
@@ -697,6 +710,11 @@ const testSelfServiceDeletion = async () => {
   })()`)
   await cdp.waitFor(`!!document.querySelector('.field-btn')`, 8000)
 
+  // The previous test leaves the backup panel open, so the main list - and
+  // therefore the rows - is not rendered. Return to the list before looking for
+  // a row, or every assertion below silently fails against an empty DOM.
+  await ensureMainList()
+
   // The deletion link lives in the Your data panel now. Open it first.
   //
   // The link is a button, not an <a href>: target="_blank" was a dead tap in
@@ -768,13 +786,19 @@ const testSelfServiceDeletion = async () => {
   const openedPanel = await cdp.evaluate(`(() => !!document.querySelector('[data-testid="panel-data"]'))()`)
   check('the Your data row opens its panel', openedPanel)
 
-  // Back returns to the main list, then Privacy opens.
-  await cdp.evaluate(`(() => {
+  // Back returns to the main list, then Privacy opens. A panel with no way out
+  // is worse than no panel, so Back is asserted in its own right rather than
+  // folded into the next step succeeding.
+  const backClicked = await cdp.evaluate(`(() => {
     const back = document.querySelector('.settings-back')
     if (back) back.click()
     return !!back
   })()`)
   await sleep(400)
+  const backWorked = await cdp.evaluate(`(() =>
+    !document.querySelector('.settings-panel') && !!document.querySelector('[data-testid="row-privacy"]')
+  )()`)
+  check('Back returns to the main list', backClicked && backWorked)
   const privacy = await cdp.evaluate(`(() => {
     const row = document.querySelector('[data-testid="row-privacy"]')
     if (row) row.click()
@@ -941,6 +965,7 @@ const testBackup = async () => {
   })()`)
   const opened = await cdp.waitFor(`!!document.querySelector('.field-btn')`, 8000)
   check('settings sheet opens', !!opened)
+  await ensureMainList()
 
   // Backup lives in its own panel now. Open it the way a person would, via the
   // row, so a broken panel fails here rather than looking like a missing button.
