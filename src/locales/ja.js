@@ -1,5 +1,6 @@
 // Joining Palms interface strings for ja.
 export default {
+  'home.shareCopied': 'リンクをコピーしました。',
 'meter.prayedToday': '今日の祈り',
   'meter.prayedWeek': '今週',
   'meter.toMillion': '百万人の祈りの中で',

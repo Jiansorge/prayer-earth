@@ -8,6 +8,30 @@ import { TEST_HOOKS } from '../shared/testHooks.js'
 // Crossfade duration (seconds) for swapping ambient beds.
 const XFADE = 0.85
 
+// How loud the bed should be, as a Web Audio gain.
+//
+// Pulled out of the class so the arithmetic can be tested without an
+// AudioContext, which is why this bug survived: the floor that made "Ambient
+// sound volume: 0" still audible was a single term in one expression, reachable
+// only by actually hearing it.
+//
+// Three independent factors, and any of them being 0 must be silence:
+//   level          the engine's own level (0 stopped, 0.4 settings, 0.9 praying)
+//   ambienceLevel  the user's "Ambient sound volume" slider
+//   volume         the master volume, shared with the prayer voice
+//
+// 7.5 is the headroom multiplier: the bed runs loud behind a limiter, because a
+// phone speaker rolls off hard below ~200 Hz and the pads alone are nearly
+// inaudible on a handset.
+export const BED_HEADROOM = 7.5
+
+export function bedTarget({ level, ambienceLevel, volume }) {
+  const l = Math.max(0, Math.min(1, Number(level) || 0))
+  const a = Math.max(0, Math.min(1, Number(ambienceLevel) || 0))
+  const v = Math.max(0, Math.min(1, Number(volume) || 0))
+  return l * BED_HEADROOM * a * v
+}
+
 export class AmbientEngine {
   constructor() {
     this.ctx = null
@@ -337,16 +361,15 @@ export class AmbientEngine {
     this.level = Math.max(0, Math.min(1, level))
     if (this.master && this.ctx) {
       const user = useStore.getState().ambienceLevel
-      // Pushed much higher: a phone speaker rolls off hard below ~200 Hz, so the
-      // low pads alone are near-inaudible on a handset no matter the gain. The
-      // beds now carry broadband noise + midrange harmonics, and the master is
-      // run loud behind the limiter (which is set to catch peaks). At full the
-      // slider this reaches ~7 during prayer.
-      // Scales from true silence at 0 to the prayer bed at 1. The previous
-      // (1.0 + level * 6.5) form had a floor of 1.0, so no value of `level`
-      // could ever reach silence - which is why stopping a prayer left the bed
-      // at roughly half volume instead of stopping it.
-      const target = this.level * 7.5 * (0.2 + 0.8 * user) * this.vol
+      // Scales from TRUE SILENCE at 0. The previous forms were
+      // `(1.0 + user * 6.5) * level` and then `(0.2 + 0.8 * user) * level`,
+      // both of which floored the bed: dragging the slider to 0 left it audible,
+      // which reads as the slider being broken. bedTarget() has no floor.
+      const target = bedTarget({
+        level: this.level,
+        ambienceLevel: user,
+        volume: this.vol
+      })
       this._rampMaster(target)
     }
   }

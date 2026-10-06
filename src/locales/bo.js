@@ -1,6 +1,7 @@
 // Joining Palms interface strings for bo (Tibetan).
 // Tibetan uses spaces between syllables; the app handles it.
 export default {
+  'home.shareCopied': 'རོགེའམགའཚོཁུའམག་',
   'nav.home': 'ཁྱིམ།',
   'nav.pray': 'གསོལ་བཏབ།',
   'nav.earth': 'ས་གླིང་།',

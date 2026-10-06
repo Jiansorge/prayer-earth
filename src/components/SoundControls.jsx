@@ -11,6 +11,7 @@ import { speech } from '../audio/speech.js'
 import { ambient } from '../audio/ambience.js'
 import { AMBIENT_PRESETS } from '../audio/presets.js'
 import { applyMute } from '../audio/mute.js'
+import { applyVolumes } from '../audio/volumes.js'
 import { useT } from '../i18n.js'
 
 export default function SoundControls({ layout = 'field', showBeds = true }) {
@@ -42,17 +43,22 @@ export default function SoundControls({ layout = 'field', showBeds = true }) {
   const onVoice = (v) => {
     if (muted && v > 0) {
       // Unmute, but KEEP the level the user just chose. applyMute(false) restores
-      // `lastVolume`, so seed it with v first â€” otherwise dragging up from
+      // `lastVolume`, so seed it with v first — otherwise dragging up from
       // muted snapped the slider back to the pre-mute level.
       useStore.setState({ lastVolume: v })
       applyMute(false)
     }
     setVolume(v)
-    speech.setVolume(v)
+    // Same master the prayer-view fader drives, so a bed silenced from either
+    // place can be raised again from either place.
+    applyVolumes()
   }
+
   const onAmbient = (v) => {
     setAmbienceLevel(v)
     // Re-apply so the bed is heard immediately, not just on the next play.
+    // setLevel multiplies by the stored ambienceLevel and the master volume, so
+    // this is what makes 0 actually silent.
     ambient.setLevel(ambient.level)
   }
   const onSpeed = (r) => {

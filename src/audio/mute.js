@@ -1,11 +1,13 @@
 import { useStore } from '../store.js'
-import { speech } from './speech.js'
-import { ambient } from './ambience.js'
+import { applyVolumes } from './volumes.js'
 
 // The room-wide mute lives in the store so the footer nav, the prayer controls
 // and the keyboard all share one switch. Muting silences speech + ambient while
 // remembering the previous level, so unmuting restores it exactly.
-
+//
+// The actual push into both engines is delegated to applyVolumes(), which every
+// volume control uses. Keeping one function means mute and the sliders cannot
+// disagree about what "volume" means.
 export function applyMute(muted) {
   const s = useStore.getState()
   const next = !!muted
@@ -14,12 +16,7 @@ export function applyMute(muted) {
     useStore.setState({ lastVolume: s.volume })
   }
   useStore.setState({ muted: next, volume: target })
-  speech.setVolume(target)
-  // Mute the bed as a TRUE mute (0 / 1). Passing `target` (the voice volume)
-  // here re-coupled the ambient bed to the prayer-voice fader: every unmute
-  // left the bed at the voice level instead of its own. The bed's loudness is
-  // driven by the "Ambient sound volume" slider alone.
-  ambient.setVolume(next ? 0 : 1)
+  applyVolumes()
 }
 
 export function toggleMute() {

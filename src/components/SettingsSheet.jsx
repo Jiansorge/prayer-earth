@@ -13,7 +13,7 @@ import LegalSheet from './LegalSheet.jsx'
 import { canInstall, promptInstall } from '../shared/installPrompt.js'
 import { isMobile, isIos, isAppShell } from '../shared/mobile.js'
 import { CANONICAL_ORIGIN, REPORT_URL } from '../shared/canonical.js'
-import { shareLink } from '../shared/share.js'
+import { shareLink, showManualCopy } from '../shared/share.js'
 import { PrivacyPanel, BackupPanel, DataPanel, SettingsRow } from './SettingsPanels.jsx'
 
 const isInstalled = () =>
@@ -87,10 +87,13 @@ export default function SettingsSheet() {
       setAppCopied(true)
       setTimeout(() => setAppCopied(false), 2000)
     } else if (result === 'failed') {
-      // Last resort so the button is never a dead end: surface the link for a
-      // manual copy. (The app-shell WebView can block both the share sheet and
-      // the clipboard; without this the tap would silently do nothing.)
-      window.prompt(t('settings.shareAppLabel'), url)
+      // Last resort so the button is never a dead end: surface the link in a
+      // real, selectable field for a manual copy.
+      //
+      // The app-shell WebView can block both the share sheet and the clipboard;
+      // without this the tap would silently do nothing. Not window.prompt: it
+      // blocks the renderer and is not implemented in that WebView at all.
+      showManualCopy(url, t('settings.shareAppLabel'))
     }
   }
 

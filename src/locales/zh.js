@@ -1,5 +1,6 @@
 ﻿// Joining Palms interface strings for zh.
 export default {
+  'home.shareCopied': '已复制链接！',
 'meter.prayedToday': '今日已祈祷',
   'meter.prayedWeek': '本周',
   'meter.toMillion': '一百万人共同祈祷',

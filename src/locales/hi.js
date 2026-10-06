@@ -1,5 +1,6 @@
 // Joining Palms interface strings for hi.
 export default {
+  'home.shareCopied': 'लिंक कोपी टेटा!',
 'meter.prayedToday': 'आज प्रार्थना की',
   'meter.prayedWeek': 'इस सप्ताह',
   'meter.toMillion': 'दस लाख प्रार्थनाओं में से',

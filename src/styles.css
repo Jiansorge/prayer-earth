@@ -2808,6 +2808,50 @@ html[dir='rtl'] .chooser-arrow.right {
   color: var(--gold-soft);
 }
 
+/* The share button's confirmation.
+   A tick appearing inside the button is nearly invisible: nothing else in the
+   header moves, so a tap that copies silently looks like a tap that did
+   nothing. The label sits under the button, names what happened, and is
+   positioned rather than in flow so appearing does not shift the header. */
+.share-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.share-flash {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  white-space: nowrap;
+  font-size: 11.5px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--gold-soft);
+  background: rgba(10, 20, 14, 0.88);
+  border: 1px solid rgba(232, 196, 122, 0.28);
+  border-radius: 999px;
+  padding: 5px 9px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+  z-index: 4;
+}
+
+.share-flash.on {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* The label hangs below the button, so it must not be clipped by a header that
+   uses overflow for its own reasons. */
+@media (prefers-reduced-motion: reduce) {
+  .share-flash {
+    transition: none;
+  }
+}
+
 .copied-pill {
   position: fixed;
   top: max(18px, env(safe-area-inset-top));

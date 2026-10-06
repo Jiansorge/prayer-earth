@@ -1,5 +1,6 @@
 // Joining Palms interface strings for vi (Tiếng Việt).
 export default {
+  'home.shareCopied': 'Đã đã sao chép liên kết!',
   'nav.home': 'Trang chủ',
   'nav.pray': 'Cầu nguyện',
   'nav.earth': 'Trái Đất',

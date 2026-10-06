@@ -11,5 +11,11 @@
 // - VITE_TEST_HOOKS=true at build time: on for instrumented Android/Capacitor
 //   builds used by the on-device smoke test. The .env.capacitor file sets it; the
 //   PUBLIC Play release should build WITHOUT it (see RELEASE.md).
+// `import.meta.env` is undefined outside Vite, so this is optional-chained.
+// Plain Node imports the audio modules for unit tests, and an unguarded
+// `import.meta.env.DEV` threw there - which meant the bed gain arithmetic could
+// only be tested by scraping ambience.js as text, since importing the real
+// module crashed. Optional chaining keeps the gate exactly as strict in a build
+// (where import.meta.env always exists) while letting Node load the module.
 export const TEST_HOOKS =
-  import.meta.env.DEV === true || import.meta.env.VITE_TEST_HOOKS === 'true'
+  import.meta.env?.DEV === true || import.meta.env?.VITE_TEST_HOOKS === 'true'

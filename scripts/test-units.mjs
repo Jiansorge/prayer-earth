@@ -161,34 +161,14 @@ const stripComments = (text) =>
     offenders.join(' | ') || 'none')
 }
 
-// 4. The ambient bed must be able to reach silence. Its gain mapping used to be
-//    (1.0 + level * 6.5), which has a floor of 1.0, so no value of `level` could
-//    ever be quiet: stopping or pausing a prayer left the bed playing at roughly
-//    half volume. This checks the mapping itself, because the symptom is silence
-//    that a UI test cannot easily hear.
-{
-  const src = readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8')
-  const m = src.match(/const target = ([^\n]+)/)
-  const expr = m ? m[1].trim() : ''
-  const gainFor = (level, user = 1, vol = 1) => {
-    // eslint-disable-next-line no-new-func
-    return Function(
-      'level',
-      'user',
-      'vol',
-      `return ${expr.replace(/this\.level/g, 'level').replace(/this\.vol/g, 'vol')}`
-    )(level, user, vol)
-  }
-  check('the ambient gain mapping has no floor that blocks silence',
-    expr !== '' && gainFor(0) === 0,
-    `expr="${expr}" gain(0)=${gainFor(0)}`)
-  check('the ambient bed is still audible at full prayer level',
-    gainFor(0.9) > 5,
-    `gain(0.9)=${gainFor(0.9).toFixed(2)}`)
-  check('muting the app silences the bed',
-    gainFor(0.9, 1, 0) === 0,
-    `gain(0.9,vol=0)=${gainFor(0.9, 1, 0)}`)
-}
+// 4. The ambient bed must be adjustable. Its gain mapping used to be
+//    (1.0 + level * 6.5), which has a floor of 1.0, and later
+//    (0.2 + 0.8 * ambienceLevel), which still floored it at a fifth of full:
+//    stopping a prayer left the bed playing, and dragging "Ambient sound volume"
+//    to 0 left it audible. This test used to scrape the gain expression out of
+//    ambience.js with a regex and eval it, which broke the moment the expression
+//    stopped fitting on one line. bedTarget() is now a pure exported function, so
+//    the arithmetic is called directly - see the block near the end.
 
 // 5. The static Earth fallback must be a real part of the product. LibreWolf
 //    blocks WebGL by default, so every one of its users lands here, and the
@@ -379,6 +359,74 @@ const stripComments = (text) =>
     /on by default/.test(enLocale.match(/'legal\.priv9':[^\n]*/)?.[0] || '') &&
       /on by default/.test(enLocale.match(/'legal\.priv11':[^\n]*/)?.[0] || ''),
     'priv9/priv11 still claim sharing is off until turned on')
+}
+
+// --- the ambient bed must actually be adjustable ---------------------------
+//
+// Two bugs lived here. The bed gain was `(0.2 + 0.8 * ambienceLevel)`, so the
+// slider at 0 still played at a fifth of full and read as broken; and the
+// prayer-view fader only moved the voice, so the one control labelled "volume"
+// next to the main action did not change the room. Neither was reachable by a
+// test until the arithmetic was pulled out of the class, because both needed an
+// AudioContext to observe.
+{
+  const { bedTarget, BED_HEADROOM } = await import('../src/audio/ambience.js')
+  const at = (level, ambienceLevel, volume) =>
+    bedTarget({ level, ambienceLevel, volume })
+
+  check('the bed reaches true silence when the ambient slider is 0',
+    at(0.9, 0, 1) === 0, 'target=' + at(0.9, 0, 1))
+  check('the bed reaches true silence when the master volume is 0',
+    at(0.9, 1, 0) === 0, 'target=' + at(0.9, 1, 0))
+  check('the bed reaches true silence when the engine is stopped',
+    at(0, 1, 1) === 0, 'target=' + at(0, 1, 1))
+  check('the bed is not silent at any non-zero setting',
+    at(0.9, 1, 1) > 0 && at(0.9, 0.05, 1) > 0, 'target=' + at(0.9, 0.05, 1))
+
+  // Monotonic in each factor: raising any slider never lowers the bed, which is
+  // the whole point of a slider.
+  let mono = true
+  for (const f of ['level', 'ambienceLevel', 'volume']) {
+    for (let i = 1; i <= 20; i++) {
+      const lo = {}
+      const hi = {}
+      lo.level = 0.9; lo.ambienceLevel = 0.9; lo.volume = 0.9
+      hi.level = 0.9; hi.ambienceLevel = 0.9; hi.volume = 0.9
+      lo[f] = (i - 1) / 20
+      hi[f] = i / 20
+      if (at(hi.level, hi.ambienceLevel, hi.volume) < at(lo.level, lo.ambienceLevel, lo.volume)) {
+        mono = false
+      }
+    }
+  }
+  check('raising any of the three never lowers the bed', mono)
+
+  check('the bed gain stays within Web Audio\'s safe range',
+    BED_HEADROOM * 1 * 1 * 1 <= 8, 'headroom=' + BED_HEADROOM)
+
+  // Out-of-range and junk input must clamp to silence rather than produce a
+  // negative or NaN gain, which Web Audio would reject or turn into a click.
+  const nasty = [at(NaN, 1, 1), at(1, -5, 1), at(1, 1, 99), at(undefined, undefined, undefined)]
+  check('junk input clamps to a safe gain rather than NaN',
+    nasty.every((g) => Number.isFinite(g) && g >= 0), JSON.stringify(nasty))
+
+  // Every volume control must go through the shared applyVolumes(), or the
+  // asymmetry comes straight back. Asserted as an invariant rather than by
+  // matching a window of source: a component that pushes to an engine directly
+  // is the bug, wherever the line happens to sit.
+  const prayer = readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8')
+  const sound = readFileSync(path.join(ROOT, 'src/components/SoundControls.jsx'), 'utf8')
+  const mute = readFileSync(path.join(ROOT, 'src/audio/mute.js'), 'utf8')
+  const volumes = readFileSync(path.join(ROOT, 'src/audio/volumes.js'), 'utf8')
+  check('the prayer view sets volume through applyVolumes, not an engine directly',
+    /applyVolumes/.test(prayer) && !/speech\.setVolume\(/.test(prayer) && !/ambient\.setVolume\(/.test(prayer),
+    'a direct engine push in PrayerPage can only ever set one of the two')
+  check('the settings sound controls set volume through applyVolumes',
+    /applyVolumes/.test(sound) && !/speech\.setVolume\(/.test(sound) && !/ambient\.setVolume\(/.test(sound))
+  check('mute delegates to applyVolumes rather than doing its own push',
+    /applyVolumes\(\)/.test(mute) && !/speech\.setVolume/.test(mute) && !/ambient\.setVolume/.test(mute))
+  check('applyVolumes is the only place that pushes volume into both engines',
+    /speech\.setVolume/.test(volumes) && /ambient\.setVolume/.test(volumes))
 }
 
 const failed = results.filter((r) => !r.pass)

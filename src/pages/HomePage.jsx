@@ -8,7 +8,7 @@ import WorldFeed from '../components/WorldFeed.jsx'
 import Sparkles from '../components/Sparkles.jsx'
 import { useT, prayerTitle } from '../i18n.js'
 import { CANONICAL_ORIGIN } from '../shared/canonical.js'
-import { shareLink } from '../shared/share.js'
+import { shareLink, showManualCopy } from '../shared/share.js'
 
 const fmtLife = (s) => {
   const m = Math.floor(s / 60)
@@ -116,12 +116,16 @@ export default function HomePage() {
       setShareCopied(true)
       setTimeout(() => setShareCopied(false), 1600)
     } else if (result === 'failed') {
-      // Desktop Chrome exposes navigator.share but rejects it without a
-      // user gesture, and the async clipboard needs a secure context, so
-      // neither path fires and the tap did nothing at all. Settings already
-      // has this fallback; the header button needs the same one or it is a
-      // dead control in the most prominent place in the app.
-      window.prompt(t('settings.shareAppLabel'), url)
+      // Desktop Chrome exposes navigator.share but rejects it without a user
+      // gesture, and the async clipboard needs a secure context, so neither path
+      // fires and the tap did nothing at all. Settings has the same fallback; the
+      // header button needs it too or it is a dead control in the most prominent
+      // place in the app.
+      //
+      // Not window.prompt: it blocks the renderer until dismissed, so this could
+      // freeze the page, and it is not implemented in the Android WebView, so on
+      // the platform that needs it most it silently did nothing.
+      showManualCopy(url, t('settings.shareAppLabel'))
     }
   }
 
@@ -157,14 +161,28 @@ export default function HomePage() {
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button
-            className="share-btn"
-            onClick={shareApp}
-            aria-label={t('settings.shareAppLabel')}
-            title={t('settings.shareAppLabel')}
-          >
-            <span className="nav-icon">{shareCopied ? '✓' : '↗'}</span>
-          </button>
+          {/* The icon swapping to a tick was the only feedback, and it is easy
+              to miss on a tap: nothing else in the header moves, so a tap that
+              silently copies looks like a tap that did nothing. The label sits
+              under the button and names what happened. */}
+          <div className="share-wrap">
+            <button
+              className="share-btn"
+              onClick={shareApp}
+              aria-label={t('settings.shareAppLabel')}
+              title={t('settings.shareAppLabel')}
+            >
+              <span className="nav-icon">{shareCopied ? '✓' : '↗'}</span>
+            </button>
+            <span
+              className={`share-flash${shareCopied ? ' on' : ''}`}
+              role="status"
+              aria-live="polite"
+              data-testid="share-flash"
+            >
+              {shareCopied ? t('home.shareCopied') : ''}
+            </span>
+          </div>
           <button className="settings-label-btn" onClick={() => setSettingsOpen(true)}>
             {t('settings.title')}
           </button>

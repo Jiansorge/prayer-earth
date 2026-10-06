@@ -11,6 +11,7 @@ import Sparkles from '../components/Sparkles.jsx'
 import SoundControls from '../components/SoundControls.jsx'
 import { stopPlayback } from '../playback.js'
 import { toggleMute, applyMute } from '../audio/mute.js'
+import { applyVolumes } from '../audio/volumes.js'
 import { isAppShell } from '../shared/mobile.js'
 import { CANONICAL_ORIGIN } from '../shared/canonical.js'
 
@@ -534,12 +535,15 @@ setChantMode(false)
 
   const setLiveVolume = (v) => {
     setVolume(v)
-    speech.setVolume(v)
-    // Do NOT route the voice fader into the ambient engine. The bed's level is
-    // driven by the ambience slider alone; funnelling the voice volume into
-    // ambient.vol meant dragging the voice to 0 permanently silenced the bed
-    // (and the Settings voice slider couldn't undo it, since it only calls
-    // speech.setVolume). mute.js still uses ambient.setVolume as a true mute.
+    // This fader is labelled volume and sits beside the main control, so it is
+    // the master: it moves the voice and the ambient bed together.
+    //
+    // It used to be voice-only, deliberately, because routing it into the
+    // ambient engine meant dragging it to 0 silenced the bed with no way back -
+    // the Settings ambience slider only called setLevel, and setLevel
+    // multiplied by a volume that was already zero. applyVolumes() is shared
+    // with the Settings slider, so either one raises the bed again.
+    applyVolumes()
   }
 
   const friendlyVoice = (v) =>

@@ -1,5 +1,6 @@
 ﻿// Joining Palms interface strings for ru.
 export default {
+  'home.shareCopied': 'Ссылка скопирована!',
 'meter.prayedToday': 'молился сегодня',
   'meter.prayedWeek': 'на этой неделе',
   'meter.toMillion': 'из миллиона совместных молитв',

@@ -1,5 +1,6 @@
 ﻿// Joining Palms interface strings for it.
 export default {
+  'home.shareCopied': 'Link copiato!',
 'meter.prayedToday': 'pregato oggi',
   'meter.prayedWeek': 'questa settimana',
   'meter.toMillion': 'di un milione di preghiere insieme',

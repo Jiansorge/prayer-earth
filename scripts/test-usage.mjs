@@ -766,6 +766,105 @@ ok('deep link buddhist mantra renders', await c.waitFor(`document.body.innerText
 await clickNav('Home')
 ok('Home tab returns home', await c.waitFor(`!!document.querySelector('.spirit-grid')`))
 
+// --- the share button must say what it did, and must never hang ---
+//
+// Three separate defects lived here. The icon swapped to a tick and nothing
+// else moved, so a tap that copied looked like a tap that did nothing.
+// `navigator.clipboard.writeText()` can stay pending forever where the
+// permission prompt is suppressed, so the button hung with no feedback. And the
+// final fallback was window.prompt, which blocks the renderer - and is not
+// implemented in the Android WebView at all, so on the platform that needed the
+// fallback most it did nothing at all.
+const withStubbedClipboard = async (fn) => {
+  await c.eval(`(() => {
+    window.__origWrite = navigator.clipboard?.writeText
+    window.__origExec = document.execCommand
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: () => Promise.resolve() }
+    })
+    document.execCommand = () => true
+    return true
+  })()`)
+  await fn()
+  await c.eval(`(() => {
+    if (window.__origWrite) Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: window.__origWrite } })
+    document.execCommand = window.__origExec
+    return true
+  })()`)
+}
+
+// Path 1: copying works.
+await withStubbedClipboard(async () => {
+  await c.eval(`document.querySelector('.share-btn')?.click()`)
+  const flashShown = await c.waitFor(
+    `(() => { const el = document.querySelector('[data-testid="share-flash"]'); return !!el && el.textContent.trim().length > 0 })()`,
+    5000
+  )
+  const flashText = await c.eval(
+    `String(document.querySelector('[data-testid="share-flash"]')?.textContent || '').trim()`
+  )
+  ok('the share button confirms in words, not just a tick', flashShown, `text="${flashText}"`)
+  // Wait for the fade rather than sampling once: the label transitions over
+// 160ms, so reading opacity straight after the class lands catches it at 0 and
+// reports a correctly-positioned label as invisible.
+const geomOk = await c.waitFor(`(() => {
+  const el = document.querySelector('[data-testid="share-flash"]')
+  const btn = document.querySelector('.share-btn')
+  if (!el || !btn) return false
+  const r = el.getBoundingClientRect()
+  const b = btn.getBoundingClientRect()
+  return r.top >= b.bottom - 2 && r.width > 0 && getComputedStyle(el).opacity === '1'
+})()`, 4000)
+const geom = await c.eval(`(() => {
+    const el = document.querySelector('[data-testid="share-flash"]')
+    const btn = document.querySelector('.share-btn')
+    const r = el.getBoundingClientRect()
+    const b = btn.getBoundingClientRect()
+    return { flashTop: Math.round(r.top), btnBottom: Math.round(b.bottom), flashW: Math.round(r.width), opacity: getComputedStyle(el).opacity }
+  })()`)
+ok(
+  'the confirmation appears under the button, and is actually visible',
+  geomOk,
+  JSON.stringify(geom)
+)
+  ok(
+    'the confirmation clears itself',
+    await c.waitFor(`(() => { const el = document.querySelector('[data-testid="share-flash"]'); return !!el && el.textContent.trim() === '' })()`, 6000)
+  )
+})
+
+// Path 2: every copy mechanism fails. The button must still do something visible
+// and must not block the page waiting for a dialog.
+await c.eval(`(() => {
+  window.__origWrite2 = navigator.clipboard?.writeText
+  window.__origExec2 = document.execCommand
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: () => new Promise(() => {}) }  // never settles, like a suppressed prompt
+  })
+  document.execCommand = () => false
+  return true
+})()`)
+await c.eval(`document.querySelector('.share-btn')?.click()`)
+ok(
+  'a clipboard write that never settles does not hang the page',
+  await c.waitFor(`!!document.querySelector('[data-testid="manual-copy-fallback"]')`, 6000)
+)
+ok(
+  'the manual fallback offers the link in a real selectable field',
+  await c.eval(`(() => {
+    const inp = document.querySelector('[data-testid="manual-copy-fallback"] input')
+    return !!inp && inp.value.includes('joining-palms.app') && inp.readOnly && inp.selectionEnd === inp.value.length
+  })()`)
+)
+await c.eval(`(() => {
+  document.querySelector('[data-testid="manual-copy-fallback"]')?.remove()
+  if (window.__origWrite2) Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: window.__origWrite2 } })
+  document.execCommand = window.__origExec2
+  return true
+})()`)
+
 // --- presence is on by default, with the opt-out offered at first run ---
   // The order a user follows: answer the prompt, then consent through the real
   // Settings control BEFORE praying - the only order in which a published feed

@@ -1,5 +1,6 @@
 // Joining Palms interface strings for en.
 export default {
+  'home.shareCopied': 'Copied link!',
 'nav.home': 'Home',
   'nav.pray': 'Pray',
   'nav.earth': 'Earth',

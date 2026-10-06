@@ -1,5 +1,6 @@
 // Joining Palms interface strings for tl (Tagalog / Filipino).
 export default {
+  'home.shareCopied': 'Nakopang link!',
   'nav.home': 'Tahanan',
   'nav.pray': 'Manalangin',
   'nav.earth': 'Daigdig',

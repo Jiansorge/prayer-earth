@@ -1,5 +1,6 @@
 // Joining Palms interface strings for ar.
 export default {
+  'home.shareCopied': 'انتسخ الرابط!',
 'meter.prayedToday': 'صليت اليوم',
   'meter.prayedWeek': 'هذا الأسبوع',
   'meter.toMillion': 'من مليون صلاة معًا',

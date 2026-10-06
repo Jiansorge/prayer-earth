@@ -126,6 +126,31 @@ const ROWS = [
     'scripts/test-backup.mjs', /arriving after withdrawal is discarded/,
     'the permission dialog can sit open for minutes'],
 
+  // --- volume must actually reach the speakers ---------------------------
+  ['app: the ambient slider at 0 is silence',
+    'scripts/test-units.mjs', /true silence when the ambient slider is 0/,
+    'a slider marked volume that cannot reach zero'],
+  ['app: the prayer-view fader moves the bed as well as the voice',
+    'scripts/test-units.mjs', /prayer view sets volume through applyVolumes/,
+    'the one control labelled volume only moving half the room'],
+  ['app: mute goes through the same shared path',
+    'scripts/test-units.mjs', /mute delegates to applyVolumes/,
+    'mute and the sliders disagreeing about what volume means'],
+  ['app: raising any volume control never lowers the bed',
+    'scripts/test-units.mjs', /raising any of the three never lowers the bed/,
+    'a slider that fights itself'],
+
+  // --- sharing a link must never be a dead button ------------------------
+  ['app: the share button says what it did',
+    'scripts/test-usage.mjs', /the share button confirms in words/,
+    'a tap that copies while looking like a tap that did nothing'],
+  ['app: a clipboard write that never settles cannot hang the page',
+    'scripts/test-usage.mjs', /never settles does not hang the page/,
+    'the button freezing with no feedback'],
+  ['app: a blocked copy falls back to a selectable field, not a modal dialog',
+    'scripts/test-usage.mjs', /manual fallback offers the link in a real selectable field/,
+    'window.prompt blocking the renderer, and unimplemented in the app shell'],
+
   // --- first run asks before sharing counts as agreed ---
   ['app: first run offers the opt-out that makes the default meaningful',
     'scripts/test-usage.mjs', /a user who opts out turns sharing off/,
