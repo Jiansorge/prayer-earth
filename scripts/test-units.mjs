@@ -12,6 +12,7 @@
 //     asserts the source cannot regress to reading the URL or a query param.
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { sanitizeName } from '../src/shared/profanity.js'
@@ -427,6 +428,27 @@ const stripComments = (text) =>
     /applyVolumes\(\)/.test(mute) && !/speech\.setVolume/.test(mute) && !/ambient\.setVolume/.test(mute))
   check('applyVolumes is the only place that pushes volume into both engines',
     /speech\.setVolume/.test(volumes) && /ambient\.setVolume/.test(volumes))
+// The store runs a module-level setInterval for the prayer clock, which is
+  // correct in a browser and fatal in Node: a pending timer holds the event loop
+  // open, so every script that imported it - including this one - finished and
+  // then hung. It showed up as a CI job stuck for 20+ minutes with every check
+  // already green. Asserted as source because the symptom is a hanging process,
+  // which this file cannot observe from inside itself.
+  const storeSrc = readFileSync(path.join(ROOT, 'src/store.js'), 'utf8')
+  check('the prayer-clock interval cannot keep a Node process alive',
+    /setInterval\(creditPrayerClock, 1000\)\?\.unref\?\.\(\)/.test(storeSrc),
+    'a module-level timer without unref() hangs any Node script that imports the store')
+
+  // Importing the store must therefore not leak a handle. Checked by loading it
+  // in a child process and asserting that process exits on its own.
+  const leak = spawnSync(process.execPath, ['-e', "import('./src/store.js')"], {
+    cwd: ROOT,
+    timeout: 20000,
+    encoding: 'utf8'
+  })
+  check('a script that only imports the store exits on its own',
+    !leak.error && leak.signal === null && leak.status === 0,
+    leak.error ? leak.error.message : `signal=${leak.signal} status=${leak.status}`)
 }
 
 const failed = results.filter((r) => !r.pass)

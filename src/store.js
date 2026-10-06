@@ -867,7 +867,20 @@ function creditPrayerClock() {
   _lastTickAt += delta * 1000
   if (delta > 0) s.tickPrayerClock(delta, s.playingPrayerId)
 }
-setInterval(creditPrayerClock, 1000)
+// `.unref()` so this interval cannot keep a Node process alive on its own.
+//
+// This is a module-level interval, which is correct in a browser: the prayer
+// clock has to keep crediting real elapsed time even when nothing else is
+// running. But it also meant every Node script that imported the store - a unit
+// test, a build step, anything - finished its work and then hung forever,
+// because a pending timer holds the event loop open. That shipped as a CI job
+// stuck at 20+ minutes with every check already passing.
+//
+// unref() means the timer still fires whenever something else keeps the process
+// running, and simply does not count as a reason to stay running by itself. In a
+// browser the method does not exist, so the optional call leaves web behaviour
+// byte-for-byte unchanged.
+setInterval(creditPrayerClock, 1000)?.unref?.()
 // Flush the real delta when the tab is hidden/foregrounded and on pagehide (the
 // interval may not fire again for a while once backgrounded). The carry-forward
 // + no-floor make back-to-back flushes (hide then pagehide) harmless.
