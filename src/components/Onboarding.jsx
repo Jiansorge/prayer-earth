@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useStore } from '../store.js'
 import { useT, LOCALES } from '../i18n.js'
 import { sanitizeName } from '../shared/profanity.js'
+import { syncClient } from '../sync/client.js'
 import useFocusTrap from '../shared/useFocusTrap.js'
 
 const KEY = 'pe-onboarded'
@@ -9,12 +10,49 @@ const KEY = 'pe-onboarded'
 // A first taste of the nature avatars, the same set as in Settings.
 const AVATARS = ['🌿', '🌙', '🌺', '🕊️', '🌊', '⛰️', '🌾', '🦋', '☀️', '🍃', '🐚', '🌟', '🌸', '🍁', '🪷', '🔥']
 
+// Sharing is on by default now, so first run has to say so and offer the
+// opposite. This is the only place that promise is made, which is why it sits in
+// onboarding rather than being a line in the privacy policy that a user has to go
+// looking for.
+//
+// The choice is the user's: keep it, or turn it off here. Either way it is
+// recorded, so this never comes back, and turning it off here is exactly as
+// available as the toggle in Privacy.
+function PresenceChoice({ sharePresence, onChange }) {
+  const t = useT()
+  return (
+    <div className="onboard-profile" data-testid="onboard-presence">
+      <div className="onboard-step-title">{t('settings.presenceWelcomeTitle')}</div>
+      <div className="onboard-step-body">{t('settings.presenceWelcomeBody')}</div>
+      <div className="presence-row" style={{ marginTop: 10 }}>
+        <input
+          id="onboard-share-presence"
+          type="checkbox"
+          className="presence-toggle"
+          checked={!!sharePresence}
+          onChange={(e) => onChange(e.target.checked)}
+          data-testid="onboard-presence-toggle"
+        />
+        <label htmlFor="onboard-share-presence" className="presence-label">
+          <span className="presence-title">{t('settings.sharePresence')}</span>
+        </label>
+      </div>
+      <div className="onboard-step-body" data-testid="onboard-presence-state">
+        {sharePresence ? t('settings.privacyOn') : t('settings.privacyOff')}
+      </div>
+    </div>
+  )
+}
+
 export default function Onboarding() {
   const view = useStore((s) => s.view)
   const profile = useStore((s) => s.profile)
   const setProfile = useStore((s) => s.setProfile)
   const locale = useStore((s) => s.locale)
   const setLocale = useStore((s) => s.setLocale)
+  const sharePresence = useStore((s) => s.sharePresence)
+  const setSharePresence = useStore((s) => s.setSharePresence)
+  const markPresencePromptSeen = useStore((s) => s.markPresencePromptSeen)
   const t = useT()
   const [shown, setShown] = useState(() => {
     try {
@@ -41,11 +79,19 @@ export default function Onboarding() {
   if (view !== 'home' || !shown) return null
 
   const done = () => {
+    // Record that the choice was offered, so a dismissed or accepted prompt
+    // never returns. Without this the default silently re-asserts itself on the
+    // next launch for anyone who turned sharing off here.
+    markPresencePromptSeen()
     try {
       localStorage.setItem(KEY, '1')
     } catch {}
     setShown(false)
   }
+
+  // Route through the sync client, not just the store, so the consent change
+  // takes effect immediately and any pending location request is withdrawn.
+  const setPresence = (on) => syncClient.setPresenceSharing(on)
 
   const steps = [
     { emoji: '🕊️', title: t('onboard.s1'), body: t('onboard.s1b') },
@@ -125,6 +171,8 @@ export default function Onboarding() {
             ))}
           </div>
         </div>
+
+        <PresenceChoice sharePresence={sharePresence} onChange={setPresence} />
 
         <button className="onboard-begin" onClick={done}>
           {t('onboard.begin')}

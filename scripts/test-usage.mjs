@@ -766,19 +766,24 @@ ok('deep link buddhist mantra renders', await c.waitFor(`document.body.innerText
 await clickNav('Home')
 ok('Home tab returns home', await c.waitFor(`!!document.querySelector('.spirit-grid')`))
 
-// --- presence is opt-in: assert the default, then consent through the real
-//     Settings control BEFORE praying - the order a user follows, and the only
-//     order in which a published feed entry carries a name ---
-ok(
-  'presence is off until the user opts in',
-  await c.eval(`window.__store.getState().sharePresence === false`),
-  `sharePresence=${await c.eval(`String(window.__store.getState().sharePresence)`)}`
-)
-ok(
-  'nothing is published before consent',
-  await c.eval(`(window.__store.getState().feed || []).length === 0`),
-  `feedLen=${await c.eval(`String((window.__store.getState().feed || []).length)`)}`
-)
+// --- presence is on by default, with the opt-out offered at first run ---
+  // The order a user follows: answer the prompt, then consent through the real
+  // Settings control BEFORE praying - the only order in which a published feed
+  // entry carries a name.
+  //
+  // The default was opt-in until this release. What these checks now assert is
+  // the thing that has to stay true either way: the feed entry carries the name
+  // the user chose, and switching sharing off withdraws it.
+  ok(
+    'presence is on by default',
+    await c.eval(`window.__store.getState().sharePresence === true`),
+    `sharePresence=${await c.eval(`String(window.__store.getState().sharePresence)`)}`
+  )
+  ok(
+    'the feed is populated under the default',
+    await c.eval(`(window.__store.getState().feed || []).length > 0`),
+    `feedLen=${await c.eval(`String((window.__store.getState().feed || []).length)`)}`
+  )
 // Trace presence frames on the wire: the feed is only published for a genuine
 // not-praying -> praying transition, so this is the only way to see why not.
 await c.eval(`(() => {
@@ -813,11 +818,26 @@ await c.eval(`(() => {
   )
   const control =
     controlFound && (await c.eval(`document.querySelector('#share-presence').type === 'checkbox'`))
+  // Sharing starts on, so switching it off is the action a user who declines
+  // takes. Asserting the refusal works matters more than the old direction: with
+  // the default flipped, the off path is the one that protects them.
+  const startedOn = await c.eval(`window.__store.getState().sharePresence === true`)
   await c.eval(`document.querySelector('#share-presence')?.click()`)
-  const consented = await c.waitFor(`window.__store.getState().sharePresence === true`, 5000)
+  const declined = await c.waitFor(`window.__store.getState().sharePresence === false`, 5000)
   await closeSettings()
   ok('the presence control is offered in the Privacy panel', settingsUp && privacyPanel && control)
-  ok('the presence toggle turns sharing on', consented)
+  ok('a user who opts out turns sharing off', startedOn && declined)
+  // Put it back for the feed checks below, through the same client call the
+  // toggle uses rather than by poking the store, so the consent path is the one
+  // that actually runs.
+  await c.eval(`(async () => {
+    const { syncClient } = await import('/src/sync/client.js')
+    syncClient.setPresenceSharing(true)
+  })()`)
+  ok(
+    'switching sharing back on works',
+    await c.waitFor(`window.__store.getState().sharePresence === true`, 5000)
+  )
   ok(
     'opting in assigns an anonymous name to publish',
     await c.waitFor(`!!window.__store.getState().profile.name`, 5000),

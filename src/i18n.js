@@ -43,13 +43,36 @@ export const LOCALES = [
   { code: 'bo', label: 'བོད་སྐད' }
 ]
 
-// Locales whose interface should flow right-to-left.
+// RTL locales whose interface should flow right-to-left.
 export const RTL_LOCALES = new Set(['ar', 'fa', 'ur', 'he'])
+
+// The legal text is English in every language, on purpose.
+//
+// The hosted policy (public/privacy.html, built from en.js by build-legal.mjs) is
+// already English-only, and that is the copy the Play listing links to and the
+// copy Google reads for Data Safety. The in-app sheet used to carry its own
+// machine-translated legal.* strings in fourteen languages, which meant ~1100
+// unreviewed renderings of a document nobody had checked, free to drift from the
+// hosted copy it claimed to match.
+//
+// Falling back to English makes the two provably identical instead of merely
+// intended to be, and removes a whole class of thing that can be subtly wrong
+// rather than merely clumsy. A wrong claim about what happens to someone's
+// location is a different problem from a bad translation, and machine
+// translation produced both: an Arabic string with the product name welded
+// mid-word, and one with a mangled unit.
+//
+// legal.langNote is the exception: it is the sentence telling the reader that
+// English governs, so it must stay in the reader's language.
+const LEGAL_ENGLISH_ONLY = /^legal\.(?!langNote$)/
+export const legalIsEnglishOnly = (key) => LEGAL_ENGLISH_ONLY.test(key)
 
 export function translate(key, params) {
   const locale = useStore.getState().locale
   const table = loaded[locale] || en
-  const str = table[key] ?? en[key] ?? key
+  const str = legalIsEnglishOnly(key)
+    ? en[key] ?? key
+    : table[key] ?? en[key] ?? key
   if (!params) return str
   return str.replace(/\{(\w+)\}/g, (m, k) =>
     params[k] != null ? String(params[k]) : m

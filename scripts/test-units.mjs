@@ -360,6 +360,27 @@ const stripComments = (text) =>
     'a new AudioContext would inherit a stale target and never ramp')
 }
 
+// --- legal text falls back to English ---------------------------------------
+{
+  const i18n = readFileSync(path.join(ROOT, 'src/i18n.js'), 'utf8')
+  check('the legal text is English-only in the app, except the "English governs" note',
+    /legalIsEnglishOnly/.test(i18n) &&
+      /\(\?!langNote\$\)/.test(i18n) &&
+      /const LEGAL_ENGLISH_ONLY = \/\^legal\\\./.test(i18n),
+    'a legal key could still resolve to a locale translation')
+  check('a legal key resolves through en, not the locale table',
+    /legalIsEnglishOnly\(key\)\s*\n?\s*\?\s*en\[key\]/.test(i18n))
+
+  // The hosted policy is what Play links to. If the in-app sheet could ever
+  // resolve to a different text, the app would be able to contradict the document
+  // it points at.
+  const enLocale = readFileSync(path.join(ROOT, 'src/locales/en.js'), 'utf8')
+  check('the English legal text states the default rather than denying it',
+    /on by default/.test(enLocale.match(/'legal\.priv9':[^\n]*/)?.[0] || '') &&
+      /on by default/.test(enLocale.match(/'legal\.priv11':[^\n]*/)?.[0] || ''),
+    'priv9/priv11 still claim sharing is off until turned on')
+}
+
 const failed = results.filter((r) => !r.pass)
 console.log(`\n[units] ${results.length - failed.length}/${results.length} passed`)
 if (failed.length) {

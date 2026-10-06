@@ -176,5 +176,39 @@ for (const f of files) {
 }
 
 console.log('')
+
+// --- legal text must be English everywhere ---------------------------------
+//
+// The in-app policy falls back to English on purpose (i18n.js), because the
+// hosted policy is English-only and two copies of a privacy document cannot be
+// kept honest by hand. This checks that promise instead of assuming it: a
+// non-English locale must not define a legal.* string, or it would quietly
+// start shipping an unreviewed translation again.
+//
+// legal.langNote is the exception - it is the sentence telling the reader that
+// English governs, so it has to exist in their language.
+for (const f of files) {
+  const locale = f.replace('.js', '')
+  if (locale === 'en') continue
+  const src = fs.readFileSync(path.join(LOCALES, f), 'utf8')
+  const own = [...src.matchAll(/'((?:legal\.)[^']+)'\s*:/g)].map((m) => m[1])
+  const unwanted = own.filter((k) => k !== 'legal.langNote')
+  if (unwanted.length) {
+    findings++
+    console.log(
+      `  [${locale}] LEGAL STRING DEFINED  ${unwanted.length} keys would ship a translation: ${unwanted.slice(0, 4).join(', ')}${unwanted.length > 4 ? '…' : ''}`
+    )
+  }
+}
+
+// en must carry the note, because that is what every locale falls back to. A
+// locale may carry its own translation. Three locales had neither and were
+// rendering the literal string 'legal.langNote'; en now guarantees it resolves.
+if (!/'legal\.langNote'\s*:/.test(fs.readFileSync(path.join(LOCALES, 'en.js'), 'utf8'))) {
+  findings++
+  console.log('  [en] MISSING legal.langNote  nothing for other locales to fall back to')
+}
+
+console.log('')
 console.log(findings ? `${findings} findings` : 'no findings')
 process.exit(findings ? 1 : 0)

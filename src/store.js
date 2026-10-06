@@ -373,14 +373,26 @@ export const useStore = create(
       // Whether your prayer is shown to other people, and whether the app is
       // allowed to work out where you are.
       //
-      // Default OFF. Presence publishes a display name and a ~111 km grid cell
-      // to everyone connected, which is the most identifying thing this app
-      // does - far more than the anonymous ID, which never leaves the server.
-      // Opting in has to be a real choice, so nothing is requested and nothing
-      // is sent until you turn it on. Your own prayer record, streaks and
-      // backups are unaffected either way.
-      sharePresence: false,
+      // Presence publishes a display name and a ~111 km grid cell to everyone
+      // connected.
+      //
+      // Presence is on by default, with a first-run prompt that says what it
+      // does and offers to turn it off.
+      //
+      // This inverts a deliberate choice: it used to be opt-in precisely because
+      // a location is the most identifying thing this app does - far more than
+      // the anonymous ID, which never leaves the server. The prompt is what makes
+      // the default meaningful rather than silent, and it has to stay in place for
+      // that reason: without it, "on by default" means "publishes before anyone
+      // has been told".
+      //
+      // presencePromptSeen is separate from sharePresence so that a user who
+      // dismisses the prompt is asked once, not on every launch, and so that
+      // turning sharing off is never overwritten by a later default.
+      sharePresence: true,
+      presencePromptSeen: false,
       setSharePresence: (on) => set({ sharePresence: !!on }),
+      markPresencePromptSeen: () => set({ presencePromptSeen: true }),
 
       voiceURI: null,
       // per-prayer static voice choice (keys are prayer ids, values are voice ids)
@@ -725,8 +737,14 @@ export const useStore = create(
     {
       name: 'prayer-earth-v1',
       storage: createJSONStorage(() => safeStorage),
-      version: 2,
-      migrate: (state) => state,
+version: 3,
+  // Existing installs already carry an explicit sharePresence, persisted back
+  // when the default was off, so this change does not alter what they publish.
+  // Mark the prompt as seen for them: it exists to explain a default that has
+  // never applied to them, and showing it to someone who already chose would be
+  // noise. Only a genuinely new install is asked.
+  migrate: (state) =>
+    state ? { ...state, presencePromptSeen: state.presencePromptSeen ?? true } : state,
       merge: (persisted, current) => {
         const saved = persisted && typeof persisted === 'object' ? { ...persisted } : {}
         delete saved.offlineQueue
@@ -784,6 +802,9 @@ export const useStore = create(
         // Persisted, or consent would silently reset to "off" on every reload
         // and a user who chose to share would have to opt in again each time.
         sharePresence: s.sharePresence,
+          // Also persisted. Without it the first-run prompt would reappear on
+          // every launch for anyone who dismissed it.
+          presencePromptSeen: s.presencePromptSeen,
         prayerCompletions: s.prayerCompletions,
         prayerDayCompletions: s.prayerDayCompletions,
         prayerDayStats: s.prayerDayStats,

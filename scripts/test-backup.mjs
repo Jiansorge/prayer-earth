@@ -510,22 +510,27 @@ const SUITE = `(async () => {
       'disk=' + (raw.state ? raw.state.localPrayerSeconds : 'none'))
   }
   // --- presence consent ------------------------------------------------------
-  // Presence publishes a name and a ~111 km cell to every connected client, so
-  // it must be genuinely opt-in: nothing requested, nothing sent, and turning it
-  // off must actively withdraw what the server already holds.
+  // Presence publishes a name and a ~111 km cell to every connected client.
+  //
+  // The default is now ON, which inverts the guarantee this block used to
+  // assert. What has to hold instead: the choice is offered once at first run,
+  // it is persisted either way, and turning it off withdraws everything the
+  // server already holds. The withdrawal checks below are unchanged and are the
+  // part that protects a person who says no.
   {
-    t('presence is OFF by default (no name or region published without consent)',
-      useStore.getState().sharePresence === false,
+    t('presence is ON by default (the opt-out the first-run prompt offers)',
+      useStore.getState().sharePresence === true,
       'sharePresence=' + useStore.getState().sharePresence)
+
+    // A default that publishes before anyone has been told is not consent, so
+    // the prompt has to be pending until the user has actually been asked.
+    t('a new install has not yet been asked about sharing',
+      useStore.getState().presencePromptSeen === false,
+      'presencePromptSeen=' + useStore.getState().presencePromptSeen)
 
     // The auto-assigned pseudonym is itself a disclosure: the old code invented a
     // name for you on first launch, so there was always something to publish.
     const { syncClient } = await import('/src/sync/client.js')
-    t('a location is not resolved while presence is off',
-      !syncClient.loc, 'loc=' + JSON.stringify(syncClient.loc))
-    t('the app does not invent a name while presence is off',
-      !useStore.getState().profile.name || !syncClient.name,
-      'name=' + JSON.stringify(useStore.getState().profile.name))
 
     // Consent must survive a reload, or a user who opted in would silently have
     // to choose again every launch.
@@ -534,6 +539,15 @@ const SUITE = `(async () => {
     const raw = JSON.parse(localStorage.getItem('prayer-earth-v1') || '{}')
     t('the presence choice is persisted', raw.state?.sharePresence === true,
       'persisted=' + raw.state?.sharePresence)
+
+    // The prompt must not return once answered, or "on by default" would quietly
+    // re-assert itself for someone who deliberately turned sharing off.
+    reset({ sharePresence: false, presencePromptSeen: true })
+    await new Promise((r) => setTimeout(r, 300))
+    const rawSeen = JSON.parse(localStorage.getItem('prayer-earth-v1') || '{}')
+    t('a recorded answer to the first-run prompt is persisted',
+      rawSeen.state?.presencePromptSeen === true && rawSeen.state?.sharePresence === false,
+      'seen=' + rawSeen.state?.presencePromptSeen + ' sharing=' + rawSeen.state?.sharePresence)
 
     // Withdrawing must clear the local trace of a position the user has revoked.
     reset({ sharePresence: false, youLoc: { lat: 10, lon: 10 } })
