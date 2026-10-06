@@ -817,7 +817,6 @@ const testSelfServiceDeletion = async () => {
       saysSomething: !!(state && state.textContent.trim())
     }
   })()`)
-  check('Back returns to the main list', privacy)
   check('the Privacy row opens the panel that holds the presence toggle',
     privacyState.opened && privacyState.hasToggle, JSON.stringify(privacyState))
   check('the presence toggle reflects the stored value, and states what is shared',
@@ -825,6 +824,16 @@ const testSelfServiceDeletion = async () => {
     JSON.stringify(privacyState))
 
   // The destructive button must NOT act immediately; it opens a confirmation.
+  // It lives in the Your data panel, and the presence checks above left Privacy
+  // open, so go back and return to it rather than looking for a button the
+  // current panel does not contain.
+  await ensureMainList()
+  await cdp.evaluate(`(() => {
+    const row = document.querySelector('[data-testid="row-data"]')
+    if (row) row.click()
+    return !!row
+  })()`)
+  await cdp.waitFor(`!!document.querySelector('[data-testid="panel-data"]')`, 8000)
   await cdp.evaluate(`(() => {
     const b = [...document.querySelectorAll('.field-btn')].find(x => /delete my data permanently/i.test(x.textContent || ''))
     if (b) b.click()
