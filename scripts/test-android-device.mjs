@@ -697,15 +697,42 @@ const testSelfServiceDeletion = async () => {
   })()`)
   await cdp.waitFor(`!!document.querySelector('.field-btn')`, 8000)
 
+  // The deletion link lives in the Your data panel now. Open it first.
+  //
+  // The link is a button, not an <a href>: target="_blank" was a dead tap in
+  // the Android WebView, so every off-device link goes through openExternal().
+  // Assert on what is reachable rather than on the tag it used to be.
+  await cdp.evaluate(`(() => {
+    const row = document.querySelector('[data-testid="row-data"]')
+    if (row) row.click()
+    return !!row
+  })()`)
+  await cdp.waitFor(`!!document.querySelector('[data-testid="panel-data"]')`, 8000)
+
   const ui = await cdp.evaluate(`(() => {
     const btns = [...document.querySelectorAll('.field-btn')].map(b => (b.textContent || '').trim())
+    const panel = document.querySelector('[data-testid="panel-data"]')
     return {
       hasButton: btns.some(b => /delete my data permanently/i.test(b)),
-      hasLink: [...document.querySelectorAll('a')].some(a => /delete-data\\.html/.test(a.getAttribute('href') || ''))
+      hasLink:
+        !!panel &&
+        [...panel.querySelectorAll('button,.field-report')].some(b =>
+          /request deletion of my data/i.test(b.textContent || '')
+        ),
+      hrefSomewhere: [...document.querySelectorAll('a')].some(a => /delete-data\.html/.test(a.getAttribute('href') || ''))
     }
   })()`)
   check('the app shell offers self-service deletion', ui.hasButton, JSON.stringify(ui))
   check('the app shell links to the deletion page', ui.hasLink, JSON.stringify(ui))
+  // Nothing in the app should still rely on target="_blank": it does nothing in
+  // the Android WebView, so such a link is a button that appears to work and
+  // opens nothing.
+  const deadLinks = await cdp.evaluate(`(() => {
+    return [...document.querySelectorAll('a[target="_blank"]')]
+      .filter(a => !a.getAttribute('href'))
+      .length
+  })()`)
+  check('no link is left with target=_blank and no href', deadLinks === 0, 'found ' + deadLinks)
 
   // Seed data, so a wipe would be visible. The real values are captured first and
   // restored at the end - leaving the seeded numbers behind would quietly
@@ -732,6 +759,47 @@ const testSelfServiceDeletion = async () => {
   void saved
   await sleep(400)
 
+// Presence lives in the Privacy panel now, and it is the one control here that
+  // publishes a location, so check it is reachable and that it reflects real
+  // state rather than a hardcoded label.
+  //
+  // The Your data panel is already open from the deletion checks above, so this
+  // exercises Back rather than re-clicking the row.
+  const openedPanel = await cdp.evaluate(`(() => !!document.querySelector('[data-testid="panel-data"]'))()`)
+  check('the Your data row opens its panel', openedPanel)
+
+  // Back returns to the main list, then Privacy opens.
+  await cdp.evaluate(`(() => {
+    const back = document.querySelector('.settings-back')
+    if (back) back.click()
+    return !!back
+  })()`)
+  await sleep(400)
+  const privacy = await cdp.evaluate(`(() => {
+    const row = document.querySelector('[data-testid="row-privacy"]')
+    if (row) row.click()
+    return !!row
+  })()`)
+  await sleep(500)
+  const privacyState = await cdp.evaluate(`(() => {
+    const panel = document.querySelector('[data-testid="panel-privacy"]')
+    const toggle = document.querySelector('[data-testid="privacy-presence-toggle"]')
+    const state = document.querySelector('[data-testid="privacy-state"]')
+    return {
+      opened: !!panel,
+      hasToggle: !!toggle,
+      checked: toggle ? !!toggle.checked : null,
+      storeSays: !!window.__store.getState().sharePresence,
+      saysSomething: !!(state && state.textContent.trim())
+    }
+  })()`)
+  check('Back returns to the main list', privacy)
+  check('the Privacy row opens the panel that holds the presence toggle',
+    privacyState.opened && privacyState.hasToggle, JSON.stringify(privacyState))
+  check('the presence toggle reflects the stored value, and states what is shared',
+    privacyState.checked === privacyState.storeSays && privacyState.saysSomething,
+    JSON.stringify(privacyState))
+
   // The destructive button must NOT act immediately; it opens a confirmation.
   await cdp.evaluate(`(() => {
     const b = [...document.querySelectorAll('.field-btn')].find(x => /delete my data permanently/i.test(x.textContent || ''))
@@ -743,12 +811,13 @@ const testSelfServiceDeletion = async () => {
     const s = window.__store.getState()
     return {
       hasPanel: !!document.querySelector('.delete-panel'),
+      hasArmed: !!document.querySelector('[data-testid="delete-armed-hint"]'),
       hasConfirm: [...document.querySelectorAll('.field-btn')].some(b => /^yes, delete my data$/i.test((b.textContent || '').trim())),
       seconds: s.localPrayerSeconds
     }
   })()`)
   check('deleting asks for confirmation first (it is irreversible)',
-    confirm.hasPanel && confirm.hasConfirm, JSON.stringify(confirm))
+    confirm.hasPanel && confirm.hasArmed && confirm.hasConfirm, JSON.stringify(confirm))
   check('merely opening the confirm panel changes nothing',
     confirm.seconds === 2468, 'seconds=' + confirm.seconds)
 

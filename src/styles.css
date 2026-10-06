@@ -2066,6 +2066,103 @@ html[dir='rtl'] .chooser-arrow.right {
   margin-bottom: 0;
 }
 
+/* --- Settings sub-panels -------------------------------------------------
+   The main list used to hold Privacy, backup and deletion inline, which made
+   the delete button the fifth control in a long scrolling section. These rows
+   move each of them somewhere a person looks for it on purpose. */
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 13px 2px;
+  background: none;
+  border: 0;
+  border-top: 1px solid rgba(241, 245, 232, 0.1);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-row:first-of-type {
+  border-top: 0;
+}
+
+.settings-row:active {
+  opacity: 0.65;
+}
+
+.settings-row:focus-visible {
+  outline: 2px solid rgba(241, 245, 232, 0.6);
+  outline-offset: 2px;
+}
+
+.settings-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.settings-row-label {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.settings-row-hint {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(241, 245, 232, 0.66);
+}
+
+/* The chevron is decorative; the label already names the destination, so it is
+   hidden from assistive tech rather than announced as a stray character. */
+.settings-row-chevron {
+  flex: 0 0 auto;
+  font-size: 20px;
+  line-height: 1;
+  color: rgba(241, 245, 232, 0.42);
+}
+
+.settings-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 0 10px;
+}
+
+.settings-panel-title {
+  font-size: 17px;
+  font-weight: 600;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.settings-back {
+  flex: 0 0 auto;
+  background: none;
+  border: 0;
+  padding: 6px 10px 6px 0;
+  color: rgba(241, 245, 232, 0.8);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-back:active {
+  opacity: 0.6;
+}
+
+.settings-back:focus-visible {
+  outline: 2px solid rgba(241, 245, 232, 0.6);
+  outline-offset: 2px;
+}
+
 .world-feed-empty {
   padding: 10px 12px 12px;
   font-size: 12.5px;

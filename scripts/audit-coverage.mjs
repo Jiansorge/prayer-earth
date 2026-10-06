@@ -114,6 +114,30 @@ const ROWS = [
     'scripts/test-backup.mjs', /arriving after withdrawal is discarded/,
     'the permission dialog can sit open for minutes'],
 
+  // --- settings panels ---
+  //
+  // Deletion used to sit as the fifth control inside the backup section, so a
+  // stray tap in a long scrolling sheet could reach it. It now needs a row,
+  // then an arm, then a confirm.
+  ['settings: the Your data row opens its panel',
+    'scripts/test-android-device.mjs', /the Your data row opens its panel/,
+    'the delete button is unreachable'],
+  ['settings: deletion takes two deliberate steps',
+    'scripts/test-android-device.mjs', /deleting asks for confirmation first/,
+    'one stray tap erasing a record'],
+  ['settings: arming says the next step asks again',
+    'scripts/test-android-device.mjs', /hasArmed/,
+    'a confirm screen that does not warn it is permanent'],
+  ['settings: the presence toggle lives in Privacy',
+    'scripts/test-android-device.mjs', /the Privacy row opens the panel that holds the presence toggle/,
+    'consent living next to an unrelated control'],
+  ['settings: the presence toggle reflects real state',
+    'scripts/test-android-device.mjs', /the presence toggle reflects the stored value/,
+    'a toggle that says one thing and does another'],
+  ['settings: Back returns to the main list',
+    'scripts/test-android-device.mjs', /Back returns to the main list/,
+    'a sub-panel with no way out'],
+
   // --- the Android shell, found by device testing ---
   ['app shell: real, allow-listable origin (androidScheme https)',
     'scripts/test-units.mjs', /androidScheme/,
