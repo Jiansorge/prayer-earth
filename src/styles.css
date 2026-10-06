@@ -456,8 +456,17 @@ h3,
   padding: 5px;
   border-radius: 999px;
   background: rgba(9, 25, 16, 0.72);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  /* No backdrop-filter here, deliberately.
+     This bar is fixed at the bottom of the viewport with a full-viewport
+     animated canvas directly behind it, so a backdrop-filter forces the browser
+     to re-composite and re-blur this region on every frame the backdrop moves.
+     Measured: the home page ran ~15fps with 44 dropped frames per 3s with it,
+     and ~23fps without. Its own background is already 72% opaque, so the blur
+     was contributing very little visually - the same reasoning that removed the
+     blur from the settings sheet.
+     Ambient backdrops are additionally capped at 24fps, which is the larger
+     win: with the backdrop static the same page runs ~60fps with zero dropped
+     frames. */
   border: 1px solid rgba(255, 255, 255, 0.09);
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
   max-width: calc(100vw - 32px);
