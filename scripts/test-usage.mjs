@@ -160,9 +160,34 @@ async function openSettings() {
 }
 
 async function closeSettings() {
-  await c.eval(`document.querySelector('.sheet-close')?.click()`)
-  return c.waitFor(`!document.querySelector('.sheet')`, 5000)
-}
+    await c.eval(`document.querySelector('.sheet-close')?.click()`)
+    return c.waitFor(`!document.querySelector('.sheet')`, 5000)
+  }
+
+  // Privacy, backup and deletion moved into their own panels. Anything that
+  // used to find a control in the main list has to open the panel first, so
+  // this is a single place that knows how.
+  async function openPanel(rowTestId, panelTestId) {
+    // Back out of whatever panel is open first.
+    if (await c.eval(`!!document.querySelector('.settings-back')`)) {
+      await c.eval(`document.querySelector('.settings-back')?.click()`)
+      await sleep(250)
+    }
+    const clicked = await c.eval(`(() => {
+      const row = document.querySelector('[data-testid="${rowTestId}"]')
+      if (row) row.click()
+      return !!row
+    })()`)
+    if (!clicked) return false
+    return c.waitFor(`!!document.querySelector('[data-testid="${panelTestId}"]')`, 5000)
+  }
+
+  // Return to the main list from whichever panel is open.
+  async function backToList() {
+    if (!(await c.eval(`!!document.querySelector('.settings-back')`))) return true
+    await c.eval(`document.querySelector('.settings-back')?.click()`)
+    return c.waitFor(`!document.querySelector('.settings-panel')`, 5000)
+  }
 
 log('navigating to home')
 await nav(APP)
@@ -213,12 +238,14 @@ ok(
   // innerText reflects the CSS text-transform, so match case-insensitively.
   settingsOpen && (await c.eval(`document.body.innerText.toLowerCase().includes('backup & restore')`))
 )
-const backupButtons = settingsOpen
+const backupPanelOpen = settingsOpen ? await openPanel('row-backup', 'panel-backup') : false
+ok('the backup panel opens from its row', backupPanelOpen)
+const backupButtons = backupPanelOpen
   ? await c.eval(`[...document.querySelectorAll('.field-btn')].map(b => (b.innerText || '').trim()).join(' | ')`)
   : ''
 ok(
   'settings offers copy + download recovery',
-  settingsOpen &&
+  backupPanelOpen &&
     // innerText reflects the CSS text-transform (uppercase), so match
     // case-insensitively.
     (await c.eval(`[...document.querySelectorAll('.field-btn')].some(b => /copy recovery code/i.test(b.innerText))`)) &&
@@ -228,7 +255,7 @@ ok(
 )
 ok(
   'settings offers a restore-from-code path',
-  settingsOpen &&
+  backupPanelOpen &&
     (await c.eval(`!!document.querySelector('.field-textarea')`)) &&
     (await c.eval(`[...document.querySelectorAll('.field-btn')].some(b => b.innerText.includes('Choose a backup file'))`))
 )
@@ -241,17 +268,16 @@ ok(
   })()`)
 )
 // Attribution: the app is free and stays free, and the About section must name
-// the authors and offer a route to report a re-upload. Honest scope -- this
-// cannot stop an APK repackage, but it is what makes a takedown easy.
-ok(
-  'about section carries attribution',
-  settingsOpen && (await c.eval(`document.body.innerText.toLowerCase().includes('free, always')`))
-)
+// the authors. Honest scope -- this cannot stop an APK repackage, but it is
+// what makes a takedown easy. The text lives in the main list, so this is
+// checked after going back rather than while a panel is open.
+if (settingsOpen) await openPanel('row-data', 'panel-data')
+// The report link moved into the Your data panel. Assert the control is
+// reachable there, not that it carries an href: target="_blank" is a dead tap in
+// the Android WebView, so every off-device link is a button using openExternal.
 ok(
   'about section offers a report-a-copy link',
-  settingsOpen &&
-    (await c.eval(`!!document.querySelector('.field-report')`)) &&
-    (await c.eval(`(document.querySelector('.field-report')?.getAttribute('href') || '').includes('joining-palms.app')`))
+  settingsOpen && (await c.eval(`!!document.querySelector('.field-report')`))
 )
 // The Play data-deletion page tells people to copy their anonymous ID from here.
 // If that button disappears, the published instructions become a dead end, so
@@ -264,7 +290,45 @@ ok(
 ok(
   'settings links to the data-deletion page',
   settingsOpen &&
-    (await c.eval(`[...document.querySelectorAll('a')].some(a => /delete-data\.html/.test(a.getAttribute('href') || ''))`))
+    (await c.eval(
+      `[...document.querySelectorAll('.field-report, a')].some(a => /request deletion of my data/i.test(a.textContent || '') || /delete-data\.html/.test(a.getAttribute?.('href') || ''))`
+    ))
+)
+// The manual request must be reachable without first arming the destructive
+// button: it is not a destructive control, and burying it would leave anyone
+// who cannot use the in-app flow with no way to ask.
+ok(
+  'the manual deletion route is offered without arming the button',
+  settingsOpen && (await c.eval(`(() => {
+    const panel = document.querySelector('[data-testid="panel-data"]')
+    if (!panel) return false
+    return !panel.querySelector('[data-testid="delete-armed-hint"]') &&
+      [...panel.querySelectorAll('.field-report')].some(b => /request deletion of my data/i.test(b.textContent || ''))
+  })()`))
+)
+ok(
+  'deletion takes two deliberate steps',
+  settingsOpen &&
+    (await c.eval(`(() => {
+      const arm = document.querySelector('[data-testid="delete-arm"]')
+      if (!arm) return false
+      arm.click()
+      return true
+    })()`)) &&
+    (await c.waitFor(`!!document.querySelector('[data-testid="delete-armed-hint"]')`, 3000)) &&
+    // Arming alone must not have sent anything.
+    (await c.eval(`!!document.querySelector('[data-testid="delete-confirm"]')`))
+)
+if (settingsOpen) {
+  await c.eval(`document.querySelector('[data-testid="delete-cancel"]')?.click()`)
+  await sleep(250)
+}
+// Back to the main list: everything below (ambient presets, theme, language) is
+// only rendered there, and a panel left open makes all of it disappear.
+if (settingsOpen) await backToList()
+ok(
+  'about section carries attribution',
+  settingsOpen && (await c.eval(`document.body.innerText.toLowerCase().includes('free, always')`))
 )
 ok(
   'the anonymous ID is retrievable for a deletion request',
@@ -735,6 +799,11 @@ await c.eval(`(() => {
   // Consent BEFORE praying, which is the order a user follows: a feed entry
   // is stamped with the name that was current when the prayer started.
   const settingsUp = await openSettings()
+  // The presence control moved into the Privacy panel, so open it before looking
+  // for the checkbox. Opening it by its row keeps this honest: a test that
+  // reached past the panel would still pass on a build where the panel is
+  // broken.
+  const privacyPanel = settingsUp ? await openPanel('row-privacy', 'panel-privacy') : false
   // Wait for the control instead of sampling once. openSettings returns on the
   // first .sheet match, which may be a different sheet, so reading the DOM
   // straight after is a race that CI loses and a slow local run happens to win.
@@ -747,7 +816,7 @@ await c.eval(`(() => {
   await c.eval(`document.querySelector('#share-presence')?.click()`)
   const consented = await c.waitFor(`window.__store.getState().sharePresence === true`, 5000)
   await closeSettings()
-  ok('the presence control is offered in Settings', settingsUp && control)
+  ok('the presence control is offered in the Privacy panel', settingsUp && privacyPanel && control)
   ok('the presence toggle turns sharing on', consented)
   ok(
     'opting in assigns an anonymous name to publish',

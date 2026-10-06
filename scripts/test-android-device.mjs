@@ -942,8 +942,19 @@ const testBackup = async () => {
   const opened = await cdp.waitFor(`!!document.querySelector('.field-btn')`, 8000)
   check('settings sheet opens', !!opened)
 
+  // Backup lives in its own panel now. Open it the way a person would, via the
+  // row, so a broken panel fails here rather than looking like a missing button.
+  const rowClicked = await cdp.evaluate(`(() => {
+    const row = document.querySelector('[data-testid="row-backup"]')
+    if (row) row.click()
+    return !!row
+  })()`)
+  const panelOpen = rowClicked && (await cdp.waitFor(`!!document.querySelector('[data-testid="panel-backup"]')`, 8000))
+  check('the backup panel opens from its row', !!panelOpen)
+
   const ui = await cdp.evaluate(`(() => {
     const body = document.body.innerText || ''
+    const panel = document.querySelector('[data-testid="panel-backup"]')
     const btns = [...document.querySelectorAll('.field-btn')].map(b => (b.textContent || '').trim())
     const ta = document.querySelector('.field-textarea:not([readonly])')
     return {
@@ -951,7 +962,10 @@ const testBackup = async () => {
       copy: btns.some(b => /copy recovery code/i.test(b)),
       download: btns.some(b => /download backup/i.test(b)),
       restoreField: !!ta,
-      styled: ta ? getComputedStyle(ta).borderRadius : null
+      styled: ta ? getComputedStyle(ta).borderRadius : null,
+      // The app shell cannot download files, so the code must be readable
+      // inline instead. Assert the panel actually shows it.
+      inlineCode: !!(panel && panel.querySelector('[data-testid="backup-code"]'))
     }
   })()`)
   check('backup section is present on device', ui.section, JSON.stringify(ui))
@@ -960,6 +974,7 @@ const testBackup = async () => {
   // deliberately NOT offered there. A browser still gets it.
   check('the app shell does not offer an impossible download', !ui.download,
     'WebView has no download listener, so the button would be dead')
+  check('the app shell shows the recovery code inline instead', ui.inlineCode)
   check('restore field is present and editable on device', ui.restoreField)
   // Regression: the restore box shipped with browser defaults (near-white on
   // white in the dark theme) because .field-textarea was never defined.
