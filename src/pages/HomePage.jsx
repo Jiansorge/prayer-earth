@@ -212,7 +212,14 @@ export default function HomePage() {
             {t('install.button')}
           </button>
           <button className="install-banner-dismiss" onClick={() => {
-            localStorage.setItem('pe-install-dismissed', '1')
+            // Guarded because a bare setItem throws in private mode, on a full
+            // quota, and in some locked-down WebViews - and the throw would
+            // happen BEFORE setInstallVisible, so the banner would refuse to
+            // dismiss with no visible reason. The store wraps every storage
+            // write for the same reason.
+            try {
+              localStorage.setItem('pe-install-dismissed', '1')
+            } catch {}
             setInstallVisible(false)
           }} aria-label={t('install.dismiss')}>
             ×

@@ -12,6 +12,7 @@ import SoundControls from '../components/SoundControls.jsx'
 import { stopPlayback } from '../playback.js'
 import { toggleMute, applyMute } from '../audio/mute.js'
 import { applyVolumes } from '../audio/volumes.js'
+import { shareLink, showManualCopy } from '../shared/share.js'
 import { isAppShell } from '../shared/mobile.js'
 import { CANONICAL_ORIGIN } from '../shared/canonical.js'
 
@@ -560,19 +561,21 @@ setChantMode(false)
   const share = async () => {
     const url = `${CANONICAL_ORIGIN}/#/pray/${spiritId}/${prayerId}`
     const text = `${prayerTitle(t, prayer.id, prayer.title)} · ${spirit.name}. Pray with the world: ${url}`
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: 'Joining Palms', text, url })
-        return
-      }
-    } catch (err) {
-      if (err?.name === 'AbortError') return
-    }
-    try {
-      await navigator.clipboard.writeText(url)
+    // Through shareLink, not a hand-rolled copy. This used to call
+    // navigator.clipboard.writeText directly and await it, which has three
+    // problems the shared helper already solved:
+    //   - writeText can stay pending forever where the permission prompt is
+    //     suppressed, so the tap gave no feedback and threw no error
+    //   - it has no legacy execCommand fallback, which is the only copy path
+    //     that works in the Android/iOS WebView
+    //   - a blocked copy failed silently, leaving no way to get the link out
+    const result = await shareLink({ title: 'Joining Palms', text, url })
+    if (result === 'shared' || result === 'copied') {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch {}
+    } else if (result === 'failed') {
+      showManualCopy(url, t('prayer.share'))
+    }
   }
 
   // Never render with an unresolved prayer: the guard effect above redirects,

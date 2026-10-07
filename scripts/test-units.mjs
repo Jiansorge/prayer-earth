@@ -451,7 +451,42 @@ const stripComments = (text) =>
     leak.error ? leak.error.message : `signal=${leak.signal} status=${leak.status}`)
 }
 
-const failed = results.filter((r) => !r.pass)
+// --- sharing must go through the hardened path ---------------------------
+  // PrayerPage used to hand-roll this: navigator.share, then a bare
+  // navigator.clipboard.writeText awaited directly. That last one can stay
+  // pending forever where the clipboard permission prompt is suppressed, so the
+  // tap gave no feedback and no error, and it had no execCommand fallback - the
+  // only copy path that works in the Android/iOS WebView.
+  const prayerPage = readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8')
+  // Comments are stripped first: the comment explaining WHY this used to be
+  // hand-rolled necessarily names navigator.clipboard.writeText, so the negative
+  // check below would otherwise fail on its own explanation.
+  const prayerCode = prayerPage
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n')
+    .map((l) => l.replace(/^\s*\/\/.*$/, ''))
+    .join('\n')
+  check('the prayer page shares through shareLink, not a raw clipboard call',
+    /shareLink\(/.test(prayerCode) &&
+      !/navigator\.clipboard\.writeText/.test(prayerCode) &&
+      /shared\/share\.js/.test(prayerCode),
+    'a hand-rolled share reintroduces the hang and the missing WebView fallback')
+
+  // --- storage writes are guarded ------------------------------------------
+  // A bare setItem throws in private mode, on a full quota, and in some
+  // locked-down WebViews. In a click handler the throw happens before the state
+  // update, so the control silently stops working.
+  const homePage = readFileSync(path.join(ROOT, 'src/pages/HomePage.jsx'), 'utf8')
+  const storageWrites = [...homePage.matchAll(/localStorage\.(setItem|removeItem)\([^)]*\)/g)]
+  let unguarded = []
+  for (const m of storageWrites) {
+    const context = homePage.slice(Math.max(0, m.index - 260), m.index)
+    if (!/\btry\s*\{/.test(context)) unguarded.push(m[0])
+  }
+  check('every storage write in HomePage sits inside a try', unguarded.length === 0,
+    unguarded.join(' | ') || 'all guarded')
+
+  const failed = results.filter((r) => !r.pass)
 console.log(`\n[units] ${results.length - failed.length}/${results.length} passed`)
 if (failed.length) {
   console.log('[units] FAILED:\n' + failed.map((f) => '  - ' + f.name).join('\n'))
