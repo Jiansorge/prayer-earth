@@ -42,6 +42,12 @@ jobs:
         run: node scripts/audit-i18n-deep.mjs
       - name: i18n quality audit (untranslated values)
         run: node scripts/audit-i18n-quality.mjs
+      # Second review round: placeholder order, whitespace, repeated function
+      # words, and the staleness check for English strings edited recently.
+      - name: i18n pass-2 audit
+        run: node scripts/audit-i18n-pass2.mjs
+      - name: i18n stale-translation audit
+        run: node scripts/audit-i18n-stale.mjs
       - name: Prayer language/translation audit
         run: node scripts/audit-prayers.mjs
       # The translated prayer text itself was the only source file no suite named.
