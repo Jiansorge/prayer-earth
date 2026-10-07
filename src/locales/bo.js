@@ -171,7 +171,7 @@ export default {
   'prayer.prayingNowRest': 'ད་ལྟ་ཁྱེད་དང་མཉམ་དུ་གསོལ་བ་འདེབས་བཞིན་ཡོད།',
   'prayer.across': '· {name}གི་སྟེང་{n}།',
   'prayer.allTime': '✶ ཐོག་མརིམ་ཡོངས་ལ་{n}།',
-  'prayer.today': '✶ དེ་རིང་{n}།',
+  'prayer.today': '✶ {n} དེ་རིང་ཁྱེད་ཀྱི་གསོལ་བ།',
   'prayer.todayTitle': 'དེ་རིང་ཁྱེད་ཀྱིས་གསོལ་བ་འདི་བཏང་བའི་ཐེངས་ཚད།',
   'prayer.recited': 'མཐོ་སྒྲས་བཏང་བ།',
   'prayer.repeated': 'སྙིང་ནང་ཡང་བསྐྱར་བྱས་པ།',

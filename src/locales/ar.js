@@ -143,7 +143,7 @@ export default {
   'prayer.prayingNowRest': 'يصلّون هذه الصلاة الآن',
   'prayer.across': '· {n} في {name}',
   'prayer.allTime': '✶ {n} على الإطلاق',
-  'prayer.today': '✶ {n} اليوم',
+  'prayer.today': '✶ {n} صلواتك اليوم',
   'prayer.todayTitle': 'تلاواتك لهذه الصلاة اليوم',
   'prayer.recited': 'تُتلى بصوت عالٍ', 'prayer.repeated': 'تتكرّر في القلب',
   'prayer.doneTitle': 'حُمِلت صلاتك.',
