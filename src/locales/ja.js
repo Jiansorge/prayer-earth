@@ -64,7 +64,7 @@ export default {
   'settings.yourDataRowHint': 'あなたの ID と、すべてを削除します。',
   'settings.deleteDataArmedHint': 'これは取り消せません。次の手順でもう一度確認します。',
   'settings.presenceWelcomeTitle': '祈りを世界と共有しますか？',
-  'settings.presenceWelcomeBody': '祈りは地球上の光として表示され、見知らぬ人が 함께 祈ることができます。プライバシーからいつでもオフにできます。',
+  'settings.presenceWelcomeBody': '祈りは地球上の光として表示され、見知らぬ人が一緒に祈ることができます。プライバシーからいつでもオフにできます。',
   'settings.secLook': '表示と言語',
   'settings.secShare': '共有',
   'settings.secBackup': 'バックアップ',

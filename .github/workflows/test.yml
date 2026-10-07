@@ -23,8 +23,17 @@ jobs:
         run: node scripts/test-server.mjs
       - name: Unit + i18n-placeholder guards
         run: node scripts/test-units.mjs
-      - name: i18n audit
-        run: node scripts/audit-i18n.mjs
+- name: i18n audit
+  run: node scripts/audit-i18n.mjs
+# These two catch what a per-value audit cannot. Duplicate keys are silent in a
+# JS object literal - the last one wins - and cross-script contamination is a
+# correct-looking sentence in the wrong language.
+- name: i18n duplicate-key audit
+  run: node scripts/audit-i18n-dupes.mjs
+- name: i18n cross-script audit
+  run: node scripts/audit-i18n-scripts.mjs
+- name: i18n deep audit
+  run: node scripts/audit-i18n-deep.mjs
       - name: Prayer language/translation audit
         run: node scripts/audit-prayers.mjs
   android:

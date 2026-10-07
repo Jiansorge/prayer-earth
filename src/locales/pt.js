@@ -215,7 +215,7 @@ export default {
   'theme.temple': 'Templo antigo',
   'theme.ocean': 'Oceano',
   'theme.dawn': 'Alba',
-  'theme.dawn': 'Amanhecer',
+
   'prayer.once': 'Reproduzir uma vez',
   'prayer.voice': 'Voz',
   'legal.langNote': 'Estas políticas são fornecidas em inglês, que rege o uso do Joining Palms.',
