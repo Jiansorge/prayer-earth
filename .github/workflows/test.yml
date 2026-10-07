@@ -55,6 +55,11 @@ jobs:
       # duplicate-key risk that shipped a mojibake string in zh.js.
       - name: Prayer phrase-translation audit
         run: node scripts/audit-prayer-l10n.mjs
+      # 28 of 272 prayers have no pre-rendered recording and depend on the
+      # browser or the timed chant. The engine has no /api/tts, so this chain is
+      # the only thing making them audible.
+      - name: Audio fallback chain audit
+        run: node scripts/audit-audio-fallback.mjs
   android:
     needs: test
     runs-on: ubuntu-latest
