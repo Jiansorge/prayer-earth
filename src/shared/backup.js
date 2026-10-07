@@ -121,11 +121,21 @@ export function summarizePayload(payload) {
     .map(Number)
     .filter(Number.isFinite)
     .sort((a, b) => a - b)
+  // A negative count is meaningless, and Number.isFinite alone lets one through:
+  // -99999 is finite. That value reaches here from a damaged localStorage entry
+  // or a hand-edited backup code, and it then drives the "what was restored"
+  // readout and the wasNoop / gainedSeconds comparisons.
+  //
+  // This does not put the live data at risk - the store's higher() and maxMap()
+  // merge with Math.max, so a negative can never lower a real total. It is the
+  // summary that was wrong, and a summary that says "-99999s" is worse than no
+  // summary at all.
+  const atLeastZero = (n) => (Number.isFinite(n) ? Math.max(0, n) : 0)
   return {
     distinctPrayers: ids.length,
-    completions: ids.reduce((sum, k) => sum + completions[k], 0),
-    seconds: Number.isFinite(payload?.localPrayerSeconds) ? payload.localPrayerSeconds : 0,
-    bestStreak: Number.isFinite(payload?.bestStreak) ? payload.bestStreak : 0,
+    completions: atLeastZero(ids.reduce((sum, k) => sum + completions[k], 0)),
+    seconds: atLeastZero(payload?.localPrayerSeconds),
+    bestStreak: atLeastZero(payload?.bestStreak),
     days: days.length,
     fromDay: days.length ? days[0] : 0,
     toDay: days.length ? days[days.length - 1] : 0

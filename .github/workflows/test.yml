@@ -21,8 +21,13 @@ jobs:
         run: node scripts/audit-build.mjs
       - name: Server integration tests
         run: node scripts/test-server.mjs
-      - name: Unit + i18n-placeholder guards
-        run: node scripts/test-units.mjs
+- name: Unit + i18n-placeholder guards
+  run: node scripts/test-units.mjs
+# Edge cases executed against the real modules rather than pattern-matched out
+# of the source. A static sweep found 34 candidates and zero real defects; calling
+# the functions with the bad values found a genuine one immediately.
+- name: Edge-case suite
+  run: node scripts/test-edge-cases.mjs
 - name: i18n audit
   run: node scripts/audit-i18n.mjs
 # These two catch what a per-value audit cannot. Duplicate keys are silent in a
