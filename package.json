@@ -38,6 +38,7 @@
     "audit:graphic": "node scripts/audit-graphic.mjs",
     "audit:coverage": "node scripts/audit-coverage.mjs",
     "test:edge": "node scripts/test-edge-cases.mjs",
+    "audit:workflow": "node scripts/audit-workflow.mjs",
     "audit:robustness": "node scripts/audit-robustness.mjs",
     "audit:containment": "node scripts/audit-repo-containment.mjs",
     "audit:i18n": "node scripts/audit-i18n-deep.mjs",

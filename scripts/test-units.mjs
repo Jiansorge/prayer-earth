@@ -486,7 +486,41 @@ const stripComments = (text) =>
   check('every storage write in HomePage sits inside a try', unguarded.length === 0,
     unguarded.join(' | ') || 'all guarded')
 
-  const failed = results.filter((r) => !r.pass)
+  // --- the CI workflow must stay structurally sound ----------------------
+  // An edit once matched an existing step's text and replaced it from column 0,
+  // de-indenting it out of the `steps:` list. GitHub rejected the whole file, so
+  // no job ran at all and the run reported failure with no failing check - which
+  // is worse than a red test, because nothing local notices.
+  //
+  // This is deliberately dependency-free. A full YAML parse would want a new
+  // package, and adding one to a privacy-first app to validate its own CI is a
+  // poor trade; the failure mode here is structural indentation, which is cheap
+  // to check directly. scripts/audit-workflow.mjs does the full parse when the
+  // yaml package happens to be present.
+{
+  const wf = path.join(ROOT, '.github/workflows/test.yml')
+  const lines = readFileSync(wf, 'utf8').split(/\r?\n/)
+  const offenders = []
+  lines.forEach((line, i) => {
+    if (!/^\s*-\s*(name|run|uses):/.test(line)) return
+    const indent = (line.match(/^\s*/) || [''])[0].length
+    // Allowed indents: 2 = a list under a key, 6 = a step in a job, 8 = a key
+    // inside a step, 10 = deeper still. Anything else is a step that escaped
+    // its list.
+    if (![2, 6, 8, 10].includes(indent)) {
+      offenders.push(`${i + 1} indent=${indent}: ${line.trim().slice(0, 44)}`)
+    }
+  })
+  check('every workflow step sits at a valid indent', offenders.length === 0,
+    offenders.join(' | ') || 'all steps nested correctly')
+
+  // A job with no steps would pass an indent check while running nothing.
+  const stepRuns = lines.filter((l) => /^\s{8}run:\s*\S/.test(l)).length
+  check('the workflow still runs a meaningful number of commands', stepRuns >= 8,
+    `only ${stepRuns} run: lines found`)
+}
+
+const failed = results.filter((r) => !r.pass)
 console.log(`\n[units] ${results.length - failed.length}/${results.length} passed`)
 if (failed.length) {
   console.log('[units] FAILED:\n' + failed.map((f) => '  - ' + f.name).join('\n'))
