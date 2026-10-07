@@ -72,7 +72,7 @@ export default {
   'settings.privacyRow': 'Privacidad',
   'settings.privacyOn': 'Compartir tu oración con otras personas está activado.',
   'settings.privacyOff': 'Solo tú ves tu oración.',
-  'settings.back': 'Atrás',
+  'settings.back': 'Volver',
   'settings.secSupport': 'Apoyo',
   'settings.reportCopyLink': 'Informar de una resubida',
   'settings.secData': 'Tus datos',

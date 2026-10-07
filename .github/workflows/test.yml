@@ -34,6 +34,8 @@ jobs:
   run: node scripts/audit-i18n-scripts.mjs
 - name: i18n deep audit
   run: node scripts/audit-i18n-deep.mjs
+- name: i18n quality audit (untranslated values)
+  run: node scripts/audit-i18n-quality.mjs
       - name: Prayer language/translation audit
         run: node scripts/audit-prayers.mjs
   android:
