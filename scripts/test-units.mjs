@@ -514,6 +514,21 @@ const stripComments = (text) =>
   check('every workflow step sits at a valid indent', offenders.length === 0,
     offenders.join(' | ') || 'all steps nested correctly')
 
+  // The translated prayer text is the one source file no suite named. It is an
+  // object literal keyed by the English phrase, so it carries exactly the
+  // duplicate-key risk that shipped a mojibake string in zh.js.
+  const l10n = readFileSync(path.join(ROOT, 'src/i18n/prayerL10n.js'), 'utf8')
+  const phrases = [...l10n.matchAll(/^\s*'((?:[^'\\]|\\.)*)'\s*:\s*\{/gm)].map((m) => m[1])
+  const dupes = phrases.filter((p, i) => phrases.indexOf(p) !== i)
+  check('no prayer phrase is defined twice (the second would silently win)',
+    dupes.length === 0, dupes.map((d) => JSON.stringify(d.slice(0, 40))).join(' | ') || `${phrases.length} distinct phrases`)
+
+  check('the prayer phrases carry no replacement characters',
+    !l10n.includes('\uFFFD'), 'a mangled encoding would render as garbage in a prayer')
+  const l10nLocales = [...new Set([...l10n.matchAll(/\b(es|fr|de|pt|it|ru|zh|ar|ja|ko|hi)\s*:\s*'/g)].map((m) => m[1]))]
+  check('the prayer phrases cover every locale they claim to',
+    l10nLocales.length >= 10, `locales found: ${l10nLocales.join(', ')}`)
+
   // A job with no steps would pass an indent check while running nothing.
   const stepRuns = lines.filter((l) => /^\s{8}run:\s*\S/.test(l)).length
   check('the workflow still runs a meaningful number of commands', stepRuns >= 8,

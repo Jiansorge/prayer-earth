@@ -44,6 +44,11 @@ jobs:
         run: node scripts/audit-i18n-quality.mjs
       - name: Prayer language/translation audit
         run: node scripts/audit-prayers.mjs
+      # The translated prayer text itself was the only source file no suite named.
+      # It is an object literal keyed by English, so it carries the same
+      # duplicate-key risk that shipped a mojibake string in zh.js.
+      - name: Prayer phrase-translation audit
+        run: node scripts/audit-prayer-l10n.mjs
   android:
     needs: test
     runs-on: ubuntu-latest
