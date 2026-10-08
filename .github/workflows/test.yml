@@ -60,6 +60,11 @@ jobs:
       # the only thing making them audible.
       - name: Audio fallback chain audit
         run: node scripts/audit-audio-fallback.mjs
+      # The file that goes to the Play Console, and the locale strings behind it.
+      # Catches repeated-word machine-translation stutters, Play's field limits,
+      # untranslated placeholder words, and rows identical to English.
+      - name: Play listing and translation review
+        run: node scripts/audit-play-translations.mjs
   android:
     needs: test
     runs-on: ubuntu-latest

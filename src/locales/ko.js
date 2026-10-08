@@ -1,7 +1,7 @@
 // Joining Palms interface strings for ko.
 export default {
-  'home.shareCopied': '링기됨!',
-'meter.prayedToday': '오늘 기도함',
+  'home.shareCopied': '링크를 복사했어요!',
+  'meter.prayedToday': '오늘 기도함',
   'meter.prayedWeek': '이번 주',
   'meter.toMillion': '백만 번의 함께한 기도 중',
   'sync.notice': '세상이 조용한 순간입니다, 여기서 계속 기도하세요.',

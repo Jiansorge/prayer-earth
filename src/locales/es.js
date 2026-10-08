@@ -81,7 +81,7 @@ export default {
   'settings.yourDataRowHint': 'Tu identificador y borrar todo.',
   'settings.deleteDataArmedHint': 'Esto es permanente. El siguiente paso lo confirma otra vez.',
   'settings.presenceWelcomeTitle': '¿Compartir tu oración con el mundo?',
-  'settings.presenceWelcomeBody': 'Tu oración aparecerá como una luz en el globo, para que personas unknown oren a tu lado. Puedes desactivarlo cuando quieras en Privacidad.',
+  'settings.presenceWelcomeBody': 'Tu oración aparecerá como una luz en el globo, para que personas desconocidas oren a tu lado. Puedes desactivarlo cuando quieras en Privacidad.',
   'settings.secLook': 'Aspecto e idioma',
   'settings.secShare': 'Compartir',
   'settings.secBackup': 'Copia de seguridad',
