@@ -132,7 +132,7 @@ class CDP {
 
   // Inspector-level failures that say nothing about the app.
   //
-  // Three families arrive here as ordinary errors and, if propagated, abort the
+  // Two families arrive here as ordinary errors and, if propagated, abort the
   // whole suite on a transient - this job failed 6 times in 13 runs from these,
   // with every app assertion before the fault already PASSing.
   //
@@ -142,16 +142,16 @@ class CDP {
   // 2. A context destroyed or not yet created by a navigation: "Execution
   //    context was destroyed", "Cannot find context with specified id". The next
   //    evaluation targets the new context, so retrying is correct.
-  // 3. A command that never came back. The WebView was busy, not broken: a
-  //    two-core software-rendered emulator under swiftshader takes tens of
-  //    seconds to paint its first frame, and the old flat 10s budget was
-  //    shorter than that.
   //
-  // They are retried rather than swallowed: the retry re-sends the expression
-  // and only the final failure is reported, so a genuine app fault still fails,
-  // it just cannot be faked by the debugger losing its own object. A timeout is
-  // never an assertion result - it is the harness failing to measure - so it
-  // belongs here too.
+  // These two are retried once, then reported. A retry is right for them because
+  // the fault is in the debugger losing track of its own object, not in the
+  // device being slow - one extra round trip settles it.
+  //
+  // A TIMEOUT is deliberately not in this list. "DevTools command timed out"
+  // means the WebView did not answer, and whether that is the emulator being
+  // slow or the app hanging is exactly the question a red job exists to answer.
+  // Absorbing it here would turn a real signal into a green build, and cost more
+  // wall-clock than it saves. It fails, loudly, with the timeout named.
   static TRANSIENT = [
     'Promise was collected',
     'Execution context was destroyed',
@@ -159,7 +159,6 @@ class CDP {
     'Cannot find context with specified id',
     'Inspected target navigated or closed',
     'Target closed',
-    'DevTools command timed out',
   ]
 
   isTransient(error) {
@@ -167,20 +166,20 @@ class CDP {
     return CDP.TRANSIENT.some((fragment) => message.includes(fragment))
   }
 
+  // True for a timeout, which is a real signal and never retried. Kept as its
+  // own predicate so the distinction is stated once, where it is decided.
+  isTimeout(error) {
+    return String(error?.message || error || '').includes('DevTools command timed out')
+  }
+
   async evaluate(expression, attempt = 0) {
-    // Escalate rather than repeat: a late first frame needs more room than a
-    // steady-state call, and a longer budget on retry is cheaper than a false
-    // failure. 40s worst case, and only after the first attempt fails.
-    const budget = [10000, 25000, 40000][attempt] || 40000
     let result
     try {
-      result = await this.send(
-        'Runtime.evaluate',
-        { expression, returnByValue: true, awaitPromise: true },
-        budget
-      )
+      result = await this.send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true })
     } catch (error) {
-      if (attempt < 3 && this.isTransient(error)) {
+      // One retry, so a lost inspector object cannot fail the run, but no more:
+      // if the second attempt also fails, it is reported.
+      if (attempt < 1 && this.isTransient(error) && !this.isTimeout(error)) {
         await sleep(500)
         return this.evaluate(expression, attempt + 1)
       }
@@ -188,7 +187,7 @@ class CDP {
     }
     if (result.exceptionDetails) {
       const text = result.exceptionDetails.text || 'Runtime evaluation failed'
-      if (attempt < 3 && this.isTransient(new Error(text))) {
+      if (attempt < 1 && this.isTransient(new Error(text))) {
         await sleep(500)
         return this.evaluate(expression, attempt + 1)
       }
@@ -228,11 +227,9 @@ const connect = async () => {
         const client = new CDP(page.webSocketDebuggerUrl)
         try {
           await client.open()
-          // A cold WebView on a software renderer can take a while to answer its
-          // first protocol commands, and the whole run restarts if this fails.
-          await client.send('Runtime.enable', {}, 30000)
-          try { await client.send('Log.enable', {}, 30000) } catch {}
-          await client.send('Page.enable', {}, 30000)
+          await client.send('Runtime.enable')
+          try { await client.send('Log.enable') } catch {}
+          await client.send('Page.enable')
           cdp = client
           return cdp
         } catch (error) {
@@ -253,12 +250,10 @@ const dismissOnboarding = async () => {
 const enableTestBridge = async () => {
   // The store hook is now gated at BUILD time (VITE_TEST_HOOKS=true in the
   // instrumented capacitor build); the old `?peTest=1` query param is gone.
-  // The navigation is the slowest step on a cold emulator: it is the first
-  // thing that competes with the app's own startup for a software renderer.
-  await cdp.send('Page.navigate', { url: APP_SHELL_URL }, 30000)
-  await cdp.waitFor(`document.readyState === 'complete' && !!document.querySelector('.app')`, 30000)
+  await cdp.send('Page.navigate', { url: APP_SHELL_URL })
+  await cdp.waitFor(`document.readyState === 'complete' && !!document.querySelector('.app')`, 15000)
   await dismissOnboarding()
-  await cdp.waitFor(`!!window.__store`, 30000)
+  await cdp.waitFor(`!!window.__store`, 15000)
 }
 
 const testSurface = async () => {
@@ -645,7 +640,7 @@ const testCorruptStorageRecovery = async () => {
   log(`corrupt-storage baseline: ${JSON.stringify(baseline)}`)
 
   // Relaunch the page with the corrupt value in place.
-  await cdp.send('Page.navigate', { url: APP_SHELL_URL }, 30000)
+  await cdp.send('Page.navigate', { url: APP_SHELL_URL })
   await sleep(7000)
   const recovered = await cdp.evaluate(`(() => {
     const boundary = document.body.innerText.includes('A little light flickered')
@@ -673,7 +668,7 @@ const testCorruptStorageRecovery = async () => {
     restored === true, String(restored))
 
   // Prove it by reloading and reading the counters back.
-  await cdp.send('Page.navigate', { url: APP_SHELL_URL }, 30000)
+  await cdp.send('Page.navigate', { url: APP_SHELL_URL })
   await sleep(7000)
   const after = await cdp.evaluate(`(() => {
     const s = window.__store && window.__store.getState()
@@ -1208,10 +1203,10 @@ const cleanup = () => {
 try {
     if (process.platform === 'win32' && !existsSync(ADB)) throw new Error(`adb not found: ${ADB}`)
     if (!deviceConnected()) throw new Error('No authorized Android device is connected')
-    // A CI emulator can drop the device between the check above and the first
-    // adb call below - it does, roughly one run in ten. Retrying here is not
-    // papering over an app fault: nothing has run yet, so a failure is always
-    // the harness, never the app.
+// The CI emulator can drop off adb for a moment as it settles. This is the
+    // one place a retry is kept: it costs at most 6 seconds, and it only exists
+    // for the case where the device is not there yet. Nothing has run at this
+    // point, so a failure is always the harness - and it still fails.
     let connected = false
     for (let attempt = 0; attempt < 3 && !connected; attempt++) {
       try {
@@ -1276,16 +1271,18 @@ try {
   await assertNoDataLoss()
   log(`failures=${failures}`)
 } catch (error) {
-  // A debugger-level fault after the app assertions have run is not an app
-  // result. Say which it was instead of recording a bare FAIL, because the
-  // difference decides whether anyone should go looking in the app.
-  const appRan = checksRun > 0
-  if (appRan && CDP.prototype.isTransient(error)) {
-    log(`SKIP the run stopped on a DevTools fault after ${checksRun} passing checks: ${error.message}`)
-    log('     not an app failure - the harness could not finish talking to the WebView')
-  } else {
-    check('Android smoke completed', false, error.message)
-  }
+  // Always a failure. If the fault was in the debugger rather than the app, say
+  // so in the detail - that is for whoever reads the log at 2am, not a reason to
+  // let a broken build through.
+  const fromDebugger = CDP.prototype.isTransient(error) || CDP.prototype.isTimeout(error)
+  const where = checksRun ? `after ${checksRun} checks` : 'before any check ran'
+  check(
+    'Android smoke completed',
+    false,
+    fromDebugger
+      ? `harness fault ${where}, not an app fault: ${error.message}`
+      : `${where}: ${error.message}`
+  )
 } finally {
   cleanup()
 }
