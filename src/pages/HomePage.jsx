@@ -148,8 +148,13 @@ export default function HomePage() {
   return (
     <div className="view fade-in">
       <Sparkles count={18} />
-      <div className="row" style={{ marginTop: 4 }}>
-        <div>
+      {/* home-head, not a bare .row: on a narrow phone the buttons were taking
+          their natural width and squeezing the headline into a 109px column,
+          which wrapped "Pray with the whole world." into five one-word lines and
+          left the icon looking like it sat on top of the text. The header wraps
+          so the title gets the full width instead. */}
+      <div className="row home-head" style={{ marginTop: 4 }}>
+        <div className="home-head-text">
           <div className="home-title">
             <img className="home-title-icon" src="/icons/icon-prayer-128.webp" srcSet="/icons/icon-prayer-64.webp 64w, /icons/icon-prayer-128.webp 128w, /icons/icon-prayer-256.webp 256w" sizes="46px" alt="" />
             <h1 className="page-title">
@@ -160,7 +165,7 @@ export default function HomePage() {
             {t('home.sub')}
           </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="home-head-actions">
           {/* The icon swapping to a tick was the only feedback, and it is easy
               to miss on a tap: nothing else in the header moves, so a tap that
               silently copies looks like a tap that did nothing. The label sits
