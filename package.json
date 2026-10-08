@@ -45,6 +45,7 @@
     "audit:i18n:dupes": "node scripts/audit-i18n-dupes.mjs",
     "audit:i18n:scripts": "node scripts/audit-i18n-scripts.mjs",
     "audit:i18n:all": "node scripts/audit-i18n.mjs && node scripts/audit-i18n-dupes.mjs && node scripts/audit-i18n-scripts.mjs && node scripts/audit-i18n-deep.mjs && node scripts/audit-i18n-quality.mjs && node scripts/audit-i18n-pass2.mjs && node scripts/audit-i18n-stale.mjs",
+    "test:lifecycle": "node scripts/test-resource-lifecycle.mjs",
     "test:locale-map": "node scripts/test-locale-mapping.mjs",
     "store:listing": "node scripts/store-listing.mjs",
     "build:play-translations": "node scripts/build-play-translations.mjs",

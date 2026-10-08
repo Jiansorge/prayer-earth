@@ -65,6 +65,12 @@ jobs:
       # untranslated placeholder words, and rows identical to English.
       - name: Play listing and translation review
         run: node scripts/audit-play-translations.mjs
+      # Drives the real app in a real browser and counts what is still alive:
+      # listeners by type, canvases, and WebGL contexts created vs released. The
+      # largest GPU leak in the app was a useEffect with [] deps whose cleanup
+      # never ran on the WebGL failover path, which no source scan can catch.
+      - name: Resource lifecycle (GPU, listeners, canvases)
+        run: node scripts/test-resource-lifecycle.mjs
   android:
     needs: test
     runs-on: ubuntu-latest

@@ -431,16 +431,43 @@ let _snapGridCache = null // { comp, sizes, trusted, rows, cols }
 
 export function supportsWebGL2() {
   if (typeof document === 'undefined') return false
+  let canvas = null
   try {
-    const canvas = document.createElement('canvas')
-    return !!canvas.getContext('webgl2')
+    canvas = document.createElement('canvas')
+    const gl = canvas.getContext('webgl2')
+    if (!gl) return false
+    // Ask the driver to drop the context rather than waiting for GC. Browsers
+    // cap live WebGL contexts (16 in Chrome), this runs on every Earth and
+    // backdrop mount, and an unreleased probe context occupies a slot until the
+    // detached canvas is collected.
+    gl.getExtension('WEBGL_lose_context')?.loseContext()
+    return true
   } catch {
     return false
+  } finally {
+    // Belt and braces: even if loseContext is unavailable, blanking the backing
+    // store lets the driver discard it eagerly.
+    if (canvas) {
+      canvas.width = 0
+      canvas.height = 0
+    }
   }
 }
 
 export class EarthScene {
   constructor(container, options = {}) {
+    try {
+      this._init(container, options)
+    } catch (error) {
+      // `new` never returns on a throw, so the caller has no reference to clean
+      // up. Do it here or the renderer and its GL context are stranded for the
+      // life of the page.
+      this._unwindPartialConstruction()
+      throw error
+    }
+  }
+
+  _init(container, options = {}) {
     this.container = container
     this.backdrop = !!options.backdrop
     this.onReady = options.onReady || null
@@ -570,6 +597,10 @@ export class EarthScene {
     // evolving halo + motes that unfold as the world climbs the ladder
     this.buildCorona()
     this.buildWisps()
+    // Dev-only handle for poking at the scene from the console. Cleared in
+    // dispose(): while it was left behind it pinned the disposed instance, and
+    // with it the 256-sprite pool and two 2048x1024 ImageData buffers (8MB
+    // each) - about 17MB per leaked scene.
     if (import.meta.env?.DEV) window.__earthScene = this
 
     if (!this.backdrop) {
@@ -618,6 +649,61 @@ export class EarthScene {
       }))
     }
     this.animate()
+  }
+
+  // Called only when the constructor throws partway through.
+  //
+  // By the time anything throws, the WebGLRenderer already exists, has its own
+  // GL context, and has been appended to the container (see the renderer setup
+  // near the top of the constructor). The caller never receives a reference,
+  // because `new` never returns, so it cannot call dispose() on us - which means
+  // without this the renderer, the context, the canvas and every geometry,
+  // material and texture allocated up to the throw are stranded for the life of
+  // the page.
+  //
+  // The usual cause is a canvas 2D context coming back null: getContext('2d')
+  // returns null when a context is already lost or the canvas is in a bad state,
+  // and the next createRadialGradient() on it throws.
+  _unwindPartialConstruction() {
+    try {
+      this.disposed = true
+      if (this._dragCleanup) this._dragCleanup()
+      if (this._resize) window.removeEventListener('resize', this._resize)
+      if (this._vis) document.removeEventListener('visibilitychange', this._vis)
+      if (this._containerObserver) this._containerObserver.disconnect()
+      if (this.scene) {
+        this.scene.traverse((obj) => {
+          if (obj.geometry) obj.geometry.dispose()
+          const m = obj.material
+          if (!m) return
+          const list = Array.isArray(m) ? m : [m]
+          for (const mat of list) {
+            if (mat.map && mat.map.isTexture) mat.map.dispose()
+            mat.dispose()
+          }
+        })
+        this.scene = null
+      }
+      if (this.maskTex) this.maskTex.dispose()
+      if (this.lightGlowTex) this.lightGlowTex.dispose()
+      if (this.dayTex) this.dayTex.dispose()
+      if (this.nightTex) this.nightTex.dispose()
+if (this._readyTimer) clearTimeout(this._readyTimer)
+    if (import.meta.env?.DEV && window.__earthScene === this) window.__earthScene = null
+      if (this.renderer) {
+        this.renderer.dispose()
+        try { this.renderer.forceContextLoss() } catch {}
+        const el = this.renderer.domElement
+        if (el) {
+          el.width = 0
+          el.height = 0
+          if (el.parentNode) el.parentNode.removeChild(el)
+        }
+        this.renderer = null
+      }
+    } catch {
+      // Nothing left to do. A failed cleanup must not mask the original error.
+    }
   }
 
   buildSilhouette(dayTex) {
@@ -2348,6 +2434,13 @@ this.autoRotate = !this.reducedMotion
   }
 
   dispose() {
+    // Idempotent on purpose. React can call a cleanup twice (StrictMode's
+    // mount/cleanup/mount, an error boundary tearing down mid-remount, or a
+    // failover effect that re-runs). Without this guard the second call threw on
+    // `this.renderer.dispose()` - and because the throw came first, the lines
+    // after it never ran, so forceContextLoss() was skipped and the GL context
+    // stayed alive. A leak caused by trying to clean up twice is the worst kind.
+    if (this.disposed) return
     this.disposed = true
     if (this._dragCleanup) this._dragCleanup()
     if (this._resize) window.removeEventListener('resize', this._resize)

@@ -42,7 +42,12 @@ export function useBackdropCanvas(ref, draw) {
   useEffect(() => {
     const canvas = ref.current
     if (!canvas) return
+    // getContext('2d') returns null when the canvas already holds another
+    // context type or the context has been lost. That used to turn a recoverable
+    // null into an exception thrown from inside the frame callback, sixty times
+    // a second, forever - see the try/catch in loop().
     const ctx = canvas.getContext('2d')
+    if (!ctx) return
     const reduced = !!(
       window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
     )
@@ -60,20 +65,31 @@ export function useBackdropCanvas(ref, draw) {
 
     let raf = 0
     let lastDraw = -Infinity
+    let stopped = false
     const loop = (t) => {
-      raf = requestAnimationFrame(loop)
       // Always queue the next frame first: skipping that when we skip a draw
       // would stall the loop completely.
+      raf = requestAnimationFrame(loop)
       if (t - lastDraw < minFrameMs) return
       lastDraw = t
-      draw(ctx, dpr, t / 1000, reduced, size)
+      try {
+        draw(ctx, dpr, t / 1000, reduced, size)
+      } catch {
+        // Because the next frame is armed above, a throw here used to be
+        // re-thrown on every following frame: an unbounded exception loop
+        // burning a core until the component unmounted. One failure stops the
+        // loop instead, which is a blank backdrop rather than a pinned CPU.
+        stopped = true
+        cancelAnimationFrame(raf)
+        raf = 0
+      }
     }
 
     const onResize = () => {
       size.w = window.innerWidth || 1
       size.h = window.innerHeight || 1
       fitCanvas(canvas, size.w, size.h, dpr)
-      if (!raf) {
+      if (!raf && !stopped && !document.hidden) {
         lastDraw = -Infinity
         raf = requestAnimationFrame(loop)
       }

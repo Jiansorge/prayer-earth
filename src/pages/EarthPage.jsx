@@ -24,6 +24,9 @@ export default function EarthPage() {
 
   useEffect(() => {
     let scene = null
+    // Once we have failed over there is nothing left to create, and re-entering
+    // would try again on a canvas that is no longer in the tree.
+    if (webglFail) return undefined
     if (!supportsWebGL2()) {
       setWebglFail(true)
       return undefined
@@ -45,7 +48,14 @@ export default function EarthPage() {
       if (scene) scene.dispose()
       sceneRef.current = null
     }
-  }, [])
+    // webglFail is a dep on purpose. When WebGL fails, this effect calls
+    // setWebglFail(true), which swaps <EarthScene> for <StaticEarth> - but a
+    // state change is not an unmount, so with [] here the cleanup never ran. The
+    // scene stayed alive with a detached canvas, a self-rescheduling
+    // requestAnimationFrame calling renderer.render() at 60fps, a live GL
+    // context and every geometry still uploaded. EarthBackdrop.jsx has always
+    // had `failed` in its deps for exactly this reason.
+  }, [webglFail])
 
   useEffect(() => {
     const scene = sceneRef.current

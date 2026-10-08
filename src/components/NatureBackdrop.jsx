@@ -255,13 +255,17 @@ export default function NatureBackdrop() {
     const ctx = canvas.getContext('2d')
     let raf = 0
     const draw = () => {
+      // Released before the work, not after. If drawScene threw, raf kept its
+      // stale non-zero value, so every later `if (!raf)` failed and the backdrop
+      // froze for the life of the mount while cleanup cancelled an already-fired
+      // handle.
+      raf = 0
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
       const w = window.innerWidth
       const h = window.innerHeight
       fitCanvas(canvas, w, h, dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       drawScene(ctx, w, h, getScene(), Date.now() / 1000)
-      raf = 0
     }
     const onResize = () => {
       if (!raf) raf = requestAnimationFrame(draw)

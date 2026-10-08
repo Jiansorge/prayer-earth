@@ -7,14 +7,23 @@ export default function CelebrateToast() {
   const completedAt = useStore((s) => s.completedAt)
   const [show, setShow] = useState(false)
   const timer = useRef(null)
+  const raf = useRef(0)
 
   useEffect(() => {
     if (!completedAt) return
     setShow(false)
-    requestAnimationFrame(() => setShow(true))
+    // The handle is stored and cancelled. It used to be discarded, which left a
+    // frame that could fire setShow(true) after this effect had already been
+    // cleaned up - two prayer completions in one frame armed two of them, and the
+    // fade and the 1.8s dismissal timer then drifted out of phase.
+    raf.current = requestAnimationFrame(() => setShow(true))
     clearTimeout(timer.current)
     timer.current = setTimeout(() => setShow(false), 1800)
-    return () => clearTimeout(timer.current)
+    return () => {
+      cancelAnimationFrame(raf.current)
+      raf.current = 0
+      clearTimeout(timer.current)
+    }
   }, [completedAt])
 
   if (!show) return null
