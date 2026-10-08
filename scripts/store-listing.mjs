@@ -87,8 +87,8 @@ Joining Palms is a free, multilingual prayer app. Pick a tradition, press Pray, 
 **{prayers} prayers across {spirits} traditions**
 Ancient and modern scripture, transliterated, with English meaning alongside. Adding prayers is open to anyone.
 
-**No account. No ads. No tracking.**
-There is no sign-up because there is no account to have. Your prayer record lives on your device, and you can erase it from the app in one tap — no email, no waiting.
+**No account. No ads.**
+There is no sign-up because there is no account to have. Your prayer record lives on your device, and you can erase it from the app in one tap — no email, no waiting. If you share location, it is rounded to a coarse cell and never stored exactly; it is on by default so your light can appear, and you can turn it off in Settings.
 
 **Works offline**
 Pray on a plane. Everything is downloadable and works without a connection.
@@ -109,7 +109,7 @@ Joining Palms es una aplicación de oración gratuita y multilingüe. Elige una 
 **{prayers} oraciones en {spirits} tradiciones**
 Escritura antigua y moderna, transliterada, con el significado en inglés al lado. Cualquiera puede añadir oraciones.
 
-**Sin cuenta. Sin anuncios. Sin rastreo.**
+**Sin cuenta. Sin anuncios.**
 No hay registro porque no hay cuenta que tener. Tu historial de oración vive en tu dispositivo y puedes borrarlo desde la aplicación con un toque: sin correo, sin esperas.
 
 **Funciona sin conexión**
@@ -131,7 +131,7 @@ Joining Palms est une application de prière gratuite et multilingue. Choisissez
 **{prayers} prières, {spirits} traditions**
 Écritures anciennes et modernes, translittérées, avec le sens en anglais à côté. L'ajout de prières est ouvert à tous.
 
-**Aucun compte. Aucune publicité. Aucun suivi.**
+**Aucun compte. Aucune publicité.**
 Pas d'inscription parce qu'il n'y a pas de compte à avoir. Votre historique de prière reste sur votre appareil et vous pouvez l'effacer depuis l'application en un geste : sans e-mail, sans attente.
 
 **Fonctionne hors ligne**
@@ -153,7 +153,7 @@ Joining Palms ist eine kostenlose mehrsprachige Gebets-App. Wähle eine Traditio
 **{prayers} Gebete aus {spirits} Traditionen**
 Alte und moderne Schriften, transkribiert, mit der englischen Bedeutung daneben. Gebete hinzuzufügen ist offen für alle.
 
-**Kein Konto. Keine Werbung. Kein Tracking.**
+**Kein Konto. Keine Werbung.**
 Es gibt keine Anmeldung, weil es kein Konto gibt. Dein Gebetsverlauf bleibt auf deinem Gerät, und du kannst ihn mit einem Tippen in der App löschen — ohne E-Mail, ohne Warten.
 
 **Funktioniert offline**
@@ -175,7 +175,7 @@ O Joining Palms é um aplicativo de oração gratuito e multilíngue. Escolha um
 **{prayers} orações em {spirits} tradições**
 Escrituras antigas e modernas, transliteradas, com o sentido em inglês ao lado. Qualquer pessoa pode adicionar orações.
 
-**Sem conta. Sem anúncios. Sem rastreamento.**
+**Sem conta. Sem anúncios.**
 Não há cadastro porque não há conta a ter. Seu histórico de oração fica no seu aparelho, e você pode apagá-lo no aplicativo com um toque — sem e-mail, sem espera.
 
 **Funciona offline**
@@ -197,7 +197,7 @@ Joining Palms è un'app di preghiera gratuita e multilingue. Scegli una tradizio
 **{prayers} preghiere in {spirits} tradizioni**
 Scritture antiche e moderne, traslitterate, con il significato in inglese accanto. Aggiungere preghiere è aperto a tutti.
 
-**Nessun account. Nessun annuncio. Nessun tracciamento.**
+**Nessun account. Nessun annuncio.**
 Non c'è registrazione perché non c'è un account da avere. Il tuo registro di preghiera resta sul tuo dispositivo e puoi cancellarlo dall'app con un tocco: senza email, senza attese.
 
 **Funziona offline**
@@ -219,7 +219,7 @@ Joining Palms — бесплатное многоязычное приложен
 **{prayers} молитв из {spirits} традиций**
 Древние и современные тексты, транслитерация, с переводом на английский рядом. Добавлять молитвы может любой.
 
-**Без аккаунта. Без рекламы. Без слежки.**
+**Без аккаунта. Без рекламы.**
 Регистрации нет, потому что нет и аккаунта. Ваша история молитв хранится на устройстве, и её можно стереть из приложения одним нажатием — без писем и ожидания.
 
 **Работает без сети**
@@ -241,7 +241,7 @@ Joining Palms 是一款免费的多语言祈祷应用。选择一种传统，点
 **{prayers} 篇祈祷文，涵盖 {spirits} 种传统**
 古老与现代的经文，附转写与英文释义。任何人都可以添加祈祷文。
 
-**无需账号、无广告、不追踪**
+**无需账号、无广告**
 没有注册，因为根本没有账号。你的祈祷记录保存在你的设备上，在应用内一键即可删除——不用发邮件，不用等待。
 
 **离线可用**
@@ -263,7 +263,7 @@ Joining Palms تطبيق صلاة مجاني ومتعدد اللغات. اختر
 **{prayers} صلاة عبر {spirits} تقاليد**
 نصوص قديمة وحديثة، مع النقحرف والمعنى الإنجليزي إلى جانبها. وإضافة الصلوات مفتوحة للجميع.
 
-**بلا حساب، بلا إعلانات، بلا تتبع**
+**بلا حساب، بلا إعلانات**
 لا تسجيل لأن لا حساب أصلًا. سجل صلاتك يبقى على جهازك، ويمكنك محوه من التطبيق بلمسة واحدة — بلا بريد، بلا انتظار.
 
 **يعمل دون اتصال**
@@ -285,7 +285,7 @@ Joining Palms は無料で多言語対応の祈りアプリです。伝統を選
 **{spirits}の伝統にわたる{prayers}の祈り**
 古い経文と現代の日々を翻刻し、英語の訳を添えています。祈りの追加は誰でもできます。
 
-**アカウント不要、広告なし、追跡なし**
+**アカウント不要、広告なし**
 アカウントがないため、登録もありません。祈りの記録は端末内に保存され、アプリからワンタップで削除できます ── メールも、待ち時間も不要です。
 
 **オフラインでも使える**
@@ -307,7 +307,7 @@ Joining Palms는 무료 다국어 기도 앱입니다. 전통을 고르고 '기�
 **{spirits}개 전통의 기도 {prayers}개**
 고전과 현대의 경문을 음차로 옮기고 영어 뜻을 함께 실었습니다. 기도는 누구나 추가할 수 있습니다.
 
-**계정 없음, 광고 없음, 추적 없음**
+**계정 없음, 광고 없음**
 계정이 없으니 가입도 없습니다. 기도 기록은 기기 안에 있으며, 앱에서 한 번의 탭으로 지울 수 있습니다 ── 이메일도, 기다림도 없습니다.
 
 **오프라인에서도 작동**
@@ -329,7 +329,7 @@ Joining Palms एक निःशुल्क, बहुभाषिक प्�
 **{spirits} परंपराओं में {prayers} प्रार्थनाएँ**
 प्राचीन और आधुनिक धर्मग्रंथ, रोमन लिपि में, साथ में अंग्रेज़ी अर्थ के साथ। प्रार्थनाएँ जोड़ना सबके लिए खुला है।
 
-**कोई खाता नहीं। कोई विज्ञापन नहीं। कोई ट्रैकिंग नहीं।**
+**कोई खाता नहीं। कोई विज्ञापन नहीं।**
 खाता ही नहीं है, इसलिए साइन-अप भी नहीं। आपका प्रार्थना रिकॉर्ड आपके डिवाइस पर रहता है, और आप ऐप में एक टैप में उसे मिटा सकते हैं — न ईमेल, न इंतज़ार।
 
 **ऑफ़लाइन भी चलता है**
@@ -351,7 +351,7 @@ Joining Palms là ứng dụng cầu nguyện miễn phí, đa ngôn ngữ. Ch�
 **{prayers} lời cầu nguyện thuộc {spirits} truyền thống**
 Kinh cổ và hiện đại, có chuyển tự Latin, kèm nghĩa tiếng Anh. Ai cũng có thể thêm lời cầu nguyện.
 
-**Không tài khoản. Không quảng cáo. Không theo dõi.**
+**Không tài khoản. Không quảng cáo.**
 Không có đăng ký vì không có tài khoản nào để có. Lịch sử cầu nguyện của bạn nằm trong thiết bị, và bạn có thể xóa ngay trong ứng dụng — không email, không chờ đợi.
 
 **Hoạt động ngoại tuyến**
@@ -373,7 +373,7 @@ Ang Joining Palms ay libre at maraming-wika na app ng dasal. Pumili ng tradisyon
 **{prayers} na dasal sa {spirits} tradisyon**
 Lumang at makabagong kasulatan, isinulat sa Roman, at may kabuhayan sa Ingles. Bukas sa lahat ang pagdagdag ng dasal.
 
-**Walang account. Walang anunsyo. Walang pagmamasid.**
+**Walang account. Walang anunsyo.**
 Walang pagpaparehistro dahil walang account na dapat magkaroon. Nasa device mo ang talaan ng iyong dasal, at mura-mura mo itong burahin sa app: walang email, walang paghihintay.
 
 **Gumagana kahit walang internet**
@@ -395,7 +395,7 @@ Joining Palms ནི་རིན་མེད་ཀྱི་ཡིག་སྐད
 **{spirits} ལམ་སྲོལ་ཀྱི་ {prayers} སྐྱབས་སོག**
 གོང་དུམ་དང་ཁྱོད་རེའི་ལུང་གིས་བཟོས་པའམ། དངོས་མཚོན་གྱི་བསྟན་བྱ་ཐིམ་པའི་ཕྱོགས་བདག་སོགས། སྐྱབས་བསྲེལ་བརྒྱུད་དགོང་བཀོར་ཡོད།
 
-**བསྡུས་ཀྱི་མེད། རྒྱག་ཆེན་མེད། ལྟ་མངའ་བཟུང་མེད།**
+**བསྡུས་ཀྱི་མེད། རྒྱག་ཆེན་མེད།**
 བསྡུས་ཀྱི་མེད་པས་ལོ་འཛུལ་ཀྱི་དགོང་མེད། ཁྱེད་ཀྱི་སྐྱབས་ཀྱི་ལས་ཐོག་ནི་ཁྱེད་ཀྱི་སྟེ་གེར་འདིར་གནས། དེས་ན་ཁུལ་དངོས་ཀྱིས་སྦག་ཏེར་གཅིག་ཀྱིས་འཁྲེག་ཐུག་མེད་ཀྱི་འཇོག་ཏེན།
 
 **ཁ་མེད་ཀྱང་འགྲོ་འདུག**
