@@ -87,16 +87,19 @@ Joining Palms is a free, multilingual prayer app. Pick a tradition, press Pray, 
 **{prayers} prayers across {spirits} traditions**
 Ancient and modern scripture, transliterated, with English meaning alongside. Adding prayers is open to anyone.
 
+**A real-time 3D Earth**
+WebGL, not a video. Every prayer is a light on the globe, the world glows brighter as more people join, and a soft golden aura rings it.
+
+**Fifteen languages, right to left included**
+English, Spanish, French, German, Portuguese, Italian, Russian, Chinese, Japanese, Korean, Hindi, Arabic (right-to-left), Vietnamese, Tagalog and Tibetan. The app follows your device language on first open.
+
 **No account. No ads.**
-There is no sign-up because there is no account to have. Your prayer record lives on your device, and you can erase it from the app in one tap — no email, no waiting. If you share location, it is rounded to a coarse cell and never stored exactly; it is on by default so your light can appear, and you can turn it off in Settings.
+There is no sign-up because there is no account to have. Your prayer record lives on your device, and you can erase it from the app in one tap — no email, no waiting. If you share location it is rounded to a coarse cell, never stored exactly, and you can turn it off in Settings.
 
 **Works offline**
 Pray on a plane. Everything is downloadable and works without a connection.
 
-**In your language**
-Fifteen languages, and the app follows your device language on first open.
-
-Free, no subscriptions, no in-app purchases. Source available under AGPL-3.0.`
+Free, no subscriptions, no in-app purchases. Installable, and open source under AGPL-3.0.`
   },
 
   es: {
