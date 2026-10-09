@@ -97,10 +97,24 @@ export function useBackdropCanvas(ref, draw) {
     const onVis = () => {
       cancelAnimationFrame(raf)
       raf = 0
-      if (!document.hidden && !reduced) raf = requestAnimationFrame(loop)
+      // `stopped` is checked here too. Without it the two guards disagreed about
+      // what stopping means: a resize respected the flag but a tab switch
+      // ignored it, so a backdrop whose draw threw would be re-armed, throw
+      // again on the next frame, and stop again - on every visibility toggle,
+      // for the life of the mount.
+      if (!document.hidden && !reduced && !stopped) raf = requestAnimationFrame(loop)
     }
-    if (reduced) draw(ctx, dpr, 2.5, reduced, size)
-    else raf = requestAnimationFrame(loop)
+    if (reduced) {
+      // Inside the same guard as the loop. This is a second entry point into
+      // draw() and it was left bare, which is the exact failure the null-ctx
+      // guard above exists to prevent.
+      try {
+        draw(ctx, dpr, 2.5, reduced, size)
+      } catch {
+        // A static frame that fails leaves the backdrop blank, which is the
+        // correct outcome - there is no loop to stop.
+      }
+    } else raf = requestAnimationFrame(loop)
     window.addEventListener('resize', onResize)
     document.addEventListener('visibilitychange', onVis)
     return () => {

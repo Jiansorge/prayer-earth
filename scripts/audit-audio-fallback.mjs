@@ -5,7 +5,7 @@ import fs from 'node:fs'
 // Found while answering "should the unrecorded Gurmukhi prayers be hidden?".
 // The chain in speech.js is:
 //
-//   1. pre-rendered audio      - absent for 28 of 272 prayers
+//   1. pre-rendered audio      - absent for the prayers with no recording (count is computed below, not hard-coded here)
 //   2. GET /api/tts             - NOT IMPLEMENTED by the engine. It 404s for every
 //                                 language, verified against production.
 //   3. browser speechSynthesis  - what actually happens, and the only voice some
@@ -55,9 +55,18 @@ check(
 const spiritsDir = 'src/data/spirits'
 const audioDir = 'public/audio'
 const all = []
+const t = 0
 for (const f of fs.readdirSync(spiritsDir)) {
   const s = fs.readFileSync(`${spiritsDir}/${f}`, 'utf8')
-  for (const m of s.matchAll(/id:\s*'([^']+)'/g)) all.push(m[1])
+  // Only ids inside `prayers: [`. Counting every `id:` in the file also matched
+  // the spirit's own top-level id, so the unrecorded list was polluted with all
+  // nineteen tradition names (buddhism, islam, ...) and the "is anything
+  // missing?" check could never fail, because those fake entries always
+  // counted as unrecorded.
+  const start = s.indexOf('prayers: [')
+  const body = start >= 0 ? s.slice(start) : ''
+  for (const m of body.matchAll(/id:\s*'([^']+)'/g)) all.push(m[1])
+  void t
 }
 const recorded = new Set(
   fs.readdirSync(audioDir).filter((n) => fs.statSync(`${audioDir}/${n}`).isDirectory())

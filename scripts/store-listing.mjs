@@ -6,7 +6,7 @@
 // bulk translation import expects without anyone retyping it.
 //
 // App counts must come from the data, not from memory. The old docs said "145
-// prayers across 15 traditions"; the app ships 253 across 16, so a hand-kept
+// prayers across 15 traditions"; the app ships far more than that, so a hand-kept
 // number is a number that goes stale and becomes a false claim on the store
 // page. Counts are injected from the prayer data below.
 
@@ -18,7 +18,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
 // --- counts, read from the data -------------------------------------------
 //
-// Never hand-keep these. docs/PLAY-STORE.md still said "145 prayers across 15
+// Never hand-keep these. The README and docs/PLAY-STORE.md said "145 prayers across 15
 // traditions" long after the catalogue had outgrown it, and a stale number on a
 // store page is a false claim, not just untidy.
 //
@@ -33,7 +33,17 @@ const spiritCodes = [...prayersSrc.matchAll(/id:\s*'([a-z]+)'/g)].map((m) => m[1
 let prayerCount = 0
 for (const f of SPIRIT_FILES) {
   const src = fs.readFileSync(path.join(SPIRITS_DIR, f), 'utf8')
-  prayerCount += (src.match(/\bid:\s*'/g) || []).length
+  // Count only the ids INSIDE `prayers: [`.
+  //
+  // Counting every `id:` in the file also matched the spirit's own top-level id
+  // - one per file - so the listing over-stated the catalogue by the number of
+  // traditions. It said 273 for 254 prayers, in all fifteen languages, and the
+  // same wrong figure had been published before this. The count is the single
+  // most public claim the app makes, so it is derived from the prayers array
+  // itself rather than a pattern that happens to match.
+  const prayersStart = src.indexOf('prayers: [')
+  const body = prayersStart >= 0 ? src.slice(prayersStart) : ''
+  prayerCount += (body.match(/\bid:\s*'/g) || []).length
 }
 
 // A spirit file with no entry in prayers.js would not be reachable from the

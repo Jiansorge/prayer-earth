@@ -2615,10 +2615,23 @@ html[dir='rtl'] .chooser-arrow.right {
 }
 
 .legal-sheet {
-  max-height: 84dvh;
-  overflow-y: auto;
-  padding: 20px 22px calc(26px + env(safe-area-inset-bottom));
-}
+    max-height: 84dvh;
+    overflow-y: auto;
+    padding: 20px 22px calc(26px + env(safe-area-inset-bottom));
+  }
+
+  /* The legal sheet wraps its content in .sheet-body so it scrolls like the rest
+     of the settings UI, which means .sheet-body's own padding now stacks on top
+     of this one. Left alone it doubled the horizontal inset to 44px and applied
+     the bottom safe-area inset twice, so the Back header sat at 22px while the
+     text under it sat at 44px. It also left two nested overflow-y:auto boxes,
+     both with hidden scrollbars.
+     So: this sheet no longer pads or scrolls itself; .sheet-body does both. */
+  .legal-sheet {
+    max-height: 84dvh;
+    overflow: hidden;
+    padding: 0;
+  }
 
 .legal-block {
   margin-top: 16px;
@@ -4020,7 +4033,6 @@ html {
 /* a little more breathing room at the bottom of modals */
 .picker-sheet,
 .settings-sheet,
-.legal-sheet,
 .onboard-card {
   padding-bottom: calc(26px + env(safe-area-inset-bottom));
 }

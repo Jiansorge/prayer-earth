@@ -717,6 +717,10 @@ export class EarthScene {
       if (this.dayTex) this.dayTex.dispose()
       if (this.nightTex) this.nightTex.dispose()
 if (this._readyTimer) clearTimeout(this._readyTimer)
+    // Cleared here as well as in dispose(): this is the dev-only handle that
+    // pins the instance, its 256-sprite pool and its two 2048x1024 ImageData
+    // buffers - about 17MB. It was only cleared on the constructor-unwind path,
+    // which is the rarer one, so the normal dispose left it behind.
     if (import.meta.env?.DEV && window.__earthScene === this) window.__earthScene = null
       if (this.renderer) {
         this.renderer.dispose()
@@ -2165,14 +2169,32 @@ this.autoRotate = !this.reducedMotion
     this.bindContextLoss()
   }
 
-  // The "did the renderer ever produce a frame" watchdog. Disarmed as soon as
-  // the first frame lands so a healthy-but-slow scene is never failed over.
+  // The "the Earth is not going to show up" watchdog. Disarmed once ready.
+  //
+  // The condition used to be `!this._rendered` - a "no frame arrived" check.
+  // That is no longer sufficient now that readiness also requires the day map:
+  // frames render within ~16ms, so `_rendered` is true from the first frame and
+  // the old condition could never fire, leaving the loading overlay up forever
+  // if the texture request stalled. A stalled request does not fail - it hangs -
+  // and public/sw.js serves both the day map and the land mask cache-first with
+  // no timeout, so this is reachable.
+  //
+  // So: fail over if we are neither ready nor deliberately hidden, regardless of
+  // whether a frame landed. An untextured globe beats an endless spinner.
   _armReadyTimer() {
     if (this._readyTimer) clearTimeout(this._readyTimer)
     this._readyTimer = setTimeout(() => {
-      if (!this._ready && !this.hidden && !this._rendered) {
-        this._notifyError(new Error('Earth renderer did not produce a frame'))
+      if (this.disposed || this._ready) return
+      if (this.hidden) {
+        // Hidden: the timers are suspended too, so re-arm rather than fail.
+        this._armReadyTimer()
+        return
       }
+      this._notifyError(
+        this._rendered
+          ? new Error('Earth texture did not load in time')
+          : new Error('Earth renderer did not produce a frame')
+      )
     }, 6000)
   }
 
@@ -2503,6 +2525,10 @@ this.autoRotate = !this.reducedMotion
     if (this.dayTex) this.dayTex.dispose()
     if (this.nightTex) this.nightTex.dispose()
     if (this._readyTimer) clearTimeout(this._readyTimer)
+    // The dev-only handle pins this instance - and with it the 256-sprite pool
+    // and two 2048x1024 ImageData buffers, about 17MB - so it has to be dropped
+    // on the normal dispose path, not only when the constructor unwinds.
+    if (import.meta.env?.DEV && window.__earthScene === this) window.__earthScene = null
 
     this.renderer.dispose()
     try { this.renderer.forceContextLoss() } catch {}

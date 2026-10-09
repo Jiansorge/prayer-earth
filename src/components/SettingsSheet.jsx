@@ -173,7 +173,15 @@ export default function SettingsSheet() {
     // the DOM, so el.scrollTop is 0 no matter where the sheet had been left.
     // That was measured, not assumed - the banked value came back as 0 from a
     // sheet scrolled to 400.
+    //
+    // Guarded on `key` still being the visible panel. When a sub-panel opens,
+    // the browser clamps the container's scrollTop (the new content is shorter)
+    // and fires a scroll event during the scroll-steps phase - BEFORE passive
+    // effects, and so before this listener is removed. Without the guard that
+    // clamp wrote the old panel's key, and pressing Back restored the clamped
+    // position instead of where the user had been.
     const onScroll = () => {
+      if ((panel || 'main') !== key) return
       scrollMemory[key] = el.scrollTop
     }
     el.addEventListener('scroll', onScroll, { passive: true })
@@ -182,12 +190,16 @@ export default function SettingsSheet() {
     // itself shortly after opening, and a focused element is scrolled into
     // view; lazy images are still growing the content, so the clamp is computed
     // against a shorter scrollHeight than the offset was taken from.
+    //
+    // The else branch matters. With no stored offset - opening a sub-panel for
+    // the first time - the container is still sitting at the list's offset, and
+    // a shorter sub-panel opened mid-scroll hides its own Back control above the
+    // fold. Start at the top instead.
     let frame = 0
-    if (wanted) {
-      frame = requestAnimationFrame(() => {
-        if (bodyRef.current === el) el.scrollTop = wanted
-      })
-    }
+    frame = requestAnimationFrame(() => {
+      if (bodyRef.current !== el) return
+      el.scrollTop = wanted || 0
+    })
     return () => {
       if (frame) cancelAnimationFrame(frame)
       el.removeEventListener('scroll', onScroll)

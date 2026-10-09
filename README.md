@@ -20,11 +20,11 @@ every tradition pray together on one living Earth — live at
 
 - 🌍 A real-time 3D Earth that glows as the world prays (WebGL shaders, prayer
   lights, a twinkling golden aura).
-- 🙏 **145 prayers** across **15 traditions** — ancient public-domain scripture
-  and original wholesome compositions. Everything is deliberately
+- 🙏 **254 prayers** across **19 traditions** — ancient public-domain scripture
+  and original compositions. Everything is deliberately
   **non-copyrighted, non-dogmatic, and never shame- or sin-focused**.
-- 🌐 **12 interface languages** (en, es, fr, de, hi, pt, it, ru, zh, ar, ja, ko)
-  with RTL support for Arabic.
+- 🌐 **15 interface languages** (en, es, fr, de, hi, pt, it, ru, zh, ar, ja, ko,
+  vi, tl, bo) with RTL support for Arabic.
 - 📱 Installable PWA, offline-ready via a service worker; works on phones and
   desktop.
 - 🔒 Privacy-first: only a coarse 1° location cell is ever shared; no accounts,
@@ -45,7 +45,7 @@ every tradition pray together on one living Earth — live at
 **Goal:** Manifest divine energy for the multiverse — a single, privacy-first place where anyone, of any tradition or none, can pray together and *see* the world light up.
 
 * **World view (3D globe):** `three.js` + custom GLSL — equirect 2048×1024 land mask (Natural Earth 110m), correct `lon` chirality, cloud + aurora shaders, 256 instanced prayer lights with precomputed `localDir` (one `drawElements` pass, 60fps). Collective glow = `pow(count/1M, 0.38)` in `src/store.js`. Offline PWA via `public/sw.js`.
-* **Prayers:** 15 traditions → 145+ prayers, code-split per spirit (`src/data/spirits/*.js` lazy via `loadSpirit()`), 12 locales with RTL, no copy-pasted copyrighted texts.
+* **Prayers:** 19 traditions → 254 prayers, code-split per spirit (`src/data/spirits/*.js` lazy via `loadSpirit()`), 15 locales with RTL, no copy-pasted copyrighted texts.
 * **Sync:** App never talks to DB — only to `sync-engine` (Workers + Durable Objects) via tiny `src/sync/` interface. Swap `SyncEngine`→`CfEngine` with no app change.
 
 ## Private data
