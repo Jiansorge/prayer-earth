@@ -140,8 +140,9 @@ const privacyBody = `
         <h2>10. ${esc(t('legal.pDpoTitle'))}</h2>
         <p>${esc(t('legal.pDpoBody'))}</p>
       </section>
-      <section class="contact">
+      <section class="contact" id="report">
         <h2>11. ${esc(t('legal.pContactTitle'))}</h2>
+        <p>${esc(t('legal.pReportBody'))}</p>
         <p>For business inquiries, prayer additions, questions, or any data-protection matter, email us at
         <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>. We&rsquo;ll get back to you.</p>
       </section>`

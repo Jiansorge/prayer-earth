@@ -8,8 +8,11 @@ export const CANONICAL_ORIGIN = 'https://joining-palms.app'
 // re-upload. Both are free and open, so they work for anyone who needs them
 // without an account.
 //
-// These live here rather than in a component because the Settings sheet and
-// the Your data panel both link to them; a second copy of a URL is a URL that
-// eventually disagrees with the first.
+// REPORT_URL used to be `https://joining-palms.app/legal#report`. There is no
+// hosted /legal page - that path just serves the app shell, so the link landed
+// on the home screen with nothing highlighted, and no element on any page
+// carried id="report" to jump to. The privacy policy is the real hosted page
+// that carries the contact details, so the report route now points at its
+// #report section, which build-legal.mjs renders.
 export const DELETE_DATA_URL = 'https://joining-palms.app/delete-data.html'
-export const REPORT_URL = 'https://joining-palms.app/legal#report'
+export const REPORT_URL = 'https://joining-palms.app/privacy.html#report'

@@ -55,9 +55,9 @@ jobs:
       # duplicate-key risk that shipped a mojibake string in zh.js.
       - name: Prayer phrase-translation audit
         run: node scripts/audit-prayer-l10n.mjs
-      # 28 of 272 prayers have no pre-rendered recording and depend on the
-      # browser or the timed chant. The engine has no /api/tts, so this chain is
-      # the only thing making them audible.
+      # The prayers with no pre-rendered recording depend on the browser or the
+      # timed chant. The engine has no /api/tts, so this chain is the only thing
+      # making them audible. The audit computes the count rather than naming it.
       - name: Audio fallback chain audit
         run: node scripts/audit-audio-fallback.mjs
       # The file that goes to the Play Console, and the locale strings behind it.
@@ -77,6 +77,16 @@ jobs:
       # and a sheet that forgot its scroll position.
       - name: Settings sheet UI
         run: node scripts/test-settings-ui.mjs
+      # The store listing counted every id in a spirit file, including the
+      # spirit's own, so the public figure was 19 too high in all fifteen
+      # languages. These assert the count against the data, not against itself.
+      - name: Prayer counts are true everywhere they are stated
+        run: node scripts/audit-counts.mjs
+      # The share/delete/report URLs are a public and a compliance surface and
+      # had no coverage. The report route pointed at a path with no page behind
+      # it, which served the app shell with a 200.
+      - name: Canonical and public URLs
+        run: node scripts/test-canonical-urls.mjs
   android:
     needs: test
     runs-on: ubuntu-latest

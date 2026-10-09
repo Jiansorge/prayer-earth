@@ -11,6 +11,7 @@
 // Losing it falls back to the emailed request, which is the honest path.
 
 import { TEST_HOOKS } from './testHooks.js'
+import { CANONICAL_ORIGIN } from './canonical.js'
 import { useStore } from '../store.js'
 
 // The on-device test needs to drive the real client logic, not a reimplementation
@@ -35,7 +36,10 @@ export function newDeleteToken() {
 }
 
 // The sync Worker, derived the same way the rest of the app derives it.
-const SYNC_ORIGIN = 'https://joining-palms.app'
+// Imported rather than retyped: a second copy of a host is a host that
+// eventually disagrees with the first, and this one is the origin of the
+// deletion endpoint, which is the request that has to work.
+const SYNC_ORIGIN = CANONICAL_ORIGIN
 
 // The HTTP base for the deletion endpoint.
 //
