@@ -2264,10 +2264,16 @@ html[dir='rtl'] .chooser-arrow.right {
 }
 
 .field-divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.1);
-  margin: 22px 0 4px;
-}
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 22px 0 4px;
+  }
+
+  /* Do not put a .field-divider directly above a .settings-row: the row draws
+     its own border-top and the pair rendered as two rules a few pixels apart. */
+  .field-divider:has(+ .settings-row) {
+    display: none;
+  }
 
 .field-btn {
   width: 100%;

@@ -71,6 +71,12 @@ jobs:
       # never ran on the WebGL failover path, which no source scan can catch.
       - name: Resource lifecycle (GPU, listeners, canvases)
         run: node scripts/test-resource-lifecycle.mjs
+      # Settings-sheet chrome asserted on computed layout at two widths. Each of
+      # these passed a source review and was wrong on screen: a collapsed donate
+      # row, links rendered as buttons, a double rule, a missing Back control,
+      # and a sheet that forgot its scroll position.
+      - name: Settings sheet UI
+        run: node scripts/test-settings-ui.mjs
   android:
     needs: test
     runs-on: ubuntu-latest

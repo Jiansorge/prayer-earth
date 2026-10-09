@@ -122,7 +122,8 @@ const readLive = (page) =>
     ...window.__pe,
     domCanvases: document.querySelectorAll('canvas').length,
     earthCanvas: !!document.querySelector('.earth-canvas canvas'),
-    fallback: !!document.querySelector('.earth-fallback')
+    fallback: !!document.querySelector('.earth-fallback'),
+    loadingOverlay: !!document.querySelector('.earth-loading-overlay')
   }))
 
 const settle = (page, ms = 1200) => page.waitForTimeout(ms)
@@ -320,6 +321,40 @@ try {
       })
       t('WebGL failure still releases the GL context', () => {
         eq(failover.contextsLost, failover.contexts, `${failover.contexts} created, ${failover.contextsLost} released`)
+      })
+
+      // ---- 4. the loading state is honest ----------------------------------
+      // The overlay used to be dismissed on the first rendered frame, which
+      // happens before the day map arrives - so it vanished while the globe was
+      // still an untextured green silhouette.
+      await page.evaluate(() => {
+        location.hash = '#/home'
+      })
+      await page.waitForSelector('.home-head', { timeout: 20000 })
+      await settle(page, 1200)
+      await page.evaluate(() => {
+        location.hash = '#/earth'
+      })
+      // The element exists from the first paint; what we want is to catch the
+      // overlay while it is still up, so read immediately rather than waiting.
+      await page.waitForSelector('.earth-view', { state: 'attached', timeout: 30000 })
+      const duringLoad = await readLive(page)
+      await settle(page, 7000)
+      const afterLoad = await readLive(page)
+      notes.push(
+        `earth loading:  overlay on entry=${duringLoad.loadingOverlay} after ready=${afterLoad.loadingOverlay}`
+      )
+
+      t('the loading overlay is shown while the Earth is still loading', () => {
+        // If this is flaky in CI because the map arrived first, that is itself
+        // information: report the observed values rather than guessing.
+        assert(
+          duringLoad.loadingOverlay,
+          `no loading overlay on entry (ready=${duringLoad.readyFlag}); the map may have loaded before we looked`
+        )
+      })
+      t('the loading overlay is gone once the Earth is ready', () => {
+        eq(afterLoad.loadingOverlay, false, 'the loading overlay is still showing after the Earth loaded')
       })
 
       const total = await readLive(page)

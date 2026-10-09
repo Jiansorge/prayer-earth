@@ -562,10 +562,12 @@ export class EarthScene {
         // that strict land validation is available, otherwise an ocean cell
         // can remain at its original position until the next sync update.
         if (this._lastLights) this.setLights(this._lastLights, this._lastLightSpirits)
+        this._maybeNotifyReady()
       },
       undefined,
       () => {
         this._dayLoaded = true
+        this._maybeNotifyReady()
       }
     )
     dayTex.colorSpace = THREE.SRGBColorSpace
@@ -649,6 +651,32 @@ export class EarthScene {
       }))
     }
     this.animate()
+  }
+
+  // Tell the page the Earth is genuinely on screen.
+  //
+  // Both conditions are required, and the second one is the whole reason this
+  // is a function rather than three lines inside renderFrame:
+  //
+  //   - a frame has rendered, so there is something to look at, AND
+  //   - the day map has finished loading, so that something is the Earth rather
+  //     than an empty green sphere.
+  //
+  // Firing on the first frame alone dismissed the loading overlay while the
+  // globe was still an untextured silhouette, which reads as a blank green screen
+  // for the second or two the map takes to arrive. The failure branch of the
+  // texture load also sets _dayLoaded, so a map that never arrives (offline, 404)
+  // still clears the overlay instead of spinning forever.
+  _maybeNotifyReady() {
+    if (this._ready || this.disposed) return
+    if (!this._rendered || !this._dayLoaded) return
+    this._ready = true
+    // Both conditions are met: the watchdog has served its purpose, disarm it.
+    if (this._readyTimer) {
+      clearTimeout(this._readyTimer)
+      this._readyTimer = null
+    }
+    if (this.onReady) this.onReady()
   }
 
   // Called only when the constructor throws partway through.
@@ -2211,15 +2239,7 @@ this.autoRotate = !this.reducedMotion
       }
       this.renderer.render(this.scene, this.camera)
       this._rendered = true
-      if (!this._ready) {
-        this._ready = true
-        // First frame landed: the watchdog has served its purpose, disarm it.
-        if (this._readyTimer) {
-          clearTimeout(this._readyTimer)
-          this._readyTimer = null
-        }
-        if (this.onReady) this.onReady()
-      }
+      this._maybeNotifyReady()
       return true
     } catch (error) {
       this._notifyError(error)

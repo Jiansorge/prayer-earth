@@ -10,9 +10,18 @@ export default function LegalSheet({ onClose }) {
   return (
     <div className="sheet-backdrop" onClick={onClose}>
       <div className="sheet legal-sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="sheet-handle" />
-        <h3 className="sheet-title">{t('legal.title')}</h3>
+        {/* Same ‹ Back affordance as the Privacy / Backup / Your data panels, in
+            the same place. Reaching this sheet through "Privacy & care" and
+            finding no way back but a small ✕ in the far corner made it feel like
+            a different kind of screen from the one it replaced. */}
+        <div className="settings-panel-head">
+          <button type="button" className="settings-back" onClick={onClose}>
+            ‹ {t('settings.back')}
+          </button>
+          <div className="settings-panel-title">{t('legal.title')}</div>
+        </div>
 
+        <div className="sheet-body">
         <div className="legal-block">
           <div className="legal-h">{t('legal.wellnessTitle')}</div>
           <p className="legal-p">{t('legal.wellnessBody')}</p>
@@ -38,6 +47,7 @@ export default function LegalSheet({ onClose }) {
           <button className="field-btn legal-link" onClick={() => { onClose(); openLegal('terms') }}>
             {t('legal.viewTerms')}
           </button>
+        </div>
         </div>
 
         <button className="sheet-close" onClick={onClose}>

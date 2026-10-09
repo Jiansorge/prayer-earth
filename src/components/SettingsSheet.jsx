@@ -431,7 +431,10 @@ export default function SettingsSheet() {
           </button>
         </div>
 
-        <div className="field-divider" />
+        {/* No field-divider here on purpose. .settings-row already draws its own
+            border-top, so a divider immediately above it produced two 1px lines a
+            few pixels apart - a double rule that read as a mistake. The row's own
+            border is the separator. */}
 
         {/* The three things that used to be one very long section. Privacy,
             backup and deletion are each something a person looks for on its
