@@ -19,8 +19,22 @@ storePassword=…
 keyAlias=joining-palms
 keyPassword=…
 ```
-`android/app/build.gradle` picks it up automatically when the file exists; without
-it a release build is signed with the debug key (fine for testing, NOT publishable).
+`android/app/build.gradle` picks it up automatically when the file exists.
+
+If the file is **missing**, a release build now **fails immediately** with the
+format to use, instead of quietly producing an unsigned bundle that Play rejects
+hours later. It also fails if the file is present but incomplete, or if
+`storeFile` points at a path that does not exist. Debug builds are unaffected, so
+you can still run `assembleDebug` and the emulator smoke test without the key.
+
+Verify what you are shipping rather than trusting the exit code:
+
+```bash
+keytool -printcert -jarfile android/app/build/outputs/bundle/release/app-release.aab
+```
+
+The owner should be your release key (`CN=Joining Palms`), **not**
+`CN=Android Debug`.
 
 ## 3. Set the Play Store listing URL at build time
 The "Share on Play Store" button reads `VITE_PLAY_STORE_URL`. Until you set it the
@@ -50,12 +64,30 @@ npm run build:release
 npx cap sync android
 cd android && ./gradlew bundleRelease   # .aab for Play
 ```
+Then verify the artifact itself before uploading:
+```bash
+npm run verify:aab
+```
+This checks the AAB you are about to ship, not the source you built it from:
+signed with the release key rather than the debug key, `versionCode` matches
+what Play expects, not debuggable, and **no test hooks compiled in**. It reads
+the bundle, so it catches the failure mode that matters most here — shipping
+`window.__store`, a full read/write handle on the user's prayer data, because the
+wrong build was uploaded.
+
 Upload `android/app/build/outputs/bundle/release/app-release.aab` to the Play Console.
 
 Verify your signing identity any time (it never prints the password):
 ```bash
 node scripts/check-signing.mjs
 ```
+
+### If `npm run verify:aab` reports "NOT verified in the AAB"
+
+The application id could not be read back out of the bundle, so that one check
+only confirmed `build.gradle`. Everything else was still checked against the
+real artifact. It is reported rather than hidden because a check that quietly
+degrades to checking the source instead of the output is not a check.
 
 ## Test-observability hooks (security)
 The app exposes `window.__store` / `__speech` / `__ambient` (full read/write

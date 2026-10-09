@@ -24,6 +24,17 @@ const AVATARS = ['🌿', '🌙', '🌺', '🕊️', '🌊', '⛰️', '🌾', '�
 const COLORS = ['#7fc9a0', '#dfb05c', '#7aa2ff', '#ff9e4f', '#ffd166', '#b09dff', '#e8b06f', '#7fd488']
 const DONATE_URL = 'https://ko-fi.com/joiningpalms'
 
+// Scroll memory for the settings sheet.
+//
+// Module-level on purpose: the sheet returns null when closed, so a ref inside
+// the component is recreated from scratch on the next open and remembers
+// nothing. Someone who scrolled to the delete button, closed the sheet to check
+// something, and came back should land where they were, not at the top.
+//
+// Keyed by panel so that going into Privacy and pressing Back also returns you
+// to where you were in the list behind it.
+const scrollMemory = { main: 0, privacy: 0, backup: 0, data: 0 }
+
 // Share links must point at the canonical production origin, never at the
 // localhost/dev/standalone host the app happens to be running on — a copied
 // `window.location.origin` would hand someone a dead "localhost" link.
@@ -64,6 +75,7 @@ export default function SettingsSheet() {
   // value rather than three booleans means "open a panel" always closes the
   // others, and Back has a single obvious meaning.
   const [panel, setPanel] = useState(null)
+  const bodyRef = useRef(null)
   const previewTimer = useRef(null)
   const sheetRef = useFocusTrap(open)
 
@@ -138,6 +150,50 @@ export default function SettingsSheet() {
     }
   }, [open])
 
+  // Restore this panel's scroll position on open, and bank it on the way out.
+  //
+  // This must sit ABOVE the `if (!open) return null` below. A hook after an
+  // early return is a conditional hook, React throws on it, and the settings
+  // sheet stops rendering entirely - which is exactly what happened the first
+  // time this was written.
+  //
+  // The bodyRef is null while closed, so the effect no-ops then and does its real
+  // work on the open. Keyed on `panel` so going into Privacy and pressing Back
+  // restores the list's place rather than the sub-panel's.
+  useEffect(() => {
+    const el = bodyRef.current
+    if (!el) return undefined
+    const key = panel || 'main'
+    const wanted = scrollMemory[key]
+
+    // Bank the position as the user scrolls, not on the way out.
+    //
+    // Reading it in the cleanup does not work: the cleanup runs when `open`
+    // flips to false, and by then React has already removed .sheet-body from
+    // the DOM, so el.scrollTop is 0 no matter where the sheet had been left.
+    // That was measured, not assumed - the banked value came back as 0 from a
+    // sheet scrolled to 400.
+    const onScroll = () => {
+      scrollMemory[key] = el.scrollTop
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+
+    // Restore after layout, not during the commit: the sheet moves focus into
+    // itself shortly after opening, and a focused element is scrolled into
+    // view; lazy images are still growing the content, so the clamp is computed
+    // against a shorter scrollHeight than the offset was taken from.
+    let frame = 0
+    if (wanted) {
+      frame = requestAnimationFrame(() => {
+        if (bodyRef.current === el) el.scrollTop = wanted
+      })
+    }
+    return () => {
+      if (frame) cancelAnimationFrame(frame)
+      el.removeEventListener('scroll', onScroll)
+    }
+  }, [panel, open])
+
   if (!open) return null
 
   const local = voices.filter((v) => v.localService)
@@ -156,7 +212,7 @@ export default function SettingsSheet() {
           </div>
           <div className="sheet-handle" />
         </div>
-        <div className="sheet-body">
+        <div className="sheet-body" ref={bodyRef}>
 
         {/* One panel or the other, never both: the main list is replaced rather
             than pushed, so Back and the ✕ always mean the same thing. */}
@@ -360,14 +416,17 @@ export default function SettingsSheet() {
 
         {/* Support sits directly under sharing the app: both are "get the word
             out", and keeping them together puts the donate button where
-            someone who just shared a link is already looking. */}
+            someone who just shared a link is already looking.
+
+            No wrap: the Ko-fi badge is 36px tall and the label is one line, and
+            letting this wrap put the badge on a line of its own under the text,
+            which read as two unrelated buttons. The label shrinks instead. */}
         <label className="field-label section">{t('settings.secSupport')}</label>
-        <div className="field-hint">{t('settings.donateHint')}</div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <button type="button" className="field-btn" onClick={() => openExternal(DONATE_URL)} style={{ flex: 1 }}>
+        <div className="donate-row">
+          <button type="button" className="field-btn donate-label" onClick={() => openExternal(DONATE_URL)}>
             {t('settings.donateButton')}
           </button>
-          <button type="button" className="field-btn" onClick={() => openExternal(DONATE_URL)} aria-label="Ko-fi — joiningpalms" title="Ko-fi — joiningpalms" style={{ flex: '0 0 auto', display: 'inline-flex', background: 'none', border: 0, padding: 0, cursor: 'pointer' }}>
+          <button type="button" className="field-btn donate-badge-btn" onClick={() => openExternal(DONATE_URL)} aria-label="Ko-fi — joiningpalms" title="Ko-fi — joiningpalms">
             <img src="/kofi6.png" alt="Support on Ko-fi" style={{ height: 36, border: 0, display: 'block' }} loading="lazy" />
           </button>
         </div>

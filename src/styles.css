@@ -610,10 +610,17 @@ h3,
   align-items: center;
   gap: 8px;
   flex: none;
+  /* margin-left rather than `justify-content: flex-end` on the parent: when the
+     header wraps, the buttons land alone on their own line, and
+     `justify-content: space-between` puts a lone item at the START of that
+     line. That is why they appeared left-aligned on a narrow window. */
+  margin-left: auto;
 }
 
 @media (max-width: 430px) {
   .home-head-actions {
+    /* Full width plus a right bias, so the row of buttons reads as a right-hand
+       action group rather than drifting to the middle when the label shrinks. */
     width: 100%;
     justify-content: flex-end;
   }
@@ -2337,17 +2344,65 @@ html[dir='rtl'] .chooser-arrow.right {
 }
 
 /* Attribution + report-a-copy link in Settings -> About. */
+/* A quiet text link that opens an external page.
+   These are <button>, not <a>, so the user-agent's button chrome has to be
+   neutralised explicitly: without `background: none` and `border: 0` the
+   element kept its default grey panel, and because the text colour here is a
+   pale ink, it rendered as near-white text on a near-white button. */
 .field-report {
   display: block;
   margin-top: 10px;
+  font-family: inherit;
   font-size: 12px;
+  line-height: 1.5;
+  text-align: left;
   color: var(--ink-dim);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 .field-report:hover {
   color: var(--gold-soft);
+}
+
+/* The donate label and the Ko-fi badge belong on one line. nowrap, with the
+   label allowed to shrink, so the badge never drops below the text. */
+/* The donate label and the Ko-fi badge, side by side on one line.
+   `.field-btn` carries width:100% and margin-top:4px, which is right for a
+   full-width button in a settings column and wrong here: the badge claimed the
+   whole row and pushed the label down onto its own line. Both are reset. */
+.donate-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.donate-row > .field-btn {
+  margin-top: 0;
+  width: auto;
+}
+
+.donate-row > .donate-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.donate-badge-btn {
+  flex: 0 0 auto;
+  width: auto;
+  margin-top: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
 }
 
 /* What a restore actually brought back. Pasting a recovery code is otherwise a

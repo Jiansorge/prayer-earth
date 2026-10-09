@@ -8,6 +8,53 @@ if (keystorePropsFile.exists()) {
     keystoreProps.load(new FileInputStream(keystorePropsFile))
 }
 
+// A release build with no signing config produces a bundle that builds cleanly
+// and then fails at Play upload, hours later, which is the worst time to find
+// out. Gradle will also happily assemble `assembleDebug` in between, which reads
+// nothing here. So: refuse at configuration time, and say exactly what to do.
+//
+// Skip the check when only a debug variant is wanted, so a developer without
+// the upload key can still run `assembleDebug` and the emulator smoke test.
+def gradleTaskNames = gradle.startParameter.taskNames as List<String>
+def wantsRelease = gradleTaskNames.any { it.toLowerCase().contains('release') }
+if (wantsRelease && !keystorePropsFile.exists()) {
+    throw new GradleException(
+        "\n" +
+        "Refusing to build a release: android/key.properties is missing.\n" +
+        "\n" +
+        "Without it the bundle would be unsigned and Play would reject it.\n" +
+        "Create it (see RELEASE.md section 2):\n" +
+        "\n" +
+        "  storeFile=/absolute/path/to/release.keystore\n" +
+        "  storePassword=...\n" +
+        "  keyAlias=joining-palms\n" +
+        "  keyPassword=...\n" +
+        "\n" +
+        "To build a debug APK without the upload key, run assembleDebug instead.\n"
+    )
+}
+// The file can exist but still be wrong - a relative path, or a keystore that
+// has moved. Catching that here names the real problem instead of letting
+// Gradle fail deep inside the signing task.
+if (wantsRelease) {
+    for (def required : ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']) {
+        if (!keystoreProps[required]) {
+            throw new GradleException(
+                "\nandroid/key.properties is missing the '${required}' entry.\n" +
+                "It needs all four: storeFile, storePassword, keyAlias, keyPassword.\n"
+            )
+        }
+    }
+    def store = file(keystoreProps['storeFile'])
+    if (!store.exists()) {
+        throw new GradleException(
+            "\nandroid/key.properties points storeFile at a file that does not exist:\n" +
+            "  ${keystoreProps['storeFile']}\n" +
+            "Use an absolute path to the .keystore file itself.\n"
+        )
+    }
+}
+
 android {
     namespace = "app.joiningpalms"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -40,9 +87,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            if (keystorePropsFile.exists()) {
-                signingConfig signingConfigs.release
-            }
+            signingConfig signingConfigs.release
         }
     }
 }
