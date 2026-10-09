@@ -164,6 +164,21 @@ export default   {
         translation: 'The nianfo of Pure Land Buddhism, recited in gratitude for boundless light and compassion.'
       },
       {
+        id: 'high-king-sutra',
+        title: 'High King Avalokitesvara Sutra',
+        lang: 'zh',
+        langLabel: '中文 · Chinese',
+        phrases: [
+          { t: '南摩佛。南摩法。南摩僧。', s: 'Nán mó fó. Nán mó fǎ. Nán mó sēng.', e: 'Homage to the Buddha. Homage to the Dharma. Homage to the Sangha.' },
+          { t: '佛國有緣。佛法相因。常樂我淨。有緣佛法。', s: 'Fó guó yǒu yuán. Fó fǎ xiāng yīn. Cháng lè wǒ jìng. Yǒu yuán fó fǎ.', e: 'Affinity with the Buddha-lands; the Dharma arises through causes. Permanence, bliss, the true self, and purity — such is the Dharma we have affinity with.' },
+          { t: '中央一切眾生。在佛世界中者。行住於地上。及在虛空中。慈憂於一切眾生。各令安穩休息。', s: 'Zhōng yāng yī qiè zhòng shēng. Zài fó shì jiè zhōng zhě. Xíng zhù yú dì shàng. Jí zài xū kōng zhōng. Cí yōu yú yī qiè zhòng shēng. Gè lìng ān wěn xiū xí.', e: 'All beings in the central realm, and those in the world of Buddhas, walking on the ground and moving through the air — compassion is poured out upon every living being, granting each stability and rest.' },
+          { t: '心常求誦此經。能滅生死苦。消除諸毒害。', s: 'Xīn cháng qiú sòng cǐ jīng. Néng miè shēng sǐ kǔ. Xiāo chú zhū dú hài.', e: 'Keep the mind always seeking to recite this sutra. It can end the suffering of birth and death, and dissolve all poisons and harms.' },
+          { t: '十方觀世音。一切諸菩薩。誓願救眾生。稱名悉解脫。', s: 'Shí fāng guān shì yīn. Yī qiè zhū pú sà. Shì yuàn jiù zhòng shēng. Chēng míng xī jiě tuō.', e: 'Avalokitesvaras of the ten directions, and all bodhisattvas, have vowed to save all sentient beings. Calling their names, all are set free.' },
+          { t: '離婆離婆帝。求訶求訶帝。陀羅尼帝。尼訶囉帝。毘黎你帝。摩訶伽帝。真陵乾帝。梭哈。', s: 'Lí pó lí pó dì. Qiú hē qiú hē dì. Tuó luó ní dì. Ní hē luō dì. Pí lí nǐ dì. Mó hē jiā dì. Zhēn líng qián dì. Sō hā.', e: 'The dhāraṇī given by the Seven Buddhas of the world: leave, leave, abiding; pray, pray, abiding — dhāraṇī, abiding; stillness, abiding; great and unsurpassed; the true, the lifted, the finished. Svāhā.' }
+        ],
+        translation: 'A short Mahāyāna protective sutra (Taishō 2898) that came out of a condemned man\u2019s dream, traditionally dated to the Five Dynasties and cited by Zhiyi. It is recited for deliverance from danger and from the poisons of harm. The English here is our own rendering of the Chinese original rather than any published translation, since the scripture itself is ancient and public domain while modern renderings of it are not.'
+      },
+      {
         id: 'ksitigarbha-name',
         title: 'Namo Kṣitigarbha Bodhisattva',
         lang: 'en',
