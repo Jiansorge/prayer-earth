@@ -20,9 +20,14 @@ const DIR = path.join(ROOT, '.github', 'workflows')
 let yaml
 try {
   yaml = (await import('yaml')).default
-} catch {
-  console.log('audit-workflow: the yaml package is not installed, skipping')
-  process.exit(0)
+} catch (e) {
+  // Not a skip. This exits 0, so a missing package turns the whole check into a
+  // green tick in CI for a workflow that was never parsed - and it happens the
+  // moment an npm install prunes a transitive dependency nothing declared.
+  // yaml is a direct dependency of this script precisely so that cannot happen.
+  console.error(`audit-workflow: cannot load the yaml package: ${e.message}`)
+  console.error('audit-workflow: run `npm install --legacy-peer-deps`')
+  process.exit(1)
 }
 
 const files = fs.readdirSync(DIR).filter((f) => /\.ya?ml$/.test(f))

@@ -47,6 +47,7 @@
     "audit:i18n:all": "node scripts/audit-i18n.mjs && node scripts/audit-i18n-dupes.mjs && node scripts/audit-i18n-scripts.mjs && node scripts/audit-i18n-deep.mjs && node scripts/audit-i18n-quality.mjs && node scripts/audit-i18n-pass2.mjs && node scripts/audit-i18n-stale.mjs",
     "test:lifecycle": "node scripts/test-resource-lifecycle.mjs",
     "test:audio:runtime": "node scripts/test-audio-fallback-runtime.mjs",
+    "test:a11y": "node scripts/test-a11y.mjs",
     "verify:aab": "node scripts/verify-aab.mjs",
     "test:locale-map": "node scripts/test-locale-mapping.mjs",
     "store:listing": "node scripts/store-listing.mjs",
@@ -71,12 +72,14 @@
     "@capacitor/assets": "^3.0.5",
     "@indic-transliteration/sanscript": "^1.3.3",
     "@vitejs/plugin-react": "^5.2.0",
+    "axe-core": "^4.14.0",
     "gif-encoder-2": "^1.0.5",
     "msedge-tts": "^2.0.7",
     "playwright": "^1.63.0",
     "pngjs": "^7.0.0",
     "sharp": "^0.35.4",
-    "vite": "^8.3.0"
+    "vite": "^8.3.0",
+    "yaml": "^2.9.1"
   },
   "overrides": {
     "esbuild": "^0.25.0",

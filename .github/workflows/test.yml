@@ -78,6 +78,13 @@ jobs:
       # prayer always reaches the room.
       - name: Audio fallback reaches the room (runtime)
         run: node scripts/test-audio-fallback-runtime.mjs
+      # Nothing here looked at the markup an assistive technology is handed. The
+      # prayer's scroll container was unreachable by keyboard, so a long prayer
+      # stopped at the visible lines for anyone not using a pointer. axe across
+      # every view plus a keyboard pass: focus lands, is visible, and is big
+      # enough to hit.
+      - name: Accessibility (axe across every view, plus keyboard)
+        run: node scripts/test-a11y.mjs
       # Settings-sheet chrome asserted on computed layout at two widths. Each of
       # these passed a source review and was wrong on screen: a collapsed donate
       # row, links rendered as buttons, a double rule, a missing Back control,

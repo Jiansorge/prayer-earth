@@ -715,7 +715,17 @@ aria-label={t('prayer.prev')}
         </button>
       </div>
 
-      <div className="prayer-stage fade-in" key={prayer.id}>
+      // tabIndex: this is the scroll container for the whole prayer. A keyboard-only
+      // user cannot scroll a region they cannot focus, so without it a long
+      // prayer is unreachable past the visible lines - and screen readers report
+      // the region without saying it scrolls.
+      <div
+        className="prayer-stage fade-in"
+        key={prayer.id}
+        tabIndex={0}
+        role="group"
+        aria-label={prayer.name || t('prayer.title')}
+      >
         {prayer.loop && (
           <div className="loop-dots">
             {phrases.map((_, i) => (
