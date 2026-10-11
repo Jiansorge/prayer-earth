@@ -537,6 +537,10 @@ class SpeechEngine {
         this.speakIndex(opts.index || 0)
         return
       }
+      // Same handoff the empty-voice-list path below makes: say why, so the UI
+      // can tell the user the prayer is being chanted rather than spoken.
+      this.job.chantReason = 'no-voices'
+      this.notifyFallback('no-voices')
       this.timedLoop(opts, true)
       return
     }
@@ -802,8 +806,13 @@ class SpeechEngine {
       job.done.add(token)
       j.errors = (j.errors || 0) + 1
       // An engine that errors on several phrases in a row without ever
-      // starting one can't talk â€” hand off to the timed chant.
-      if (j.errors >= 3) {
+      // starting one can't talk, so hand off to the timed chant. Three strikes
+      // is the general rule, but a short prayer can never reach three: the last
+      // phrase would just finish in silence. So the final phrase of a prayer
+      // that never got warm ends in the chant too, unless some earlier phrase
+      // really did speak.
+      const lastPhrase = i + 1 >= job.phrases.length
+      if (j.errors >= 3 || (lastPhrase && !j.warm)) {
         j.mode = 'timed'
         j.chantReason = 'errors'
         this.notifyFallback('errors')
@@ -815,7 +824,15 @@ class SpeechEngine {
       }
       this.advance(i)
     }
-    this.synth.speak(u)
+    // A dead or swapped-out engine can throw straight out of speak(). Count it
+    // as a failed phrase like any other error so the three-strike handoff above
+    // still applies, instead of rejecting start() with the job stranded in tts
+    // mode and only the 6s kicker to rescue it.
+    try {
+      this.synth.speak(u)
+    } catch {
+      if (u.onerror) u.onerror(new Event('error'))
+    }
 
     // Stall guard: if this utterance never actually starts (Chrome can drop
     // or stall one), hand off to the timer so the highlight keeps moving
@@ -846,7 +863,10 @@ class SpeechEngine {
       } catch {}
       this.timedLoop(j, true)
     }
-    job.guard = setTimeout(takeover, (j.phraseHold || 4000) * 2 + 3000)
+    // `j` is scoped to the callbacks above; out here the job is `job`. Reading `j`
+    // threw a ReferenceError on every browser-voice phrase, so the stall guard
+    // never armed and the error escaped into the caller.
+    job.guard = setTimeout(takeover, (job.phraseHold || 4000) * 2 + 3000)
   }
 
   // Moves on to the next phrase (or loops / finishes). Shared by onend and
