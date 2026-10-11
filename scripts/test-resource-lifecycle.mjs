@@ -332,25 +332,47 @@ try {
       })
       await page.waitForSelector('.home-head', { timeout: 20000 })
       await settle(page, 1200)
+      // Observe the overlay from first paint. Reading the DOM after navigation
+      // races the load: by the time the read lands the day map may already be
+      // in the HTTP cache, `ready` has flipped, and the overlay has gone - which
+      // says nothing about whether it was shown. The observer sees every commit.
       await page.evaluate(() => {
+        window.__overlaySeen = false
+        window.__overlayGone = false
+        const check = () => {
+          if (document.querySelector('.earth-loading-overlay')) {
+            window.__overlaySeen = true
+          } else if (window.__overlaySeen) {
+            window.__overlayGone = true
+          }
+        }
+        const obs = new MutationObserver(check)
+        obs.observe(document.body, { childList: true, subtree: true })
+        window.__overlayObs = obs
         location.hash = '#/earth'
       })
-      // The element exists from the first paint; what we want is to catch the
-      // overlay while it is still up, so read immediately rather than waiting.
       await page.waitForSelector('.earth-view', { state: 'attached', timeout: 30000 })
       const duringLoad = await readLive(page)
       await settle(page, 7000)
       const afterLoad = await readLive(page)
+      const overlay = await page.evaluate(() => {
+        window.__overlayObs?.disconnect()
+        return { seen: !!window.__overlaySeen, gone: !!window.__overlayGone }
+      })
       notes.push(
-        `earth loading:  overlay on entry=${duringLoad.loadingOverlay} after ready=${afterLoad.loadingOverlay}`
+        `earth loading:  overlay seen=${overlay.seen} dismissed=${overlay.gone} on entry=${duringLoad.loadingOverlay} after ready=${afterLoad.loadingOverlay}`
       )
 
       t('the loading overlay is shown while the Earth is still loading', () => {
-        // If this is flaky in CI because the map arrived first, that is itself
-        // information: report the observed values rather than guessing.
         assert(
-          duringLoad.loadingOverlay,
-          `no loading overlay on entry (ready=${duringLoad.readyFlag}); the map may have loaded before we looked`
+          overlay.seen,
+          'the loading overlay was never rendered at any point during entry'
+        )
+      })
+      t('the loading overlay is dismissed once the Earth is ready', () => {
+        assert(
+          overlay.gone,
+          'the loading overlay was shown but never taken down after the Earth loaded'
         )
       })
       t('the loading overlay is gone once the Earth is ready', () => {
