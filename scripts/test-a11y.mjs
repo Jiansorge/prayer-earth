@@ -21,6 +21,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import assert from 'node:assert/strict'
 import { killTree } from './lib/devserver.mjs'
+import { resolveChrome, launchOptions } from './lib/browser.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const AXE = readFileSync(path.join(ROOT, 'node_modules/axe-core/axe.min.js'), 'utf8')
@@ -64,18 +65,8 @@ const describe = (violations) =>
     .join('\n        ')
 
 async function withBrowser(fn) {
-  const chrome =
-    process.env.CHROME_PATH ||
-    [
-      'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-      'C:/Program Files/Google/Chrome/Application/chrome.exe'
-    ].find((p) => existsSync(p))
-  if (!chrome) throw new Error('no chromium binary found; set CHROME_PATH')
   const { chromium } = await import('playwright')
-  const browser = await chromium.launch({
-    executablePath: chrome,
-    args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox']
-  })
+  const browser = await chromium.launch(launchOptions(resolveChrome()))
   try {
     return await fn(browser)
   } finally {

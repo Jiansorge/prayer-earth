@@ -20,6 +20,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import assert from 'node:assert/strict'
 import { killTree } from './lib/devserver.mjs'
+import { resolveChrome, launchOptions } from './lib/browser.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const APP = process.env.APP_URL || 'http://localhost:5173'
@@ -198,18 +199,13 @@ window.__run = async (opts) => {
 `
 
 async function withBrowser(fn) {
-  const chrome =
-    process.env.CHROME_PATH ||
-    [
-      'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-      'C:/Program Files/Google/Chrome/Application/chrome.exe'
-    ].find((p) => existsSync(p))
-  if (!chrome) throw new Error('no chromium binary found; set CHROME_PATH')
   const { chromium } = await import('playwright')
-  const browser = await chromium.launch({
-    executablePath: chrome,
-    args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required', '--no-sandbox']
-  })
+  // No autoplay policy: the point of this suite is to find out whether the
+  // prayer actually makes sound, and a blocked play() would look like a
+  // fallback bug that is really just the test environment.
+  const browser = await chromium.launch(
+    launchOptions(resolveChrome(), ['--autoplay-policy=no-user-gesture-required'])
+  )
   try {
     return await fn(browser)
   } finally {

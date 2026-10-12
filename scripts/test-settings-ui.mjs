@@ -22,6 +22,7 @@ import { existsSync } from 'node:fs'
 import { spawn } from 'node:child_process'
 import net from 'node:net'
 import { killTree } from './lib/devserver.mjs'
+import { resolveChrome, launchOptions } from './lib/browser.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -69,12 +70,10 @@ const t = async (name, fn) => {
   }
 }
 
-const exe =
-  process.env.CHROME_PATH ||
-  ['C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Google/Chrome/Application/chrome.exe'].find(
-    (p) => existsSync(p)
-  )
-if (!exe) throw new Error('no chromium binary; set CHROME_PATH')
+// No hard browser path: CHROME_PATH, then a system Chrome/Edge, then
+// Playwright's own Chromium. On the CI runner none of the Windows paths exist,
+// and throwing here meant this suite had never run there.
+const exe = resolveChrome()
 
 let up = false
 for (let i = 0; i < 40; i++) {
@@ -95,7 +94,7 @@ if (!up) {
 }
 
 const { chromium } = await import('playwright')
-const browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] })
+const browser = await chromium.launch(launchOptions(exe))
 
 // Two widths: the point of the header fix was narrow-viewport behaviour, so
 // checking one width would not have caught it. Each width gets its own context,

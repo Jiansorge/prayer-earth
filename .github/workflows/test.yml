@@ -15,6 +15,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --legacy-peer-deps
+      # The four browser tests (resource lifecycle, audio fallback, a11y,
+      # settings) run on this job and need a Chromium. Nothing installed one, so
+      # they threw "no chromium binary found" and had never actually run here.
+      - name: Install headless Chromium (Playwright)
+        run: npx playwright install --with-deps chromium
       - name: Build (+ inline CSS)
         run: npm run build
       - name: Built-asset audit (CSP / SW CORE / CSS inlined)
