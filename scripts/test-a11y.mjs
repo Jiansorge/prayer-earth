@@ -181,8 +181,8 @@ try {
       const blocking = prayer.filter((v) => BLOCKING.has(v.impact))
       assert.equal(blocking.length, 0, `Prayer:\n        ${describe(blocking)}`)
     })
-    t('a prayer renders no source comments', () => {
-      const bad = leakedComment(page)
+    t('a prayer renders no source comments', async () => {
+      const bad = await leakedComment(page)
       assert.equal(bad.length, 0, `comment text rendered on the page:\n        ${bad.join('\n        ')}`)
     })
 

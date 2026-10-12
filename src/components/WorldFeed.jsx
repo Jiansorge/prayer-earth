@@ -56,7 +56,16 @@ function WorldFeed({ limit = 10, compact = false }) {
       <div className="world-feed-title">
         <span className="feed-pulse" /> {t('feed.prayingNow')}
       </div>
-      <div className="world-feed-scroll">
+      {/* Focusable, like the prayer's scroll region: a scrollable region nobody
+          can focus is one a keyboard user cannot scroll, and axe reports it as
+          serious. The pills inside are spans, so there is nothing else to land
+          on. */}
+      <div
+        className="world-feed-scroll"
+        tabIndex={0}
+        role="group"
+        aria-label={t('feed.prayingNow')}
+      >
         {items.map((e) => {
           const place = e.cell
             ? nearestPlace(...e.cell.split(',').map(Number))
