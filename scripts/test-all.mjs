@@ -59,7 +59,8 @@ const STEPS = [
   'scripts/test-settings-ui.mjs',
   'scripts/audit-counts.mjs',
   'scripts/test-canonical-urls.mjs',
-  'scripts/test-backup.mjs'
+  'scripts/test-backup.mjs',
+  'scripts/audit-test-parity.mjs'
 ]
 
 // Every browser test starts its own dev server. Running them concurrently has

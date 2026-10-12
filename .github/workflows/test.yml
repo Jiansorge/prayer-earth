@@ -108,6 +108,11 @@ jobs:
       # languages. These assert the count against the data, not against itself.
       - name: Prayer counts are true everywhere they are stated
         run: node scripts/audit-counts.mjs
+      # Whether CI and `npm run test:all` still run the same checks. A step added
+      # to one and not the other is a check that only ever runs on one machine,
+      # which is how CI sat red for three days on a thing nobody ran locally.
+      - name: Local suite and CI run the same checks
+        run: node scripts/audit-test-parity.mjs
       # The share/delete/report URLs are a public and a compliance surface and
       # had no coverage. The report route pointed at a path with no page behind
       # it, which served the app shell with a 200.
