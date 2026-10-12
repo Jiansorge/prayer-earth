@@ -11,13 +11,22 @@
 //    account reverts between sessions, so a push can go out as jsorge-bionic
 //    with no error anywhere near the command that caused it.
 //  - A commit was authored by the wrong identity, which AGENTS.md forbids.
+//  - A file was rewritten by a slicing edit that swallowed the opening brace of
+//    the next entry. `vite build` failed with one clear error. It was committed
+//    anyway, because the build had been run in the same command as the commit
+//    and its output was scanned rather than gated on. CI caught it, so nothing
+//    shipped broken - but a broken commit went to main, and the deploy job sat
+//    red until the next push.
 //
-// All three are invisible after the fact and obvious before. This runs in
+//    That last one is why the build is checked here and not only in CI. CI was
+//    never the gap. The gap was that nothing local had to pass before the push.
+//
+// All of these are invisible after the fact and obvious before. This runs in
 // seconds and refuses to let any of them through.
 //
-// Usage: node scripts/assert-shippable.mjs [--allow-dirty]
+// Usage: node scripts/assert-shippable.mjs [--allow-dirty] [--skip-build]
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -26,6 +35,32 @@ const EXPECTED_NAME = 'The Candle Keeper'
 const EXPECTED_EMAIL = 'the-candle-keeper@users.noreply.github.com'
 const EXPECTED_OWNER = 'Jiansorge'
 const allowDirty = process.argv.includes('--allow-dirty')
+const skipBuild = process.argv.includes('--skip-build')
+
+// Does every source file parse? A brace lost by a slicing edit is a syntax
+// error, and finding it here names the file and line instead of leaving it to
+// whatever runs the build next. Cheap: no bundling, no plugins, just parsing.
+const parseFailures = () => {
+  const bad = []
+  const walk = (dir) => {
+    for (const name of readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, name.name)
+      if (name.isDirectory()) {
+        if (name.name !== 'node_modules' && name.name !== 'dist') walk(full)
+      } else if (/\.(js|mjs)$/.test(name.name) && !/\.test\.mjs$/.test(name.name)) {
+        try {
+          execFileSync(process.execPath, ['--check', full], { stdio: ['ignore', 'ignore', 'pipe'] })
+        } catch (e) {
+          const msg = String(e.stderr || e.message).split('\n').slice(0, 3).join(' ').trim()
+          bad.push(`${path.relative(ROOT, full)}: ${msg}`)
+        }
+      }
+    }
+  }
+  walk(path.join(ROOT, 'src'))
+  walk(path.join(ROOT, 'scripts'))
+  return bad
+}
 
 const git = (...args) =>
   execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
@@ -93,6 +128,37 @@ if (branch !== 'main') {
   problems.push(`HEAD is on "${branch}" - deploys are main-only`)
 } else {
   notes.push('on main')
+}
+
+const unparseable = parseFailures()
+if (unparseable.length) {
+  problems.push(
+    `these files do not parse:\n        ${unparseable.join('\n        ')}`
+  )
+} else {
+  notes.push('every source file parses')
+}
+
+// And then the real thing: does it build? --skip-build exists only for the
+// iterations where you have already watched it go green.
+if (!skipBuild) {
+  try {
+    // npm.cmd is a batch file, so it needs a shell to run at all on Windows.
+    execFileSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'build'], {
+      cwd: ROOT,
+      shell: process.platform === 'win32',
+      stdio: ['ignore', 'ignore', 'pipe'],
+      timeout: 900000
+    })
+    notes.push('the app builds')
+  } catch (e) {
+    const msg = String(`${e.stderr || ''}${e.stdout || ''}${e.message}`)
+      .split('\n')
+      .filter((l) => /error|Expected|Unexpected/i.test(l))
+      .slice(0, 4)
+      .join('\n        ')
+    problems.push(`the app does not build:\n        ${msg || e.message}`)
+  }
 }
 
 console.log('ship check')
