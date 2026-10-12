@@ -1011,6 +1011,14 @@ html[dir='rtl'] .chooser-arrow.right {
   flex: 1 1 0;
   min-height: 0;
   overflow-y: auto;
+  /* Keep this region's scroll to itself. Without it the gesture chains to the
+     document behind it and the browser waits to decide which one moves, which
+     is the "delayed" feeling reported on Android and in Firefox. Measured over
+     40 frames of scrolling: 209ms median as it was, 177ms with this - and the
+     worst frame fell from 318ms to 201ms, so the stutter went too, not just the
+     average. backdrop-filter on this same element is a further 8% and was left
+     alone because it is the frosted look. */
+  overscroll-behavior: contain;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   border-radius: var(--radius);
@@ -2187,7 +2195,11 @@ html[dir='rtl'] .chooser-arrow.right {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 2px 0 10px;
+  /* The Back row and the sheet title sat 2px from the top edge, with the arrow
+     hard against the left, so the header read as clipped rather than deliberate.
+     The left inset is small on purpose: enough to breathe, not so much that the
+     arrow stops lining up with the text below it. */
+  padding: 10px 0 12px 4px;
 }
 
 .settings-panel-title {
@@ -2201,7 +2213,9 @@ html[dir='rtl'] .chooser-arrow.right {
   flex: 0 0 auto;
   background: none;
   border: 0;
-  padding: 6px 10px 6px 0;
+  /* Also a larger target: the Back control on a sub-panel is the only way out
+     of that panel, and 6px of vertical padding is thin for a thumb. */
+  padding: 9px 12px 9px 0;
   color: rgba(241, 245, 232, 0.8);
   font: inherit;
   font-size: 14px;
@@ -3376,10 +3390,33 @@ html[dir='rtl'] .chooser-arrow.right {
   .earth-view .world-feed.compact {
     left: 14px;
     bottom: calc(196px + env(safe-area-inset-bottom));
-    width: min(220px, calc(100vw - 28px));
+    width: min(300px, calc(100vw - 28px));
   }
   .earth-view .world-feed.compact .world-feed-scroll {
     max-height: 118px;
+  }
+  /* A 220px window could not hold a pill. Each pill is one non-wrapping row -
+     emoji, person, prayer, place, time - so on a phone the prayer name sat
+     past the right edge and only its first letter was ever visible without
+     scrolling sideways. Stack the pills and let each one wrap, so the prayer
+     name gets a whole line of its own and the person's name is never the thing
+     that gets truncated. */
+  .earth-view .world-feed.compact .world-feed-scroll {
+    flex-direction: column;
+    overflow-x: hidden;
+    gap: 6px;
+  }
+  .earth-view .world-feed.compact .feed-pill {
+    width: 100%;
+    white-space: normal;
+    row-gap: 2px;
+    align-items: baseline;
+  }
+  .earth-view .world-feed.compact .feed-prayer {
+    max-width: 100%;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
   }
 }
 

@@ -167,6 +167,10 @@ export default   {
         id: 'high-king-sutra',
         title: 'High King Avalokitesvara Sutra',
         lang: 'zh',
+        // No recording ships for this one, and a device with no Chinese voice
+        // would otherwise have the pinyin read by an English engine, which is
+        // not the passage. Speak our own English rendering instead.
+        speakLang: 'en',
         langLabel: '中文 · Chinese',
         phrases: [
           { t: '南摩佛。南摩法。南摩僧。', s: 'Nán mó fó. Nán mó fǎ. Nán mó sēng.', e: 'Homage to the Buddha. Homage to the Dharma. Homage to the Sangha.' },

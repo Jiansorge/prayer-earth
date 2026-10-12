@@ -398,8 +398,11 @@ export const useStore = create(
       // per-prayer static voice choice (keys are prayer ids, values are voice ids)
       prayerVoices: {},
       speechRate: 0.85,
-      ambienceLevel: 0.7,
-  ambientPreset: DEFAULT_AMBIENT_PRESET,
+      // Half, not 70%. The bed sat under the voice but summed with it, and the
+      // combination came out louder than people expected from something called
+      // an ambient sound.
+      ambienceLevel: 0.5,
+      ambientPreset: DEFAULT_AMBIENT_PRESET,
       volume: 0.5,
       muted: false,
       lastVolume: 0.5,

@@ -11,4 +11,7 @@ export const AMBIENT_PRESETS = [
   'warm'
 ]
 
-export const DEFAULT_AMBIENT_PRESET = 'reiki'
+// Temple Bowl: near-silence under rare, resonant strikes. It is the quietest of
+// the seven and the one people reach for when the others feel like too much, so
+// it is what a new user gets before they have found the slider.
+export const DEFAULT_AMBIENT_PRESET = 'temple'

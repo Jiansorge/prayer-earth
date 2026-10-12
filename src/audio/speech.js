@@ -38,7 +38,11 @@ function xhrGetText(url) {
 
 // Sentinel "voice" in the settings picker meaning: no spoken voice, chant only.
 export const CHANT_VOICE = '__chant__'
-const REVERB_WET_GAIN = 0.2
+// The voice sits in a small hall. Raised from 0.20 to 0.24 - a fifth more wet -
+// so the prayer is heard in a room rather than pressed against the ear. The
+// voice still goes through the shared limiter with the ambient bed, so this
+// costs headroom rather than clipping.
+const REVERB_WET_GAIN = 0.24
 
 // Flatten sacred transliterations into something a fallback English voice can
 // read sensibly: strip diacritics, map the special consonants used in these
@@ -708,8 +712,17 @@ class SpeechEngine {
     return Math.max(900, base / rate)
   }
 
-  // text: { t, s } phrase; choose the speakable form for this device's voices.
+  // text: { t, s, e } phrase; choose the speakable form for this device's voices.
   utteranceText(phrase, lang) {
+    // A prayer that says what it wants spoken when its own script is not
+    // available. 'en' means: use our English rendering rather than asking an
+    // English voice to read a transliteration, which is a different sentence
+    // wearing the same clothes.
+    if (this.job?.speakLang === 'en') {
+      const voice = this.pickVoice('en') || null
+      const text = phrase.e || phrase.s || phrase.t
+      return { text, lang: voice ? 'en' : lang, voice }
+    }
     const voice = this.pickVoice(lang)
     if (voice) return { text: phrase.t, lang, voice }
     if (phrase.s) return { text: phoneticForSpeech(phrase.s), lang: 'en-US', voice: null }

@@ -257,6 +257,12 @@ const countedRef = useRef(false)
       index: fromIndex,
       lang: prayer.lang,
       prayerId: prayer.id,
+      // A prayer with no recording and no voice for its own script can say which
+      // of its own texts to fall back to. Mantras want the transliteration read
+      // the way it sounds; a sutra with a full English rendering wants English,
+      // because pinyin read by an English voice is not the sentence anyone is
+      // trying to hear.
+      speakLang: prayer.speakLang || null,
       rate: speechRate,
       loop: loopOn,
       gapMs: prayer.loop ? 250 : 700,
