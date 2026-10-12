@@ -528,9 +528,18 @@ try {
     t('the Earth is still rendering after ten hide/show cycles', () => {
       // The failure mode this guards is a loop that never resumes, which looks
       // identical to a healthy idle scene from the outside. A live scene arms
-      // frames continuously; a dead one stops.
+      // frames after the cycles; a dead one arms none.
+      //
+      // The bar is therefore "more than none", not a frame count. This used to
+      // demand 60, which is a 60fps assumption from a machine with a real GPU:
+      // the same suite arms 7-14 frames over this window on a software renderer,
+      // where a dead loop still reads as exactly 0. Counting frames conflated
+      // "the loop resumed" with "this machine renders quickly".
       const armed = after.rafArmed - base.rafArmed
-      assert(armed > 60, `only ${armed} frames armed after ten cycles - the loop may not have resumed`)
+      assert(
+        armed > 0,
+        `no frames armed after ten cycles (${armed}) - the render loop may not have resumed`
+      )
     })
   })
 
