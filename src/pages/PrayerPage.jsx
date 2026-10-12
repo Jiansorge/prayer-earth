@@ -721,10 +721,12 @@ aria-label={t('prayer.prev')}
         </button>
       </div>
 
-      // tabIndex: this is the scroll container for the whole prayer. A keyboard-only
-      // user cannot scroll a region they cannot focus, so without it a long
-      // prayer is unreachable past the visible lines - and screen readers report
-      // the region without saying it scrolls.
+      {/* tabIndex: this is the scroll container for the whole prayer. A
+          keyboard-only user cannot scroll a region they cannot focus, so
+          without it a long prayer is unreachable past the visible lines, and
+          screen readers announce the region without saying it scrolls.
+          This must stay a JSX comment - a bare `//` here is not a comment at
+          all, it is a text node, and it renders on the page. */}
       <div
         className="prayer-stage fade-in"
         key={prayer.id}

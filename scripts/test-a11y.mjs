@@ -74,6 +74,27 @@ async function withBrowser(fn) {
   }
 }
 
+// Visible source comments.
+//
+// A bare `//` sitting among JSX children is not a comment - it is a text node,
+// and it renders on the page. One did exactly that: four lines of explanation
+// about the prayer's scroll container were printed above the prayer on every
+// prayer view. A source review does not catch it and neither does axe: it is
+// valid, readable text. The only reliable check is to look at what the user
+// actually sees.
+const leakedComment = (page) =>
+  page.evaluate(() => {
+    const bad = []
+    const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+      const text = (n.nodeValue || '').trim()
+      if (/^\/\/|\/\*/.test(text) || /\/\/\s+\w+.*:\s/.test(text)) {
+        bad.push(text.slice(0, 80))
+      }
+    }
+    return bad
+  })
+
 const startServer = async () => {
   const proc = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'dev', '--', '--port', '5175'], {
     cwd: ROOT,
@@ -152,13 +173,17 @@ try {
       )
     })
 
-    // ---- Prayer -------------------------------------------------------------
+    // ---- a prayer -------------------------------------------------------------
     await goto('#/pray/buddhism/mani', '.view')
     const prayer = await runAxe(page)
     notes.push(`prayer:          ${prayer.length ? describe(prayer) : 'clean'}`)
     t('a prayer has no blocking accessibility violations', () => {
       const blocking = prayer.filter((v) => BLOCKING.has(v.impact))
       assert.equal(blocking.length, 0, `Prayer:\n        ${describe(blocking)}`)
+    })
+    t('a prayer renders no source comments', () => {
+      const bad = leakedComment(page)
+      assert.equal(bad.length, 0, `comment text rendered on the page:\n        ${bad.join('\n        ')}`)
     })
 
     // ---- Earth --------------------------------------------------------------

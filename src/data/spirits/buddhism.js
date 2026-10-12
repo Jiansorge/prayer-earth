@@ -164,6 +164,37 @@ export default   {
         translation: 'The nianfo of Pure Land Buddhism, recited in gratitude for boundless light and compassion.'
       },
       {
+        id: 'thirtyfive-confession',
+        title: 'Confession to the Thirty-Five Buddhas',
+        lang: 'en',
+        langLabel: '🇬🇧 English',
+        // English to begin with, and no recording ships for it, so say so
+        // explicitly rather than leaving the engine to infer from lang.
+        speakLang: 'en',
+        phrases: [
+          { t: "Homage to the Buddha, the Dharma, and the Sangha. To the Thirty-Five Buddhas I confess.", s: "Homage to the Buddha, the Dharma, and the Sangha." },
+          { t: "Homage to Shakyamuni, and to Vajrapramardi, and to Ratnarshish, Shakyamuni; who destroys the foe by the vajra of essence; the precious radiant light.", s: "Shakyamuni. Vajrapramardi. Ratnarshish" },
+          { t: "Homage to Nagesvararaja, and to Virasena, and to Viranandi, king of the nagas; the army of heroes; the delighted hero.", s: "Nagesvararaja. Virasena. Viranandi" },
+          { t: "Homage to Ratnagni, and to Ratnacandraprabha, and to Amoghadarshi, the jewel fire; the jewel moonlight; whose vision is meaningful.", s: "Ratnagni. Ratnacandraprabha. Amoghadarshi" },
+          { t: "Homage to Ratnacandra, and to Vimala, and to Suradatta, the jewel moon; the stainless one; generous among heroes.", s: "Ratnacandra. Vimala. Suradatta" },
+          { t: "Homage to Brahma, and to Brahmadatta, and to Varuna, the pure one; whose gift is purity; god of the waters.", s: "Brahma. Brahmadatta. Varuna" },
+          { t: "Homage to Varunadeva, and to Bhadrasri, and to Candanasri, god of the water gods; glorious goodness; glorious sandalwood.", s: "Varunadeva. Bhadrasri. Candanasri" },
+          { t: "Homage to Anantatejas, and to Prabhasri, and to Ashokasri, infinite splendour; glorious light; glory without sorrow.", s: "Anantatejas. Prabhasri. Ashokasri" },
+          { t: "Homage to Narayana, and to Kusumasri, and to Brahmajyotivikridita, unattached to sons; glorious flower; the Tathagata of pure light rays.", s: "Narayana. Kusumasri. Brahmajyotivikridita" },
+          { t: "Homage to Padmajyotivikridita, and to Dhanasri, and to Smritisri, the Tathagata of lotus light rays; glorious wealth; glorious mindfulness.", s: "Padmajyotivikridita. Dhanasri. Smritisri" },
+          { t: "Homage to Suparikirtitanamagheyasri, and to Indraketudhvajaraja, and to Suvikrantasri, gloriously renowned; king of the victory banner; who fully subdues.", s: "Suparikirtitanamagheyasri. Indraketudhvajaraja. Suvikrantasri" },
+          { t: "Homage to Yuddhajaya, and to Vikrantagami, and to Samantavabhasavyuhasri, victorious in battle; glorious through subduing; whose manifestations light everywhere.", s: "Yuddhajaya. Vikrantagami. Samantavabhasavyuhasri" },
+          { t: "Homage to Ratnapadmavikrami, and to Ratnapadmasupratisthitashailendraraja, the jewel lotus who subdues all; firmly seated on jewel and lotus.", s: "Ratnapadmavikrami. Ratnapadmasupratisthitashailendraraja" },
+          { t: "Every wrong I have done, I confess. Every fault I have committed, I repent.", s: "Every wrong I have done, I confess." },
+          { t: "Whatever obstacle has arisen, I confess and repent before the awakened ones.", s: "I confess and repent." },
+          { t: "What has been done by body, speech, and mind, I confess and repent.", s: "By body, speech, and mind, I confess and repent." },
+          { t: "As the thirty-five Buddhas have confessed and repented, so do I, and I will not do it again.", s: "I will not do it again." },
+          { t: "I rejoice in the merit of every Buddha and every bodhisattva, and I dedicate it to all beings.", s: "I rejoice in the merit, and dedicate it to all beings." },
+          { t: "May all beings be free from suffering. May all beings be at peace. Svaha.", s: "May all beings be free from suffering. Svaha." },
+        ],
+        translation: "The Sutra of the Three Heaps (Triskandhadharmasutra) names thirty-five Buddhas before whom the confession is made - not the seven Buddhas of the Pali canons, but a specific Mahayana list. It arose from the story of thirty-five monks who had harmed a child while begging, and who asked the Buddha for a way to make amends. The names follow the list in common Tibetan usage as recorded by Himalayan Art Resources and the Rigpa Shedra wiki, transliterated from the Sanskrit so they can be said aloud. The English around them is our own, not a published translation."
+      },
+      {
         id: 'high-king-sutra',
         title: 'High King Avalokitesvara Sutra',
         lang: 'zh',
