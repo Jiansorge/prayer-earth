@@ -63,6 +63,13 @@ jobs:
       # The file that goes to the Play Console, and the locale strings behind it.
       # Catches repeated-word machine-translation stutters, Play's field limits,
       # untranslated placeholder words, and rows identical to English.
+      #
+      # Generated first, because dist-store/ is gitignored and a clean checkout
+      # has no CSV. The audit reported it missing and failed on every push from
+      # Oct 9 until this step existed - which meant the whole `test` job was red
+      # and the deploy that depends on it never ran.
+      - name: Generate the Play listing CSV
+        run: npm run build:play-translations
       - name: Play listing and translation review
         run: node scripts/audit-play-translations.mjs
       # Drives the real app in a real browser and counts what is still alive:

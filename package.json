@@ -46,6 +46,8 @@
     "audit:i18n:scripts": "node scripts/audit-i18n-scripts.mjs",
     "audit:i18n:all": "node scripts/audit-i18n.mjs && node scripts/audit-i18n-dupes.mjs && node scripts/audit-i18n-scripts.mjs && node scripts/audit-i18n-deep.mjs && node scripts/audit-i18n-quality.mjs && node scripts/audit-i18n-pass2.mjs && node scripts/audit-i18n-stale.mjs",
     "test:lifecycle": "node scripts/test-resource-lifecycle.mjs",
+    "test:all": "node scripts/test-all.mjs",
+    "assert:shippable": "node scripts/assert-shippable.mjs",
     "test:audio:runtime": "node scripts/test-audio-fallback-runtime.mjs",
     "test:a11y": "node scripts/test-a11y.mjs",
     "verify:aab": "node scripts/verify-aab.mjs",

@@ -15,13 +15,41 @@
 // Each is asserted on computed layout in a real browser rather than by reading
 // CSS, because every one of them passed a source review.
 //
-// Usage: node scripts/test-settings-ui.mjs   (needs a dev server on 5173)
+// Usage: node scripts/test-settings-ui.mjs
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
+import { spawn } from 'node:child_process'
+import net from 'node:net'
+import { killTree } from './lib/devserver.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const APP = process.env.APP_URL || 'http://localhost:5173'
+
+// This used to expect a dev server someone else had already left running on
+// 5173, and quietly carried on without one after waiting 20s. That is how it
+// kept passing locally on the back of a leaked server from another test, and
+// why it could never have worked in a clean CI checkout. It starts its own, on a
+// port nothing else is holding, and takes it down again afterwards.
+async function freePort() {
+  return new Promise((res) => {
+    const s = net.createServer()
+    s.listen(0, '127.0.0.1', () => {
+      const p = s.address().port
+      s.close(() => res(p))
+    })
+  })
+}
+
+const port = await freePort()
+const APP = process.env.APP_URL || `http://127.0.0.1:${port}`
+const viteBin = path.join(ROOT, 'node_modules', 'vite', 'bin', 'vite.js')
+const server = process.env.APP_URL
+  ? null
+  : spawn(process.execPath, [viteBin, '--host', '127.0.0.1', '--port', String(port)], {
+      cwd: ROOT,
+      stdio: 'ignore',
+      windowsHide: true
+    })
 
 let pass = 0
 let fail = 0
@@ -48,11 +76,22 @@ const exe =
   )
 if (!exe) throw new Error('no chromium binary; set CHROME_PATH')
 
+let up = false
 for (let i = 0; i < 40; i++) {
   try {
-    if ((await fetch(APP)).ok) break
+    if ((await fetch(APP)).ok) {
+      up = true
+      break
+    }
   } catch {}
   await new Promise((r) => setTimeout(r, 500))
+}
+// Say so, rather than letting every assertion below fail with a confusing
+// connection error.
+if (!up) {
+  killTree(server)
+  console.error(`[settings-ui] no app at ${APP} - the dev server never came up`)
+  process.exit(2)
 }
 
 const { chromium } = await import('playwright')
@@ -224,6 +263,7 @@ for (const width of [470, 520]) {
 }
 
 await browser.close()
+killTree(server)
 console.log('')
 console.log(`${pass} passed, ${fail} failed`)
 process.exit(fail ? 1 : 0)

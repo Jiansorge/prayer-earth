@@ -26,6 +26,7 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import assert from 'node:assert/strict'
+import { killTree } from './lib/devserver.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const APP = process.env.APP_URL || 'http://localhost:5173'
@@ -161,7 +162,7 @@ const startServer = async () => {
     } catch {}
     await new Promise((r) => setTimeout(r, 500))
   }
-  proc.kill()
+  killTree(proc)
   throw new Error('dev server did not start')
 }
 
@@ -585,7 +586,7 @@ try {
     })
   })
 } finally {
-  server.kill()
+  killTree(server)
 }
 
 console.log('')
