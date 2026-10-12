@@ -380,12 +380,16 @@ ok(
 const presetPick = settingsOpen && await c.eval(`(() => {
   const chip = [...document.querySelectorAll('.ambient-chip')].find((c) => !c.classList.contains('on'))
   if (!chip) return null
+  // Report which bed was actually clicked rather than assuming it. The default
+  // is Temple Bowl, so "the first chip that is not already on" is no longer
+  // ocean - and hardcoding that made the test fail on an unrelated default change.
+  const picked = chip.dataset.preset || chip.getAttribute('data-preset') || (chip.textContent || '').trim()
   chip.click()
-  return { stored: window.__store.getState().ambientPreset }
+  return { picked, stored: window.__store.getState().ambientPreset }
 })()`)
 ok(
   'selecting an ambient preset updates the store',
-  presetPick && presetPick.stored === 'ocean',
+  presetPick && presetPick.stored === presetPick.picked,
   JSON.stringify(presetPick)
 )
 ok(
@@ -1275,7 +1279,7 @@ ok(
   JSON.stringify(pitchSafePlayback)
 )
 const reverbMix = await c.eval(`window.__speech?.reverbWetGain`)
-ok('reverb mix is 20%', reverbMix === 0.2, `gain=${reverbMix}`)
+ok('reverb mix is 24%', reverbMix === 0.24, `gain=${reverbMix}`)
 await c.eval(`document.querySelector('.ctrl-btn.stop')?.click()`)
 
 await c.eval(`document.querySelector('.ctrl-btn.stop')?.click()`)

@@ -132,6 +132,10 @@ export default function SoundControls({ layout = 'field', showBeds = true }) {
                 className={`ambient-chip${ambientPreset === id ? ' on' : ''}`}
                 onClick={() => onBed(id)}
                 aria-pressed={ambientPreset === id}
+                // The label is localised, so without this the only way to tell
+                // which bed a chip is is to read its text - which changes with
+                // the language. The id does not.
+                data-preset={id}
               >
                 {t(`ambience.${id}`)}
               </button>
