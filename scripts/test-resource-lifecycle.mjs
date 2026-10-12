@@ -174,7 +174,25 @@ try {
     await page.waitForSelector('.view', { timeout: 15000 })
     await settle(page, 2000)
 
-    // Warm up the Earth itself before the baseline, for the same reason. The app
+    // Navigating by setting location.hash races the router. If the hash changes
+// before the app has mounted and installed its hashchange listener, nothing
+// observes the change and no view ever appears - which is a 20s timeout that
+// looks exactly like a broken Earth and is not one. Setting it through the same
+// call the app's own router reads on mount covers both orders, and the wait is
+// on the thing that matters (the view being in the DOM) with room for a software
+// renderer rather than a wall-clock guess.
+const goView = async (hash, selector, timeout = 45000) => {
+  await page.evaluate((h) => {
+    window.location.hash = h
+  }, hash)
+  await page.waitForFunction(
+    (sel) => !!document.querySelector(sel),
+    selector,
+    { timeout }
+  )
+}
+
+// Warm up the Earth itself before the baseline, for the same reason. The app
     // registers some window listeners once, on the first Earth visit, and keeps
     // them for the life of the page - a global keydown for the shortcuts, the
     // visibility and resize handlers the scene needs. They are the app working,
@@ -184,14 +202,9 @@ try {
     // visibilitychange=1 keydown=2 resize=1. A real per-visit leak accumulates.
     // Visiting once and coming back makes the baseline honest, and what is left
     // after that really is something an Earth visit failed to clean up.
-    await page.evaluate(() => {
-      location.hash = '#/earth'
-    })
-    await page.waitForSelector('.earth-view', { timeout: 20000 })
+    await goView('#/earth', '.earth-view')
     await settle(page, 3000)
-    await page.evaluate(() => {
-      location.hash = '#/home'
-    })
+    await goView('#/', '.view')
     await settle(page, 3000)
 
     // Baseline is taken here, immediately before the measured first Earth visit,
@@ -201,10 +214,7 @@ try {
     notes.push(`  window/doc:    ${describe(base.byType)}`)
     notes.push(`  canvas:        ${describe(base.canvasByType)}`)
 
-    await page.evaluate(() => {
-      location.hash = '#/earth'
-    })
-    await page.waitForSelector('.earth-view', { timeout: 20000 })
+    await goView('#/earth', '.earth-view')
     await settle(page, 4000)
     const onEarth = await readLive(page)
     notes.push(
@@ -244,10 +254,7 @@ try {
       })
 
       // ---- 2. route churn --------------------------------------------------
-      await page.evaluate(() => {
-        location.hash = '#/earth'
-      })
-      await page.waitForSelector('.earth-view', { timeout: 20000 })
+      await goView('#/earth', '.earth-view')
       await settle(page, 3000)
       const before = await readLive(page)
       for (let i = 0; i < 4; i++) {
@@ -364,7 +371,11 @@ try {
         window.__overlayObs = obs
         location.hash = '#/earth'
       })
-      await page.waitForSelector('.earth-view', { state: 'attached', timeout: 30000 })
+      // The hash change above has to stay inside this evaluate, because the observer
+      // must be installed before the view mounts. The wait is separated from it
+      // so it can still be the race-free one goView uses - and it only needs the
+      // node to exist, not to be laid out.
+      await page.waitForFunction(() => !!document.querySelector('.earth-view'), null, { timeout: 45000 })
       const duringLoad = await readLive(page)
       await settle(page, 7000)
       const afterLoad = await readLive(page)
@@ -425,10 +436,7 @@ try {
     const idle = await readLive(page)
     notes.push(`reduced motion: armed while idle on Home=${idle.rafArmed - base.rafArmed}`)
 
-    await page.evaluate(() => {
-      location.hash = '#/earth'
-    })
-    await page.waitForSelector('.earth-view', { timeout: 20000 })
+    await goView('#/earth', '.earth-view')
     await settle(page, 3500)
     const earth = await readLive(page)
     notes.push(`reduced motion: on earth rafArmed=${earth.rafArmed - base.rafArmed} (Earth renders in 3D regardless)`)
@@ -572,10 +580,7 @@ try {
     await settle(page, 1500)
     const base = await readLive(page)
 
-    await page.evaluate(() => {
-      location.hash = '#/earth'
-    })
-    await page.waitForSelector('.earth-view', { timeout: 20000 })
+    await goView('#/earth', '.earth-view')
     await settle(page, 3000)
     const earth = await readLive(page)
     notes.push(
