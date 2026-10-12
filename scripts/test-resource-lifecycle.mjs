@@ -130,6 +130,22 @@ const readLive = (page) =>
 
 const settle = (page, ms = 1200) => page.waitForTimeout(ms)
 
+// Navigating by setting location.hash races the router. If the hash changes
+// before the app has mounted and installed its hashchange listener, nothing
+// observes the change and no view ever appears - a timeout that reads exactly
+// like a broken view and is not one. Waiting on the node existing covers both
+// orders, with room for a software renderer rather than a wall-clock guess.
+//
+// Module level because every scenario in this file runs its own withBrowser and
+// so has its own page; a closure over one page cannot serve the others.
+const goView = async (page, hash, selector, timeout = 45000) => {
+  await page.evaluate((h) => {
+    window.location.hash = h
+  }, hash)
+  await page.waitForFunction((sel) => !!document.querySelector(sel), selector, { timeout })
+}
+
+
 async function withBrowser(fn) {
   const { chromium } = await import('playwright')
   const browser = await chromium.launch(launchOptions(resolveChrome()))
@@ -173,25 +189,7 @@ try {
     await page.mouse.move(2, 2)
     await page.waitForSelector('.view', { timeout: 15000 })
     await settle(page, 2000)
-
-    // Navigating by setting location.hash races the router. If the hash changes
-// before the app has mounted and installed its hashchange listener, nothing
-// observes the change and no view ever appears - which is a 20s timeout that
-// looks exactly like a broken Earth and is not one. Setting it through the same
-// call the app's own router reads on mount covers both orders, and the wait is
-// on the thing that matters (the view being in the DOM) with room for a software
-// renderer rather than a wall-clock guess.
-const goView = async (hash, selector, timeout = 45000) => {
-  await page.evaluate((h) => {
-    window.location.hash = h
-  }, hash)
-  await page.waitForFunction(
-    (sel) => !!document.querySelector(sel),
-    selector,
-    { timeout }
-  )
-}
-
+
 // Warm up the Earth itself before the baseline, for the same reason. The app
     // registers some window listeners once, on the first Earth visit, and keeps
     // them for the life of the page - a global keydown for the shortcuts, the
@@ -202,9 +200,9 @@ const goView = async (hash, selector, timeout = 45000) => {
     // visibilitychange=1 keydown=2 resize=1. A real per-visit leak accumulates.
     // Visiting once and coming back makes the baseline honest, and what is left
     // after that really is something an Earth visit failed to clean up.
-    await goView('#/earth', '.earth-view')
+    await goView(page, '#/earth', '.earth-view')
     await settle(page, 3000)
-    await goView('#/', '.view')
+    await goView(page, '#/', '.view')
     await settle(page, 3000)
 
     // Baseline is taken here, immediately before the measured first Earth visit,
@@ -214,7 +212,7 @@ const goView = async (hash, selector, timeout = 45000) => {
     notes.push(`  window/doc:    ${describe(base.byType)}`)
     notes.push(`  canvas:        ${describe(base.canvasByType)}`)
 
-    await goView('#/earth', '.earth-view')
+    await goView(page, '#/earth', '.earth-view')
     await settle(page, 4000)
     const onEarth = await readLive(page)
     notes.push(
@@ -254,7 +252,7 @@ const goView = async (hash, selector, timeout = 45000) => {
       })
 
       // ---- 2. route churn --------------------------------------------------
-      await goView('#/earth', '.earth-view')
+      await goView(page, '#/earth', '.earth-view')
       await settle(page, 3000)
       const before = await readLive(page)
       for (let i = 0; i < 4; i++) {
@@ -436,7 +434,7 @@ const goView = async (hash, selector, timeout = 45000) => {
     const idle = await readLive(page)
     notes.push(`reduced motion: armed while idle on Home=${idle.rafArmed - base.rafArmed}`)
 
-    await goView('#/earth', '.earth-view')
+    await goView(page, '#/earth', '.earth-view')
     await settle(page, 3500)
     const earth = await readLive(page)
     notes.push(`reduced motion: on earth rafArmed=${earth.rafArmed - base.rafArmed} (Earth renders in 3D regardless)`)
@@ -580,7 +578,7 @@ const goView = async (hash, selector, timeout = 45000) => {
     await settle(page, 1500)
     const base = await readLive(page)
 
-    await goView('#/earth', '.earth-view')
+    await goView(page, '#/earth', '.earth-view')
     await settle(page, 3000)
     const earth = await readLive(page)
     notes.push(
