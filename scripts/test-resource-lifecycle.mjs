@@ -182,8 +182,29 @@ try {
     await page.mouse.move(2, 2)
     await page.waitForSelector('.view', { timeout: 15000 })
     await settle(page, 2000)
-    // Baseline is taken here, immediately before the first Earth visit, not at
-    // page load, for the same reason.
+
+    // Warm up the Earth itself before the baseline, for the same reason. The app
+    // registers some window listeners once, on the first Earth visit, and keeps
+    // them for the life of the page - a global keydown for the shortcuts, the
+    // visibility and resize handlers the scene needs. They are the app working,
+    // not a leak, but they register *after* a baseline taken at page load, so
+    // every later comparison reported them as retained. The tell is that the
+    // counts do not grow: four more round trips show exactly the same
+    // visibilitychange=1 keydown=2 resize=1. A real per-visit leak accumulates.
+    // Visiting once and coming back makes the baseline honest, and what is left
+    // after that really is something an Earth visit failed to clean up.
+    await page.evaluate(() => {
+      location.hash = '#/earth'
+    })
+    await page.waitForSelector('.earth-view', { timeout: 20000 })
+    await settle(page, 3000)
+    await page.evaluate(() => {
+      location.hash = '#/home'
+    })
+    await settle(page, 3000)
+
+    // Baseline is taken here, immediately before the measured first Earth visit,
+    // not at page load, for the same reason.
     const base = await readLive(page)
     notes.push(`baseline home:  canvases=${base.domCanvases} contexts=${base.contexts}`)
     notes.push(`  window/doc:    ${describe(base.byType)}`)
