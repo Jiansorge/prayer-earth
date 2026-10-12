@@ -151,6 +151,56 @@ for (const width of [470, 520]) {
     await page.waitForTimeout(600)
   })
 
+  await t(`@${width}px Keyboard shortcuts is a panel with a working Back`, async () => {
+    // The previous test leaves the sheet inside the Privacy panel, where the
+    // main list is not in the DOM at all. Come back before looking for a row.
+    await page.evaluate(() => document.querySelector('.settings-back')?.click())
+    await page.waitForTimeout(700)
+    await page.evaluate(() => {
+      // The row only exists where the shortcuts are actually bound.
+      document.querySelector('[data-testid="row-keys"]')?.click()
+    })
+    await page.waitForTimeout(700)
+    const state = await page.evaluate(() => ({
+      panel: !!document.querySelector('[data-testid="panel-keys"]'),
+      rows: document.querySelectorAll('[data-testid="panel-keys"] .keys-row').length,
+      back: !!document.querySelector('[data-testid="panel-keys"] .settings-back'),
+      // The old behaviour closed the whole sheet and opened the ? modal.
+      strayModal: !!document.querySelector('.keys-sheet')
+    }))
+    if (!state.panel) throw new Error('the keyboard row did not open a settings panel')
+    if (!state.back) throw new Error('the keyboard panel has no Back button')
+    if (state.rows < 5) throw new Error(`the keyboard panel lists ${state.rows} shortcuts`)
+    if (state.strayModal) throw new Error('it opened the separate ? sheet instead of a panel')
+    await page.evaluate(() =>
+      document.querySelector('[data-testid="panel-keys"] .settings-back')?.click()
+    )
+    await page.waitForTimeout(700)
+    const back = await page.evaluate(() => ({
+      panelGone: !document.querySelector('[data-testid="panel-keys"]'),
+      listBack: !!document.querySelector('[data-testid="row-privacy"]'),
+      sheetStillOpen: !!document.querySelector('.sheet-body')
+    }))
+    if (!back.panelGone) throw new Error('Back did not leave the keyboard panel')
+    if (!back.listBack) throw new Error('Back did not return to the settings list')
+    if (!back.sheetStillOpen) throw new Error('Back closed the settings sheet entirely')
+  })
+
+  await t(`@${width}px there is breathing room above Privacy`, async () => {
+    // The row draws its own border; without space above, that line reads as a
+    // stray rule against the section above rather than the start of a group.
+    const gap = await page.evaluate(() => {
+      const row = document.querySelector('[data-testid="row-privacy"]')
+      const prev = row?.previousElementSibling
+      if (!row || !prev) return null
+      const a = prev.getBoundingClientRect()
+      const b = row.getBoundingClientRect()
+      return Math.round(b.top - a.bottom)
+    })
+    if (gap === null) throw new Error('could not measure the space above the Privacy row')
+    if (gap < 8) throw new Error(`only ${gap}px above the Privacy row - it runs into the section above`)
+  })
+
   await t(`@${width}px the sheet restores its scroll position`, async () => {
     // Return to the main list first; the previous test navigated into a panel.
     await page.evaluate(() => document.querySelector('.settings-back')?.click())

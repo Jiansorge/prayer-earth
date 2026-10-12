@@ -14,7 +14,7 @@ import { canInstall, promptInstall } from '../shared/installPrompt.js'
 import { isMobile, isIos, isAppShell } from '../shared/mobile.js'
 import { CANONICAL_ORIGIN, REPORT_URL } from '../shared/canonical.js'
 import { shareLink, showManualCopy } from '../shared/share.js'
-import { PrivacyPanel, BackupPanel, DataPanel, SettingsRow } from './SettingsPanels.jsx'
+import { PrivacyPanel, BackupPanel, DataPanel, SettingsRow, KeysPanel } from './SettingsPanels.jsx'
 
 const isInstalled = () =>
   window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone
@@ -33,7 +33,7 @@ const DONATE_URL = 'https://ko-fi.com/joiningpalms'
 //
 // Keyed by panel so that going into Privacy and pressing Back also returns you
 // to where you were in the list behind it.
-const scrollMemory = { main: 0, privacy: 0, backup: 0, data: 0 }
+const scrollMemory = { main: 0, privacy: 0, backup: 0, data: 0, keys: 0 }
 
 // Share links must point at the canonical production origin, never at the
 // localhost/dev/standalone host the app happens to be running on — a copied
@@ -232,6 +232,7 @@ export default function SettingsSheet() {
           <PrivacyPanel onBack={() => setPanel(null)} onOpenLegal={() => setLegalOpen(true)} />
         )}
         {panel === 'backup' && <BackupPanel onBack={() => setPanel(null)} />}
+        {panel === 'keys' && <KeysPanel onBack={() => setPanel(null)} />}
         {panel === 'data' && (
           <DataPanel onBack={() => setPanel(null)} onOpenLegal={() => setLegalOpen(true)} />
         )}
@@ -443,19 +444,21 @@ export default function SettingsSheet() {
           </button>
         </div>
 
-        {/* No field-divider here on purpose. .settings-row already draws its own
-            border-top, so a divider immediately above it produced two 1px lines a
-            few pixels apart - a double rule that read as a mistake. The row's own
-            border is the separator. */}
-
         {/* The three things that used to be one very long section. Privacy,
             backup and deletion are each something a person looks for on its
             own, and burying the delete button under five other controls is how
-            it gets tapped by accident. */}
+            it gets tapped by accident.
+
+            The gap above Privacy is deliberate. .settings-row draws its own
+            border-top, and flush against the section above that line read as a
+            stray rule rather than the start of a group. Space above it makes the
+            existing border the separator, which is the effect the removed
+            divider was trying to produce without the double line. */}
         <SettingsRow
           label={t('settings.privacyRow')}
           onClick={() => setPanel('privacy')}
           testId="row-privacy"
+          className="settings-row-group-start"
         />
         <SettingsRow
           label={t('settings.secBackup')}
@@ -528,15 +531,11 @@ export default function SettingsSheet() {
         </button>
 
         {!isAppShell() && !isMobile() && (
-          <button
-            className="field-btn"
-            onClick={() => {
-              setOpen(false)
-              useStore.getState().setKeyboardHelpOpen(true)
-            }}
-          >
-            ⌨ {t('keys.title')}
-          </button>
+          <SettingsRow
+            label={`⌨ ${t('keys.title')}`}
+            onClick={() => setPanel('keys')}
+            testId="row-keys"
+          />
         )}
 
         <button className="sheet-close" onClick={() => setOpen(false)}>

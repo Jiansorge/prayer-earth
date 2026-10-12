@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useStore } from '../store.js'
 import { useT } from '../i18n.js'
 import useFocusTrap from '../shared/useFocusTrap.js'
+import ShortcutList from './KeyboardShortcuts.jsx'
 
 // A compact sheet listing every keyboard shortcut in the app. Opened with the
 // ? key, the "?" button in the nav, or from settings.
@@ -21,16 +22,6 @@ export default function KeyboardHelp() {
   }, [open, setOpen])
 
   if (!open) return null
-  const rows = [
-    { k: 'Space', v: t('keys.playPause') },
-    { k: '↑ / ↓', v: t('keys.volume') },
-    { k: 'M', v: t('keys.mute') },
-    { k: 'R', v: t('keys.repeat') },
-    { k: 'S', v: t('keys.stop') },
-    { k: '1 / 2 / 3', v: t('keys.tabs') },
-    { k: '?', v: t('keys.help') },
-    { k: 'Esc', v: t('keys.close') }
-  ]
   return (
     <div className="sheet-backdrop" onClick={() => setOpen(false)}>
       <div className="sheet keys-sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('keys.title')} tabIndex={-1} ref={sheetRef}>
@@ -42,13 +33,7 @@ export default function KeyboardHelp() {
           <div className="sheet-handle" />
         </div>
         <div className="sheet-body">
-          {rows.map((r) => (
-            <div className="keys-row" key={r.k}>
-              <kbd className="keys-kbd">{r.k}</kbd>
-              <span className="keys-val">{r.v}</span>
-            </div>
-          ))}
-          <p className="hint">{t('keys.hint')}</p>
+          <ShortcutList />
         </div>
       </div>
     </div>

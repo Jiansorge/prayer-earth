@@ -8,6 +8,7 @@ import { buildBackupCode, parseBackupCode, applyBackup } from '../shared/backup.
 import { requestDeletion, forgetIdentity } from '../shared/deletion.js'
 import { syncClient } from '../sync/client.js'
 import { DELETE_DATA_URL, REPORT_URL } from '../shared/canonical.js'
+import ShortcutList from './KeyboardShortcuts.jsx'
 
 // Restore summary readout. "Restored." alone tells the user nothing about
 // whether they pasted the right code, so spell out what came back.
@@ -23,9 +24,14 @@ const fmtDuration = (secs) => {
 
 // A row that opens a panel. A <button> rather than a div so it is reachable by
 // keyboard and announced as activatable.
-export function SettingsRow({ label, hint, onClick, testId }) {
+export function SettingsRow({ label, hint, onClick, testId, className = '' }) {
   return (
-    <button type="button" className="settings-row" onClick={onClick} data-testid={testId}>
+    <button
+      type="button"
+      className={`settings-row ${className}`.trim()}
+      onClick={onClick}
+      data-testid={testId}
+    >
       <span className="settings-row-text">
         <span className="settings-row-label">{label}</span>
         {hint ? <span className="settings-row-hint">{hint}</span> : null}
@@ -49,6 +55,21 @@ function PanelShell({ title, onBack, children, testId }) {
       </div>
       {children}
     </div>
+  )
+}
+
+// The shortcut list, as a settings sub-panel. It used to close the whole sheet
+// and open the separate "?" modal on top, which threw away the scroll position
+// and every other control, and left no way back into settings. From here Back
+// returns to the list you came from, like Privacy and the rest.
+export function KeysPanel({ onBack }) {
+  const t = useT()
+  return (
+    <PanelShell title={`⌨ ${t('keys.title')}`} onBack={onBack} testId="panel-keys">
+      <div className="keys-panel-list">
+        <ShortcutList />
+      </div>
+    </PanelShell>
   )
 }
 

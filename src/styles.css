@@ -2139,6 +2139,13 @@ html[dir='rtl'] .chooser-arrow.right {
   border-top: 0;
 }
 
+/* The first row of a group that is not the first thing in its container. Its own
+   border-top is the separator; the space above it is what stops that line
+   reading as a stray rule against the section above. */
+.settings-row-group-start {
+  margin-top: 16px;
+}
+
 .settings-row:active {
   opacity: 0.65;
 }
@@ -4562,6 +4569,10 @@ select:focus-visible {
   padding: 9px 0;
 }
 .keys-row + .keys-row { border-top: 1px solid rgba(255, 255, 255, 0.07); }
+
+/* The same rows inside a settings panel, where they follow a Back control
+   rather than a sheet header and need a little room to start. */
+.keys-panel-list { padding-top: 4px; }
 .keys-kbd {
   min-width: 74px;
   text-align: center;
