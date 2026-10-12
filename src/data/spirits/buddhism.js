@@ -221,6 +221,7 @@ export default   {
         ],
         translation: "The Sutra of the Three Heaps (Triskandha-dharma, Taisho 0326), also called the Mahayana Sutra of the Three Superior Heaps, or the Bodhisattva Confession of Moral Downfalls. It arose from the story of thirty-five monks who had harmed a child while begging, and who asked the Buddha for a way to make amends. Each of the thirty-five Buddhas receives its own prostration, which is the practice rather than an ornament of the text: the bows are counted one at a time. The English here is a published rendering of Taisho 0326, supplied for this app; it is not our own translation, and it is included with that acknowledged."
       },
+      {
         id: 'high-king-sutra',
         title: 'High King Avalokitesvara Sutra',
         lang: 'zh',
