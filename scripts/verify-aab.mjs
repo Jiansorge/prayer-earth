@@ -38,6 +38,53 @@ t('the AAB exists', () => {
   return `${(fs.statSync(AAB).size / 1048576).toFixed(1)} MB, ${ageMin} min old`
 })
 
+// The AAB must be newer than everything that goes into it.
+//
+// This check used to print the age and move on, so a nine-hour-old bundle passed
+// verification happily - and on one rebuild Gradle reported BUILD SUCCESSFUL
+// without rewriting the artifact at all. Everything else here (signature,
+// versionCode, no test hooks, not debuggable) was true of that stale bundle,
+// which is the point: a bundle can be internally perfect and still ship last
+// week's code. Nothing else in this file can catch that, so this does.
+//
+// Anything under these paths ends up inside the APK, so if one of them is newer
+// than the bundle, the bundle cannot contain it.
+const newestInput = (dir, acc = { file: '', mtime: 0 }) => {
+  if (!fs.existsSync(dir)) return acc
+  for (const name of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (name.name === 'node_modules' || name.name.startsWith('.')) continue
+    const full = path.join(dir, name.name)
+    if (name.isDirectory()) newestInput(full, acc)
+    else {
+      const { mtimeMs } = fs.statSync(full)
+      if (mtimeMs > acc.mtime) {
+        acc.mtime = mtimeMs
+        acc.file = path.relative(ROOT, full)
+      }
+    }
+  }
+  return acc
+}
+
+t('the AAB is newer than the code it bundles', () => {
+  const built = fs.statSync(AAB).mtimeMs
+  const inputs = [
+    ['src', newestInput(path.join(ROOT, 'src'))],
+    ['public', newestInput(path.join(ROOT, 'public'))],
+    ['capacitor assets', newestInput(path.join(ROOT, 'android/app/src/main/assets'))],
+    ['package.json', { file: 'package.json', mtime: fs.statSync(path.join(ROOT, 'package.json')).mtimeMs }]
+  ]
+  const stale = inputs.filter(([, i]) => i.mtime > built)
+  if (stale.length) {
+    throw new Error(
+      `the bundle is older than its own inputs - it does not contain them:\n        ` +
+        stale.map(([label, i]) => `${label}: ${i.file} (${new Date(i.mtime).toISOString()})`).join('\n        ') +
+        `\n        Rebuild: npm run build:release && npx cap sync android && gradlew -p android bundleRelease`
+    )
+  }
+  return `built ${new Date(built).toISOString()}`
+})
+
 // An AAB is a zip. Reading it needs no external tooling.
 const buf = fs.readFileSync(AAB)
 // Locate the BundleConfig.pb by scanning for the application id string, which
