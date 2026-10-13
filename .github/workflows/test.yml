@@ -60,6 +60,14 @@ jobs:
       # duplicate-key risk that shipped a mojibake string in zh.js.
       - name: Prayer phrase-translation audit
         run: node scripts/audit-prayer-l10n.mjs
+      # The Thirty-Five Buddhas confession ships as our own English rendering so
+      # the app carries no modern translation under someone else's copyright.
+      # This is what proves that claim rather than asserting it: it compares our
+      # prose against the published rendering it replaced and fails if any
+      # passage tracks it beyond a fixed liturgical formula. It caught a
+      # 23-word shared run when the first attempt turned out to be a paraphrase.
+      - name: Sutra rendering is independent
+        run: node scripts/audit-sutra-independence.mjs
       # The prayers with no pre-rendered recording depend on the browser or the
       # timed chant. The engine has no /api/tts, so this chain is the only thing
       # making them audible. The audit computes the count rather than naming it.
