@@ -409,6 +409,11 @@ h3,
   inset: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  /* Keep each route's scroll to itself, the same containment .prayer-stage and
+     .sheet-body use. It is the top scroller for a view, so without this the
+     gesture chains up to the document and costs a frame deciding which one
+     moves before it moves either. */
+  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   padding: max(20px, env(safe-area-inset-top)) 22px calc(96px + env(safe-area-inset-bottom));
   scrollbar-width: none;
@@ -1344,6 +1349,9 @@ html[dir='rtl'] .chooser-arrow.right {
   bottom: calc(170px + env(safe-area-inset-bottom));
   max-height: 50vh;
   overflow-y: auto;
+  /* Same containment as .prayer-stage; this panel sits inside it, so the gesture
+     otherwise chains out of the tune panel into the stage and then the page. */
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -2000,6 +2008,14 @@ html[dir='rtl'] .chooser-arrow.right {
 .sheet-body {
   flex: 1 1 auto;
   overflow-y: auto;
+  /* Same scroll-containment as .prayer-stage. Without it the sheet body's
+     gesture chains to .sheet, then to .sheet-backdrop, then to the document
+     behind it, and the browser sits on the gesture deciding which of them
+     moves before anything does. That wait is the lag reported on the settings
+     modal in Android and Firefox - it is not slow painting, it is the page
+     refusing to pick a scroller. The overlay is position:fixed at inset 0 and
+     cannot itself scroll, so there is nothing useful for it to chain to. */
+  overscroll-behavior: contain;
   scrollbar-width: none;
   padding: 4px 22px calc(28px + env(safe-area-inset-bottom));
 }
@@ -3175,6 +3191,9 @@ html[dir='rtl'] .chooser-arrow.right {
   width: min(360px, 100%);
   max-height: 86dvh;
   overflow-y: auto;
+  /* Same containment as the other scrollers - this card sits over a fixed
+     backdrop, so the gesture otherwise chains out of the card and into it. */
+  overscroll-behavior: contain;
   scrollbar-width: none;
   padding: 28px 24px 22px;
   border-radius: 26px;
@@ -3320,6 +3339,11 @@ html[dir='rtl'] .chooser-arrow.right {
   display: flex;
   gap: 8px;
   overflow-x: auto;
+  /* Applies to both axes, so it also covers .compact's vertical variant below,
+     which inherits this and does not reset it. Without it the horizontal swipe
+     along the tradition list chains to the page and the browser waits to decide
+     which one scrolls. */
+  overscroll-behavior: contain;
   padding-bottom: 4px;
   scrollbar-width: none;
 }
