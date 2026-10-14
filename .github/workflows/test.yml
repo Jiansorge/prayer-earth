@@ -105,6 +105,16 @@ jobs:
       # enough to hit.
       - name: Accessibility (axe across every view, plus keyboard)
         run: node scripts/test-a11y.mjs
+      # Everything else here can be green while the app still feels sticky. On
+      # device the GPU renders a frame in 1-2ms but ~41-44% of frames miss their
+      # budget on every surface alike, which is the signature of JavaScript
+      # holding the main thread - invisible to a rendering check, a bundle
+      # check, or a correctness test. This drives real navigation and sheet
+      # interaction against the production build and fails on LongTask
+      # blocking time, so a handler that starts stalling the thread is caught
+      # rather than shipped.
+      - name: Main thread stays responsive under interaction
+        run: node scripts/test-main-thread.mjs
       # Settings-sheet chrome asserted on computed layout at two widths. Each of
       # these passed a source review and was wrong on screen: a collapsed donate
       # row, links rendered as buttons, a double rule, a missing Back control,

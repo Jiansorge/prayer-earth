@@ -57,6 +57,7 @@ const STEPS = [
   'scripts/test-resource-lifecycle.mjs',
   'scripts/test-audio-fallback-runtime.mjs',
   'scripts/test-a11y.mjs',
+  'scripts/test-main-thread.mjs',
   'scripts/test-settings-ui.mjs',
   'scripts/audit-counts.mjs',
   'scripts/test-canonical-urls.mjs',
