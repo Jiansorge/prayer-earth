@@ -11,6 +11,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
 import net from 'node:net'
+import { coldSafePage } from './lib/devserver.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 let APP = ''
@@ -89,7 +90,7 @@ try {
 
 async function withPage(fn) {
   if (b) {
-    const page = await b.newPage()
+    const page = await coldSafePage(b)
     try { return await fn(page) } finally { await page.close() }
   }
   // fallback: use the existing CDP helper pattern via fetch + websocket

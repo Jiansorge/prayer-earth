@@ -19,7 +19,7 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import assert from 'node:assert/strict'
-import { killTree } from './lib/devserver.mjs'
+import { killTree, coldSafePage, COLD_READY_TIMEOUT } from './lib/devserver.mjs'
 import { resolveChrome, launchOptions } from './lib/browser.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -237,12 +237,12 @@ const { proc, app } = await startServer()
 try {
   // ---- a device with no speech engine at all --------------------------------
   await withBrowser(async (browser) => {
-    const page = await browser.newPage()
+    const page = await coldSafePage(browser)
     const errors = []
     page.on('pageerror', (e) => errors.push(String(e.message)))
     await page.addInitScript(NO_SYNTH)
     await page.goto(app, { waitUntil: 'load' })
-    await page.waitForFunction(() => !!window.__speech, null, { timeout: 20000 })
+    await page.waitForFunction(() => !!window.__speech, null, { timeout: COLD_READY_TIMEOUT })
     await page.evaluate(RUNNER)
 
     const noEngine = await page.evaluate(
@@ -282,12 +282,12 @@ try {
 
   // ---- a device that has an engine, which is the interesting part ------------
   await withBrowser(async (browser) => {
-    const page = await browser.newPage()
+    const page = await coldSafePage(browser)
     const errors = []
     page.on('pageerror', (e) => errors.push(String(e.message)))
     await page.addInitScript(FAKE_SYNTH)
     await page.goto(app, { waitUntil: 'load' })
-    await page.waitForFunction(() => !!window.__speech, null, { timeout: 20000 })
+    await page.waitForFunction(() => !!window.__speech, null, { timeout: COLD_READY_TIMEOUT })
     await page.evaluate(RUNNER)
 
     const chosen = await page.evaluate(

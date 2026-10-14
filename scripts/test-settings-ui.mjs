@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
 import { spawn } from 'node:child_process'
 import net from 'node:net'
-import { killTree } from './lib/devserver.mjs'
+import { killTree, coldSafePage, COLD_READY_TIMEOUT } from './lib/devserver.mjs'
 import { resolveChrome, launchOptions } from './lib/browser.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -102,7 +102,7 @@ const browser = await chromium.launch(launchOptions(exe))
 // first navigation.
 for (const width of [470, 520]) {
   const context = await browser.newContext({ viewport: { width, height: 900 } })
-  const page = await context.newPage()
+  const page = await coldSafePage(context)
   await page.goto(APP, { waitUntil: 'load' })
   await page.waitForTimeout(3000)
   await page.evaluate(() => document.querySelector('.onboard-skip, .onboard-begin')?.click())
@@ -121,7 +121,7 @@ for (const width of [470, 520]) {
   })
 
   await page.evaluate(() => document.querySelector('.gear-btn')?.click())
-  await page.waitForSelector('.sheet-body', { timeout: 15000 })
+  await page.waitForSelector('.sheet-body', { timeout: COLD_READY_TIMEOUT })
   await page.waitForTimeout(1000)
 
   await t(`@${width}px the donate label and Ko-fi badge share one line`, async () => {
@@ -252,7 +252,7 @@ for (const width of [470, 520]) {
     await page.evaluate(() => document.querySelector('.sheet-x')?.click())
     await page.waitForTimeout(600)
     await page.evaluate(() => document.querySelector('.gear-btn')?.click())
-    await page.waitForSelector('.sheet-body', { timeout: 15000 })
+    await page.waitForSelector('.sheet-body', { timeout: COLD_READY_TIMEOUT })
     await page.waitForTimeout(1200)
     const after = await page.evaluate(() => document.querySelector('.sheet-body').scrollTop)
     if (Math.abs(after - before) > 5) throw new Error(`scrolled to ${before}, reopened at ${after}`)

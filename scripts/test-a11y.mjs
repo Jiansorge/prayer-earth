@@ -20,7 +20,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import assert from 'node:assert/strict'
-import { killTree } from './lib/devserver.mjs'
+import { killTree, coldSafePage, COLD_READY_TIMEOUT } from './lib/devserver.mjs'
 import { resolveChrome, launchOptions } from './lib/browser.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -142,7 +142,7 @@ const BLOCKING = new Set(['serious', 'critical'])
 const { proc, app } = await startServer()
 try {
   await withBrowser(async (browser) => {
-    const page = await browser.newPage()
+    const page = await coldSafePage(browser)
     // Most users are past the first-run prompt, and it is modal by design, so
     // seeding the flag is what puts the app in the state the rest of the sweep
     // describes. The prompt gets its own check below.
@@ -154,7 +154,7 @@ try {
 
     const goto = async (hash, waitFor) => {
       await page.goto(`${app}/${hash}`, { waitUntil: 'domcontentloaded' })
-      await page.waitForSelector(waitFor, { timeout: 20000 })
+      await page.waitForSelector(waitFor, { timeout: COLD_READY_TIMEOUT })
       await page.waitForTimeout(1200)
       // A view that animates in can be mid-transition when axe reads it.
       await page.waitForTimeout(300)
@@ -202,7 +202,7 @@ try {
     // it is genuinely open.
     await goto('#/', '.view')
     await page.click('.gear-btn')
-    await page.waitForSelector('.sheet, [role="dialog"]', { timeout: 10000 })
+    await page.waitForSelector('.sheet, [role="dialog"]', { timeout: COLD_READY_TIMEOUT })
     await page.waitForTimeout(900)
     const sheet = await runAxe(page)
     notes.push(`settings sheet:  ${sheet.length ? describe(sheet) : 'clean'}`)
@@ -216,9 +216,9 @@ try {
     // a modal that traps focus, and it is the one surface that cannot be
     // reached from any route once dismissed.
     const fresh = await browser.newContext()
-    const first = await fresh.newPage()
+    const first = await coldSafePage(fresh)
     await first.goto(`${app}/#/`, { waitUntil: 'domcontentloaded' })
-    await first.waitForSelector('.onboard-backdrop', { timeout: 20000 })
+    await first.waitForSelector('.onboard-backdrop', { timeout: COLD_READY_TIMEOUT })
     await first.waitForTimeout(900)
     const onboarding = await runAxe(first)
     notes.push(`first-run prompt: ${onboarding.length ? describe(onboarding) : 'clean'}`)

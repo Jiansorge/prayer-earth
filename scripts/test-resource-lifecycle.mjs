@@ -26,7 +26,7 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import assert from 'node:assert/strict'
-import { killTree } from './lib/devserver.mjs'
+import { killTree, coldSafePage, COLD_READY_TIMEOUT } from './lib/devserver.mjs'
 import { resolveChrome, launchOptions } from './lib/browser.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -138,7 +138,7 @@ const settle = (page, ms = 1200) => page.waitForTimeout(ms)
 //
 // Module level because every scenario in this file runs its own withBrowser and
 // so has its own page; a closure over one page cannot serve the others.
-const goView = async (page, hash, selector, timeout = 45000) => {
+const goView = async (page, hash, selector, timeout = COLD_READY_TIMEOUT) => {
   await page.evaluate((h) => {
     window.location.hash = h
   }, hash)
@@ -176,7 +176,7 @@ const startServer = async () => {
 const server = await startServer()
 try {
   await withBrowser(async (browser) => {
-    const page = await browser.newPage()
+    const page = await coldSafePage(browser)
     await page.addInitScript(INSTRUMENT)
 
     await page.goto(APP, { waitUntil: 'load' })
@@ -304,7 +304,7 @@ try {
       await page.evaluate(() => {
         location.hash = '#/earth'
       })
-      await page.waitForSelector('.earth-canvas canvas', { timeout: 20000 })
+      await page.waitForSelector('.earth-canvas canvas', { timeout: COLD_READY_TIMEOUT })
       await settle(page, 3000)
       const beforeLoss = await readLive(page)
       notes.push(`before loss:    earthCanvas=${beforeLoss.earthCanvas} canvases=${beforeLoss.domCanvases} contexts=${beforeLoss.contexts}`)
@@ -373,7 +373,7 @@ try {
       // must be installed before the view mounts. The wait is separated from it
       // so it can still be the race-free one goView uses - and it only needs the
       // node to exist, not to be laid out.
-      await page.waitForFunction(() => !!document.querySelector('.earth-view'), null, { timeout: 45000 })
+      await page.waitForFunction(() => !!document.querySelector('.earth-view'), null, { timeout: COLD_READY_TIMEOUT })
       const duringLoad = await readLive(page)
       await settle(page, 7000)
       const afterLoad = await readLive(page)
@@ -417,7 +417,7 @@ try {
   // it was a branch nothing tested.
   // ==========================================================================
   await withBrowser(async (browser) => {
-    const page = await browser.newPage()
+    const page = await coldSafePage(browser)
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.addInitScript(INSTRUMENT)
     await page.goto(APP, { waitUntil: 'load' })
@@ -485,7 +485,7 @@ try {
   // ours to test.
   // ==========================================================================
   await withBrowser(async (browser) => {
-    const page = await browser.newPage()
+    const page = await coldSafePage(browser)
     await page.addInitScript(INSTRUMENT)
     await page.goto(APP, { waitUntil: 'load' })
     await settle(page, 2500)
@@ -507,7 +507,7 @@ try {
     await page.evaluate(() => {
       location.hash = '#/earth'
     })
-    await page.waitForSelector('.earth-canvas canvas', { timeout: 20000 })
+    await page.waitForSelector('.earth-canvas canvas', { timeout: COLD_READY_TIMEOUT })
     await settle(page, 3000)
     const base = await readLive(page)
     notes.push(`visibility: on earth rafArmed=${base.rafArmed}`)
@@ -558,7 +558,7 @@ try {
   // with WebGL blocked or unavailable every visit takes it.
   // ==========================================================================
   await withBrowser(async (browser) => {
-    const page = await browser.newPage()
+    const page = await coldSafePage(browser)
     await page.addInitScript(INSTRUMENT)
     // Installed after the instrumentation so it wraps the counting getContext,
     // and scopes to the probe only by refusing every webgl2 request.
