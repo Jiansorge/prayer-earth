@@ -97,6 +97,33 @@ Every prayer in this library is curated with care:
 
 ## Deployment
 
+There are two deployments and they share one build directory, which is the
+single most confusing thing about shipping this app. `dist/` is written by both:
+
+```
+npm run build        (web)     -> staged into ../sync-engine/public -> Cloudflare Worker
+npm run build:release (Android) -> dist -> npx cap sync android -> gradlew bundleRelease -> Play
+```
+
+**A web deploy rewrites `dist/`.** After one, `npm run check:android:sync` reports
+that `dist/` and the packaged Android assets are different builds — correctly, and
+it is Gradle that will refuse the next Android build. Re-run
+`npm run build:release && npx cap sync android` before building the AAB again.
+
+The gates, in order, and what each one exists to catch:
+
+| gate | catches |
+|---|---|
+| `npm run check:android:sync` | `npx cap sync android` was skipped; Gradle would package stale web assets |
+| Gradle `preBuild` | the same thing, at build time, so no APK is produced |
+| `npm run test:android:assets` | manifest permissions, missing chunks, wrong sync endpoint |
+| `npm run verify:aab` | opens the AAB and reads it — the only gate that inspects the artifact |
+| `npm run verify:aab-tamper` | that `verify:aab` still fails when it should |
+
+`[RELEASE.md](RELEASE.md)` is the release guide: the full Android/Play sequence,
+the toolchain requirements (JDK, which `gh` account to push as), and what each
+check proves.
+
 The app and the sync engine ship together from `sync-engine`:
 
 ```bash

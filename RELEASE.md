@@ -4,6 +4,53 @@ The app builds and is release-ready from the code side. `assembleRelease` succee
 (with a debug-signing fallback). Publishing needs three things that only you can
 provide, because they are secrets/accounts:
 
+## 0. The pipeline, and the one thing that bites
+
+There are **two builds of the same app** and they both write to `dist/`:
+
+| target | command | what it becomes |
+|---|---|---|
+| the web | `npm run build` (with `VITE_SYNC_ENGINE=cf`) | staged into `sync-engine/public/` and served by the Cloudflare Worker |
+| Android | `npm run build:release` (hooks forced **off**) | `npx cap sync android` → `gradlew bundleRelease` → the AAB |
+
+**Deploying the web app rewrites `dist/`.** After a deploy, `dist/` is a different
+build from the one in `android/app/src/main/assets/public`, and `npm run
+check:android:sync` will say so — correctly. That is not a bug to work around; it
+is the gate telling you the next Gradle build would package stale web assets.
+Re-run `npm run build:release && npx cap sync android` before building again.
+
+Practical consequence: **build and upload the AAB either before or after a web
+deploy, not wedged between two of them.**
+
+### Gates, and which one catches what
+
+| gate | runs | catches |
+|---|---|---|
+| `audit-build.mjs` | inside `build:release` | test hooks in the bundle; unminified source |
+| `checkWebAssetsInSync` (Gradle `preBuild`) | every Gradle build | packaged web assets ≠ `dist/` — the silent-staleness bug |
+| `test-android-assets.mjs` | CI + before a release | manifest permissions, missing chunks, wrong sync endpoint |
+| `verify:aab` | immediately before upload | **opens the AAB** and reads it |
+| `verify-aab-tamper.mjs` | any time | that `verify:aab` still goes red when it should |
+
+`verify:aab` is the only one that reads the artifact. It compares every packaged
+file byte-for-byte against what is inside the bundle and reports `index.html`'s
+sha256, because `index.html` names the entry chunk by content hash — matching it
+is what ties the bundle to a specific build rather than to "whatever was around".
+A stale bundle can be correctly signed, correctly versioned, hook-free and not
+debuggable, and still be last week's app.
+
+### Toolchain notes that are not guessable
+
+- **Gradle needs JDK 11+.** The repo does not pin one, so it comes from
+  `org.gradle.java.home` in your **user-level** `~/.gradle/gradle.properties`,
+  never from `JAVA_HOME` — `JAVA_HOME` is read by every Java program on the
+  machine, and changing it for Gradle's benefit is how a working Tomcat silently
+  starts on the wrong JVM. If Gradle says *"requires at least JVM runtime
+  version 11"* or *"Unsupported class file major version 69"*, that property is
+  missing or pointing at a JDK Gradle cannot use.
+- **Pushing needs the account that owns the repo.** `gh auth switch --user Jiansorge`
+  before `git push`. The other account on the machine has pull-only.
+
 ## 1. Create a release keystore (one-time, back it up)
 ```bash
 keytool -genkey -v -keystore release.keystore -alias joining-palms \
@@ -119,8 +166,16 @@ a copy is not a readable source drop. What is in place:
 Neither is a wall. Treat them as a speed bump plus a paper trail.
 
 ## Notes
-- `versionCode 24` / `versionName 1.0.0` in `android/app/build.gradle` — bump the
-  code for every Play upload (it must strictly increase).
+- `versionCode 27` / `versionName 1.0.0` in `android/app/build.gradle` — bump the
+  code for every Play upload (it must strictly increase). `verify:aab` asserts 27
+  against a **hardcoded** "Play has 26"; it cannot read the console, so confirm
+  the real figure there before uploading.
+- Gradle's `aaptOptions.ignoreAssetsPattern` contains a bare `.*`, which drops any
+  asset whose name starts with a dot. That is why `.well-known/security.txt` is in
+  `android/app/src/main/assets/public` but not in the AAB. Harmless today — the
+  Android app is served from the Capacitor origin, and the web deploy publishes
+  the copy that matters — but it is silent, so `verify:aab` names it as a known
+  exclusion and will fail on any second one.
 - The release keystore is the one unrecoverable asset: if it is lost, Play rejects
   every future update of the listing. Back it up in two places, and keep the
   password in a password manager — not only on the machine that built it.
