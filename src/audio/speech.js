@@ -83,6 +83,12 @@ class SpeechEngine {
     // voices cover every prayer), so keep the cloud path off to avoid probing a
     // URL that 404s on every load.
     this.cloud = false
+    // Whether probeCloud has actually run. `this.cloud` alone cannot say: it is
+    // false both before we have asked and after the answer was no, and those
+    // two need different treatment - the first is "unknown", the second is
+    // "do not ask again". Confusing them is what let a prayer with no recording
+    // keep calling a proxy the deploy does not expose.
+    this.cloudProbed = false
     this.cloudCache = new Map()
     this.cloudAudio = null
     this.reverbWetGain = REVERB_WET_GAIN
@@ -109,6 +115,7 @@ class SpeechEngine {
 
   // Ask the server whether the Google TTS proxy is available (once).
   async probeCloud() {
+    this.cloudProbed = true
     try {
       const res = await xhrGetText('/api/tts?text=hi&lang=en')
       this.cloud = res.status === 200
@@ -330,6 +337,14 @@ class SpeechEngine {
         if (staticUrl) {
           url = staticUrl
         } else {
+          // Ask once whether a proxy exists before spending a request on it.
+          // Without this the first phrase of any prayer that has no recording
+          // calls /api/tts blind; where the deploy exposes no such proxy that
+          // is a guaranteed failure, and speakIndex retried it, so the prayer
+          // raced ahead through two dead round-trips per phrase with an audible
+          // blip each time. Probing turns that into a single known answer.
+          if (!this.cloudProbed) await this.probeCloud()
+          if (!this.cloud) return false
           const res = await xhrGet(`/api/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(job.lang)}`)
           if (res.status !== 200) return false
           const blob = new Blob([res.response])
