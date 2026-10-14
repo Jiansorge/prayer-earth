@@ -86,17 +86,23 @@ const newestInput = (dir, acc = { file: '', mtime: 0 }) => {
 
 t('the AAB is newer than the code it bundles', () => {
   const built = fs.statSync(AAB).mtimeMs
-  // Deliberately NOT dist/. dist is an input to the packaging step, not something
-  // the bundle contains, and deploying the web app rebuilds it - so comparing the
-  // bundle against dist reported staleness that did not exist and would have
-  // blocked an upload of a perfectly good artifact. What the bundle actually
-  // contains is android/app/src/main/assets/public, and the check below opens the
-  // bundle and compares that directly.
+  // Neither dist/ nor package.json is an input this check should watch for.
+  //
+  // dist/ is an input to the packaging step and is not in the bundle, and
+  // deploying the web app rebuilds it - so comparing the bundle against dist
+  // reported staleness that did not exist.
+  //
+  // package.json was here because a dependency bump might change the built app.
+  // It also fires for adding an npm script, which changes nothing that gets
+  // packaged: this check went red on a bundle that was still correct, sixteen
+  // minutes after a release build, because a script had been added to the repo.
+  // package-lock.json is the version of that idea which is true - it changes
+  // when dependencies change and not otherwise.
   const inputs = [
     ['src', newestInput(path.join(ROOT, 'src'))],
     ['public', newestInput(path.join(ROOT, 'public'))],
     ['capacitor assets', newestInput(path.join(ROOT, 'android/app/src/main/assets'))],
-    ['package.json', { file: 'package.json', mtime: fs.statSync(path.join(ROOT, 'package.json')).mtimeMs }]
+    ['dependencies', { file: 'package-lock.json', mtime: fs.statSync(path.join(ROOT, 'package-lock.json')).mtimeMs }]
   ]
   const stale = inputs.filter(([, i]) => i.mtime > built)
   if (stale.length) {
