@@ -112,6 +112,45 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
+// Gradle packages whatever is sitting in android/app/src/main/assets/public and
+// has no idea that `npx cap sync android` is what puts it there. Skip that step
+// and the build reports BUILD SUCCESSFUL while shipping an older web app, which
+// is not hypothetical: a green Gradle run packaged web assets two days old, and
+// the only reason it was noticed was opening the APK and comparing a chunk hash.
+// Every other signal agreed with the build - the merged manifest was right, the
+// app installed, it launched.
+//
+// So the staleness check runs inside the build rather than beside it. If the
+// packaged web app is not the web app in dist/, no APK is produced at all, and
+// the reason is printed instead of being summarised as BUILD SUCCESSFUL.
+def webAssetsSyncScript = file("${rootProject.projectDir.parentFile}/scripts/check-android-sync.mjs")
+
+tasks.register('checkWebAssetsInSync', Exec) {
+    group = 'verification'
+    description = 'Refuse to package a web app that is not the one in dist/.'
+    workingDir rootProject.projectDir.parentFile
+    commandLine 'node', webAssetsSyncScript.absolutePath
+    doFirst {
+        def exe = System.getProperty('os.name').toLowerCase().contains('windows') ? 'node.exe' : 'node'
+        def onPath = (System.getenv('PATH') ?: '')
+            .split(File.pathSeparator)
+            .any { new File(it as String, exe).exists() }
+        if (!onPath) {
+            throw new GradleException(
+                "\nCannot verify that the packaged web assets are current: `node` is not on PATH.\n" +
+                "This build refuses to package assets that might be stale, which is how two-day-old\n" +
+                "web code shipped inside a successful Gradle build.\n" +
+                "Either put node on PATH, or run the check yourself:\n" +
+                "  node ${webAssetsSyncScript.absolutePath}\n"
+            )
+        }
+    }
+}
+
+tasks.matching { it.name == 'preBuild' }.configureEach {
+    dependsOn 'checkWebAssetsInSync'
+}
+
 try {
     def servicesJSON = file('google-services.json')
     if (servicesJSON.text) {

@@ -13,6 +13,7 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { compareWebAssets } from './check-android-sync.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const AAB = path.join(ROOT, 'android/app/build/outputs/bundle/release/app-release.aab')
@@ -71,6 +72,7 @@ t('the AAB is newer than the code it bundles', () => {
   const inputs = [
     ['src', newestInput(path.join(ROOT, 'src'))],
     ['public', newestInput(path.join(ROOT, 'public'))],
+    ['the built web app (dist)', newestInput(path.join(ROOT, 'dist'))],
     ['capacitor assets', newestInput(path.join(ROOT, 'android/app/src/main/assets'))],
     ['package.json', { file: 'package.json', mtime: fs.statSync(path.join(ROOT, 'package.json')).mtimeMs }]
   ]
@@ -83,6 +85,17 @@ t('the AAB is newer than the code it bundles', () => {
     )
   }
   return `built ${new Date(built).toISOString()}`
+})
+
+// Gradle fails on this now, so it should not be possible to reach upload with a
+// stale package - but this file is what someone runs immediately before handing
+// the bundle to Play, and it is the last thing that can still say no. A stale
+// bundle can be internally perfect: right signature, right versionCode, no test
+// hooks, not debuggable, and still be yesterday's app.
+t('the packaged web assets are the web app in dist/', () => {
+  const sync = compareWebAssets()
+  if (!sync.ok) throw new Error(sync.reason)
+  return `${sync.files} files match`
 })
 
 // An AAB is a zip. Reading it needs no external tooling.

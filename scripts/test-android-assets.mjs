@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { compareWebAssets } from './check-android-sync.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const DIST = path.join(ROOT, 'dist')
@@ -9,7 +10,10 @@ const ANDROID_APP_BUILD = path.join(ROOT, 'android', 'app', 'build')
 let failures = 0
 
 const check = (name, condition, detail = '') => {
-  console.log(`[android-assets] ${condition ? 'PASS' : 'FAIL'} ${name}${detail ? ` (${detail})` : ''}`)
+  // A detail that runs to several lines is a finding with a fix in it, so it gets
+  // its own lines rather than being crammed into the parentheses.
+  const tail = !detail ? '' : /[\r\n]/.test(detail) ? `\n        ${detail}` : ` (${detail})`
+  console.log(`[android-assets] ${condition ? 'PASS' : 'FAIL'} ${name}${tail}`)
   if (!condition) failures++
 }
 
@@ -33,10 +37,15 @@ const required = [
 check('dist and Android shell files exist', required.every((file) => existsSync(file)), required.filter((file) => !existsSync(file)).join(', '))
 
 if (required.every((file) => existsSync(file))) {
+  // The whole tree, not just index.html. `npx cap sync android` is the only
+  // thing that copies dist/ into the packaged assets, and when it is skipped the
+  // old JavaScript still sits there happily - index.html can match while every
+  // hashed chunk is from a previous build. Gradle reports BUILD SUCCESSFUL
+  // either way, so this is the only place the staleness is visible.
+  const sync = compareWebAssets()
+  check('the packaged web app is the web app in dist/', sync.ok, sync.ok ? `${sync.files} files` : sync.reason)
+
   const distHtml = readFileSync(path.join(DIST, 'index.html'), 'utf8')
-  const androidHtml = readFileSync(path.join(ANDROID_PUBLIC, 'index.html'), 'utf8')
-  check('Android index matches the built index', distHtml === androidHtml)
-  check('service worker matches the built service worker', readFileSync(path.join(DIST, 'sw.js'), 'utf8') === readFileSync(path.join(ANDROID_PUBLIC, 'sw.js'), 'utf8'))
   check('entry CSS is inlined', !/<link[^>]*rel=["']stylesheet["']/i.test(distHtml) && /<style>[\s\S]*--bg-0/.test(distHtml))
 
   const assetRefs = new Set()
