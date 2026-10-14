@@ -11,13 +11,22 @@
 //   - the wrong bundle id
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
+import { existsSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { compareWebAssets } from './check-android-sync.mjs'
+import { createHash } from 'node:crypto'
+import { readZipDirectory, readZipFile } from './lib/zip.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const AAB = path.join(ROOT, 'android/app/build/outputs/bundle/release/app-release.aab')
+// Overridable so this can be pointed at a tampered copy and watched to fail.
+// A check that has only ever been seen green has not been shown to work.
+const AAB = process.env.AAB_PATH
+  ? path.resolve(process.env.AAB_PATH)
+  : path.join(ROOT, 'android/app/build/outputs/bundle/release/app-release.aab')
 const EXPECTED_APPLICATION_ID = 'app.joiningpalms'
+
+// An AAB is a zip. Reading it needs no external tooling.
+const buf = fs.readFileSync(AAB)
 
 let fail = 0
 const t = (name, fn) => {
@@ -50,14 +59,22 @@ t('the AAB exists', () => {
 //
 // Anything under these paths ends up inside the APK, so if one of them is newer
 // than the bundle, the bundle cannot contain it.
+// The legal pages are generated from src/locales by scripts/build-legal.mjs and
+// are gitignored, so their mtime is whenever somebody last ran a build rather
+// than when their content last changed. Counting them made this check report a
+// stale bundle after an unrelated web deploy regenerated them. src/ is the real
+// input and is already scanned.
+const GENERATED = new Set(['privacy.html', 'terms.html', 'delete-data.html'])
+
 const newestInput = (dir, acc = { file: '', mtime: 0 }) => {
-  if (!fs.existsSync(dir)) return acc
-  for (const name of fs.readdirSync(dir, { withFileTypes: true })) {
+  if (!existsSync(dir)) return acc
+  for (const name of readdirSync(dir, { withFileTypes: true })) {
     if (name.name === 'node_modules' || name.name.startsWith('.')) continue
+    if (GENERATED.has(name.name)) continue
     const full = path.join(dir, name.name)
     if (name.isDirectory()) newestInput(full, acc)
     else {
-      const { mtimeMs } = fs.statSync(full)
+      const { mtimeMs } = statSync(full)
       if (mtimeMs > acc.mtime) {
         acc.mtime = mtimeMs
         acc.file = path.relative(ROOT, full)
@@ -69,10 +86,15 @@ const newestInput = (dir, acc = { file: '', mtime: 0 }) => {
 
 t('the AAB is newer than the code it bundles', () => {
   const built = fs.statSync(AAB).mtimeMs
+  // Deliberately NOT dist/. dist is an input to the packaging step, not something
+  // the bundle contains, and deploying the web app rebuilds it - so comparing the
+  // bundle against dist reported staleness that did not exist and would have
+  // blocked an upload of a perfectly good artifact. What the bundle actually
+  // contains is android/app/src/main/assets/public, and the check below opens the
+  // bundle and compares that directly.
   const inputs = [
     ['src', newestInput(path.join(ROOT, 'src'))],
     ['public', newestInput(path.join(ROOT, 'public'))],
-    ['the built web app (dist)', newestInput(path.join(ROOT, 'dist'))],
     ['capacitor assets', newestInput(path.join(ROOT, 'android/app/src/main/assets'))],
     ['package.json', { file: 'package.json', mtime: fs.statSync(path.join(ROOT, 'package.json')).mtimeMs }]
   ]
@@ -87,19 +109,91 @@ t('the AAB is newer than the code it bundles', () => {
   return `built ${new Date(built).toISOString()}`
 })
 
-// Gradle fails on this now, so it should not be possible to reach upload with a
-// stale package - but this file is what someone runs immediately before handing
-// the bundle to Play, and it is the last thing that can still say no. A stale
-// bundle can be internally perfect: right signature, right versionCode, no test
-// hooks, not debuggable, and still be yesterday's app.
-t('the packaged web assets are the web app in dist/', () => {
-  const sync = compareWebAssets()
-  if (!sync.ok) throw new Error(sync.reason)
-  return `${sync.files} files match`
+// Open the bundle and read what is actually in it.
+//
+// Everything above is an argument about timestamps and configuration. This is the
+// only check here that looks at the artifact itself, and it is the one that
+// matters: an AAB can be correctly signed, correctly versioned, free of test
+// hooks and not debuggable, and still contain yesterday's web app. The failure
+// this repo hit was exactly that - a green build packaging web assets two days
+// old, found by opening the APK and comparing a chunk hash.
+//
+// The comparison target is android/app/src/main/assets/public, because that is
+// what gets packaged. Comparing against dist/ looked stronger and was not: it
+// checks that an input still matches, which says nothing about what the packager
+// did with it.
+t('the bundle contains the web app that was packaged', () => {
+  const PACKAGED = path.join(ROOT, 'android/app/src/main/assets/public')
+  const PREFIX = 'base/assets/public/'
+  const directory = readZipDirectory(buf)
+
+  const inBundle = new Map()
+  for (const e of directory) {
+    if (e.name.startsWith(PREFIX) && !e.name.endsWith('/')) inBundle.set(e.name, e)
+  }
+  const onDisk = []
+  const walk = (dir, rel = '') => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name)
+      if (entry.isDirectory()) walk(full, `${rel}${entry.name}/`)
+      else onDisk.push({ full, rel: `${rel}${entry.name}` })
+    }
+  }
+  walk(PACKAGED)
+
+  // Known-and-explained exclusions. android/app/build.gradle sets
+  // `aaptOptions.ignoreAssetsPattern = '!.svn:!.git:...:.*:...'`, and that `.*`
+  // entry drops anything whose name starts with a dot - so `.well-known/`
+  // never reaches the bundle. Recorded rather than worked around, so a second
+  // silent exclusion still fails this check. Nothing is lost by it: security.txt
+  // is a web-origin document and the Android app is served from the Capacitor
+  // origin (https://localhost), so the copy that matters is the one the web
+  // deploy publishes.
+  const AAPT_DROPS = new Set(['.well-known/security.txt'])
+
+  const missing = []
+  const differing = []
+  const knownDropped = []
+  let bytes = 0
+  for (const f of onDisk) {
+    const entry = inBundle.get(PREFIX + f.rel)
+    if (!entry) {
+      if (AAPT_DROPS.has(f.rel)) knownDropped.push(f.rel)
+      else missing.push(f.rel)
+      continue
+    }
+    const inside = readZipFile(buf, directory, entry.name)
+    const disk = fs.readFileSync(f.full)
+    bytes += disk.length
+    if (!inside.equals(disk)) differing.push(f.rel)
+  }
+  const bundledRel = new Set([...inBundle.keys()].map((k) => k.slice(PREFIX.length)))
+  const extra = [...bundledRel].filter((f) => !onDisk.some((d) => d.rel === f))
+
+  if (missing.length || differing.length || extra.length) {
+    const parts = []
+    if (missing.length) parts.push(`${missing.length} packaged file(s) absent from the bundle (e.g. ${missing.slice(0, 3).join(', ')})`)
+    if (differing.length) parts.push(`${differing.length} packaged file(s) differ inside the bundle (e.g. ${differing.slice(0, 3).join(', ')})`)
+    if (extra.length) parts.push(`${extra.length} file(s) in the bundle that were not packaged (e.g. ${extra.slice(0, 3).join(', ')})`)
+    throw new Error(
+      `the bundle does not contain the web app that was packaged:\n        ` +
+      parts.join('\n        ') +
+      `\n        The bundle is internally consistent but is not this build.` +
+      `\n        Fix: npm run build:release && npx cap sync android && gradlew -p android bundleRelease`
+    )
+  }
+  // index.html is the one file that names the build: it references the entry
+  // chunk by content hash, so matching it byte for byte is what ties the bundle
+  // to a specific build rather than to "whatever was around".
+  const hash = createHash('sha256')
+    .update(readZipFile(buf, directory, PREFIX + 'index.html'))
+    .digest('hex')
+    .slice(0, 16)
+  const chunks = [...bundledRel].filter((f) => f.endsWith('.js')).length
+  const dropped = knownDropped.length ? `; ${knownDropped.length} known AAPT exclusion(s): ${knownDropped.join(', ')}` : ''
+  return `${bundledRel.size} files, ${chunks} js chunks, ${(bytes / 1048576).toFixed(1)} MB; index.html sha256:${hash}…${dropped}`
 })
 
-// An AAB is a zip. Reading it needs no external tooling.
-const buf = fs.readFileSync(AAB)
 // Locate the BundleConfig.pb by scanning for the application id string, which
 // is stored uncompressed in the proto's string table.
 t('the application id is correct', () => {

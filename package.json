@@ -56,6 +56,7 @@
     "store:listing": "node scripts/store-listing.mjs",
     "build:play-translations": "node scripts/build-play-translations.mjs",
     "verify:aab-guard": "node scripts/verify-aab-guard.mjs",
+    "verify:aab-tamper": "node scripts/verify-aab-tamper.mjs",
     "check:android:sync": "node scripts/check-android-sync.mjs",
     "profile:scroll": "node scripts/profile-scroll.mjs"
   },
