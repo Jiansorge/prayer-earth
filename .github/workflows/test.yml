@@ -319,11 +319,21 @@ jobs:
       # emulator never booting. That is Google's CDN failing, not the app, and
       # it was the cause of a red run on c17c014 where every test passed.
       #
-      # Installing it here - where a retry is possible - means the emulator
-      # action finds it already on disk instead of fetching it once and hoping.
-      # A partial download is removed between attempts, since leaving it is
-      # what makes the next attempt fail the same way.
+      # Cached rather than only retried. Retrying survives a bad fetch but still
+      # pays for the download on every run - ~65 seconds of it, by the timings
+      # in this file. On a cache hit the install step is skipped entirely, so
+      # the image is fetched once and never again until the API level changes.
+      - name: Cache emulator system image
+        id: sysimg-cache
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/lib/android/sdk/system-images/android-35/default/x86_64
+          key: android-sysimg-35-default-x86_64
+      # Where it does have to download, a partial download is removed between
+      # attempts - leaving it in place is what makes the next attempt fail the
+      # same way.
       - name: Install emulator system image (retried)
+        if: steps.sysimg-cache.outputs.cache-hit != 'true'
         run: |
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           [ -x "$SDKMANAGER" ] || SDKMANAGER="$(command -v sdkmanager)"
