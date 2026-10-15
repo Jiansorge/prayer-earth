@@ -64,7 +64,18 @@ t('the AAB exists', () => {
 // than when their content last changed. Counting them made this check report a
 // stale bundle after an unrelated web deploy regenerated them. src/ is the real
 // input and is already scanned.
-const GENERATED = new Set(['privacy.html', 'terms.html', 'delete-data.html'])
+//
+// `public` (under android/app/src/main/assets) is excluded for the same reason
+// and it matters more: `npx cap sync android` rewrites capacitor.js and
+// cordova_plugins.js with a fresh mtime on every run even when the bytes are
+// identical, so a sync alone - with no rebuild - tripped this gate. It is also
+// fully redundant here: the byte-for-byte comparison below walks that same
+// directory and checks every file against the bundle, which catches a genuinely
+// stale or missing sync and catches it better, because it compares content
+// rather than when the file was last touched. An input that is already verified
+// by content should not also gate on mtime; that is how a bundle which was
+// byte-for-byte identical to a good one was reported as DO NOT UPLOAD.
+const GENERATED = new Set(['privacy.html', 'terms.html', 'delete-data.html', 'public'])
 
 const newestInput = (dir, acc = { file: '', mtime: 0 }) => {
   if (!existsSync(dir)) return acc
