@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-28T03:31:22.671Z",
+  "generated": "2026-10-15T15:18:59.851Z",
   "prayers": {
     "lords-prayer": {
       "lang": "en",
@@ -368,14 +368,6 @@
         "en-IN-PrabhatNeural",
         "en-IN-NeerjaNeural",
         "en-IE-ConnorNeural"
-      ],
-      "phrases": 4
-    },
-    "great-compassion": {
-      "lang": "hi",
-      "voices": [
-        "hi-IN-SwaraNeural",
-        "hi-IN-MadhurNeural"
       ],
       "phrases": 4
     },

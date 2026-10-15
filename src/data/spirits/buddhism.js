@@ -295,15 +295,111 @@ export default   {
       {
         id: 'great-compassion',
         title: 'The Great Compassion Dhāraṇī',
-        lang: 'sa',
-        langLabel: 'संस्कृतम् · Sanskrit',
+        lang: 'zh',
+        langLabel: '中文 · Chinese',
+        // The Great Compassion Dhāraṇī is the Chinese 大悲咒, the dhāraṇī of the
+        // Thousand-Armed Avalokitesvara from the 大悲心陀羅尼經 (Taishō 1060,
+        // translated by伽梵達摩 in the Tang). What used to sit here was the short
+        // Nīlakaṇṭha dhāraṇī - a different, much shorter text that shares its
+        // opening lines - which meant the app promised the 大悲咒 and shipped
+        // four lines of something else.
+        //
+        // The English is our own rendering, not a published translation: the
+        // dhāraṇī is largely untranslated mantra, so these are glosses of the
+        // sense rather than a line-by-line translation, in the same spirit as
+        // the Thirty-Five Buddhas text. The Chinese is the received text and is
+        // long out of copyright.
+        //
+        // Editions differ in how they divide the dhāraṇī into lines (commonly
+        // counted as 84) and in the characters used for a few phonetic words.
+        // This follows the sequence of the received Chinese text; the divisions
+        // here are one arrangement, not the only correct one.
         phrases: [
-          { t: 'नमो रत्न त्रयाय', s: 'Namo ratna trayāya', e: 'Homage to the Three Jewels.' },
-          { t: 'नमो आर्यावलोकितेश्वराय बोधिसत्त्वाय महासत्त्वाय महाकारुणिकाय', s: 'Namo āryāvalokiteśvarāya bodhisattvāya mahāsattvāya mahākāruṇikāya', e: 'Homage to Avalokitesvara, the great bodhisattva of great compassion.' },
-          { t: 'तद्यथा ॐ तार तार तिरि तिरि तुरु तुरु', s: 'Tadyathā: Om tāra tāra tiri tiri turu turu', e: 'Thus: Om tara tara, tiri tiri, turu turu.' },
-          { t: 'सर सर सिरि सिरि सुरु सुरु बोधिय बोधय मैत्रिय नीलकण्ठ दर्शनेन प्रह्लादय मनः स्वाहा', s: 'Sara sara siri siri suru suru, bodhiya bodhaya maitriya Nīlakaṇṭha, darśanena prahlādaya manaḥ svāhā', e: 'Awaken, awaken, may the sight of the Blue-Necked One gladden the heart, so be it.' }
+          { t: '南無喝囉怛那哆囉夜耶', s: 'Nā mó hè là dá nà duō là yè yē', e: 'Homage to the Three Jewels.' },
+          { t: '南無阿唎耶', s: 'Nā mó ā lì yē', e: 'Homage to the Noble One.' },
+          { t: '婆盧羯帝爍缽囉耶', s: 'Pó lú jié dì shuò bō luó yē', e: 'Avalokitesvara, Lord of the World.' },
+          { t: '菩提薩埵婆耶', s: 'Pú tí sà duǒ pó yē', e: 'Bodhisattva.' },
+          { t: '摩訶薩埵婆耶', s: 'Mó hē sà duǒ pó yē', e: 'Great Bodhisattva.' },
+          { t: '摩訶迦盧尼迦耶', s: 'Mó hē jiā lú ní jiā yē', e: 'The Great Compassionate One.' },
+          { t: '唵', s: 'Ǎn', e: 'Om.' },
+          { t: '薩皤囉罰曳', s: 'Sà pó luó fá yè', e: 'Blessing of the giver of all.' },
+          { t: '數怛那怛寫', s: 'Shù dá nà dá xiě', e: 'Accomplish and reveal.' },
+          { t: '南無悉吉慄埵伊蒙阿唎耶', s: 'Nā mó xī jí lì duǒ yī méng ā lì yē', e: 'Homage to the Glorious One, at ease.' },
+          { t: '婆盧吉帝室佛囉愣馱婆', s: 'Pó lú jí dì shì fó luó lèng tuó pó', e: 'Lord of the World, in the Buddha’s hall.' },
+          { t: '南無那囉謹墀', s: 'Nā mó nà luó jǐn chí', e: 'Homage to Nīlakaṇṭha, the Blue-Necked.' },
+          { t: '醯利摩訶皤哆沙咩', s: 'Xī lì mó hē pó duō shā miē', e: 'Hail, great Lord of abundance.' },
+          { t: '薩婆阿他豆輸朋', s: 'Sà pó ā tā dòu shū péng', e: 'All things are well.' },
+          { t: '阿逝孕', s: 'Ā shì yùn', e: 'Unconquered.' },
+          { t: '薩婆薩哆那摩婆薩哆那摩婆伽', s: 'Sà pó sà duō nà mó pó sà duō nà mó pó qié', e: 'Homage to all beings, and to the assembly.' },
+          { t: '摩罰特豆', s: 'Mó fá tè dòu', e: 'Far from every bondage.' },
+          { t: '怛姪他', s: 'Dá zhí tā', e: 'Thus it is said:' },
+          { t: '唵阿婆盧醯', s: 'Ǎn ā pó lú xī', e: 'Om — the one who gazes on this world.' },
+          { t: '盧迦帝', s: 'Lú jiā dì', e: 'Lord of the realm.' },
+          { t: '迦羅帝', s: 'Jiā luó dì', e: 'Lord of the dance.' },
+          { t: '夷醯唎', s: 'Yí xī lì', e: 'Hail, friend.' },
+          { t: '摩訶菩提薩埵', s: 'Mó hē pú tí sà duǒ', e: 'Great Bodhisattva.' },
+          { t: '薩婆薩婆', s: 'Sà pó sà pó', e: 'All, all.' },
+          { t: '摩囉摩囉', s: 'Mó luó mó luó', e: 'Attachment, attachment.' },
+          { t: '摩醯摩醯唎馱孕', s: 'Mó xī mó xī lì tuó yùn', e: 'The great heart.' },
+          { t: '俱盧俱盧羯蒙', s: 'Jù lú jù lú jié méng', e: 'Act, and act upon this work.' },
+          { t: '度盧度盧罰闍耶帝', s: 'Dù lú dù lú fá shé yé dì', e: 'Stand firm, O victorious one.' },
+          { t: '摩訶罰闍耶帝', s: 'Mó hē fá shé yé dì', e: 'Great victorious one.' },
+          { t: '陀囉陀囉', s: 'Tuó luó tuó luó', e: 'Hold on, hold on.' },
+          { t: '地唎尼', s: 'Dì lì ní', e: 'Total recollection.' },
+          { t: '室佛囉耶', s: 'Shì fó luó yé', e: 'The sovereign one.' },
+          { t: '遮囉遮囉', s: 'Zhē luó zhē luó', e: 'Away, away.' },
+          { t: '麼麼罰摩囉', s: 'Me me fá mó luó', e: 'This impure self, dissolved.' },
+          { t: '穆帝隸', s: 'Mù dì lì', e: 'Liberation.' },
+          { t: '伊醯伊醯', s: 'Yī xī yī xī', e: 'Come, come.' },
+          { t: '室那室那', s: 'Shì nà shì nà', e: 'Room, room.' },
+          { t: '阿囉參佛囉舍利', s: 'Ā luó shēn fó luó shè lì', e: 'The worthy things spread and are shared.' },
+          { t: '罰沙罰參', s: 'Fá shā fá shēn', e: 'Fill the world, fill the world.' },
+          { t: '佛囉舍耶', s: 'Fó luó shè yé', e: 'Conquest.' },
+          { t: '呼嚧呼嚧摩囉', s: 'Hū lú hū lú mó luó', e: 'Hu lu hu lu — and be gone.' },
+          { t: '呼嚧呼嚧醯利', s: 'Hū lú hū lú xī lì', e: 'Hu lu hu lu — friend.' },
+          { t: '娑囉娑囉', s: 'Suō luó suō luó', e: 'Flow, flow.' },
+          { t: '悉唎悉唎', s: 'Xī lì xī lì', e: 'Piercing, piercing.' },
+          { t: '蘇嚧蘇嚧', s: 'Sū lú sū lú', e: 'Rising, rising.' },
+          { t: '菩提夜菩提夜', s: 'Pú tí yè pú tí yè', e: 'Awake, awake.' },
+          { t: '菩馱夜菩馱夜', s: 'Pú tuó yè pú tuó yè', e: 'Be awakened, be awakened.' },
+          { t: '彌帝唎夜', s: 'Mí dì lì yè', e: 'The merciful one.' },
+          { t: '那囉謹墀', s: 'Nà luó jǐn chí', e: 'Nīlakaṇṭha, the Blue-Necked.' },
+          { t: '地利瑟尼那', s: 'Dì lì sè ní nà', e: 'The valiant one.' },
+          { t: '波夜摩那', s: 'Bō yè mó nà', e: 'Awe-inspiring heart.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' },
+          { t: '悉陀夜', s: 'Xī tuó yè', e: 'The accomplished one.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' },
+          { t: '摩訶悉陀夜', s: 'Mó hē xī tuó yè', e: 'The great accomplished one.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' },
+          { t: '悉陀喻藝', s: 'Xī tuó yù yì', e: 'Accomplished in yoga, at ease.' },
+          { t: '室皤囉耶', s: 'Shì pó luó yé', e: 'The sovereign one.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' },
+          { t: '那囉謹墀', s: 'Nà luó jǐn chí', e: 'Nīlakaṇṭha, the Blue-Necked.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' },
+          { t: '摩囉那囉', s: 'Mó luó nà luó', e: 'The destroyer.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' },
+          { t: '悉囉僧阿穆佉耶', s: 'Xī luó sēng ā mù qié yé', e: 'Bearing the lion’s face.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' },
+          { t: '娑婆摩訶阿悉陀夜', s: 'Suō pó mó hē ā xī tuó yè', e: 'All great accomplishment.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' },
+          { t: '者吉囉阿悉陀夜', s: 'Zhě jí luó ā xī tuó yè', e: 'Accomplishment of the wheel of Dharma.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' },
+          { t: '波陀摩羯悉陀夜', s: 'Bō tuó mó jié xī tuó yè', e: 'Holding the lotus, accomplished.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' },
+          { t: '那囉謹墀皤伽囉耶', s: 'Nà luó jǐn chí pó qié luó yé', e: 'Nīlakaṇṭha and his attendant.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' },
+          { t: '摩婆利勝羯囉夜', s: 'Mó pó lì shèng jié luó yè', e: 'The countless conch.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' },
+          { t: '南無喝囉怛那哆囉夜耶', s: 'Nā mó hè là dá nà duō là yè yē', e: 'Homage to the Three Jewels.' },
+          { t: '南無阿唎耶', s: 'Nā mó ā lì yē', e: 'Homage to the Noble One.' },
+          { t: '婆嚧吉帝爍皤囉夜', s: 'Pó lú jí dì shuò pó luó yè', e: 'Lord of the World, homage.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' },
+          { t: '唵悉殿都', s: 'Ǎn xī diàn dū', e: 'Om — accomplished.' },
+          { t: '漫多囉', s: 'Màn duō luó', e: 'The mantra.' },
+          { t: '跋陀耶', s: 'Bá tuó yé', e: 'The words.' },
+          { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' }
         ],
-        translation: 'The short Nīlakaṇṭha Dhāraṇī, the great compassion of Avalokitesvara, protector of all who call on it.'
+        translation: 'The Great Compassion Dhāraṇī, the 大悲咒 of the Thousand-Armed Avalokitesvara, from the 大悲心陀羅尼經 (Sutra of the Dharani of the Great Compassion Heart of the Thousand-Armed, Thousand-Eyed Avalokitesvara), Taishō 1060, translated in the Tang. It is the dhāraṇī most often recited in Chinese Buddhism. Most of it is mantra rather than translatable speech, so the English lines here are glosses of the sense — our own, not a published translation — and the Chinese is the received text, long out of copyright. Editions differ in line divisions and in the characters used for a few phonetic words; this follows one common arrangement.'
       },
       {
         id: 'refuges',
