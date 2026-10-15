@@ -74,23 +74,34 @@ const STEPS = [
 const results = []
 const started = Date.now()
 for (const step of STEPS) {
+  const stepStarted = Date.now()
   const r = spawnSync(process.execPath, [step], { cwd: ROOT, encoding: 'utf8' })
   const out = `${r.stdout || ''}${r.stderr || ''}`
   const lines = out.split('\n').filter((l) => l.trim())
   results.push({
     step,
+    // A step killed before it could exit reports status null; that is a crash
+    // rather than a failure, and must not read as a pass.
     code: r.status === null ? 1 : r.status,
     tail: (lines[lines.length - 1] || '').trim(),
-    failures: out.split('\n').filter((l) => l.startsWith('FAIL'))
+    failures: out.split('\n').filter((l) => l.startsWith('FAIL')),
+    secs: (Date.now() - stepStarted) / 1000
   })
 }
 
 const secs = ((Date.now() - started) / 1000).toFixed(0)
 for (const r of results) {
   const mark = r.code === 0 ? 'pass' : 'FAIL'
-  console.log(`${mark}  ${r.step.padEnd(42)} ${r.tail}`)
+  console.log(`${mark}  ${r.step.padEnd(42)} ${r.secs.toFixed(0).padStart(4)}s  ${r.tail}`)
   if (r.code !== 0) r.failures.forEach((f) => console.log(`        ${f.trim()}`))
 }
+
+// Which step actually cost the time. The total alone cannot say, and every
+// suite here is a browser launch with its own dev server, so a regression
+// hides inside an unchanged-looking total.
+const slowest = [...results].sort((a, b) => b.secs - a.secs).slice(0, 3)
+console.log('')
+console.log(`slowest: ${slowest.map((r) => `${r.step.replace('scripts/', '')} ${r.secs.toFixed(0)}s`).join(', ')}`)
 
 const failed = results.filter((r) => r.code !== 0)
 console.log('')

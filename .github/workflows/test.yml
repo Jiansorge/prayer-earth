@@ -10,16 +10,33 @@ on:
   # can go green without shipping anything.
   workflow_dispatch:
 
+# Serialize runs per branch rather than letting them overlap.
+#
+# Two pushes in quick succession used to run at once, and both could reach
+# deploy-dispatch. Each sends its own dispatch to sync-engine, and those are
+# processed independently - so the older commit's deploy could land after the
+# newer one's and quietly put production back on the previous commit. A red
+# or green tick would still be true, just about a deployment that is no longer
+# the newest.
+#
+# Queuing rather than cancelling is deliberate. cancel-in-progress would free
+# the runner, but a run cancelled inside deploy-dispatch has already handed its
+# commit to sync-engine, which carries on regardless - so it would not stop the
+# race, only hide it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 # Shape of this file, and why.
 #
-# The wall-clock cost of this workflow is almost entirely the five browser
-# suites. They used to be sequential steps in one job: 356 seconds of browser
-# time inside a 413 second job, while twenty static audits finished in 13 and
-# the build finished in 4. Running them one after another bought nothing -
-# each suite drives its own Chromium against its own copy of dist/ and shares
-# no state with the others - so they are now a matrix, and the slowest suite
-# alone sets the duration. That, plus caching the Chromium download, is what
-# makes this file fast.
+# The wall-clock cost of this workflow is almost entirely the browser suites.
+# They used to be sequential steps in one job: 356 seconds of browser time
+# inside a 413 second job, while twenty static audits finished in 13 and the
+# build finished in 4. Running them one after another bought nothing - each
+# suite drives its own Chromium against its own copy of dist/ and shares no
+# state with the others - so they are now a matrix, and the slowest suite alone
+# sets the duration. That, plus caching the Chromium download, is what makes
+# this file fast.
 #
 # `deploy-dispatch` is what turns a green run into a production deploy, so
 # every job that gates it must be named in its `needs`.
@@ -171,8 +188,27 @@ jobs:
       # lifecycle" would label the a11y and settings jobs with the wrong
       # description, which is a small lie in exactly the place you look when
       # something is red.
+      #
+      # The tail of each suite carries its pass count and wall-clock seconds, so
+      # it is also copied into the job summary. Without this the only place a
+      # suite's duration exists is inside a log file nobody opens on a green run,
+      # which is exactly when a suite quietly getting slower goes unnoticed.
       - name: ${{ matrix.suite }}
-        run: node scripts/${{ matrix.suite }}.mjs
+        run: |
+          set -o pipefail
+          node scripts/${{ matrix.suite }}.mjs 2>&1 | tee "$RUNNER_TEMP/suite.log"
+      - name: Suite summary
+        if: always()
+        env:
+          SUITE: ${{ matrix.suite }}
+        run: |
+          {
+            echo "### ${SUITE}"
+            echo ""
+            echo '```'
+            tail -n 25 "$RUNNER_TEMP/suite.log" 2>/dev/null || echo "no output captured"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   usage:
     runs-on: ubuntu-latest
