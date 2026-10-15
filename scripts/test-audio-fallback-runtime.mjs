@@ -62,7 +62,12 @@ const FAKE_SYNTH = `
     voices: [],
     behaviour: 'normal',
     spoken: 0,
-    cancelled: 0
+    cancelled: 0,
+    // What each utterance actually carried. The fallback decision is not the
+    // only thing worth proving - a prayer can reach a voice and still have it
+    // read the wrong field, which is how a Chinese prayer ends up with its
+    // pinyin read aloud in an English accent.
+    texts: []
   }
   window.__tts = cfg
   class FakeUtterance {
@@ -82,6 +87,7 @@ const FAKE_SYNTH = `
     getVoices: () => cfg.voices,
     speak(u) {
       cfg.spoken++
+      cfg.texts.push({ text: u.text, lang: u.lang, voice: u.voice ? u.voice.voiceURI : null })
       switch (cfg.behaviour) {
         case 'silent':
           return                      // never starts, never ends, never errors
@@ -129,7 +135,7 @@ window.__run = async (opts) => {
   const { useStore } = await import('/src/store.js')
   // Absent on the no-engine page, where there is no synth to configure and the
   // spoken counters simply stay at zero.
-  const cfg = window.__tts || { voices: [], behaviour: 'normal', spoken: 0, cancelled: 0 }
+  const cfg = window.__tts || { voices: [], behaviour: 'normal', spoken: 0, cancelled: 0, texts: [] }
 
   // Count the audible chant. Patching the module the engine already imported is
   // the difference between proving the room hears something and proving a flag
@@ -148,26 +154,50 @@ window.__run = async (opts) => {
   cfg.behaviour = opts.behaviour || 'normal'
   cfg.spoken = 0
   cfg.cancelled = 0
+  cfg.texts = []
   // The engine caches its voice list and only re-reads it on voiceschanged.
   // Without this the previous scenario's empty list (and the voiceDead flag it
   // set) decide the next one.
   speech.refreshVoices()
   useStore.setState({ voiceURI: opts.voiceURI || '', speechRate: 1 })
 
+  // Synthetic phrases by default. opts.realPrayer instead drives the shipped
+  // entry, so a scenario can cover a configuration no fixture reproduces -
+  // most importantly speakLang, which is set on the prayer object by the page
+  // and has to survive all the way to the utterance.
+  let phrases = opts.phrases
+  let lang = opts.lang || 'sa'
+  let speakLang = opts.speakLang || null
+  let prayerId = opts.prayerId
+  if (opts.realPrayer) {
+    const { loadSpirit } = await import('/src/data/prayers.js')
+    const mod = await loadSpirit(opts.spirit || 'buddhism')
+    const spirit = mod.default || mod
+    const p = spirit.prayers.find((x) => x.id === opts.realPrayer)
+    if (!p) throw new Error('no such prayer: ' + opts.realPrayer)
+    prayerId = p.id
+    phrases = p.phrases.slice(0, opts.limit || 2)
+    lang = p.lang
+    speakLang = p.speakLang || null
+  }
+
   const record = {
     reason: null,
     phrases: [],
+    texts: [],
     finished: false,
     hum: 0,
     spoken: 0,
     audioRequests: 0,
-    finalReason: null
+    finalReason: null,
+    speakLang
   }
 
   await speech.start({
-    prayerId: opts.prayerId,
-    lang: 'sa',
-    phrases: opts.phrases,
+    prayerId,
+    lang,
+    speakLang,
+    phrases,
     rate: 1,
     loop: false,
     gapMs: 200,
@@ -181,6 +211,7 @@ window.__run = async (opts) => {
     await new Promise((r) => setTimeout(r, 100))
     record.hum = window.__hum
     record.spoken = cfg.spoken
+    record.texts = cfg.texts.slice()
     record.audioRequests = performance
       .getEntriesByType('resource')
       .filter((e) => e.name.includes('/audio/')).length
@@ -190,6 +221,7 @@ window.__run = async (opts) => {
 
   record.hum = window.__hum
   record.spoken = cfg.spoken
+  record.texts = cfg.texts.slice()
   record.audioRequests = performance
     .getEntriesByType('resource')
     .filter((e) => e.name.includes('/audio/')).length
@@ -384,6 +416,64 @@ try {
       assert(normal.spoken >= PHRASES.length, `expected ${PHRASES.length} utterances, saw ${normal.spoken}`)
       eq(normal.hum, 0, 'the chant ran even though the voice worked')
       eq(normal.finished, true, 'the prayer never finished')
+    })
+
+    // ---- speakLang: a prayer whose own script has no voice -----------------
+    // high-king-sutra is lang 'zh' with speakLang 'en', and it is unrecorded,
+    // so it is the one configuration that can reach a real device and say
+    // nothing useful. It shipped with no coverage at all: the scenarios above
+    // borrowed its id but drove synthetic phrases at lang 'sa' with no
+    // speakLang, so this branch - and the page's job of passing speakLang
+    // through to the engine in the first place - was never exercised. That is
+    // how a prayer configured to speak English ended up reported silent.
+    const { loadSpirit } = await import('../src/data/prayers.js')
+    const buddhism = await loadSpirit('buddhism')
+    const highKing = (buddhism.default || buddhism).prayers.find((p) => p.id === UNRECORDED)
+    assert(
+      highKing && highKing.speakLang === 'en' && highKing.lang === 'zh',
+      'the fixture prayer is no longer lang=zh speakLang=en - this scenario no longer means anything'
+    )
+
+    const withEnglish = await page.evaluate(
+      (o) => window.__run(o),
+      { realPrayer: UNRECORDED, voices: [VOICE], behaviour: 'normal', timeout: 30000 }
+    )
+    notes.push(
+      `speakLang + en voice:  texts=${withEnglish.texts.map((x) => JSON.stringify(x.text)).join(', ')} lang=${withEnglish.texts.map((x) => x.lang).join(',')}`
+    )
+    t('a speakLang=en prayer speaks its English rendering when an English voice exists', () => {
+      eq(withEnglish.reason, null, 'a working voice was needlessly abandoned')
+      assert(withEnglish.texts.length > 0, 'nothing was spoken at all')
+      withEnglish.texts.forEach((u, i) => {
+        eq(u.text, highKing.phrases[i].e, `phrase ${i} was not the English rendering`)
+        eq(u.lang, 'en', `phrase ${i} was not tagged English`)
+      })
+      eq(withEnglish.finished, true, 'the prayer never finished')
+    })
+
+    const onlyChinese = await page.evaluate(
+      (o) => window.__run(o),
+      {
+        realPrayer: UNRECORDED,
+        voices: [{ voiceURI: 'zh', lang: 'zh-CN', name: 'Zh', default: false, localService: true }],
+        behaviour: 'normal',
+        timeout: 30000
+      }
+    )
+    notes.push(
+      `speakLang + zh only:   texts=${onlyChinese.texts.map((x) => JSON.stringify(x.text)).join(', ')} lang=${onlyChinese.texts.map((x) => x.lang).join(',')}`
+    )
+    t('a speakLang=en prayer still speaks English when only a Chinese voice exists', () => {
+      // This is the path a real phone takes most often, and the one that would
+      // otherwise read the pinyin aloud in an English accent - a different
+      // sentence wearing the same clothes.
+      eq(onlyChinese.reason, null, 'a Chinese voice should not force the chant')
+      assert(onlyChinese.texts.length > 0, 'nothing was spoken at all')
+      onlyChinese.texts.forEach((u, i) => {
+        eq(u.text, highKing.phrases[i].e, `phrase ${i} should still be the English rendering`)
+        eq(u.lang, 'zh', 'with no English voice the engine keeps the prayer language')
+      })
+      eq(onlyChinese.finished, true, 'the prayer never finished')
     })
 
     t('misbehaving engines raised no uncaught errors', () => {
