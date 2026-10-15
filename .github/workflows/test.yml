@@ -144,7 +144,10 @@ jobs:
   # ~232s, which alone set how long a deploy took to start. They now share
   # scripts/lib/lifecycle.mjs and split by concern, so the slowest of them
   # replaces what was a quarter of a minute-counting wait: mount/unmount, the
-  # two WebGL failure paths, and the two frame-loop paths.
+  # two WebGL failure paths, the two frame-loop paths, and the loading overlay.
+  # The split is worth doing past the first one, because the cost of a browser
+  # suite is dominated by its own test time rather than its setup - so halving
+  # a suite's work halves its wall clock instead of being eaten by overhead.
   #
   # `fail-fast: false` matters for diagnosis. With the default, the first suite
   # to fail cancels the rest, so a red run tells you about one problem when
@@ -160,6 +163,7 @@ jobs:
           - test-resource-lifecycle
           - test-resource-webgl
           - test-resource-motion
+          - test-resource-loading
           - test-audio-fallback-runtime
           - test-a11y
           - test-settings-ui
