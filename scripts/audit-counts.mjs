@@ -42,7 +42,11 @@ for (const f of fs.readdirSync(SPIRITS).filter((f) => f.endsWith('.js'))) {
   const src = fs.readFileSync(path.join(SPIRITS, f), 'utf8')
   const start = src.indexOf('prayers: [')
   const body = start >= 0 ? src.slice(start) : ''
-  const ids = [...body.matchAll(/id:\s*'([^']+)'/g)].map((m) => m[1])
+  // The `\b` matters: without it this matches the letters `id:` inside an
+  // English word ending in `-id:` before a quote, so a gloss reading "Thus it
+  // is said:" counted as a prayer and put the tradition one over its real
+  // total. store-listing.mjs already guards this the same way.
+  const ids = [...body.matchAll(/\bid:\s*'([^']+)'/g)].map((m) => m[1])
   actual.set(f.replace('.js', ''), ids.length)
   total += ids.length
 }
@@ -53,7 +57,7 @@ console.log(`[counts] ${total} prayers across ${traditions} traditions`)
 t('every prayerCount in prayers.js matches the real count', () => {
   const src = fs.readFileSync(path.join(ROOT, 'src/data/prayers.js'), 'utf8')
   const declared = new Map(
-    [...src.matchAll(/id:\s*'([a-z]+)'[\s\S]{0,200}?prayerCount:\s*(\d+)/g)].map((m) => [m[1], Number(m[2])])
+    [...src.matchAll(/\bid:\s*'([a-z]+)'[\s\S]{0,200}?prayerCount:\s*(\d+)/g)].map((m) => [m[1], Number(m[2])])
   )
   const wrong = []
   for (const [id, real] of actual) {

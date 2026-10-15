@@ -63,13 +63,25 @@ for (const f of fs.readdirSync(spiritsDir)) {
   // nineteen tradition names (buddhism, islam, ...) and the "is anything
   // missing?" check could never fail, because those fake entries always
   // counted as unrecorded.
+  // Slicing gets the spirit's own top-level id out of the way. The `\b` gets
+  // a subtler one: without it an English gloss reading "Thus it is said:"
+  // matches the `id:` inside `said:` and its following quote, pushing a
+  // fragment of source code into the unrecorded list.
   const start = s.indexOf('prayers: [')
   const body = start >= 0 ? s.slice(start) : ''
-  for (const m of body.matchAll(/id:\s*'([^']+)'/g)) all.push(m[1])
+  for (const m of body.matchAll(/\bid:\s*'([^']+)'/g)) all.push(m[1])
   void t
 }
+// The manifest is the truth the app reads - hasStaticFor looks there - so it
+// decides. Directory presence does not: remove-audio leaves the empty folder
+// behind, and an empty folder still counted as recorded, which is how the
+// Great Compassion looked recorded the moment its four Sanskrit files were
+// deleted and its manifest entry dropped to nothing.
+const manifest = JSON.parse(fs.readFileSync(`${audioDir}/manifest.json`, 'utf8'))
 const recorded = new Set(
-  fs.readdirSync(audioDir).filter((n) => fs.statSync(`${audioDir}/${n}`).isDirectory())
+  Object.entries(manifest.prayers || {})
+    .filter(([, v]) => Array.isArray(v.voices) && v.voices.length > 0)
+    .map(([id]) => id)
 )
 const missing = all.filter((id) => !recorded.has(id))
 
