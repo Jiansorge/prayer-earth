@@ -314,6 +314,32 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+      # The emulator action fetches its own system image once, and a corrupt
+      # download surfaces as "Error on ZipFile unknown archive" with the
+      # emulator never booting. That is Google's CDN failing, not the app, and
+      # it was the cause of a red run on c17c014 where every test passed.
+      #
+      # Installing it here - where a retry is possible - means the emulator
+      # action finds it already on disk instead of fetching it once and hoping.
+      # A partial download is removed between attempts, since leaving it is
+      # what makes the next attempt fail the same way.
+      - name: Install emulator system image (retried)
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          [ -x "$SDKMANAGER" ] || SDKMANAGER="$(command -v sdkmanager)"
+          SPEC='system-images;android-35;default;x86_64'
+          for attempt in 1 2 3; do
+            echo "attempt $attempt of 3"
+            if yes | "$SDKMANAGER" "$SPEC" >/dev/null 2>&1; then
+              echo "system image installed on attempt $attempt"
+              exit 0
+            fi
+            echo "attempt $attempt failed; removing any partial download"
+            rm -rf "$ANDROID_HOME/system-images/android-35" 2>/dev/null || true
+            sleep $((attempt * 10))
+          done
+          echo "system image failed to install after 3 attempts"
+          exit 1
       - name: Android WebView and upgrade smoke test
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -339,8 +365,8 @@ jobs:
     # waiting for a job whose result production never sees. `android` still runs,
     # still fails loudly, and still blocks the release — just not this.
     #
-    # `browser` IS a gate. Those five suites used to be steps inside `test`, so
-    # they were already gating the deploy; giving them their own job would have
+    # `browser` IS a gate. Those suites used to be steps inside `test`, so they
+    # were already gating the deploy; giving them their own job would have
     # silently dropped that, which is why the dependency is written out.
     needs: [test, usage, browser]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
