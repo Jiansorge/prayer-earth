@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Run the whole suite on demand, without inventing a commit. Handy when you
+  # need to re-verify after changing a runner or a secret rather than the app.
+  # It does NOT deploy: deploy-dispatch is guarded on `push`, so a manual run
+  # can go green without shipping anything.
+  workflow_dispatch:
 
 # Shape of this file, and why.
 #
