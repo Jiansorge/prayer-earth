@@ -143,6 +143,41 @@ in `sync-engine` behind two post-deploy safety gates (version contract + live
 endpoints) with automatic rollback; see
 [`sync-engine/docs/DEPLOYMENT.md`](https://github.com/Jiansorge/sync-engine/blob/main/docs/DEPLOYMENT.md).
 
+### A second, unwanted deploy
+
+About 40 seconds after every push to **this** repo, something else deploys to the
+same Worker as an **assets-only** build: no `fetch` handler, no bindings, a
+deploy-day `compatibility_date`, and SPA fallback enabled. `deploy-dispatch` then
+overwrites it roughly nine minutes later with a correct build — but for that
+window `/health`, `/stats` and the WebSocket handshake all return the SPA HTML
+shell instead of Worker JSON, so presence, prayer lights, totals and anonymous
+sync are down.
+
+When `deploy-dispatch` is green this is invisible. **When CI is red, nothing
+overwrites it and it stays broken until someone notices** — that is the shape of
+the outage this causes.
+
+The assets fingerprint narrows it down: the real deploy carries
+`sync-engine/public/_headers` (the CSP and cache headers); the bad one does not,
+and `dist/` here contains no `_headers` at all. So it is not the Worker package
+deployed incorrectly — it is this repo's own build output shipped as static
+assets with no worker attached, under the same script name. That is the
+fingerprint of a **Workers Builds connection on this repository whose build
+config has no `main`**.
+
+Not yet removable from here: that endpoint needs `Account → Workers Builds →
+Read`, which the local token does not have. Until it is deleted in the
+Cloudflare dashboard (Workers → Builds), if a push goes red, run this from
+`sync-engine` immediately after:
+
+```bash
+npm run repair    # re-deploys the correct Worker and re-verifies it
+```
+
+`npm run repair:check` is the read-only version. Track this in
+`sync-engine/scripts/repair.mjs`, whose header comment carries the full
+forensic trail.
+
 ## Security & privacy
 
 The app is privacy-first and hardened by default:
