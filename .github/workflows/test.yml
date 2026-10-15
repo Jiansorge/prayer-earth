@@ -155,11 +155,11 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Build (+ inline CSS)
         run: npm run build
-      # Drives the real app in a real browser and counts what is still alive:
-      # listeners by type, canvases, and WebGL contexts created vs released. The
-      # largest GPU leak in the app was a useEffect with [] deps whose cleanup
-      # never ran on the WebGL failover path, which no source scan can catch.
-      - name: Resource lifecycle (GPU, listeners, canvases)
+      # One step name for all five suites: a fixed name like "Resource
+      # lifecycle" would label the a11y and settings jobs with the wrong
+      # description, which is a small lie in exactly the place you look when
+      # something is red.
+      - name: ${{ matrix.suite }}
         run: node scripts/${{ matrix.suite }}.mjs
 
   usage:
