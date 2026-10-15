@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-15T15:18:59.851Z",
+  "generated": "2026-10-15T19:37:56.982Z",
   "prayers": {
     "lords-prayer": {
       "lang": "en",
@@ -2647,6 +2647,30 @@
         "en-CA-ClaraNeural"
       ],
       "phrases": 3
+    },
+    "high-king-sutra": {
+      "lang": "zh",
+      "voices": [
+        "zh-CN-XiaoxiaoNeural",
+        "zh-CN-YunjianNeural"
+      ],
+      "phrases": 6
+    },
+    "great-compassion": {
+      "lang": "zh",
+      "voices": [
+        "zh-CN-XiaoxiaoNeural",
+        "zh-CN-YunjianNeural"
+      ],
+      "phrases": 83
+    },
+    "thirtyfive-confession": {
+      "lang": "en",
+      "voices": [
+        "en-US-AvaNeural",
+        "en-US-AndrewNeural"
+      ],
+      "phrases": 48
     }
   }
 }

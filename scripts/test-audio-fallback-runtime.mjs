@@ -40,11 +40,15 @@ const t = (name, fn) => {
 }
 const eq = (actual, expected, msg) => assert.equal(actual, expected, msg)
 
-// A prayer with pre-rendered phrases, and one the catalogue has no recording
-// for. Both exist in the shipped manifest, so these are real ids rather than
-// fixtures that can drift away from what actually ships.
+// A prayer with pre-rendered phrases, and an id the catalogue has no
+// recording for. The recorded id is a real shipped one - it only ever gains
+// audio, so it stays recorded. The unrecorded one is deliberately absent
+// rather than a real prayer: pointing at one worked only until that prayer was
+// rendered, at which point the player served its mp3, never reached the
+// engine, and every scenario here went silent. What these tests exercise is
+// the fallback path, so the fixture has to be sure of never having audio.
 const RECORDED = 'lords-prayer'
-const UNRECORDED = 'high-king-sutra'
+const UNRECORDED = 'fixture-no-recording'
 
 // Two short phrases keep each scenario to seconds instead of minutes; the
 // fallback decision happens on the first phrase either way.
@@ -161,25 +165,14 @@ window.__run = async (opts) => {
   speech.refreshVoices()
   useStore.setState({ voiceURI: opts.voiceURI || '', speechRate: 1 })
 
-  // Synthetic phrases by default. opts.realPrayer instead drives the shipped
-  // entry, so a scenario can cover a configuration no fixture reproduces -
-  // most importantly speakLang, which is set on the prayer object by the page
-  // and has to survive all the way to the utterance.
-  let phrases = opts.phrases
-  let lang = opts.lang || 'sa'
-  let speakLang = opts.speakLang || null
-  let prayerId = opts.prayerId
-  if (opts.realPrayer) {
-    const { loadSpirit } = await import('/src/data/prayers.js')
-    const mod = await loadSpirit(opts.spirit || 'buddhism')
-    const spirit = mod.default || mod
-    const p = spirit.prayers.find((x) => x.id === opts.realPrayer)
-    if (!p) throw new Error('no such prayer: ' + opts.realPrayer)
-    prayerId = p.id
-    phrases = p.phrases.slice(0, opts.limit || 2)
-    lang = p.lang
-    speakLang = p.speakLang || null
-  }
+  // Synthetic phrases, with lang and speakLang taken straight from the
+  // scenario. Both have to survive all the way to the utterance, which is the
+  // thing the real app gets wrong when a prayer is configured to speak a
+  // language the device cannot.
+  const phrases = opts.phrases
+  const lang = opts.lang || 'sa'
+  const speakLang = opts.speakLang || null
+  const prayerId = opts.prayerId
 
   const record = {
     reason: null,
@@ -419,24 +412,41 @@ try {
     })
 
     // ---- speakLang: a prayer whose own script has no voice -----------------
-    // high-king-sutra is lang 'zh' with speakLang 'en', and it is unrecorded,
-    // so it is the one configuration that can reach a real device and say
-    // nothing useful. It shipped with no coverage at all: the scenarios above
-    // borrowed its id but drove synthetic phrases at lang 'sa' with no
+    // A prayer can be configured to speak its English rendering when the
+    // device has no voice for its own language - high-king-sutra ships that
+    // way (lang 'zh', speakLang 'en'). It is the configuration that can reach
+    // a real device and say nothing useful, and it shipped with no coverage:
+    // the scenarios above drove synthetic phrases at lang 'sa' with no
     // speakLang, so this branch - and the page's job of passing speakLang
     // through to the engine in the first place - was never exercised. That is
     // how a prayer configured to speak English ended up reported silent.
-    const { loadSpirit } = await import('../src/data/prayers.js')
-    const buddhism = await loadSpirit('buddhism')
-    const highKing = (buddhism.default || buddhism).prayers.find((p) => p.id === UNRECORDED)
-    assert(
-      highKing && highKing.speakLang === 'en' && highKing.lang === 'zh',
-      'the fixture prayer is no longer lang=zh speakLang=en - this scenario no longer means anything'
-    )
+    //
+    // The fixture is synthetic on purpose. It used to borrow high-king-sutra,
+    // which held only while that prayer was unrecorded; once it was rendered
+    // the player served the mp3 and never consulted the engine, so every
+    // scenario here went quiet. What is under test is the branch, not the
+    // shipped entry, so the fixture says what it means directly.
+    const ZH_EN = {
+      id: 'fixture-speaklang',
+      lang: 'zh',
+      speakLang: 'en',
+      phrases: [
+        { t: '南無佛', e: 'Homage to the Buddha' },
+        { t: '南無法', e: 'Homage to the Dharma' }
+      ]
+    }
 
     const withEnglish = await page.evaluate(
       (o) => window.__run(o),
-      { realPrayer: UNRECORDED, voices: [VOICE], behaviour: 'normal', timeout: 30000 }
+      {
+        prayerId: ZH_EN.id,
+        phrases: ZH_EN.phrases,
+        lang: ZH_EN.lang,
+        speakLang: ZH_EN.speakLang,
+        voices: [VOICE],
+        behaviour: 'normal',
+        timeout: 30000
+      }
     )
     notes.push(
       `speakLang + en voice:  texts=${withEnglish.texts.map((x) => JSON.stringify(x.text)).join(', ')} lang=${withEnglish.texts.map((x) => x.lang).join(',')}`
@@ -445,7 +455,7 @@ try {
       eq(withEnglish.reason, null, 'a working voice was needlessly abandoned')
       assert(withEnglish.texts.length > 0, 'nothing was spoken at all')
       withEnglish.texts.forEach((u, i) => {
-        eq(u.text, highKing.phrases[i].e, `phrase ${i} was not the English rendering`)
+        eq(u.text, ZH_EN.phrases[i].e, `phrase ${i} was not the English rendering`)
         eq(u.lang, 'en', `phrase ${i} was not tagged English`)
       })
       eq(withEnglish.finished, true, 'the prayer never finished')
@@ -454,7 +464,10 @@ try {
     const onlyChinese = await page.evaluate(
       (o) => window.__run(o),
       {
-        realPrayer: UNRECORDED,
+        prayerId: ZH_EN.id,
+        phrases: ZH_EN.phrases,
+        lang: ZH_EN.lang,
+        speakLang: ZH_EN.speakLang,
         voices: [{ voiceURI: 'zh', lang: 'zh-CN', name: 'Zh', default: false, localService: true }],
         behaviour: 'normal',
         timeout: 30000
@@ -470,7 +483,7 @@ try {
       eq(onlyChinese.reason, null, 'a Chinese voice should not force the chant')
       assert(onlyChinese.texts.length > 0, 'nothing was spoken at all')
       onlyChinese.texts.forEach((u, i) => {
-        eq(u.text, highKing.phrases[i].e, `phrase ${i} should still be the English rendering`)
+        eq(u.text, ZH_EN.phrases[i].e, `phrase ${i} should still be the English rendering`)
         eq(u.lang, 'zh', 'with no English voice the engine keeps the prayer language')
       })
       eq(onlyChinese.finished, true, 'the prayer never finished')

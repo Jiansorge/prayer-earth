@@ -56,6 +56,23 @@ const FALLBACK_LANG = {
   ig: 'en'
 }
 
+// Which regional variant speaks for a language. Sanskrit prayers are voiced in
+// Hindi and Chinese ones in Mandarin - the standard register of each - so this
+// pins that choice. Without it Edge's voice list arrives alphabetically and the
+// first regional variant listed wins by accident, which chose Cantonese
+// (zh-HK) over Mandarin (zh-CN) for every Chinese prayer.
+const PRIMARY_REGION = {
+  zh: 'CN',
+  hi: 'IN',
+  en: 'US',
+  pa: 'IN',
+  ar: 'SA',
+  pt: 'BR',
+  es: 'ES',
+  fr: 'FR',
+  de: 'DE'
+}
+
 const LIMIT = process.env.AUDIO_LIMIT ? parseInt(process.env.AUDIO_LIMIT, 10) : 0
 const ONLY = process.env.AUDIO_PRAYERS
   ? new Set(process.env.AUDIO_PRAYERS.split(',').map((s) => s.trim()))
@@ -104,6 +121,17 @@ const byLang = {}
 for (const v of voices) {
   const code = (v.locale || v.Locale || '').split('-')[0]
   ;(byLang[code] = byLang[code] || []).push(v)
+}
+// Move the pinned regional variant to the front so pickVoices reaches for it
+// first, leaving the rest of the list in Edge's order.
+for (const [code, list] of Object.entries(byLang)) {
+  const want = PRIMARY_REGION[code] && `${code}-${PRIMARY_REGION[code]}`
+  if (!want) continue
+  list.sort((a, b) => {
+    const la = a.locale || a.Locale || ''
+    const lb = b.locale || b.Locale || ''
+    return (lb === want) - (la === want)
+  })
 }
 tts.close()
 
