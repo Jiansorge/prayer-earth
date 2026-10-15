@@ -5,7 +5,22 @@ on:
     branches: [main]
   pull_request:
 
+# Shape of this file, and why.
+#
+# The wall-clock cost of this workflow is almost entirely the five browser
+# suites. They used to be sequential steps in one job: 356 seconds of browser
+# time inside a 413 second job, while twenty static audits finished in 13 and
+# the build finished in 4. Running them one after another bought nothing -
+# each suite drives its own Chromium against its own copy of dist/ and shares
+# no state with the others - so they are now a matrix, and the slowest suite
+# alone sets the duration. That, plus caching the Chromium download, is what
+# makes this file fast.
+#
+# `deploy-dispatch` is what turns a green run into a production deploy, so
+# every job that gates it must be named in its `needs`.
+
 jobs:
+  # Build + the static audits. No browser, so no Chromium install.
   test:
     runs-on: ubuntu-latest
     steps:
@@ -15,11 +30,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --legacy-peer-deps
-      # The four browser tests (resource lifecycle, audio fallback, a11y,
-      # settings) run on this job and need a Chromium. Nothing installed one, so
-      # they threw "no chromium binary found" and had never actually run here.
-      - name: Install headless Chromium (Playwright)
-        run: npx playwright install --with-deps chromium
       - name: Build (+ inline CSS)
         run: npm run build
       - name: Built-asset audit (CSP / SW CORE / CSS inlined)
@@ -85,42 +95,6 @@ jobs:
         run: npm run build:play-translations
       - name: Play listing and translation review
         run: node scripts/audit-play-translations.mjs
-      # Drives the real app in a real browser and counts what is still alive:
-      # listeners by type, canvases, and WebGL contexts created vs released. The
-      # largest GPU leak in the app was a useEffect with [] deps whose cleanup
-      # never ran on the WebGL failover path, which no source scan can catch.
-      - name: Resource lifecycle (GPU, listeners, canvases)
-        run: node scripts/test-resource-lifecycle.mjs
-      # The audio fallback chain read correctly and still had a ReferenceError
-      # on every browser-voice phrase, which meant the stall guard never armed.
-      # A source scan cannot see that; this drives the engine against engines
-      # that are absent, blank, instant, erroring and silent, and asserts the
-      # prayer always reaches the room.
-      - name: Audio fallback reaches the room (runtime)
-        run: node scripts/test-audio-fallback-runtime.mjs
-      # Nothing here looked at the markup an assistive technology is handed. The
-      # prayer's scroll container was unreachable by keyboard, so a long prayer
-      # stopped at the visible lines for anyone not using a pointer. axe across
-      # every view plus a keyboard pass: focus lands, is visible, and is big
-      # enough to hit.
-      - name: Accessibility (axe across every view, plus keyboard)
-        run: node scripts/test-a11y.mjs
-      # Everything else here can be green while the app still feels sticky. On
-      # device the GPU renders a frame in 1-2ms but ~41-44% of frames miss their
-      # budget on every surface alike, which is the signature of JavaScript
-      # holding the main thread - invisible to a rendering check, a bundle
-      # check, or a correctness test. This drives real navigation and sheet
-      # interaction against the production build and fails on LongTask
-      # blocking time, so a handler that starts stalling the thread is caught
-      # rather than shipped.
-      - name: Main thread stays responsive under interaction
-        run: node scripts/test-main-thread.mjs
-      # Settings-sheet chrome asserted on computed layout at two widths. Each of
-      # these passed a source review and was wrong on screen: a collapsed donate
-      # row, links rendered as buttons, a double rule, a missing Back control,
-      # and a sheet that forgot its scroll position.
-      - name: Settings sheet UI
-        run: node scripts/test-settings-ui.mjs
       # The store listing counted every id in a spirit file, including the
       # spirit's own, so the public figure was 19 too high in all fifteen
       # languages. These assert the count against the data, not against itself.
@@ -129,6 +103,9 @@ jobs:
       # Whether CI and `npm run test:all` still run the same checks. A step added
       # to one and not the other is a check that only ever runs on one machine,
       # which is how CI sat red for three days on a thing nobody ran locally.
+      #
+      # It reads every job in this file, so moving the browser suites into a
+      # matrix below does not hide them from it.
       - name: Local suite and CI run the same checks
         run: node scripts/audit-test-parity.mjs
       # The share/delete/report URLs are a public and a compliance surface and
@@ -136,6 +113,76 @@ jobs:
       # it, which served the app shell with a 200.
       - name: Canonical and public URLs
         run: node scripts/test-canonical-urls.mjs
+
+  # The five suites that drive a real Chromium. Each is independent - it builds
+  # its own dist/ and launches its own browser - so they are a matrix rather
+  # than a sequence. Wall-clock time falls from their sum (356s) to their
+  # maximum (the resource-lifecycle suite, ~232s).
+  #
+  # `fail-fast: false` matters for diagnosis. With the default, the first suite
+  # to fail cancels the rest, so a red run tells you about one problem when
+  # there may be three. Here every suite reports, and a red run is a complete
+  # answer rather than the first one.
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - test-resource-lifecycle
+          - test-audio-fallback-runtime
+          - test-a11y
+          - test-settings-ui
+          - test-main-thread
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      # The Chromium download is ~130MB and was costing ~22s on every job that
+      # installed it - seven jobs across this file. It is restored from cache
+      # keyed on the lockfile, so the install only really downloads on the first
+      # run after Playwright changes version.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install headless Chromium (Playwright)
+        run: npx playwright install --with-deps chromium
+      - name: Build (+ inline CSS)
+        run: npm run build
+      # Drives the real app in a real browser and counts what is still alive:
+      # listeners by type, canvases, and WebGL contexts created vs released. The
+      # largest GPU leak in the app was a useEffect with [] deps whose cleanup
+      # never ran on the WebGL failover path, which no source scan can catch.
+      - name: Resource lifecycle (GPU, listeners, canvases)
+        run: node scripts/${{ matrix.suite }}.mjs
+
+  usage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install headless Chromium (Playwright)
+        run: npx playwright install --with-deps chromium
+      - name: Real-usage browser suite (CDP, live app + sync server)
+        run: node scripts/test-usage-ci.mjs
+      - name: Backup / restore tests (no prayer data lost)
+        run: node scripts/test-backup.mjs
+
   android:
     needs: test
     runs-on: ubuntu-latest
@@ -230,22 +277,6 @@ jobs:
           # app-debug.apk and asserts the seeded data survived the upgrade.
           script: UPGRADE_APK=android/app/build/outputs/apk/debug/old.apk npm run test:android
 
-  usage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci --legacy-peer-deps
-      - name: Install headless Chromium (Playwright)
-        run: npx playwright install --with-deps chromium
-      - name: Real-usage browser suite (CDP, live app + sync server)
-        run: node scripts/test-usage-ci.mjs
-      - name: Backup / restore tests (no prayer data lost)
-        run: node scripts/test-backup.mjs
-
   deploy-dispatch:
     # Deterministic gates only. android-smoke (a KVM emulator) is the flakiest
     # job in the file, so it reports Android health but does NOT block a
@@ -259,7 +290,11 @@ jobs:
     # test -> 19:35:54, android -> 19:38:19, dispatch 19:38:22: ~2.5 minutes of
     # waiting for a job whose result production never sees. `android` still runs,
     # still fails loudly, and still blocks the release — just not this.
-    needs: [test, usage]
+    #
+    # `browser` IS a gate. Those five suites used to be steps inside `test`, so
+    # they were already gating the deploy; giving them their own job would have
+    # silently dropped that, which is why the dependency is written out.
+    needs: [test, usage, browser]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
@@ -269,10 +304,16 @@ jobs:
         env:
           # Pass the PAT through the environment, not into the run: script text.
           DEPLOY_PAT: ${{ secrets.DEPLOY_PAT }}
+          # The SHA and run are handed to sync-engine so it can write a commit
+          # status back here. Without them a commit shows green the moment the
+          # dispatch is posted, whether or not production actually shipped -
+          # which is how a failed deploy can look like a healthy one.
+          SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           curl -fsS -X POST \
             -H "Authorization: Bearer $DEPLOY_PAT" \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            -d '{"event_type":"deploy"}' \
+            -d "{\"event_type\":\"deploy\",\"client_payload\":{\"sha\":\"$SHA\",\"run_id\":\"$RUN_ID\"}}" \
             https://api.github.com/repos/Jiansorge/sync-engine/dispatches

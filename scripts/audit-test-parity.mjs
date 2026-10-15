@@ -32,12 +32,23 @@ const all = readFileSync(path.join(ROOT, 'scripts', 'test-all.mjs'), 'utf8')
 // run without a PAT, so requiring them locally would be a step that always
 // fails for the wrong reason.
 const SECRET_GATED = /test-usage/
-const ciSteps = Object.values(workflow.jobs || {})
+const literalSteps = Object.values(workflow.jobs || {})
   .flatMap((job) => job.steps || [])
   .map((s) => s.run || '')
   .filter((r) => /node scripts\/[\w.-]+\.mjs/.test(r))
   .map((r) => r.match(/node (scripts\/[\w.-]+\.mjs)/)[1])
   .filter((p) => !SECRET_GATED.test(p) && !/test-android/.test(p))
+
+// A matrix job names each script once, as a value, and runs it as
+// `node scripts/$suite.mjs`. The scan above looks for a literal path in the run
+// line, so a perfectly real suite is invisible to it - and the audit would
+// report as missing-in-CI the five browser suites that CI is busy running in
+// parallel. Expand the matrix instead of pattern-matching the expression.
+const matrixSteps = Object.values(workflow.jobs || {})
+  .flatMap((job) => job.strategy?.matrix?.suite || [])
+  .map((s) => `scripts/${s}.mjs`)
+
+const ciSteps = [...new Set([...literalSteps, ...matrixSteps])]
 
 // The same list, as declared in test-all.mjs.
 const block = all.match(/const STEPS = \[([\s\S]*?)\]/)
@@ -65,7 +76,7 @@ if (missingInCI.length) {
   console.error(
     `[parity] npm run test:all runs these but CI does not:\n        ${missingInCI.join('\n        ')}`
   )
-  console.error('        Add them to the test job in .github/workflows/test.yml.')
+  console.error('        Add them to a job in .github/workflows/test.yml.')
 }
 console.error('')
 console.error(`${missingLocally.length + missingInCI.length} check(s) only run in one place.`)
