@@ -35,8 +35,9 @@ if (gen.status !== 0) {
   process.exit(1)
 }
 
-// Kept in step with the `app:` job in .github/workflows/test.yml. A step added
-// to one and not the other is a step that only ever runs on one machine.
+// Kept in step with .github/workflows/test.yml: the `test` job and the
+// `browser` matrix together. A step added to one and not the other is a step
+// that only ever runs on one machine.
 const STEPS = [
   'scripts/audit-build.mjs',
   'scripts/test-server.mjs',
@@ -55,6 +56,8 @@ const STEPS = [
   'scripts/audit-audio-fallback.mjs',
   'scripts/audit-play-translations.mjs',
   'scripts/test-resource-lifecycle.mjs',
+  'scripts/test-resource-webgl.mjs',
+  'scripts/test-resource-motion.mjs',
   'scripts/test-audio-fallback-runtime.mjs',
   'scripts/test-a11y.mjs',
   'scripts/test-main-thread.mjs',

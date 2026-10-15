@@ -119,10 +119,15 @@ jobs:
       - name: Canonical and public URLs
         run: node scripts/test-canonical-urls.mjs
 
-  # The five suites that drive a real Chromium. Each is independent - it builds
-  # its own dist/ and launches its own browser - so they are a matrix rather
-  # than a sequence. Wall-clock time falls from their sum (356s) to their
-  # maximum (the resource-lifecycle suite, ~232s).
+  # The suites that drive a real Chromium. Each is independent - it builds its
+  # own dist/ and launches its own browser - so they are a matrix rather than a
+  # sequence, and wall-clock time is their maximum rather than their sum.
+  #
+  # test-resource-lifecycle used to hold all four Earth scenarios in one job at
+  # ~232s, which alone set how long a deploy took to start. They now share
+  # scripts/lib/lifecycle.mjs and split by concern, so the slowest of them
+  # replaces what was a quarter of a minute-counting wait: mount/unmount, the
+  # two WebGL failure paths, and the two frame-loop paths.
   #
   # `fail-fast: false` matters for diagnosis. With the default, the first suite
   # to fail cancels the rest, so a red run tells you about one problem when
@@ -136,6 +141,8 @@ jobs:
       matrix:
         suite:
           - test-resource-lifecycle
+          - test-resource-webgl
+          - test-resource-motion
           - test-audio-fallback-runtime
           - test-a11y
           - test-settings-ui
@@ -160,7 +167,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Build (+ inline CSS)
         run: npm run build
-      # One step name for all five suites: a fixed name like "Resource
+      # One step name for every suite in the matrix: a fixed name like "Resource
       # lifecycle" would label the a11y and settings jobs with the wrong
       # description, which is a small lie in exactly the place you look when
       # something is red.
