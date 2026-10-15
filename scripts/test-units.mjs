@@ -529,6 +529,27 @@ const stripComments = (text) =>
   check('the prayer phrases cover every locale they claim to',
     l10nLocales.length >= 10, `locales found: ${l10nLocales.join(', ')}`)
 
+  // The spirituality marks are pure data with no suite behind them, and one
+  // shipped as two ASCII question marks. A commit that rewrote source files
+  // replaced Buddhism's Wheel of Dharma with `??`, and since then every tile,
+  // picker row and feed pill has drawn `??` with nothing reporting it - the
+  // mojibake checks above all read locale files, and none of them look here.
+  //
+  // A question mark can never be part of an emoji, and no symbol this app uses
+  // sits below U+2000 (the lowest real one is U+262A), so those two rules
+  // catch a placeholder, a truncated character and a lost encoding alike.
+  const { SPIRITUALITIES } = await import('../src/data/prayers.js')
+  const badMarks = SPIRITUALITIES.filter((s) => {
+    const mark = String(s.emoji ?? '')
+    if (!mark) return true
+    if (mark.includes('?') || mark.includes('\uFFFD')) return true
+    const cp = mark.codePointAt(0)
+    return !cp || cp < 0x2000
+  }).map((s) => `${s.id}=${JSON.stringify(s.emoji)}`)
+  check('every spirituality carries a real symbol, not placeholder punctuation',
+    badMarks.length === 0,
+    badMarks.join(' | ') || `${SPIRITUALITIES.length} marks are symbols`)
+
   // A job with no steps would pass an indent check while running nothing.
   const stepRuns = lines.filter((l) => /^\s{8}run:\s*\S/.test(l)).length
   check('the workflow still runs a meaningful number of commands', stepRuns >= 8,
