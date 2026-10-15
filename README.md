@@ -136,12 +136,22 @@ rollback backup), and deploys to `joining-palms.app`. Audio rides along; after
 changing the MP3 library, bump `public/sw.js`'s cache version and purge the
 Cloudflare `/audio/*` cache (see `sync-engine/docs/DEPLOYMENT.md`).
 
-**Pushes to `main` auto-deploy.** `test.yml` runs build + asset audit + server
-and i18n tests, then dispatches a deploy to `sync-engine` (via the `DEPLOY_PAT`
-repo secret) — no manual step needed. The production deploy itself always runs
-in `sync-engine` behind two post-deploy safety gates (version contract + live
+**Pushes to `main` auto-deploy.** `test.yml` runs the build, the static audits
+and the server tests in one job, and the five browser suites as a **parallel
+matrix** — they are independent of each other, so running them one after another
+bought nothing but wall-clock time. It then dispatches a deploy to `sync-engine`
+(via the `DEPLOY_PAT` repo secret). The production deploy itself always runs in
+`sync-engine` behind two post-deploy safety gates (version contract + live
 endpoints) with automatic rollback; see
 [`sync-engine/docs/DEPLOYMENT.md`](https://github.com/Jiansorge/sync-engine/blob/main/docs/DEPLOYMENT.md).
+
+**The commit tells you what production did.** Posting a dispatch is all
+`deploy-dispatch` does, so it always succeeded — even when every step after it
+failed. A commit therefore showed green while production stayed on the previous
+version. sync-engine now writes a `deploy/production` status back onto the
+commit that triggered it: `deploying` as soon as the dispatch is picked up, then
+`deployed <version>` or `deploy failed`. A red deploy is now visible on the
+commit that caused it, not only in a run in another repository.
 
 ### A second, unwanted deploy
 
