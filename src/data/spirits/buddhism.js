@@ -295,14 +295,36 @@ export default   {
       {
         id: 'great-compassion',
         title: 'The Great Compassion Dhāraṇī',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit',
+        // Three different texts circulate under the name "Great Compassion" and
+        // this app now carries each under its own entry, because they are not
+        // versions of one another:
+        //   great-compassion    - the short Nīlakaṇṭha Dhāraṇī (this entry)
+        //   great-compassion-zh - the Chinese 大悲咒
+        //   heart-dharani       - the Heart Dhāraṇī of Ekādaśamukha, the text
+        //                         most often posted online as "the Great
+        //                         Compassion Mantra"
+        // The long 84-line Sanskrit dharani of the Maha Karuna Dharani Sutra is
+        // none of these three and is not carried here yet.
+        phrases: [
+          { t: 'नमो रत्न त्रयाय', s: 'Namo ratna trayāya', e: 'Homage to the Three Jewels.' },
+          { t: 'नमो आर्यावलोकितेश्वराय बोधिसत्त्वाय महासत्त्वाय महाकारुणिकाय', s: 'Namo āryāvalokiteśvarāya bodhisattvāya mahāsattvāya mahākāruṇikāya', e: 'Homage to Avalokitesvara, the great bodhisattva of great compassion.' },
+          { t: 'तद्यथा ॐ तार तार तिरि तिरि तुरु तुरु', s: 'Tadyathā: Om tāra tāra tiri tiri turu turu', e: 'Thus: Om tara tara, tiri tiri, turu turu.' },
+          { t: 'सर सर सिरि सिरि सुरु सुरु बोधिय बोधय मैत्रिय नीलकण्ठ दर्शनेन प्रह्लादय मनः स्वाहा', s: 'Sara sara siri siri suru suru, bodhiya bodhaya maitriya Nīlakaṇṭha, darśanena prahlādaya manaḥ svāhā', e: 'Awaken, awaken, may the sight of the Blue-Necked One gladden the heart, so be it.' }
+        ],
+        translation: 'The short Nīlakaṇṭha Dhāraṇī, the great compassion of Avalokitesvara, protector of all who call on it.'
+      },
+      {
+        id: 'great-compassion-zh',
+        title: 'The Great Compassion Dhāraṇī (Chinese)',
         lang: 'zh',
         langLabel: '中文 · Chinese',
-        // The Great Compassion Dhāraṇī is the Chinese 大悲咒, the dhāraṇī of the
-        // Thousand-Armed Avalokitesvara from the 大悲心陀羅尼經 (Taishō 1060,
-        // translated by伽梵達摩 in the Tang). What used to sit here was the short
-        // Nīlakaṇṭha dhāraṇī - a different, much shorter text that shares its
-        // opening lines - which meant the app promised the 大悲咒 and shipped
-        // four lines of something else.
+        // The Chinese 大悲咒, the dhāraṇī of the Thousand-Armed Avalokitesvara
+        // from the 大悲心陀羅尼經 (Taishō 1060, translated by伽梵達摩 in the
+        // Tang). It holds the name "Great Compassion" as one of three texts
+        // that do; the others are the short Nīlakaṇṭha dhāraṇī above it and the
+        // Heart Dhāraṇī below it.
         //
         // The English is our own rendering, not a published translation: the
         // dhāraṇī is largely untranslated mantra, so these are glosses of the
@@ -400,6 +422,46 @@ export default   {
           { t: '娑婆訶', s: 'Suō pó hē', e: 'Svāhā.' }
         ],
         translation: 'The Great Compassion Dhāraṇī, the 大悲咒 of the Thousand-Armed Avalokitesvara, from the 大悲心陀羅尼經 (Sutra of the Dharani of the Great Compassion Heart of the Thousand-Armed, Thousand-Eyed Avalokitesvara), Taishō 1060, translated in the Tang. It is the dhāraṇī most often recited in Chinese Buddhism. Most of it is mantra rather than translatable speech, so the English lines here are glosses of the sense — our own, not a published translation — and the Chinese is the received text, long out of copyright. Editions differ in line divisions and in the characters used for a few phonetic words; this follows one common arrangement.'
+      },
+      {
+        id: 'heart-dharani',
+        title: 'The Heart Dhāraṇī of Avalokiteśvara-Ekādaśamukha',
+        lang: 'sa',
+        langLabel: 'संस्कृतम् · Sanskrit',
+        // The text most often posted as "the Great Compassion Mantra", which is
+        // actually the Heart Dhāraṇī of the Eleven-Faced Avalokiteśvara. The
+        // transliteration is the received Sanskrit as published by Buddha
+        // Weekly, line breaks as given there; the Devanagari is that same text
+        // written in its own script. The English lines are our own glosses, not
+        // a published translation: the dhāraṇī is mantra rather than
+        // translatable speech, so these are glosses of the sense.
+        phrases: [
+          { t: 'नमो रत्न त्रयाय', s: 'NAMO RATNA TRAYĀYA', e: 'Homage to the Three Jewels.' },
+          { t: 'नमो आर्य ज्ञान सागर वैरोचन व्यूह राजाय', s: 'NAMA ĀRYA JÑĀNA SĀGARA VAIROCANA VYŪHA RĀJĀYA', e: 'Homage to the noble one, wisdom an ocean, a radiant array.' },
+          { t: 'तथागताय', s: 'TATHĀGATĀYA', e: 'To the Thus-Gone One.' },
+          { t: 'अर्हते', s: 'ARHATE', e: 'To the Worthy One.' },
+          { t: 'सम्यक्संबुद्धाय', s: 'SAMYAKSAṂ BUDDHĀYA', e: 'To the Fully Awakened One.' },
+          { t: 'नमः सर्व तथागतेभ्यः', s: 'NAMAḤ SARVA TATHĀGATEVYAḤ', e: 'Homage to all the Thus-Gone.' },
+          { t: 'अर्हतेभ्यः सम्यक्संबुद्धेभ्यः', s: 'ARHATEVYAḤ SAMYAKSAM BUDDHEVYAḤ', e: 'To the Worthy, the Fully Awakened.' },
+          { t: 'नमो आर्य अवलोकितेश्वराय', s: 'NAMA ĀRYA AVALOKITEŚVARĀYA', e: 'Homage to noble Avalokiteśvara.' },
+          { t: 'बोधिसत्त्वाय', s: 'BODHISATVĀYA', e: 'The bodhisattva.' },
+          { t: 'महासत्त्वाय', s: 'MAHĀSATVĀYA', e: 'The great being.' },
+          { t: 'महाकारुणिकाय', s: 'MAHĀKĀRUṆIKĀYA', e: 'The great compassionate one.' },
+          { t: 'तद्यथा', s: 'TADYATHĀ', e: 'Thus:' },
+          { t: 'ॐ धरा धरा', s: 'OṂ DHARA DHARA', e: 'Om — sustain, sustain.' },
+          { t: 'धीरी धीरी', s: 'DHIRI DHIRI', e: 'Hold firm, hold firm.' },
+          { t: 'धुरु धुरु', s: 'DHURU DHURU', e: 'Endure, endure.' },
+          { t: 'इट्टि वट्टि', s: 'IṬṬI VAṬṬI', e: 'Steady, steady.' },
+          { t: 'ज्वले ज्वले', s: 'JVALE JVALE', e: 'Blaze, blaze.' },
+          { t: 'प्रज्वले प्रज्वले', s: 'PRAJVALE PRAJVALE', e: 'Blaze forth, blaze forth.' },
+          { t: 'कुसुमे', s: 'KUSUME', e: 'In the flower.' },
+          { t: 'कुसुम', s: 'KUSUMA', e: 'Of flowers.' },
+          { t: 'धरे', s: 'DHARE', e: 'Sustain.' },
+          { t: 'इलि मिलि', s: 'ILI MILI', e: 'Reach, reach.' },
+          { t: 'चित्रे चिते ज्वलमपनय', s: 'CHITRE CHITE JVALAMAPANAYA', e: 'Let the light burn through and be released.' },
+          { t: 'परमसुद्ध सत्त्व महाकारुणिक स्वाहा', s: 'PARAMA SUDDHA SATTVA MAHAKARUNIKA SVAHA', e: 'For the supreme, pure, great-compassionate heart — svāhā.' }
+        ],
+        translation: 'The Heart Dhāraṇī of Avalokiteśvara-Ekādaśamukha, the dhāraṇī of the Eleven-Faced Lord of Compassion. It is widely circulated under the name of the Great Compassion Mantra, but it is a separate and much shorter text than the one the sutras call by that name.'
       },
       {
         id: 'refuges',

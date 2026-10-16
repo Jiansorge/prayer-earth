@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-15T19:37:56.982Z",
+  "generated": "2026-10-16T02:33:53.541Z",
   "prayers": {
     "lords-prayer": {
       "lang": "en",
@@ -2656,7 +2656,7 @@
       ],
       "phrases": 6
     },
-    "great-compassion": {
+    "great-compassion-zh": {
       "lang": "zh",
       "voices": [
         "zh-CN-XiaoxiaoNeural",
@@ -2671,6 +2671,22 @@
         "en-US-AndrewNeural"
       ],
       "phrases": 48
+    },
+    "great-compassion": {
+      "lang": "hi",
+      "voices": [
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
+      ],
+      "phrases": 4
+    },
+    "heart-dharani": {
+      "lang": "hi",
+      "voices": [
+        "hi-IN-SwaraNeural",
+        "hi-IN-MadhurNeural"
+      ],
+      "phrases": 24
     }
   }
 }
