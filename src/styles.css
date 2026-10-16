@@ -3379,6 +3379,16 @@ html[dir='rtl'] .chooser-arrow.right {
 
 .feed-emoji {
   font-size: 13px;
+  /* Every emoji has a different intrinsic width — ☸️, 🕉️ and 🕯️ occupy
+     different amounts of the pill, so in the stacked compact feed the icons
+     never land on the same axis and each one sits off-centre in its own run of
+     text. Give the icon a fixed slot and centre inside it, which is what
+     .onboard-step-emoji already does for the same reason. */
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 16px;
+  line-height: 1;
+  text-align: center;
 }
 
 .feed-pill b {

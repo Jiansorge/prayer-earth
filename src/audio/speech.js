@@ -429,6 +429,22 @@ class SpeechEngine {
         el.mozPreservesPitch = true
         el.webkitPreservesPitch = true
         el.src = url
+        // A recording's own length is the only trustworthy bound on when it
+        // ends. The deadline already set above is seeded from an estimate that
+        // is deliberately generous, but it still prices text by word and only
+        // charges script without spaces once a line passes a length threshold.
+        // A long Chinese verse came out at 4.9s against a 12.3s recording and
+        // was cut by its own safety net - seven of twelve verses in the High
+        // King sutra, heard as "it skips every line". Once metadata lands, the
+        // guessed deadline is replaced with the real one; until then the
+        // estimate stands, so a file that never loads still cannot hang a
+        // prayer.
+        el.onloadedmetadata = () => {
+          if (!isCurrent() || !isFinite(el.duration) || el.duration <= 0) return
+          const secs = el.duration / (el.playbackRate || 1)
+          clearTimeout(job.advTimer)
+          job.advTimer = setTimeout(finish, secs * 1000 + 2500)
+        }
         el.volume = Math.max(0.001, Math.min(1, (useStore.getState().volume ?? 0.8) * 1))
         el.playbackRate = rate
         el.currentTime = 0
@@ -721,7 +737,17 @@ class SpeechEngine {
     const text = phrase.t || phrase.s || phrase.e || ''
     const trimmed = text.trim()
     let units = trimmed ? trimmed.split(/\s+/).filter(Boolean).length : 0
-    if (units <= 2 && trimmed.length > 12) units = Math.ceil(trimmed.length / 3)
+    // Script with no spaces between words cannot be counted by splitting on
+    // whitespace — the whole line reads as a single word. The length threshold
+    // below only catches that once a line is long, so a short Chinese or
+    // Tibetan line still priced as one word and advanced faster than it could
+    // be read. Detect it directly instead: CJK, kana, hangul and Tibetan are
+    // all charged per character regardless of length.
+    const wordless =
+      trimmed &&
+      /[\u3000-\u303f\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u3040-\u30ff\uac00-\ud7af\u0f00-\u0fff]/.test(trimmed)
+    if (wordless) units = Math.max(units, Math.ceil(trimmed.length / 3))
+    else if (units <= 2 && trimmed.length > 12) units = Math.ceil(trimmed.length / 3)
     const base = Math.max(1200, units * 320 + 450)
     const rate = this.job?.rate ?? 1
     return Math.max(900, base / rate)

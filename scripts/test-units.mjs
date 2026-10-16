@@ -556,6 +556,69 @@ const stripComments = (text) =>
     `only ${stepRuns} run: lines found`)
 }
 
+// --- 6. The three phone bugs nothing had a guard for -------------------------
+// Earth graphics, recorded audio, and the offline index. All three were
+// behaviour a desktop browser test cannot see: the first two only bite on a
+// packaged Android build, the third only bites once the service worker has a
+// stale copy of something the app cannot recover from.
+{
+  // (a) The Earth must be chosen by hardware, never by packaging. The fallback
+  // for weak devices is real, but keying it on Capacitor shipped a static,
+  // dimmer globe to every phone - the devices with the most GPU in the room -
+  // while a browser tab on a five-year-old laptop got the live scene.
+  const backdrop = readFileSync(path.join(ROOT, 'src/components/EarthBackdrop.jsx'), 'utf8')
+  const scene = readFileSync(path.join(ROOT, 'src/three/EarthScene.js'), 'utf8')
+  const staticInit = backdrop.slice(backdrop.indexOf('const [staticMode]'), backdrop.indexOf('const glow'))
+  const lowPower = scene.slice(scene.indexOf('this.lowPower ='), scene.indexOf('this.seg ='))
+  check('the backdrop globe is not made static because the app is packaged native',
+    staticInit.length > 0 && !/Capacitor|isNativePlatform/.test(staticInit),
+    'hardwareConcurrency / WebGL2 only')
+  check('the 3D Earth keeps full quality on a packaged build',
+    lowPower.length > 0 && !/Capacitor|isNativePlatform/.test(lowPower) &&
+      /hardwareConcurrency/.test(lowPower),
+    'segments and antialiasing decided by cores, not by packaging')
+
+  // (b) A recorded file's own length is the only trustworthy bound on when it
+  // ends. estimateMs() prices text, so it under-counted a 12.3s Chinese verse
+  // at 4.9s and its own safety net cut seven of twelve High King sutra verses.
+  const speech = readFileSync(path.join(ROOT, 'src/audio/speech.js'), 'utf8')
+  const at = speech.indexOf('el.onloadedmetadata')
+  const meta = at >= 0 ? speech.slice(at, speech.indexOf('el.volume', at)) : ''
+  check('a recorded file replaces the guessed deadline with its real duration',
+    at >= 0 && /el\.duration/.test(meta) && /job\.advTimer\s*=\s*setTimeout\(\s*finish/.test(meta),
+    'the watchdog must be reseeded from the file, not from estimateMs')
+
+  // (c) /audio/* is cache-first on purpose - that is what lets the player work
+  // offline - but the manifest is the index of what exists. Served stale it is
+  // wrong about reality, and every prayer it denies gets the silent path on a
+  // phone with no TTS voices at all.
+  const sw = readFileSync(path.join(ROOT, 'public/sw.js'), 'utf8')
+  const cacheName = sw.match(/const CACHE = '([^']+)'/)?.[1] || ''
+  check('the service worker cache has a name that can be bumped',
+    /^prayer-earth-v\d+$/.test(cacheName), cacheName || 'none')
+  const branchAt = sw.indexOf("url.pathname === '/audio/manifest.json'")
+  const branchEnd = sw.indexOf('const cacheable', branchAt)
+  const branch = branchAt >= 0 && branchEnd > branchAt ? sw.slice(branchAt, branchEnd) : ''
+  const fetchAt = branch.indexOf('fetch(req)')
+  check('the audio manifest is fetched before the cache can answer',
+    fetchAt > -1 && fetchAt < branch.indexOf('caches.match(req)'),
+    'a stale index must not lie while the network is up')
+  check('the manifest route exits instead of falling through to cache-first',
+    branch.length > 0 && /\breturn\b/.test(branch))
+  check('the mp3s themselves stay cache-first',
+    /url\.pathname\.startsWith\('\/audio\/'\)/.test(sw),
+    'the offline player still depends on it')
+  // A bump that never got rebuilt ships the old cache name, so nothing
+  // re-caches and the new files are unreachable until the SW itself changes.
+  const distSw = path.join(ROOT, 'dist/sw.js')
+  if (existsSync(distSw)) {
+    const built = readFileSync(distSw, 'utf8')
+    check('the built service worker carries the current cache version',
+      built.match(/const CACHE = '([^']+)'/)?.[1] === cacheName,
+      `${cacheName} vs ${built.match(/const CACHE = '([^']+)'/)?.[1] || 'none'} - run npm run build`)
+  }
+}
+
 const failed = results.filter((r) => !r.pass)
 console.log(`\n[units] ${results.length - failed.length}/${results.length} passed`)
 if (failed.length) {

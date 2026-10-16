@@ -6,7 +6,14 @@
 // installs, deletes the old cache in `activate`, and re-caches fresh files. If
 // the app is served through Cloudflare, also purge the CDN cache for /audio/*
 // so the edge stops handing out the old files.
-const CACHE = 'prayer-earth-v25'
+//
+// `prayer-earth-v26` ships the 274 files recorded after v25 was cut. That miss
+// was not cosmetic: the manifest is what tells the player which prayers have a
+// recording, and a cached one from before the recordings existed sent every
+// newly-recorded prayer down the no-audio path - silent on a phone that has no
+// TTS voices at all. It looked like broken audio rather than a stale index,
+// because nothing in the failure said "cache".
+const CACHE = 'prayer-earth-v26'
 const CORE = [
   '/',
   '/index.html',
@@ -59,6 +66,27 @@ self.addEventListener('fetch', (e) => {
           return res
         })
         .catch(() => caches.match(req).then((hit) => hit || caches.match('/index.html')))
+    )
+    return
+  }
+
+  // The manifest is the index of what is recorded, so it is the one file in
+  // this list that must not be cache-first. Served stale it is not merely old -
+  // it is wrong about reality: it claims prayers with no audio, and the player
+  // then takes the silent path for a recording that is sitting right there in
+  // the cache. Offline it still falls back to the copy it has, so an installed
+  // app keeps working with no network; it just cannot lie while connected.
+  if (url.pathname === '/audio/manifest.json') {
+    e.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res.ok) {
+            const copy = res.clone()
+            caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {})
+          }
+          return res
+        })
+        .catch(() => caches.match(req).then((hit) => hit || Response.error()))
     )
     return
   }
