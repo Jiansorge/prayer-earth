@@ -145,40 +145,6 @@ bought nothing but wall-clock time. It then dispatches a deploy to `sync-engine`
 endpoints) with automatic rollback; see
 [`sync-engine/docs/DEPLOYMENT.md`](https://github.com/Jiansorge/sync-engine/blob/main/docs/DEPLOYMENT.md).
 
-**The commit tells you what production did.** Posting a dispatch is all
-`deploy-dispatch` does, so it always succeeded — even when every step after it
-failed. A commit therefore showed green while production stayed on the previous
-version. sync-engine now writes a `deploy/production` status back onto the
-commit that triggered it: `deploying` as soon as the dispatch is picked up, then
-`deployed <version>` or `deploy failed`. A red deploy is now visible on the
-commit that caused it, not only in a run in another repository.
-
-### A second, unwanted deploy
-
-About 40 seconds after every push to **this** repo, something else deploys to the
-same Worker as an **assets-only** build: no `fetch` handler, no bindings, a
-deploy-day `compatibility_date`, and SPA fallback enabled. `deploy-dispatch` then
-overwrites it roughly nine minutes later with a correct build — but for that
-window `/health`, `/stats` and the WebSocket handshake all return the SPA HTML
-shell instead of Worker JSON, so presence, prayer lights, totals and anonymous
-sync are down.
-
-When `deploy-dispatch` is green this is invisible. **When CI is red, nothing
-overwrites it and it stays broken until someone notices** — that is the shape of
-the outage this causes.
-
-The assets fingerprint narrows it down: the real deploy carries
-`sync-engine/public/_headers` (the CSP and cache headers); the bad one does not,
-and `dist/` here contains no `_headers` at all. So it is not the Worker package
-deployed incorrectly — it is this repo's own build output shipped as static
-assets with no worker attached, under the same script name. That is the
-fingerprint of a **Workers Builds connection on this repository whose build
-config has no `main`**.
-
-Not yet removable from here: that endpoint needs `Account → Workers Builds →
-Read`, which the local token does not have. Until it is deleted in the
-Cloudflare dashboard (Workers → Builds), if a push goes red, run this from
-`sync-engine` immediately after:
 
 ```bash
 npm run repair    # re-deploys the correct Worker and re-verifies it
