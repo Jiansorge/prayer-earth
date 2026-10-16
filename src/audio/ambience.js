@@ -49,7 +49,7 @@ export class AmbientEngine {
 
   // Always returns a Promise. (It used to be `async`; when the ambient rewrite
   // made it a plain function it could return `undefined`, and callers doing
-  // `ambient.ensure().catch()` threw synchronously â€” breaking the nav play
+  // `ambient.ensure().catch()` threw synchronously — breaking the nav play
   // button.) Never rejects: a refused resume just falls through.
   ensure() {
     if (!this.ctx) {
@@ -385,7 +385,7 @@ export class AmbientEngine {
     }
   }
 
-  // A soft, low "ohm" â€” a vocal-like swell used as a chant cadence when the
+  // A soft, low "ohm" — a vocal-like swell used as a chant cadence when the
   // device has no speech voice.
   hum(intensity = 0.3) {
     if (!this.ctx || !this.master) return

@@ -5,7 +5,7 @@ import { prayerBaseTotals, spiritBaseTotals } from './data/totals.js'
 import { mergeStats } from './shared/stats.js'
 import { AMBIENT_PRESETS, DEFAULT_AMBIENT_PRESET } from './audio/presets.js'
 
-// Cheap shallow equality for objects/arrays â€” skips Zustand subscriber
+// Cheap shallow equality for objects/arrays — skips Zustand subscriber
 // notifications when the values haven't actually changed. Used on the
 // high-frequency sync setters so presence ticks that carry unchanged
 // counts don't trigger cascading re-renders across every subscriber.
@@ -30,7 +30,7 @@ const safeCounterMap = (value) => {
 }
 // How many days of per-day history we retain. Must be comfortably larger than a
 // realistic streak, because the current streak is DERIVED by walking this map
-// back from today â€” a cap below the streak length would silently under-report
+// back from today — a cap below the streak length would silently under-report
 // it. 120 days (~4 months) leaves ample payload headroom while representing any
 // realistic streak.
 const DAY_MAP_LIMIT = 120
@@ -206,10 +206,10 @@ const safeStorage = {
   // Persisting on every set() meant the prayer clock wrote the whole payload to
   // localStorage ~3x/second. We do NOT debounce these writes: a hard kill (adb
   // force-stop, OS process death) fires no pagehide/visibilitychange, so a
-  // pending debounced write would be LOST â€” a small but real decrease in the
+  // pending debounced write would be LOST — a small but real decrease in the
   // user's prayer seconds on relaunch. Durability wins: writes stay synchronous.
-  // (Write VOLUME is instead reduced by batching the clock into one set()/tick â€”
-  // see tickPrayerClock â€” and day maps are bounded, so quota is not a risk.)
+  // (Write VOLUME is instead reduced by batching the clock into one set()/tick —
+  // see tickPrayerClock — and day maps are bounded, so quota is not a risk.)
   // A write failure is latched + surfaced so silent loss can't go unnoticed.
   setItem: (name, value) => {
     try {
@@ -258,8 +258,8 @@ const dayKey = (t) =>
   ).padStart(2, '0')}`
 
 // Locale codes the app ships, in the same order as src/i18n.js LOCALES. Kept
-// here (instead of imported) because i18n.js imports this store â€” a circular
-// import â€” and only the codes are needed for matching the browser language.
+// here (instead of imported) because i18n.js imports this store — a circular
+// import — and only the codes are needed for matching the browser language.
 const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'de', 'pt', 'it', 'ru', 'zh', 'ar', 'ja', 'ko', 'hi', 'vi', 'tl', 'bo']
 
 // Map browser language tags that don't use our base code to the closest locale

@@ -501,10 +501,15 @@ export class EarthScene {
     // lower resolution so the scene stays smooth on budget phones.
     // prefers-reduced-motion is a separate flag: it only stops animation
     // (auto-rotation, twinkle, aurora) without degrading visual quality.
+    //
+    // This is a statement about the hardware, so it tests the hardware. It
+    // used to also trigger on any native build, which capped every phone at
+    // DPR 1 - a third of the pixels on a 3x screen - regardless of how capable
+    // the phone was. A flagship in the app has more GPU than a browser tab on
+    // an old laptop; packaging is not a performance tier. Devices that truly
+    // cannot hold the scene still get caught by `failed` in EarthBackdrop.
     this.reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-    this.lowPower =
-      (typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4) ||
-      !!window.Capacitor?.isNativePlatform?.()
+    this.lowPower = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4
     this.seg = this.lowPower ? 96 : 128 // sphere segments (was 192)
 
     const w = container.clientWidth || 1
@@ -525,11 +530,13 @@ export class EarthScene {
     this.renderer.setClearColor(this.backdrop ? 0x040714 : 0x000000, this.backdrop ? 1 : 0)
     container.appendChild(this.renderer.domElement)
 
-    // sun light for the earth shader â€” toward the camera so the day side faces us
+    // sun light for the earth shader — toward the camera so the day side faces us
     this.sunDir = new THREE.Vector3(0.35, 0.28, 0.89).normalize()
     // the prayer backdrop turns slowly and steadily so the silhouette feels
-    // quietly alive behind the words
-    this.rotVel = this.backdrop ? 0.004 : 0.0016
+    // quietly alive behind the words. Both modes open at the same 0.096 rad/s:
+    // the backdrop's old 0.004 at its 24fps cap and the full Earth's 0.0016 at
+    // 60fps are the same speed, which is why there is one number now.
+    this.rotVel = 0.0016
 
     // start facing Europe/Africa so recognizable geography greets the viewer
     this.earthGroupRotation = -1.25
@@ -2278,6 +2285,16 @@ this.autoRotate = !this.reducedMotion
     const focusMs = document.hasFocus() ? 0 : 120
     const now = performance.now()
     if ((this.frameMs || focusMs) && now - this.lastFrame < Math.max(this.frameMs || 0, focusMs)) return
+    // Rotation is integrated per unit of time, not per frame. It used to be
+    // added once per rendered frame, so the Earth turned at whatever rate the
+    // device happened to manage: a backdrop capped at 24fps and a phone
+    // holding 30 both turned slower than a 60fps desktop, and one that fell
+    // to 8fps behind the unfocused-tab throttle barely moved at all. That is
+    // why the phone looked almost still next to the browser.
+    //
+    // `dt` counts 60fps frames, so 1 is the reference step and the constants
+    // below keep the speed they had at their old frame rates.
+    const dt = this.lastFrame ? Math.min((now - this.lastFrame) / 16.6667, 3) : 1
     this.lastFrame = now
     const t = now / 1000
 
@@ -2287,13 +2304,17 @@ this.autoRotate = !this.reducedMotion
     this.corona += (this.coronaT - this.corona) * 0.05
     this.wisps += (this.wispsT - this.wisps) * 0.05
 
-    // auto-rotation glides: ease back toward the calm base speed after a drag
+    // auto-rotation glides: ease back toward the calm base speed after a drag.
+    // The backdrop's 0.0008-per-frame at its 24fps cap and the full Earth's
+    // 0.0016 at 60fps are both 0.096 rad/s, so as per-60fps-frame values they
+    // are the same number: 0.0016. The easing is normalised the same way so a
+    // slow device still settles in the same wall-clock time.
     if (this.autoRotate) {
-      this.rotVel += ((this.backdrop ? 0.0008 : 0.0016) - this.rotVel) * 0.02
+      this.rotVel += (0.0016 - this.rotVel) * (1 - Math.pow(1 - 0.02, dt))
     } else {
-      this.rotVel *= 0.96
+      this.rotVel *= Math.pow(0.96, dt)
     }
-    this.earthGroup.rotation.y += this.rotVel
+    this.earthGroup.rotation.y += this.rotVel * dt
 
     if (!this.backdrop && !this.reducedMotion) {
       // gentle drifting camera, like watching from a slow orbit

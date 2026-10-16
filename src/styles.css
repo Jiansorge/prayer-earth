@@ -897,6 +897,15 @@ html[dir='rtl'] .chooser-arrow.right {
   scroll-snap-type: x proximity;
   padding-bottom: 6px;
   margin-bottom: -6px;
+  /* Horizontal lists were the two scrollers left uncontained, so a swipe
+     past the end of the chips chained into .view and dragged the page with
+     it. `contain` stops the chain; `touch-action` is the half that actually
+     fixes the lag: without it the WebView spends the first stretch of every
+     gesture deciding whether this row or the page underneath owns it, which
+     is the hesitation felt as unresponsiveness. Declaring the axis here hands
+     vertical drags straight to .view with nothing to arbitrate. */
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
 }
 
 .chooser::-webkit-scrollbar {
@@ -3515,6 +3524,10 @@ html[dir='rtl'] .chooser-arrow.right {
   scrollbar-width: none;
   padding-bottom: 2px;
   -webkit-overflow-scrolling: touch;
+  /* Same treatment as .chooser: the other horizontal list that was never
+     contained, with the same chain-into-the-page and same gesture arbitration. */
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
 }
 .home-favs-scroll::-webkit-scrollbar { display: none; }
 .home-fav-chip {

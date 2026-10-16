@@ -324,7 +324,7 @@ const testTaras = async () => {
   // The first 21-Taras verse is ~10-12s of speech, so it must STILL be the
   // active line 5s in. The old bug counted the Tibetan underlay's tsheg as one
   // "word", collapsed the stall-watchdog to ~4s, and cut every verse after a
-  // few words â€” here the active line would already have changed by 5s.
+  // few words — here the active line would already have changed by 5s.
   const firstStillPlaying = !!samples[0] && samples[0] === samples[9]
   check('21 Taras first verse plays in full (not cut off ~4s)', firstStillPlaying, `at0.5s=${(samples[0]||'').slice(0,18)} at5s=${(samples[9]||'').slice(0,18)}`)
   await cdp.evaluate(`document.querySelector('.ctrl-btn.stop')?.click()`)
@@ -366,7 +366,7 @@ const testLifecycle = async () => {
     await enableTestBridge()
     foreground = await cdp.evaluate(`(() => { const s = window.__store.getState(); return { playing: s.playing, paused: s.paused, seconds: s.localPrayerSeconds } })()`)
   }
-  // The prayer must still be playing after returning to the foreground â€” that
+  // The prayer must still be playing after returning to the foreground — that
   // silent-resume is the regression this guards. Assert the real foreground
   // state explicitly; only nudge playback back afterwards so the rest of the
   // suite can continue.
@@ -1238,7 +1238,7 @@ try {
   // Flush the sentinel to disk before the reinstall. The WebView batches
   // localStorage writes, so a key set as the very last action before
   // `adb install -r` can still be in the write buffer when the process is
-  // killed â€” it would then read back null after the upgrade (a false
+  // killed — it would then read back null after the upgrade (a false
   // data-loss signal). Backing the app out makes Android flush WebView
   // storage to disk before we swap the APK.
   adb(['shell', 'input', 'keyevent', '3'])

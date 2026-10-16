@@ -140,15 +140,43 @@ export default function App() {
   const noticeText =
     syncNotice === 'rate' ? t('sync.noticeRate') : syncNotice ? t('sync.noticeError') : null
 
-  // Follow the pointer with the light so the UI feels alive.
-  useEffect(() => {
-    const move = (e) => {
-      document.documentElement.style.setProperty('--mx', `${e.clientX}px`)
-      document.documentElement.style.setProperty('--my', `${e.clientY}px`)
-    }
-    window.addEventListener('pointermove', move, { passive: true })
-    return () => window.removeEventListener('pointermove', move)
-  }, [])
+      // Follow the pointer with the light so the UI feels alive.
+      //
+      // Touch is skipped outright. There is no cursor to follow - the light
+      // would just sit under the finger - and the cost is real: this writes a
+      // variable that a full-viewport `mix-blend-mode: screen` layer reads, so
+      // every move repaints and re-blends a screen-sized gradient. On a mouse
+      // that is a nicety running alongside idle hover; on a phone pointermove
+      // fires for the whole length of a scroll drag, so the decorative layer
+      // was repainting exactly while the page was trying to scroll. That is a
+      // large part of why scrolling felt heavy and slightly behind the finger.
+      //
+      // The remaining cases are coalesced onto the frame. The light is
+      // decorative and has no meaning between frames, so rAF loses nothing and
+      // caps the writes at the display refresh rate however fast the device
+      // reports its pointer.
+      useEffect(() => {
+        let raf = 0
+        let x = 0
+        let y = 0
+        const flush = () => {
+          raf = 0
+          const s = document.documentElement.style
+          s.setProperty('--mx', `${x}px`)
+          s.setProperty('--my', `${y}px`)
+        }
+        const move = (e) => {
+          if (e.pointerType === 'touch') return
+          x = e.clientX
+          y = e.clientY
+          if (!raf) raf = requestAnimationFrame(flush)
+        }
+        window.addEventListener('pointermove', move, { passive: true })
+        return () => {
+          window.removeEventListener('pointermove', move)
+          if (raf) cancelAnimationFrame(raf)
+        }
+      }, [])
 
 
 
