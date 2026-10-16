@@ -145,15 +145,6 @@ bought nothing but wall-clock time. It then dispatches a deploy to `sync-engine`
 endpoints) with automatic rollback; see
 [`sync-engine/docs/DEPLOYMENT.md`](https://github.com/Jiansorge/sync-engine/blob/main/docs/DEPLOYMENT.md).
 
-
-```bash
-npm run repair    # re-deploys the correct Worker and re-verifies it
-```
-
-`npm run repair:check` is the read-only version. Track this in
-`sync-engine/scripts/repair.mjs`, whose header comment carries the full
-forensic trail.
-
 ## Security & privacy
 
 The app is privacy-first and hardened by default:
