@@ -722,6 +722,15 @@ h3,
   overflow: hidden;
 }
 
+/* Snappier than the shared .fade-in (0.8s): the grid is a wall of nineteen
+   tiles, and at the shared pace each one was invisible for the better part of a
+   second on top of its own stagger. The grid as a whole finished arriving about
+   1.9s after coming back from a prayer, which read as tiles that had gone
+   missing rather than tiles still fading in. */
+.tile.fade-in {
+  animation-duration: 0.55s;
+}
+
 .tile::after {
   content: '';
   position: absolute;

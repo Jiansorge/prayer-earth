@@ -146,7 +146,12 @@ export default function HomePage() {
   const missedToday = streak > 0 && !!lastPrayedDay && lastPrayedDay !== dayKey(new Date())
 
   return (
-    <div className="view fade-in">
+    // Plain "view", not "view fade-in": .view already runs its own viewIn
+    // entrance, and the extra .fade-in only overrode it with a slower 0.8s
+    // fadeUp. Home was therefore the one route whose transition cost more than
+    // every other, which is exactly why coming back from a prayer felt like it
+    // stalled where going elsewhere did not.
+    <div className="view">
       <Sparkles count={18} />
       {/* home-head, not a bare .row: on a narrow phone the buttons were taking
           their natural width and squeezing the headline into a 109px column,
@@ -290,7 +295,14 @@ export default function HomePage() {
             className="tile fade-in"
             style={{
               '--tile-glow': s.glow,
-              animationDelay: `${i * 60}ms`
+              // Capped, not linear in the index. An uncapped 60ms step put the
+              // nineteenth tile a full second behind the first, so the whole
+              // grid was still invisible nearly two seconds after coming back
+              // from a prayer — and on a narrow screen the grid is ten rows
+              // deep, so the rows the reader scrolls to were exactly the ones
+              // that had not arrived. The cascade still reads across the first
+              // rows; nothing waits long enough to look missing.
+              animationDelay: `${Math.min(i, 5) * 55}ms`
             }}
             onClick={() => openPrayerPicker(s.id)}
           >
