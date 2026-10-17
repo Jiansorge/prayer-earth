@@ -4419,8 +4419,24 @@ input[type='radio'] {
 .picker-favs {
   display: flex;
   flex-wrap: wrap;
+  align-content: flex-start;
   gap: 8px;
   margin: 4px 20px 10px;
+  /* Bounded and scrollable. The sheet is a fixed-height flex column that clips,
+     and this block is a flex item with visible overflow, so its automatic
+     minimum size is its own content: a long favourites list could not be
+     squeezed and was cut off at the card's edge, taking the prayer list's
+     height with it. The declarations depend on each other - overflow-y is what
+     collapses the content-based minimum to zero, and only then does max-height
+     get to apply (a min beats a max) - and flex-basis auto is what stops the
+     sheet from squeezing this down to a single ambiguous row instead of giving
+     it a band and letting the prayer list yield the rest. align-content keeps
+     wrapped rows packed from the top so scrolling never opens a gap above row
+     one. With a short list the natural height stands; the cap only ever bites. */
+  flex: 0 0 auto;
+  max-height: min(28dvh, 170px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .picker-favs + .picker-list {
   border-top: 1px solid rgba(255, 255, 255, 0.08);

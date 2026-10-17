@@ -756,6 +756,26 @@ const stripComments = (text) =>
   check('a tradition tile fades in faster than the shared .fade-in',
     /\.tile\.fade-in\s*\{[^}]*animation-duration:\s*0\.[0-7]\d*s/.test(styles),
     'a nineteen-tile wall at 0.8s each is a long time to look empty')
+
+  // (i) The picker sheet is a fixed-height column that clips, and the favourites
+  // strip sits above the prayer list inside it. As a flex item with visible
+  // overflow it would not compress below its own content, so favouriting enough
+  // prayers made that strip taller than the whole card: the sheet clipped it and
+  // shrank the prayer list to about 25px, leaving neither usable.
+  // Strip the block comment first: the explanation above names max-height and
+  // overflow-y, so a matcher run over raw text could pass on its own prose.
+  const favsRule = ((styles.match(/\.picker-favs\s*\{[^}]*\}/) || [''])[0])
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\s+/g, ' ')
+  check('the favourites strip is bounded and scrolls inside the sheet',
+    /max-height\s*:/.test(favsRule) && /overflow-y\s*:\s*auto/.test(favsRule),
+    favsRule || '.picker-favs rule not found')
+  check('the favourites strip is not squeezed down to a single row',
+    /flex:\s*0\s*0\s*auto/.test(favsRule),
+    'the sheet must give the list what the strip does not use, not divide it away')
+  check('the prayer list still scrolls on its own',
+    /\.picker-list\s*\{[^}]*overflow-y:\s*auto/.test(styles),
+    'bounded only by the sheet, the list is what holds the long tradition')
 }
 
 const failed = results.filter((r) => !r.pass)
