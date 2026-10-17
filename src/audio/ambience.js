@@ -32,10 +32,46 @@ export function bedTarget({ level, ambienceLevel, volume }) {
   return l * BED_HEADROOM * a * v
 }
 
+// Where the output ceiling starts to bend, and the WaveShaper curve behind it.
+//
+// Pulled out of the class like bedTarget so the shape can be tested without an
+// AudioContext - and it needs testing, because it is the guarantee that nothing
+// ever clips.
+//
+// A DynamicsCompressorNode only starts reducing gain after its attack (6 ms
+// here), so transients - a bell, a chant swell, two beds crossfading, the voice
+// arriving over the top - punch through it untouched. Its output is also not
+// guaranteed to stay inside [-1, 1]. Float samples above 1.0 are squared off
+// when the graph is rendered down to 16-bit, and that is the crunch: it gets
+// worse exactly when a lot is happening at once, which is why it sounds like it
+// follows a burst of activity rather than any single control.
+//
+// The curve is exactly linear below the knee, so ordinary levels pass through
+// untouched and the bed keeps its tone; above it, it saturates smoothly to
+// ~0.93 at full scale. Nothing routed through the limiter can leave it above
+// 1.0, no matter how many sources sum into it.
+export const CEILING_KNEE = 0.7
+
+export function ceilingCurve(size = 4097, knee = CEILING_KNEE) {
+  const curve = new Float32Array(size)
+  for (let i = 0; i < size; i++) {
+    const x = (i / (size - 1)) * 2 - 1
+    const a = Math.abs(x)
+    const y = a <= knee ? a : knee + (1 - knee) * Math.tanh((a - knee) / (1 - knee))
+    curve[i] = x < 0 ? -y : y
+  }
+  return curve
+}
+
 export class AmbientEngine {
   constructor() {
     this.ctx = null
     this.master = null
+    // Both are null until ensure() builds the graph. They used to be left
+    // undefined, so any caller touching ambient.limiter before a gesture (which
+    // is what creates the context) read undefined rather than null.
+    this.limiter = null
+    this.ceiling = null
     this.level = 0
     this.vol = 1
     this.running = false
@@ -59,17 +95,24 @@ export class AmbientEngine {
         this.ctx = new AC()
       // The bed is deliberately loud now (~2.5 master) and the
       // recorded voice shares this same AudioContext, so bed + voice (+ chant)
-      // can sum past 1.0 and crackle. A gentle compressor before destination
-      // keeps peaks in range without audibly squashing the bed. Everything
-      // routed through Web Audio (master, chantBus, the recorded voice) goes
-      // through this; the native <audio> element path is OS-mixed.
+      // can sum past 1.0 and crackle. The compressor keeps the bed from
+      // audibly squashing; the WaveShaper after it is the actual ceiling (see
+      // ceilingCurve) and is what makes clipping impossible. Everything routed
+      // through Web Audio (master, chantBus, the recorded voice) goes through
+      // this; the native <audio> element path is OS-mixed.
       this.limiter = this.ctx.createDynamicsCompressor()
       this.limiter.threshold.value = -14
       this.limiter.knee.value = 10
       this.limiter.ratio.value = 18
       this.limiter.attack.value = 0.006
       this.limiter.release.value = 0.32
-        this.limiter.connect(this.ctx.destination)
+      this.ceiling = this.ctx.createWaveShaper()
+      this.ceiling.curve = ceilingCurve()
+      // 4x oversampling keeps the saturated part from folding back as aliasing,
+      // which would be its own kind of grit.
+      this.ceiling.oversample = '4x'
+      this.limiter.connect(this.ceiling)
+      this.ceiling.connect(this.ctx.destination)
         this.master = this.ctx.createGain()
         this.master.gain.value = 0
         // A new context means the old scheduled target is meaningless; without
@@ -281,13 +324,20 @@ export class AmbientEngine {
     if (!this.ctx) return
     const t = this.ctx.currentTime
     if (bus) {
-      // Cancel any scheduled fade and ramp linearly to silence, so the source
-      // cut below happens at zero (a setTargetAtTime tail would leave ~20%
-      // audible and click when the oscillators stopped).
+      // Fade to silence first, so the source cut below happens at zero rather
+      // than mid-waveform.
+      //
+      // setTargetAtTime, not cancelScheduledValues + setValueAtTime(g.value) +
+      // linearRamp. AudioParam.value during active automation is not reliably
+      // the instantaneous value across engines, so a ramp resumed from that
+      // reading can start at the wrong point and jump - which is the click
+      // _rampMaster's comment describes, and rapid bed switching walked
+      // straight into it here. This starts from wherever the parameter actually
+      // is; with a time constant of XFADE/6 the residual when the sources stop
+      // is under 1% of the gap, which is inaudible.
       const g = bus.gain
       g.cancelScheduledValues(t)
-      g.setValueAtTime(g.value, t)
-      g.linearRampToValueAtTime(0.0001, t + XFADE)
+      g.setTargetAtTime(0.0001, t, XFADE / 6)
     }
     setTimeout(() => {
       for (const n of stops) {
@@ -474,12 +524,20 @@ export class AmbientEngine {
     // Build the ambient bed the user selected (default: Reiki Drift).
     const chosen = useStore.getState().ambientPreset || 'reiki'
     this.buildPreset(AMBIENT_PRESETS.includes(chosen) ? chosen : 'reiki')
-    // Re-apply a persisted mute to the bed: nothing called setVolume at boot, so
-    // a "muted" app would otherwise play the bed at full (louder now that the
-    // ceiling is ~2.5).
-    this.setVolume(useStore.getState().muted ? 0 : 1)
+    // Re-apply the user's master volume, and a persisted mute, to the bed.
+    // Nothing called setVolume at boot, so a muted app would otherwise play the
+    // bed at full; but the old fix for that forced 1, which meant the bed
+    // ignored the very slider meant to govern it until something else happened
+    // to call applyVolumes(). Starting a prayer could then be far louder than
+    // the setting says - which is its own way to clip.
+    const s = useStore.getState()
+    this.setVolume(s.muted ? 0 : s.volume ?? 1)
     this.setLevel(this.level)
-    this.ring(0.8)
+    // No bell here. start() already ended with one, and the only caller rang
+    // its own a moment later, so every prayer began with two bowls struck
+    // together - two detuned partial stacks at once, which is both an audible
+    // clash and a pile of amplitude summed straight into the chanBus. The call
+    // site decides whether starting a prayer should chime.
   }
 
   stop() {

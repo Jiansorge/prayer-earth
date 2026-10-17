@@ -452,6 +452,101 @@ const stripComments = (text) =>
     leak.error ? leak.error.message : `signal=${leak.signal} status=${leak.status}`)
 }
 
+// --- sound must never clip, and never be cut while it is still audible -----
+// Reported as a crunchy, glitchy quality that arrives when a lot happens fast
+// (scrolling hard, a burst of taps). Four distinct causes, each asserted here:
+// samples leaving Web Audio above full scale, a gain written instead of moved,
+// a phrase stopped mid-waveform, and a wall-clock watchdog mistaking a busy
+// main thread for a dead engine. There is no harness in this file that can
+// listen to output, so every check is over source or over the pure curve
+// arithmetic.
+{
+  const amb = readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8')
+  const speech = readFileSync(path.join(ROOT, 'src/audio/speech.js'), 'utf8')
+  const { ceilingCurve, CEILING_KNEE } = await import('../src/audio/ambience.js')
+
+  // The ceiling, tested as arithmetic rather than as text: full scale in, and
+  // nothing above full scale may come out.
+  const curve = ceilingCurve(4097)
+  let peak = -Infinity
+  let monotonic = true
+  for (let i = 0; i < curve.length; i++) {
+    peak = Math.max(peak, curve[i])
+    if (i > 0 && curve[i] < curve[i - 1]) monotonic = false
+  }
+  check('no sample can leave the output ceiling above full scale',
+    peak < 1 && curve[curve.length - 1] < 1, 'peak=' + peak)
+  check('the ceiling never folds a signal back on itself', monotonic,
+    'a non-monotonic transfer curve inverts the waveform it is supposed to tame')
+
+  // Exactly linear below the knee, or the ceiling colours ordinary levels -
+  // and a limiter you can hear is not an improvement.
+  const kneeAt = Math.round(((CEILING_KNEE + 1) / 2) * (curve.length - 1))
+  let linear = true
+  for (let i = kneeAt - 12; i < kneeAt - 1; i++) {
+    if (Math.abs(curve[i + 1] - curve[i] - (curve[i] - curve[i - 1])) > 1e-6) linear = false
+  }
+  check('ordinary levels pass through the ceiling untouched', linear)
+
+  check('the output ceiling is wired into the graph',
+    /createWaveShaper\(\)[\s\S]{0,600}limiter\.connect\(this\.ceiling\)[\s\S]{0,300}ceiling\.connect\(this\.ctx\.destination\)/.test(amb),
+    'a ceiling that nothing connects to guarantees nothing')
+
+  // Moving a gain while a phrase sounds must be a move. Assigning .value is a
+  // step between two adjacent samples, which is a click - and the volume
+  // slider, mute, and anything ending in applyVolumes() all arrive here.
+  const setVol = (speech.match(/setVolume\(volume\)\s*\{[\s\S]{0,900}?\n  \}/) || [''])[0]
+  check('the voice gain ramps instead of stepping',
+    /setTargetAtTime/.test(setVol) && !/gain\.value\s*=/.test(setVol),
+    setVol.slice(0, 220))
+  check('the element volume ramps instead of stepping',
+    /_rampElementVolume\(this\.cloudAudio/.test(setVol))
+
+  // A phrase stopped at full amplitude ends mid-waveform. The fade has to be
+  // scheduled before the stop, and the stop has to be in the future.
+  const stopBody = (speech.match(/stopCloudSource\(\)\s*\{[\s\S]{0,4000}?\n  \}/) || [''])[0]
+  check('a playing phrase is faded before it is cut',
+    /setTargetAtTime\(0\.0001/.test(stopBody) && /src\.stop\(t \+ /.test(stopBody),
+    stopBody.slice(0, 240))
+
+  // The bed's teardown used exactly the pattern _rampMaster's own comment
+  // warns about - resuming a ramp from a reading of gain.value - and rapid bed
+  // switching walked straight into it. Comments are stripped first: the fix
+  // names the pattern it rejects, so a raw match would read its own prose as a
+  // failure.
+  const stripComments = (text) =>
+    text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
+  const teardown = stripComments((amb.match(/_teardownPreset\(\)\s*\{[\s\S]{0,6000}?\n  \}/) || [''])[0])
+  check('the bed fades without resuming from a stale gain reading',
+    !/setValueAtTime\(g\.value/.test(teardown) && /setTargetAtTime\(0\.0001/.test(teardown),
+    teardown.slice(0, 240))
+
+  // The clock is not evidence. Under load Date.now() runs past the limit while
+  // the phrase is healthy, and the "restart" is a cut plus the phrase from the
+  // top - repeated, that is the crackle that follows activity.
+  check('the watchdog asks the engine before cutting a healthy phrase',
+    /elapsed > \(j\.phraseHold \|\| 4000\) \* 2 \+ 4000 && this\.voiceHealth\(\) !== 'ok'/.test(speech),
+    'elapsed time alone mistook a busy main thread for a dead engine')
+  check('the stall guard also waits while a phrase is still sounding',
+    /voiceHealth\(\) === 'ok'/.test(speech))
+
+  // Each preview call built a fresh Audio element and kept no handle, so
+  // auditioning voices in quick succession stacked them at full volume.
+  check('only one voice preview can play at a time',
+    /this\._previewAudio = audio/.test(speech) && /this\._previewAudio\.pause\(\)/.test(speech),
+    'an unreferenced preview element cannot be stopped')
+
+  // The engine used to force the bed's volume to 1 on start, so a prayer could
+  // begin louder than the very slider that governs it, and start() used to ring
+  // a second bowl on top of the call site's own.
+  const startBody = (amb.match(/async start\(\)\s*\{[\s\S]{0,2400}?\n  \}/) || [''])[0]
+  check('starting a prayer respects the master volume',
+    /s\.muted \? 0 : s\.volume \?\? 1/.test(startBody),
+    startBody.slice(-260))
+  check('the engine does not ring a bowl the call site already rings',
+    !/this\.ring\(/.test(startBody))
+}
+
 // --- sharing must go through the hardened path ---------------------------
   // PrayerPage used to hand-roll this: navigator.share, then a bare
   // navigator.clipboard.writeText awaited directly. That last one can stay

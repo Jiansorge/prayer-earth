@@ -274,23 +274,65 @@ class SpeechEngine {
   }
 
   // Stop the currently-speaking decoded phrase so a new phrase (or a stop/pause)
-  // can never overlap it.
+  // can never overlap it audibly.
+  //
+  // It fades first. A recorded phrase cut at full amplitude starts and ends
+  // mid-waveform, and that discontinuity is a click - on pause, on stop, on a
+  // voice change, on a loop toggle, and on every watchdog restart, which is
+  // where a busy main thread turns into audible crackle. The fade reaches
+  // under 1% inside 60 ms, so the next phrase barely overlaps it at all.
+  //
+  // The nodes are torn down in the same timer rather than immediately:
+  // disconnecting the gain here would cut the fade we just scheduled, and the
+  // next phrase replaces this.cloudGain/cloudNodes before the timer runs, so
+  // the old ones are held locally.
   stopCloudSource() {
-    if (this.cloudSource) {
-      try {
-        this.cloudSource.onended = null
-        try {
-          this.cloudSource.stop()
-        } catch {}
-        this.cloudSource.disconnect()
-      } catch {}
-      this.cloudSource = null
-    }
-    for (const node of this.cloudNodes) {
-      try { node.disconnect() } catch {}
-    }
+    const src = this.cloudSource
+    const gain = this.cloudGain
+    const nodes = this.cloudNodes || []
+    this.cloudSource = null
     this.cloudNodes = []
     this.cloudGain = null
+    // A volume ramp aimed at the element we are about to reuse would otherwise
+    // keep writing after the phrase it belongs to is gone, and land the next
+    // one at the wrong loudness.
+    if (this._volRaf) {
+      cancelAnimationFrame(this._volRaf)
+      this._volRaf = null
+    }
+
+    if (src) {
+      try {
+        src.onended = null
+        let t = 0
+        try {
+          t = src.context.currentTime
+        } catch {}
+        try {
+          if (gain && gain.gain) gain.gain.setTargetAtTime(0.0001, t, 0.012)
+        } catch {}
+        try {
+          src.stop(t + 0.06)
+        } catch {}
+        setTimeout(() => {
+          try {
+            src.disconnect()
+          } catch {}
+          for (const n of nodes) {
+            try {
+              n.disconnect()
+            } catch {}
+          }
+        }, 260)
+      } catch {}
+    } else {
+      for (const n of nodes) {
+        try {
+          n.disconnect()
+        } catch {}
+      }
+    }
+
     // Also stop the shared <audio> element. If a recorded phrase was still
     // playing (a slow connect let the advance timer move on early) and the next
     // phrase takes the Web-Audio path, the element would keep playing underneath
@@ -654,18 +696,59 @@ class SpeechEngine {
   // Re-tune loudness immediately, even mid-phrase. The cloud voice is an Audio
   // element, so its volume can change live; speechSynthesis has no live control
   // (the next utterance picks it up).
+  //
+  // Both paths move rather than step. Assigning a gain (or an element volume)
+  // while a phrase is sounding changes the waveform amplitude from one sample to
+  // the next, and that discontinuity is heard as a click - so dragging the
+  // volume slider, muting, or any burst of calls that ends in applyVolumes()
+  // crackled the voice instead of turning it down.
   setVolume(volume) {
     const vol = Math.max(0, Math.min(1, volume ?? 0.8))
-    if (this.cloudAudio) {
-      try {
-        this.cloudAudio.volume = Math.min(1, vol * 1)
-      } catch {}
-    }
+    if (this.cloudAudio) this._rampElementVolume(this.cloudAudio, vol)
     if (this.cloudGain) {
       try {
-        this.cloudGain.gain.value = Math.max(0.001, Math.min(1, vol * 1))
+        // Starts from wherever the gain actually is, so it cannot jump in.
+        this.cloudGain.gain.setTargetAtTime(Math.max(0.001, vol), this.cloudGain.context.currentTime, 0.03)
       } catch {}
     }
+  }
+
+  // The <audio> element's volume is a plain number rather than an AudioParam,
+  // so it has to be moved by hand. One ramp per element, cancelled when a new
+  // target arrives: without that, a drag across the slider leaves several
+  // loops running that each write the same field and fight to the end.
+  _rampElementVolume(el, target) {
+    if (!el) return
+    if (this._volRaf) {
+      cancelAnimationFrame(this._volRaf)
+      this._volRaf = null
+    }
+    let from = 0
+    try {
+      from = Number.isFinite(el.volume) ? el.volume : target
+    } catch {
+      from = target
+    }
+    const write = (v) => {
+      try {
+        el.volume = Math.max(0, Math.min(1, v))
+      } catch {}
+    }
+    if (Math.abs(from - target) < 0.002 || document.hidden || typeof requestAnimationFrame !== 'function') {
+      write(target)
+      return
+    }
+    const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now()
+    const step = (now) => {
+      const k = Math.min(1, (now - t0) / 60)
+      write(from + (target - from) * k)
+      if (k < 1) {
+        this._volRaf = requestAnimationFrame(step)
+      } else {
+        this._volRaf = null
+      }
+    }
+    this._volRaf = requestAnimationFrame(step)
   }
 
   // Plays a short spoken sample of the currently-chosen voice so the user can
@@ -687,7 +770,33 @@ class SpeechEngine {
           if (this.cloudAudio) {
             try { this.cloudAudio.pause() } catch {}
           }
+          // One preview at a time. Every call built a fresh Audio element and
+          // kept no handle on the previous one, so auditioning voices in quick
+          // succession stacked them: several samples playing at once at full
+          // volume, which clips for real rather than merely sounding busy. The
+          // object URL is released with the element, or it is held for the life
+          // of the page.
+          if (this._previewAudio) {
+            try {
+              this._previewAudio.onended = null
+              this._previewAudio.onerror = null
+              this._previewAudio.pause()
+            } catch {}
+            if (this._previewUrl) {
+              try { URL.revokeObjectURL(this._previewUrl) } catch {}
+            }
+          }
           const audio = new Audio(url)
+          this._previewAudio = audio
+          this._previewUrl = url
+          const release = () => {
+            if (this._previewAudio !== audio) return
+            this._previewAudio = null
+            this._previewUrl = null
+            try { URL.revokeObjectURL(url) } catch {}
+          }
+          audio.onended = release
+          audio.onerror = release
           const rate = useStore.getState().speechRate || 1
           audio.preservesPitch = true
           audio.mozPreservesPitch = true
@@ -932,6 +1041,15 @@ class SpeechEngine {
         job.guard = setTimeout(takeover, 3000)
         return
       }
+      // Same evidence rule as the watchdog below: if the phrase is audibly
+      // still going, the clock ran ahead of the engine rather than the engine
+      // dying, and handing the prayer over to the chant mid-sentence would be
+      // its own interruption. Keep waiting; a genuinely dead voice is caught on
+      // a later pass.
+      if (this.voiceHealth() === 'ok') {
+        job.guard = setTimeout(takeover, 3000)
+        return
+      }
       j.mode = 'timed'
       j.chantReason = 'stall'
       this.notifyFallback('stall')
@@ -983,6 +1101,40 @@ class SpeechEngine {
     }, delay)
   }
 
+  // Is the voice actually sounding right now?
+  //
+  // The watchdogs are wall-clock, because a dead engine has no other state to
+  // read. But a busy main thread does the same thing to that clock: scrolling
+  // re-renders, a burst of taps queues work, the 1 Hz prayer write lands — and
+  // Date.now() keeps moving while the phrase is perfectly healthy. Acting on
+  // elapsed time alone is what makes crackle follow activity, because the
+  // "restart" it performs is a hard cut followed by the same phrase from the
+  // top, every six seconds for as long as the app is busy.
+  //
+  // 'ok'      we can see it sounding — never restart this
+  // 'stalled' it claims to be playing and its position is not moving — restart
+  // 'unknown' no position to read (speechSynthesis, which reports speaking=true
+  //           long after it has died, so its flags cannot be trusted) — fall
+  //           back to the elapsed-time rule
+  voiceHealth() {
+    const el = this.cloudAudio
+    if (el && !el.paused && !el.ended) {
+      const now = el.currentTime
+      const seen = this._lastMediaTime
+      this._lastMediaTime = now
+      // First observation gets the benefit of the doubt; from then on only a
+      // moving position counts as healthy.
+      if (seen === undefined || now > seen) return 'ok'
+      return 'stalled'
+    }
+    this._lastMediaTime = undefined
+    // A decoded phrase is a started buffer source: while this is set it is
+    // still sounding and will end on its own.
+    if (this.cloudSource) return 'ok'
+    if (!this.synth) return 'stalled'
+    return 'unknown'
+  }
+
   // iOS sometimes pauses synthesis; a gentle resume keeps the voice going. A
   // mobile OS can also suspend the shared AudioContext in the background — if
   // it is still suspended while a prayer is meant to be audible, resume it and
@@ -1008,9 +1160,15 @@ class SpeechEngine {
       // advance (speechSynthesis died after sleep but reports speaking=true),
       // restart the current phrase so the prayer never sits silently dead. This
       // also covers a foreground sleep that never fires visibilitychange/focus.
+      //
+      // Elapsed time alone is not enough evidence — see voiceHealth(). A burst
+      // of activity pushes the clock past this limit while the phrase is still
+      // sounding, and the restart is a hard cut plus the phrase from the top;
+      // that repeated is the crackle that follows fast scrolling. So ask the
+      // engine whether it is producing anything before cutting it off.
       if (j.mode === 'tts' && !j.paused && !document.hidden) {
         const elapsed = Date.now() - (j.phraseStart || 0)
-        if (elapsed > (j.phraseHold || 4000) * 2 + 4000) {
+        if (elapsed > (j.phraseHold || 4000) * 2 + 4000 && this.voiceHealth() !== 'ok') {
           try {
             this.synth.cancel()
           } catch {}
