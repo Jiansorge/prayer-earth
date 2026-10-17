@@ -73,6 +73,17 @@ export class SyncEngine {
     return false
   }
 
+  // Whether this transport can currently carry presence. A phone that slept
+  // can leave mode === 'live' while the socket underneath is already gone, so
+  // callers must check the socket rather than trusting the cached mode.
+  alive() {
+    try {
+      return !!this.sock && this.sock.readyState === WebSocket.OPEN
+    } catch {
+      return false
+    }
+  }
+
   disconnect() {
     if (this.sock) {
       this.sock.onopen = null
@@ -92,6 +103,14 @@ export class SyncEngine {
 // dead socket, so a hung connection gets detected and re-established instead
 // of silently sitting open. Apps never import this directly.
 export class CfEngine extends SyncEngine {
+  alive() {
+    // An open socket with no recent pong is the hung connection this engine
+    // exists to detect. Treat it as dead now so a returning phone reconnects
+    // instead of sending one more presence frame into silence.
+    if (!super.alive()) return false
+    return Date.now() - (this._lastPong || 0) <= STALE_AFTER_MS
+  }
+
   connect(url) {
     super.connect(url)
     clearInterval(this._keep)

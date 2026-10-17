@@ -617,6 +617,32 @@ const stripComments = (text) =>
       built.match(/const CACHE = '([^']+)'/)?.[1] === cacheName,
       `${cacheName} vs ${built.match(/const CACHE = '([^']+)'/)?.[1] || 'none'} - run npm run build`)
   }
+
+  // (d) A sleeping phone can return with mode === 'live' and a dead socket. The
+  // old foreground handler trusted the cached mode and called pushSync(), which
+  // never sends presence, so the world stopped seeing a prayer that was still
+  // playing. Foregrounding now reconnects whenever the transport cannot carry
+  // presence, and pause/resume does the same instead of sending into silence.
+  const engine = readFileSync(path.join(ROOT, 'src/sync/engine.js'), 'utf8')
+  const client = readFileSync(path.join(ROOT, 'src/sync/client.js'), 'utf8')
+  check('the sync transport reports whether its socket is actually usable',
+    /alive\(\)\s*\{[\s\S]{0,220}?readyState\s*===\s*WebSocket\.OPEN/.test(engine),
+    'cached live mode is not enough after sleep')
+  check('returning to the app reconnects a dead transport while a prayer plays',
+    /this\.mode !== 'live'\s*\|\|\s*!this\.engineAlive\(\)\s*\|\|\s*playing/.test(client) &&
+      /this\.sendPresence\(\)/.test(client),
+    'presence must be sent, not merely synced')
+  check('pause/resume reconnects rather than sending presence into a dead socket',
+    /activePlayback\(useStore\.getState\(\)\)[\s\S]{0,220}?this\.connect\(\)/.test(client),
+    'resume is the recovery path after lock')
+
+  // (e) The feed pill mixes icon, name, title, place and time at different
+  // sizes. Centered boxes left their text baselines visibly uneven, so the row
+  // itself is now baseline-aligned.
+  const styles = readFileSync(path.join(ROOT, 'src/styles.css'), 'utf8')
+  check('world-feed pills align their text on a common baseline',
+    /\.feed-pill\s*\{[^}]*align-items:\s*baseline/.test(styles),
+    'different glyph metrics need baseline alignment, not centered boxes')
 }
 
 const failed = results.filter((r) => !r.pass)

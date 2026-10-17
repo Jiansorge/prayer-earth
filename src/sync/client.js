@@ -137,6 +137,11 @@ class SyncClient {
     this.mode = 'sim'
     this.name = pickName()
     this.loc = null
+    // A connection attempt is in flight, recorded as the time it started.
+    // While true, callers must not send presence directly: onStatus sends it
+    // as soon as the socket opens. Bounded, because a socket that never
+    // resolves out of CONNECTING would otherwise silence presence forever.
+    this._connectingAt = 0
   }
 
   start() {
@@ -146,10 +151,16 @@ class SyncClient {
     // when the tab comes back, sync anything prayed while it was away
     this._vis = () => {
       if (document.hidden) return
-      if (this.mode !== 'live') {
+      // A sleeping phone can return with mode === 'live' and a dead socket.
+      // Reconnect whenever the transport cannot carry presence, or whenever a
+      // prayer is actively playing: that event is exactly when the world must
+      // see this person again.
+      const playing = !!activePlayback(useStore.getState())
+      if (this.mode !== 'live' || !this.engineAlive() || playing) {
         clearTimeout(this.retry)
         this.connect()
       } else {
+        this.sendPresence()
         this.pushSync()
       }
     }
@@ -290,6 +301,7 @@ class SyncClient {
   }
 
   connect() {
+    this._connectingAt = Date.now()
     try {
       this.engine.onMessage = (msg) => {
         try {
@@ -324,6 +336,7 @@ class SyncClient {
         } catch {}
       }
       this.engine.onStatus = (connected) => {
+        this._connectingAt = 0
         if (connected) {
           this.retryCount = 0
           clearInterval(this.ping)
@@ -355,9 +368,18 @@ class SyncClient {
       }
       this.engine.connect(DEFAULT_URL)
     } catch {
+      this._connectingAt = 0
       this.mode = 'sim'
       this.startSim()
       this.scheduleRetry()
+    }
+  }
+
+  engineAlive() {
+    try {
+      return typeof this.engine?.alive === 'function' ? this.engine.alive() : this.mode === 'live'
+    } catch {
+      return false
     }
   }
 
@@ -417,6 +439,13 @@ class SyncClient {
   }
 
   presenceNow() {
+    // Pause/resume is also the recovery path after sleep: never send one more
+    // frame into a dead socket. A reconnect sends fresh presence on open.
+    if (this._connectingAt && Date.now() - this._connectingAt < 15000) return
+    if (activePlayback(useStore.getState()) && (this.mode !== 'live' || !this.engineAlive())) {
+      this.connect()
+      return
+    }
     this.sendPresence()
   }
 

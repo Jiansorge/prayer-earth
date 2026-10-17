@@ -3364,7 +3364,10 @@ html[dir='rtl'] .chooser-arrow.right {
 .feed-pill {
   flex: 0 0 auto;
   display: inline-flex;
-  align-items: center;
+  /* Centered boxes were not enough: the name, prayer, place and time have
+     different sizes and glyph metrics, so their visible baselines drifted
+     apart. Align the text itself instead. */
+  align-items: baseline;
   gap: 6px;
   padding: 6px 11px;
   border-radius: 999px;
