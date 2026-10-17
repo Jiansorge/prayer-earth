@@ -13,6 +13,7 @@ import { stopPlayback } from '../playback.js'
 import { toggleMute, applyMute } from '../audio/mute.js'
 import { applyVolumes } from '../audio/volumes.js'
 import { shareLink, showManualCopy } from '../shared/share.js'
+import { practitionerName, fillPractitionerName } from '../shared/prayerName.js'
 import { isAppShell } from '../shared/mobile.js'
 import { CANONICAL_ORIGIN } from '../shared/canonical.js'
 
@@ -73,6 +74,12 @@ export default function PrayerPage() {
   const chosenVoice = useStore((s) => (prayerId ? s.prayerVoices[prayerId] : null))
   const favorite = useStore((s) => (prayerId ? s.favorites.includes(prayerId) : false))
   const toggleFavorite = useStore((s) => s.toggleFavorite)
+  const profileName = useStore((s) => (s.profile ? s.profile.name : ''))
+  const sharePresence = useStore((s) => s.sharePresence)
+  // Prayers that call for the practitioner's name read it here, gated by the
+  // same consent that governs whether the name is ever shown to anyone else.
+  // '' keeps the plain ellipsis, so an opted-out device reads as it always has.
+  const named = practitionerName(profileName, sharePresence)
   const volume = useStore((s) => s.volume)
   const setVolume = useStore((s) => s.setVolume)
   const people = useStore((s) => s.peoplePraying)
@@ -786,7 +793,9 @@ aria-label={t('prayer.prev')}
           </span>
         </div>
         <span className="sr-live" aria-live="polite">
-          {playing && active != null && phrases[active] ? phrases[active].t : ''}
+          {playing && active != null && phrases[active]
+            ? fillPractitionerName(phrases[active].t, named)
+            : ''}
         </span>
 
         <div className={`praying-now ${prayerCount ? 'together' : ''}`} title={t('prayer.prayingNowTitle')}>
@@ -823,15 +832,15 @@ aria-label={t('prayer.prev')}
               dir={rtl ? 'rtl' : 'ltr'}
               lang={prayer.lang}
             >
-              <span className="hlt">{ph.t}</span>
+              <span className="hlt">{fillPractitionerName(ph.t, named)}</span>
               {ph.s && (
                 <span className="sub">
-                  {ph.s}
+                  {fillPractitionerName(ph.s, named)}
                 </span>
               )}
               {ph.e && (
                 <span className="en">
-                  {tPhrase(ph.e, locale)}
+                  {fillPractitionerName(tPhrase(ph.e, locale), named)}
                 </span>
               )}
             </div>

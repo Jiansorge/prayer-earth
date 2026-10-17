@@ -902,6 +902,72 @@ const stripComments = (text) =>
   check('a prayer row is slim enough to show a tradition at a glance',
     !!rowPad && Number(rowPad) <= 10,
     `row padding ${rowPad}px - tall rows cost the reader a line each, thirty times`)
+
+  // (k) "I, whose name is . . . , take refuge..." (issue #21). The blank is
+  // filled at render time and only where the device has consented to being
+  // identified, and the audio is left exactly as it was recorded: the voice
+  // says the blank, the highlight follows the recording, so wiring the name
+  // into the speech path would either desync the highlight or need a recording
+  // per person. Consent here is sharePresence - the flag that already decides
+  // whether the name appears anywhere another person can see - because a second
+  // switch for the same fact is a switch that will eventually disagree.
+  const { practitionerName, fillPractitionerName } = await import('../src/shared/prayerName.js')
+  check('the name is withheld when presence sharing is off',
+    practitionerName('Amara', false) === '',
+    'prayer text must read the same consent the world feed reads')
+  check('the name appears when presence sharing is on',
+    practitionerName('Amara', true) === 'Amara',
+    'a device that shares its name shows it in the prayer that asks for it')
+  check('a rejected or absent name falls back to the plain ellipsis',
+    practitionerName('hitler', true) === '' && practitionerName('', true) === '',
+    `blocked word returned "${practitionerName('hitler', true)}"`)
+  check('a name the blocklist cannot read is not discarded',
+    practitionerName('सतनाम', true) === 'सतनाम',
+    'the blocklist normalizes to a-z, so a non-Latin name must pass through it')
+  check('a name is inserted literally, never as a replacement pattern',
+    fillPractitionerName('. . .', '$&') === '$&' && fillPractitionerName('. . .', '$1') === '$1',
+    'String.replace would read "$&" as the match it just removed')
+  check('a line with no blank is left alone',
+    fillPractitionerName('To the Tathagata Glorious Conqueror Shakyamuni I bow.', 'Amara') ===
+      'To the Tathagata Glorious Conqueror Shakyamuni I bow.',
+    'only a deliberate blank is a name blank')
+
+  const buddhismPrayers = (await import('../src/data/spirits/buddhism.js')).default
+  const confession = buddhismPrayers.prayers.find((p) => p.id === 'thirtyfive-confession')
+  const opening = confession && confession.phrases[0] && confession.phrases[0].t
+  check('the Confession keeps its conventional ellipsis in the source',
+    typeof opening === 'string' && opening.includes('. . .'),
+    opening ? opening.slice(0, 56) : 'thirtyfive-confession not found')
+  const filled = fillPractitionerName(opening, 'Amara')
+  check('the name lands where the blank was, with the comma intact',
+    filled.includes('whose name is Amara,') && !filled.includes('. . .'),
+    filled.slice(0, 56))
+  const blankCount = srcFiles
+    .filter((f) => f.includes(path.join('src', 'data')))
+    .reduce((n, f) => {
+      const body = readFileSync(f, 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/^\s*\/\/.*$/gm, '')
+      return n + (body.match(/\.\s+\.\s+\./g) || []).length
+    }, 0)
+  check('every blank in the prayer data is a practitioner blank',
+    blankCount === 1,
+    `${blankCount} found - a second one is either a new name line or an elision, and only a person can say which`)
+
+  const pageSrc = readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '')
+  check('the prayer page fills the line and the screen-reader line',
+    /fillPractitionerName\(ph\.t/.test(pageSrc) &&
+      /fillPractitionerName\(phrases\[active\]\.t/.test(pageSrc) &&
+      /s\.sharePresence/.test(pageSrc),
+    'PrayerPage must read consent itself; the helper cannot know it')
+  const speechSrc = readFileSync(path.join(ROOT, 'src/audio/speech.js'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '')
+  check('the speech path still speaks the blank as recorded',
+    !/fillPractitionerName|prayerName/.test(speechSrc),
+    'audio was decided to stay as recorded - a name in the utterance desyncs the highlight')
 }
 
 const failed = results.filter((r) => !r.pass)
