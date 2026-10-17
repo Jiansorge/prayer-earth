@@ -286,6 +286,7 @@ export default {
   'theme.dawn': 'भोर',
   'prayer.once': 'एक बार चलाएँ',
   'prayer.voice': 'आवाज़',
+  'prayer.recitation': 'पाठ',
   'legal.langNote': 'ये नीतियाँ अंग्रेज़ी में दी गई हैं, जो Joining Palms के उपयोग पर लागू होती हैं।',
 
   // --- international / regional riders (plain-language) ---

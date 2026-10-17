@@ -219,6 +219,7 @@ export default {
   'theme.dawn': 'Рассвет',
   'prayer.once': 'Воспроизвести один раз',
   'prayer.voice': 'Голос',
+  'prayer.recitation': 'Чтение',
   'legal.langNote': 'Эти политики предоставляются на английском языке, который регулирует использование Joining Palms.',
   // Localized titles for the original nonreligious prayers.
   'ptitle.gratitude': 'Момент благодарности',

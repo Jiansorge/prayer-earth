@@ -219,6 +219,7 @@ export default {
   'theme.ocean': 'Oceano',
   'prayer.once': 'Riproduci una volta',
   'prayer.voice': 'Voce',
+  'prayer.recitation': 'Recitazione',
   'legal.langNote': 'Queste politiche sono fornite in inglese, che regola l’uso di Joining Palms.',
   // --- privacy & terms (plain-language) ---
   // --- international / regional riders (plain-language) ---

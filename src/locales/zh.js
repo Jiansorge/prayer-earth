@@ -220,6 +220,7 @@ export default {
   'theme.dawn': '黎明',
   'prayer.once': '播放一次',
   'prayer.voice': '声音',
+  'prayer.recitation': '诵读',
   'legal.langNote': '这些政策以英文提供，英文为 Joining Palms 的使用规则。',
 
   // --- 国际与区域性附加说明（通俗语言）---

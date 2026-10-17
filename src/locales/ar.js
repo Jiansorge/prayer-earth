@@ -219,6 +219,7 @@ export default {
   'theme.dawn': 'فجر',
   'prayer.once': 'تشغيل مرة واحدة',
   'prayer.voice': 'صوت',
+  'prayer.recitation': 'تلاوة',
   'legal.langNote': 'هذه السياسات متوفرة باللغة الإنجليزية، وهي التي تحكم استخدام Joining Palms.',
 
   // --- international / regional riders (plain-language) ---

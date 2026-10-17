@@ -168,6 +168,7 @@ export default {
   'prayer.muted': 'སྒྲ་གཅོད་བྱས།',
   'prayer.speed': 'མྱུར་ཚད།',
   'prayer.voice': 'སྐད།',
+  'prayer.recitation': 'བརྗོད་པ',
   'prayer.prayingNowRest': 'ད་ལྟ་ཁྱེད་དང་མཉམ་དུ་གསོལ་བ་འདེབས་བཞིན་ཡོད།',
   'prayer.across': '· {name}གི་སྟེང་{n}།',
   'prayer.allTime': '✶ ཐོག་མརིམ་ཡོངས་ལ་{n}།',

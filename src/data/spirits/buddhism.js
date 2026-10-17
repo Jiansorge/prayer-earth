@@ -225,10 +225,15 @@ export default   {
         id: 'high-king-sutra',
         title: 'High King Avalokitesvara Sutra',
         lang: 'zh',
-        // No recording ships for this one, and a device with no Chinese voice
-        // would otherwise have the pinyin read by an English engine, which is
-        // not the passage. Speak our own English rendering instead.
+        // The scripture is Chinese, so the Chinese recitation is the primary
+        // text. It also ships our English rendering as a second recitation
+        // under the same prayer: the voice picker becomes a language toggle,
+        // and counts, favourites and streaks stay on the one prayer either
+        // way. SpeakLang keeps the no-voice fallback on the English rather
+        // than letting a Latin voice read the pinyin back at the listener.
         speakLang: 'en',
+        altLang: 'en',
+        altLangLabel: 'English',
         langLabel: '中文 · Chinese',
         phrases: [
           { t: '南摩佛。南摩法。南摩僧。', s: 'Nán mó fó. Nán mó fǎ. Nán mó sēng.', e: 'Homage to the Buddha. Homage to the Dharma. Homage to the Sangha.' },

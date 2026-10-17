@@ -282,6 +282,7 @@ export default {
   'theme.dawn': 'Morgendämmerung',
   'prayer.once': 'Einmal abspielen',
   'prayer.voice': 'Stimme',
+  'prayer.recitation': 'Rezitation',
   'legal.langNote': 'Diese Richtlinien werden auf Englisch bereitgestellt, das für die Nutzung von Joining Palms maßgeblich ist.',
   // Localized titles for the original nonreligious prayers.
   'ptitle.gratitude': 'Ein Moment der Dankbarkeit',

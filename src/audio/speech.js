@@ -734,7 +734,12 @@ class SpeechEngine {
     // long line is never mistaken for one word. Over-estimating is harmless — the
     // recorded element's real `ended` ends the phrase; only an under-estimate
     // would let the stall-watchdog cut a verse off early.
-    const text = phrase.t || phrase.s || phrase.e || ''
+    // When the prayer is being recited in a second language, price the text
+    // that is actually spoken: an English rendering of a Chinese line runs
+    // longer than the line itself, and under-pricing it would let the same
+    // watchdog cut the verse off.
+    const recite = this.reciteLang(this.job)
+    const text = (recite && (phrase.e || phrase.s || phrase.t)) || phrase.t || phrase.s || phrase.e || ''
     const trimmed = text.trim()
     let units = trimmed ? trimmed.split(/\s+/).filter(Boolean).length : 0
     // Script with no spaces between words cannot be counted by splitting on
@@ -753,16 +758,31 @@ class SpeechEngine {
     return Math.max(900, base / rate)
   }
 
+  // Which language this prayer is currently being recited in, or null for "its
+  // own script". The listener's chosen voice decides, because that is the
+  // control they already have: an English voice on a Chinese prayer asks for
+  // the English recitation, a Chinese voice asks for the original. Without a
+  // matching choice the prayer's own speakLang stands, so a device with no
+  // voice for the script still hears the rendering rather than a
+  // transliteration read back by the wrong engine.
+  reciteLang(job) {
+    if (!job) return null
+    const preferred = useStore.getState().prayerVoices?.[job.prayerId]
+    const base = preferred ? String(preferred).split('-')[0] : null
+    if (base) {
+      if (job.altLang && base === String(job.altLang).split('-')[0]) return job.altLang
+      if (job.lang && base === String(job.lang).split('-')[0]) return null
+    }
+    return job.speakLang || null
+  }
+
   // text: { t, s, e } phrase; choose the speakable form for this device's voices.
   utteranceText(phrase, lang) {
-    // A prayer that says what it wants spoken when its own script is not
-    // available. 'en' means: use our English rendering rather than asking an
-    // English voice to read a transliteration, which is a different sentence
-    // wearing the same clothes.
-    if (this.job?.speakLang === 'en') {
-      const voice = this.pickVoice('en') || null
+    const recite = this.reciteLang(this.job)
+    if (recite) {
+      const voice = this.pickVoice(recite) || null
       const text = phrase.e || phrase.s || phrase.t
-      return { text, lang: voice ? 'en' : lang, voice }
+      return { text, lang: voice ? voice.lang || recite : lang, voice }
     }
     const voice = this.pickVoice(lang)
     if (voice) return { text: phrase.t, lang, voice }

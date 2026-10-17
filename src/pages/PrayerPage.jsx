@@ -30,6 +30,25 @@ const newPlaybackSessionId = () =>
     ? crypto.randomUUID()
     : `play-${Date.now()}-${Math.random().toString(36).slice(2)}`
 
+// Human names for the locales that can sit beside their own script in a single
+// prayer's voice list. Only reached when a prayer ships more than one
+// recitation, so a short map beats pulling in a whole locale database.
+const VOICE_LANGS = {
+  zh: '中文',
+  yue: '粵語',
+  en: 'English',
+  hi: 'हिन्दी',
+  ja: '日本語',
+  ko: '한국어',
+  ar: 'العربية',
+  fr: 'Français',
+  de: 'Deutsch',
+  es: 'Español',
+  pt: 'Português',
+  ru: 'Русский',
+  it: 'Italiano'
+}
+
 export default function PrayerPage() {
   const closePrayer = useStore((s) => s.closePrayer)
   const openPrayer = useStore((s) => s.openPrayer)
@@ -261,8 +280,10 @@ const countedRef = useRef(false)
       // of its own texts to fall back to. Mantras want the transliteration read
       // the way it sounds; a sutra with a full English rendering wants English,
       // because pinyin read by an English voice is not the sentence anyone is
-      // trying to hear.
+      // trying to hear. altLang names a second recitation this prayer ships,
+      // so the listener's voice choice can switch between the two.
       speakLang: prayer.speakLang || null,
+      altLang: prayer.altLang || null,
       rate: speechRate,
       loop: loopOn,
       gapMs: prayer.loop ? 250 : 700,
@@ -555,6 +576,16 @@ setChantMode(false)
 
   const friendlyVoice = (v) =>
     String(v).replace(/^[a-z]{2,3}-[A-Z]{2,3}-/i, '').replace(/Neural$/, '')
+
+  // When a prayer offers a second recitation, the chip names its language
+  // first — otherwise two chips reading "Xiaoxiao" and "Ava" give the
+  // listener nothing to tell the Chinese from the English.
+  const voiceChipLabel = (v) => {
+    const name = friendlyVoice(v)
+    if (!prayer?.altLang) return name
+    const base = String(v).split('-')[0]
+    return `${VOICE_LANGS[base] || base} · ${name}`
+  }
 
   const pickVoice = (v) => {
     setPrayerVoice(prayer.id, v)
@@ -913,7 +944,12 @@ aria-label={t('prayer.prev')}
           )}
           {prayerVoices.length > 1 && (
             <div className="pt-row pt-voices">
-              <label className="pt-label" id="pt-voice-label">{t('prayer.voice')}</label>
+              <label className="pt-label" id="pt-voice-label">
+                {/* A prayer that ships a second recitation is really offering a
+                    language choice, so name it as one; otherwise the row is
+                    just voices. */}
+                {prayer?.altLang ? t('prayer.recitation') : t('prayer.voice')}
+              </label>
               <div className="voice-chips" role="group" aria-labelledby="pt-voice-label">
                 {prayerVoices.map((v) => {
                   const active = (chosenVoice || prayerVoices[0]) === v
@@ -925,7 +961,7 @@ aria-label={t('prayer.prev')}
                       onClick={() => pickVoice(v)}
                       aria-pressed={active}
                     >
-                      {friendlyVoice(v)}
+                      {voiceChipLabel(v)}
                     </button>
                   )
                 })}

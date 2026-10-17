@@ -219,6 +219,7 @@ export default {
   'theme.dawn': '새벽',
   'prayer.once': '한 번 재생',
   'prayer.voice': '목소리',
+  'prayer.recitation': '독송',
   'legal.langNote': '본 정책은 영어로 제공되며, Joining Palms 사용을 규율합니다.',
 
   // --- 국제 / 지역별 부가 조항 (평이한 언어로) ---

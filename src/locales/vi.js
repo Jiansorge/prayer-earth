@@ -170,6 +170,7 @@ export default {
   'prayer.muted': 'Đã tắt tiếng',
   'prayer.speed': 'Tốc độ',
   'prayer.voice': 'Giọng đọc',
+  'prayer.recitation': 'Lời tụng',
   'prayer.prayingNowRest': 'đang cùng bạn cầu nguyện lúc này',
   'prayer.across': '· {n} tại {name}',
   'prayer.allTime': '✶ {n} mọi thời đại',

@@ -643,6 +643,31 @@ const stripComments = (text) =>
   check('world-feed pills align their text on a common baseline',
     /\.feed-pill\s*\{[^}]*align-items:\s*baseline/.test(styles),
     'different glyph metrics need baseline alignment, not centered boxes')
+
+  // (f) A prayer that ships a second recitation lets the listener switch
+  // language without splitting the prayer in two. That only works if the
+  // renderer produces the second set, the player follows the chosen voice,
+  // and the sutra actually declares the second language.
+  const gen = readFileSync(path.join(ROOT, 'scripts/generate-audio.mjs'), 'utf8')
+  const speechJs = readFileSync(path.join(ROOT, 'src/audio/speech.js'), 'utf8')
+  const buddhism = readFileSync(path.join(ROOT, 'src/data/spirits/buddhism.js'), 'utf8')
+  const prayerPage = readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8')
+  check('the renderer produces a prayer\'s second recitation from its gloss',
+    /p\.altLang/.test(gen) && /textKey:\s*'e'/.test(gen),
+    'a declared altLang must render, not just sit in the data')
+  check('which language is spoken follows the listener\'s chosen voice',
+    /reciteLang\(job\)[\s\S]{0,400}prayerVoices/.test(speechJs) &&
+      /phrase\.e \|\| phrase\.s \|\| phrase\.t/.test(speechJs),
+    'the recitation must follow the voice, not a hardcoded language')
+  check('a second recitation is priced by the text actually spoken',
+    /const recite = this\.reciteLang\(this\.job\)\s*\n\s*const text = \(recite/.test(speechJs),
+    'an English rendering of a Chinese line is longer than the line')
+  check('the High King Sutra offers its English recitation',
+    /id: 'high-king-sutra'[\s\S]{0,900}?altLang: 'en'/.test(buddhism),
+    'the sutra declares the second language the renderer looks for')
+  check('the player passes the second recitation through to the job',
+    /altLang:\s*prayer\.altLang \|\| null/.test(prayerPage),
+    'the job must know which second language it may speak')
 }
 
 const failed = results.filter((r) => !r.pass)

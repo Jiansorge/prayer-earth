@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-16T02:33:53.541Z",
+  "generated": "2026-10-17T00:23:07.943Z",
   "prayers": {
     "lords-prayer": {
       "lang": "en",
@@ -2652,7 +2652,9 @@
       "lang": "zh",
       "voices": [
         "zh-CN-XiaoxiaoNeural",
-        "zh-CN-YunjianNeural"
+        "zh-CN-YunjianNeural",
+        "en-US-AvaNeural",
+        "en-US-AndrewNeural"
       ],
       "phrases": 6
     },

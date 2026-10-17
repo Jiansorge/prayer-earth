@@ -282,6 +282,7 @@ export default {
   'theme.dawn': 'Aube',
   'prayer.once': 'Jouer une fois',
   'prayer.voice': 'Voix',
+  'prayer.recitation': 'Récitation',
   'legal.langNote': 'Ces politiques sont fournies en anglais, qui régit l’utilisation de Joining Palms.',
   // Localized titles for the original nonreligious prayers.
   'ptitle.gratitude': 'Un moment de gratitude',

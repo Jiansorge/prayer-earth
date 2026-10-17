@@ -136,7 +136,10 @@ for (const [code, list] of Object.entries(byLang)) {
 tts.close()
 
 // Render every phrase of one prayer in one voice with a fresh connection.
-async function renderPrayerVoice(p, dir, voice, useTransliteration = false) {
+// textKey names the phrase field to read: 't' for the prayer's own script,
+// 's' where the script has no engine voice (Tibetan), 'e' for a second
+// recitation rendered from our English gloss.
+async function renderPrayerVoice(p, dir, voice, textKey = 't') {
   const t = new MsEdgeTTS()
   try {
     await withTimeout(t.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3, {}), 20000, 'setMetadata')
@@ -147,7 +150,7 @@ async function renderPrayerVoice(p, dir, voice, useTransliteration = false) {
   let count = 0
   try {
     for (const [i, ph] of (p.phrases || []).entries()) {
-      const text = (useTransliteration && ph.s) || ph.t || ph.s || ''
+      const text = (textKey && ph[textKey]) || ph.t || ph.s || ''
       if (!text) continue
       const file = join(dir, `${i}-${voice}.mp3`)
       if (existsSync(file)) {
@@ -205,7 +208,15 @@ for (const [n, p] of targets.entries()) {
 // One prayer: pick voices, render each, write progress.
 async function renderPrayer(p, n, total) {
   const lang = p.lang || 'en'
-  const vs = pickVoices(byLang[lang] || byLang[FALLBACK_LANG[lang]] || [], MAX_VOICES)
+  // A prayer may ship more than one recitation — the original script plus a
+  // second language rendered from our own gloss, so the listener can switch
+  // without the prayer splitting in two. Each set gets its own voices and its
+  // own text; all of them share the one directory and the one manifest entry.
+  const sets = [{ textKey: p.lang === 'bo' ? 's' : 't', voices: pickVoices(byLang[lang] || byLang[FALLBACK_LANG[lang]] || [], MAX_VOICES) }]
+  if (p.altLang) {
+    sets.push({ textKey: 'e', voices: pickVoices(byLang[p.altLang] || byLang[FALLBACK_LANG[p.altLang]] || [], MAX_VOICES) })
+  }
+  const vs = sets.flatMap((s) => s.voices)
   if (!vs.length) {
     console.log(`[${n + 1}/${total}] ${p.id} (${lang}), no Edge voice, skipped`)
     skipped++
@@ -213,19 +224,21 @@ async function renderPrayer(p, n, total) {
   }
   const dir = join(OUT, p.id)
   mkdirSync(dir, { recursive: true })
-  for (const voice of vs) {
-    let attempts = 0
-    while (attempts < 3) {
-      try {
-          generated += await renderPrayerVoice(p, dir, voice, p.lang === 'bo')
-        break
-      } catch (e) {
-        attempts++
-        failed++
-        if (attempts >= 3) console.log(`  FAIL ${p.id}/${voice}: ${e.message}`)
-        else {
-          console.log(`  RETRY ${p.id}/${voice} (${attempts})`)
-          await sleep(2000 * attempts)
+  for (const set of sets) {
+    for (const voice of set.voices) {
+      let attempts = 0
+      while (attempts < 3) {
+        try {
+          generated += await renderPrayerVoice(p, dir, voice, set.textKey)
+          break
+        } catch (e) {
+          attempts++
+          failed++
+          if (attempts >= 3) console.log(`  FAIL ${p.id}/${voice}: ${e.message}`)
+          else {
+            console.log(`  RETRY ${p.id}/${voice} (${attempts})`)
+            await sleep(2000 * attempts)
+          }
         }
       }
     }
@@ -235,7 +248,7 @@ async function renderPrayer(p, n, total) {
   const files = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.mp3')) : []
   if (files.length) {
     manifest.prayers[p.id] = { lang: FALLBACK_LANG[lang] || lang, voices: vs, phrases: (p.phrases || []).length }
-    console.log(`[${n + 1}/${total}] ${p.id} (${lang}), ${vs.length} voices`)
+    console.log(`[${n + 1}/${total}] ${p.id} (${lang}${p.altLang ? ` +${p.altLang}` : ''}), ${vs.length} voices`)
   } else {
     console.log(`[${n + 1}/${total}] ${p.id} (${lang}), no audio rendered, left to device voices`)
   }

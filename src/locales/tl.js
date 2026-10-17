@@ -167,6 +167,7 @@ export default {
   'prayer.muted': 'Naka-mute',
   'prayer.speed': 'Bilis',
   'prayer.voice': 'Boses',
+  'prayer.recitation': 'Pagbigkas',
   'prayer.prayingNowRest': 'nananalangin kasama mo ngayon',
   'prayer.across': '· {n} sa {name}',
   'prayer.allTime': '✶ {n} sa lahat ng panahon',

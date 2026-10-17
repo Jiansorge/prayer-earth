@@ -282,6 +282,7 @@ export default {
   'theme.dawn': 'Amanecer',
   'prayer.once': 'Reproducir una vez',
   'prayer.voice': 'Voz',
+  'prayer.recitation': 'Recitación',
   'legal.langNote': 'Estas políticas se ofrecen en inglés, que rige el uso de Joining Palms.',
 
   // --- notas internacionales / regionales (en lenguaje sencillo) ---

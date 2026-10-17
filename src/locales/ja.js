@@ -219,6 +219,7 @@ export default {
   'theme.dawn': '夜明け',
   'prayer.once': '一度だけ再生',
   'prayer.voice': '声',
+  'prayer.recitation': '読誦',
   'legal.langNote': 'これらの方針は英語で提供され、Joining Palms の利用を規定します。',
   // Localized titles for the original nonreligious prayers.
   'ptitle.gratitude': '感謝のひととき',

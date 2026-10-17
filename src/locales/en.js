@@ -167,6 +167,7 @@ export default {
   'prayer.muted': 'Muted',
   'prayer.speed': 'Speed',
   'prayer.voice': 'Voice',
+  'prayer.recitation': 'Recitation',
   'prayer.prayingNowRest': 'praying this with you now',
   'prayer.across': '· {n} across {name}',
   'prayer.allTime': '✶ {n} all time',

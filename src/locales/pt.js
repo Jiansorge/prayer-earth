@@ -218,6 +218,7 @@ export default {
 
   'prayer.once': 'Reproduzir uma vez',
   'prayer.voice': 'Voz',
+  'prayer.recitation': 'Recitação',
   'legal.langNote': 'Estas políticas são fornecidas em inglês, que rege o uso do Joining Palms.',
   // Localized titles for the original nonreligious prayers.
   'ptitle.gratitude': 'Um momento de gratidão',
