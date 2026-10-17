@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITY_BY_ID, loadSpirit } from '../data/prayers.js'
 import { useT, prayerTitle } from '../i18n.js'
@@ -113,6 +113,17 @@ function PickerRow({ p, i, spirit, openPrayer, close, t }) {
 }
 const PickerRowMemo = React.memo(PickerRow)
 
+// Scroll memory for the prayer list, keyed by tradition.
+//
+// Module-level for the same reason SettingsSheet's is: the picker renders null
+// while closed, so by the next open the list element - and any offset kept on
+// the instance - is gone. Scrolling thirty prayers down, tapping one, and
+// coming back should land where the reader was, not at the top.
+//
+// Keyed by spirit rather than one shared value, so opening a different
+// tradition starts at its own top instead of inheriting a stranger's offset.
+const listScrollMemory = Object.create(null)
+
 export default function PrayerPicker() {
   const spiritId = useStore((s) => s.prayerPickerSpiritId)
   const close = useStore((s) => s.closePrayerPicker)
@@ -138,6 +149,35 @@ export default function PrayerPicker() {
     }
   }, [spiritId, close])
 
+  const listRef = useRef(null)
+  // Read during render, above the early return: a hook below it is a
+  // conditional hook, and React throws on those. This also has to be checked
+  // here because the list only renders once a tradition has loaded.
+  const spiritLoaded = !!(spiritId && SPIRITUALITY_BY_ID[spiritId]?.prayers)
+
+  // Restore only. Banking is the element's own onScroll, further down - see the
+  // comment there for why an addEventListener here was not good enough.
+  //
+  // Keyed on the load as well as the tradition: on a first open the picker is
+  // still on its loading row, listRef.current is null, and the restore would be
+  // attempted against nothing - so the effect simply runs again when the
+  // prayers land and the list is really there.
+  useEffect(() => {
+    if (!spiritId || !spiritLoaded) return undefined
+    const el = listRef.current
+    if (!el) return undefined
+    const wanted = listScrollMemory[spiritId] || 0
+
+    // Restore after layout, not during the commit: the focus trap moves focus
+    // into the sheet shortly after opening, and a focused row is scrolled into
+    // view - which would land on top of any offset set earlier.
+    const frame = requestAnimationFrame(() => {
+      if (listRef.current !== el) return
+      el.scrollTop = wanted
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [spiritId, spiritLoaded])
+
   if (!spiritId) return null
   const spirit = SPIRITUALITY_BY_ID[spiritId]
   if (!spirit) return null
@@ -151,6 +191,25 @@ export default function PrayerPicker() {
       .toLowerCase()
 
   const q = norm(query)
+
+  // Banking lives here rather than on an effect's addEventListener.
+  //
+  // An effect's listener is attached once, to whatever listRef.current was when
+  // that effect last ran, and it dies with that node. Anything that remounts the
+  // list between tradition changes - and nothing re-attaches it until the next
+  // load - would silently stop banking, so every close would land at the top.
+  // A React handler is re-bound on every render to the element actually on
+  // screen, and it closes over this render's `q` rather than reading a ref that
+  // may not have been updated yet.
+  //
+  // Ignored while a search is active: the filtered list is a different list, and
+  // the browser clamping it on every keystroke would overwrite the place the
+  // reader was in the full one - so a search never loses their position.
+  const onListScroll = () => {
+    if (q || !spiritId) return
+    const el = listRef.current
+    if (el) listScrollMemory[spiritId] = el.scrollTop
+  }
   const prayers = (spirit.prayers || []).filter((p) => matchesDate(p.dates, p.season))
   const shown = q
     ? prayers.filter(
@@ -214,7 +273,7 @@ export default function PrayerPicker() {
               ))}
           </div>
         )}
-        <div className="picker-list">
+        <div className="picker-list" ref={listRef} onScroll={onListScroll}>
           {shown.length === 0 && (
             <div className="picker-empty">{t('picker.none')}</div>          )}
           {shown.map((p, i) => (
