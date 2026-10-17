@@ -239,14 +239,14 @@ t('the application id is correct', () => {
   return `${EXPECTED_APPLICATION_ID} (found in the AAB's manifest)`
 })
 
-t('versionCode is 27 (Play has 26)', () => {
+t('versionCode is 28', () => {
   // The proto encodes versionCode as a varint on a field; rather than parse the
   // proto, read it from the single source of truth and confirm the build used
   // that source.
   const gradle = fs.readFileSync(path.join(ROOT, 'android/app/build.gradle'), 'utf8')
   const m = gradle.match(/versionCode\s+(\d+)/)
   if (!m) throw new Error('no versionCode in build.gradle')
-  eq(m[1], '27', 'versionCode')
+  eq(m[1], '28', 'versionCode')
   return m[1]
 })
 

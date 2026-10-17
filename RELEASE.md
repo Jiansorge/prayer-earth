@@ -166,10 +166,10 @@ a copy is not a readable source drop. What is in place:
 Neither is a wall. Treat them as a speed bump plus a paper trail.
 
 ## Notes
-- `versionCode 27` / `versionName 1.0.0` in `android/app/build.gradle` — bump the
-  code for every Play upload (it must strictly increase). `verify:aab` asserts 27
-  against a **hardcoded** "Play has 26"; it cannot read the console, so confirm
-  the real figure there before uploading.
+- `versionCode 28` / `versionName 1.0.0` in `android/app/build.gradle` — bump the
+  code for every Play upload (it must strictly increase). `verify:aab` asserts 28
+  against a **hardcoded** expectation; it cannot read the console, so confirm the
+  real figure there before uploading.
 - Gradle's `aaptOptions.ignoreAssetsPattern` contains a bare `.*`, which drops any
   asset whose name starts with a dot. That is why `.well-known/security.txt` is in
   `android/app/src/main/assets/public` but not in the AAB. Harmless today — the
