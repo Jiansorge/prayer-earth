@@ -462,9 +462,14 @@ const stripComments = (text) =>
   // Comments are stripped first: the comment explaining WHY this used to be
   // hand-rolled necessarily names navigator.clipboard.writeText, so the negative
   // check below would otherwise fail on its own explanation.
+  //
+  // Split on \r?\n, not \n: a checkout with core.autocrlf=true leaves a \r at
+  // the end of every line, and `.` does not match \r, so a /^\/\/.*$/ strip
+  // silently missed every line comment. The check then failed locally while CI
+  // checked out LF and passed - the guard only ever worked on one platform.
   const prayerCode = prayerPage
     .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
+    .split(/\r?\n/)
     .map((l) => l.replace(/^\s*\/\/.*$/, ''))
     .join('\n')
   check('the prayer page shares through shareLink, not a raw clipboard call',
@@ -714,6 +719,43 @@ const stripComments = (text) =>
       foldPrayers(untouched) === untouched,
       'a launch with no affected history must change nothing')
   }
+
+  // The fold runs inside persist's migrate, where a throw aborts rehydration
+  // entirely: merge never runs, so the listener silently reboots on defaults
+  // with their saved volume, streak and favourites gone. The malformed shape a
+  // corrupted store can carry must therefore be inert, not fatal.
+  const malformed = { favorites: 'not-an-array', prayerVoices: 12345, prayerCompletions: 'garbage', prayerDayStats: [] }
+  let foldThrew = null
+  try { foldPrayers(malformed) } catch (e) { foldThrew = e }
+  check('folding tolerates a store whose counters are not objects',
+    foldThrew === null, String(foldThrew) || 'the `in` operator must not see a primitive')
+  check('folding a malformed store changes nothing rather than throwing',
+    foldPrayers(malformed) === malformed, 'no fold target means no work')
+  const malformedWithTarget = { ...malformed, favorites: ['refuges'], prayerTotals: { refuges: 4 } }
+  let secondThrew = null
+  let secondOut = null
+  try { secondOut = foldPrayers(malformedWithTarget) } catch (e) { secondThrew = e }
+  check('folding still works when a sibling counter is malformed',
+    secondThrew === null && secondOut.prayerTotals.sarana === 4 && !('refuges' in secondOut.prayerTotals) &&
+      typeof secondOut.prayerVoices === 'number' && secondOut.prayerCompletions === 'garbage',
+    String(secondThrew) || JSON.stringify(secondOut))
+
+  // (h) Coming back from a prayer, the tradition grid was invisible for nearly
+  // two seconds and read as tiles that had gone missing rather than tiles still
+  // arriving. Two separate clocks did it: a stagger that scaled with the index
+  // (nineteenth tile a full second behind the first) and a redundant .fade-in
+  // on the home root that overrode .view's own 0.55s viewIn with a slower 0.8s
+  // fadeUp, making home the one route whose transition cost more than the rest.
+  const homeSrc = readFileSync(path.join(ROOT, 'src/pages/HomePage.jsx'), 'utf8')
+  check('the home tile cascade no longer scales with the grid size',
+    /animationDelay:\s*`\$\{Math\.min\([^)]*\)\s*\*\s*\d+\}ms`/.test(homeSrc),
+    'an uncapped index puts the last tile a second behind the first')
+  check('the home view keeps .view\'s own entrance instead of a slower override',
+    !/<div className="view fade-in">/.test(homeSrc),
+    'HomePage must transition at the same pace as every other route')
+  check('a tradition tile fades in faster than the shared .fade-in',
+    /\.tile\.fade-in\s*\{[^}]*animation-duration:\s*0\.[0-7]\d*s/.test(styles),
+    'a nineteen-tile wall at 0.8s each is a long time to look empty')
 }
 
 const failed = results.filter((r) => !r.pass)
