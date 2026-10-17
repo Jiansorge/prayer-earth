@@ -56,7 +56,11 @@ export const foldPrayers = (state) => {
       touched = true
     }
     for (const key of ['prayerCompletions', 'prayerTotals']) {
-      if (s[key] && from in s[key]) {
+      // typeof guard: `from in map` throws a TypeError on a primitive, and this
+      // runs inside persist's migrate. A throw there aborts rehydration, so merge
+      // never runs and the listener's whole saved state - volume, streak,
+      // locale, favourites - is silently dropped back to defaults on boot.
+      if (s[key] && typeof s[key] === 'object' && from in s[key]) {
         next[key] = foldPrayerMap(s[key], from, to)
         touched = true
       }
@@ -69,8 +73,9 @@ export const foldPrayers = (state) => {
       }
     }
     // A voice choice belongs to the language it was made in, so it is dropped
-    // rather than carried across into a different recitation.
-    if (s.prayerVoices && from in s.prayerVoices) {
+    // rather than carried across into a different recitation. Same typeof guard
+    // as above: a malformed store can carry a number here and `in` would throw.
+    if (s.prayerVoices && typeof s.prayerVoices === 'object' && from in s.prayerVoices) {
       const voices = { ...s.prayerVoices }
       delete voices[from]
       next.prayerVoices = voices
