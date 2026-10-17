@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-17T00:23:07.943Z",
+  "generated": "2026-10-17T00:31:42.700Z",
   "prayers": {
     "lords-prayer": {
       "lang": "en",
@@ -371,25 +371,13 @@
       ],
       "phrases": 4
     },
-    "refuges": {
-      "lang": "en",
-      "voices": [
-        "en-AU-NatashaNeural",
-        "en-CA-LiamNeural",
-        "en-CA-ClaraNeural",
-        "en-HK-SamNeural",
-        "en-HK-YanNeural",
-        "en-IN-PrabhatNeural",
-        "en-IN-NeerjaNeural",
-        "en-IE-ConnorNeural"
-      ],
-      "phrases": 6
-    },
     "sarana": {
       "lang": "hi",
       "voices": [
         "hi-IN-SwaraNeural",
-        "hi-IN-MadhurNeural"
+        "hi-IN-MadhurNeural",
+        "en-US-AvaNeural",
+        "en-US-AndrewNeural"
       ],
       "phrases": 3
     },

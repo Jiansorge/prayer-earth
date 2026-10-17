@@ -469,32 +469,24 @@ export default   {
         translation: 'The Heart Dhāraṇī of Avalokiteśvara-Ekādaśamukha, the dhāraṇī of the Eleven-Faced Lord of Compassion. It is widely circulated under the name of the Great Compassion Mantra, but it is a separate and much shorter text than the one the sutras call by that name.'
       },
       {
-        id: 'refuges',
-        title: 'The Three Refuges',
-        lang: 'en',
-        langLabel: 'English',
-        phrases: [
-          { t: 'I take refuge in the Buddha,' },
-          { t: 'the one who has awakened.' },
-          { t: 'I take refuge in the Dharma,' },
-          { t: 'the path of the teaching.' },
-          { t: 'I take refuge in the Sangha,' },
-          { t: 'the community of all beings walking the way.' }
-        ],
-        translation: 'The opening vow of Buddhist practice, returning home to awakening, truth, and companionship.'
-      },
-      {
         id: 'sarana',
         title: 'The Triple Refuge',
         lang: 'sa',
+        // The English rendering of these same three lines ships as a second
+        // recitation under the one prayer, so the refuge can be heard in
+        // either language without existing as two prayers. Counts, favourites
+        // and streaks stay together either way. The earlier English-only entry
+        // said the same thing; its history folds into this id on upgrade.
+        altLang: 'en',
+        altLangLabel: 'English',
         langLabel: 'संस्कृतम् · Sanskrit · repeated',
         loop: true,
         phrases: [
-          { t: 'बुद्धं शरणं गच्छामि', s: 'Buddhaṃ śaraṇaṃ gacchāmi', e: 'I go for refuge to the Buddha.' },
-          { t: 'धर्मं शरणं गच्छामि', s: 'Dharmaṃ śaraṇaṃ gacchāmi', e: 'I go for refuge to the Dharma.' },
-          { t: 'संघं शरणं गच्छामि', s: 'Saṃghaṃ śaraṇaṃ gacchāmi', e: 'I go for refuge to the Sangha.' }
+          { t: 'बुद्धं शरणं गच्छामि', s: 'Buddhaṃ śaraṇaṃ gacchāmi', e: 'I take refuge in the Buddha, the one who has awakened.' },
+          { t: 'धर्मं शरणं गच्छामि', s: 'Dharmaṃ śaraṇaṃ gacchāmi', e: 'I take refuge in the Dharma, the path of the teaching.' },
+          { t: 'संघं शरणं गच्छामि', s: 'Saṃghaṃ śaraṇaṃ gacchāmi', e: 'I take refuge in the Sangha, the community of all beings walking the way.' }
         ],
-        translation: 'The ancient triple refuge of the Buddha, returning home to awakening, truth, and fellowship.'
+        translation: 'The ancient triple refuge of the Buddha, returning home to awakening, truth, and companionship. The English rendering of the same three lines is offered as a second recitation.'
       },
       {
         id: 'metta',

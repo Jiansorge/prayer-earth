@@ -163,7 +163,14 @@ window.__run = async (opts) => {
   // Without this the previous scenario's empty list (and the voiceDead flag it
   // set) decide the next one.
   speech.refreshVoices()
-  useStore.setState({ voiceURI: opts.voiceURI || '', speechRate: 1 })
+  // A prayer that ships a second recitation reads the listener's voice choice
+  // out of the store, so the scenario can set one. Cleared when absent, so one
+  // scenario's choice cannot leak into the next.
+  useStore.setState({
+    voiceURI: opts.voiceURI || '',
+    speechRate: 1,
+    prayerVoices: opts.voiceChoice ? { [opts.prayerId]: opts.voiceChoice } : {}
+  })
 
   // Synthetic phrases, with lang and speakLang taken straight from the
   // scenario. Both have to survive all the way to the utterance, which is the
@@ -172,6 +179,7 @@ window.__run = async (opts) => {
   const phrases = opts.phrases
   const lang = opts.lang || 'sa'
   const speakLang = opts.speakLang || null
+  const altLang = opts.altLang || null
   const prayerId = opts.prayerId
 
   const record = {
@@ -190,6 +198,7 @@ window.__run = async (opts) => {
     prayerId,
     lang,
     speakLang,
+    altLang,
     phrases,
     rate: 1,
     loop: false,
@@ -487,6 +496,82 @@ try {
         eq(u.lang, 'zh', 'with no English voice the engine keeps the prayer language')
       })
       eq(onlyChinese.finished, true, 'the prayer never finished')
+    })
+
+    // ---- altLang: one prayer, two recitations, chosen by the voice ---------
+    // A prayer can ship its own script AND a second language rendered from our
+    // gloss, under one id, so the listener switches language without the prayer
+    // splitting in two. Which text is spoken follows the voice they pick - the
+    // control they already have - rather than a hardcoded flag. These drive the
+    // same device at both ends of that choice.
+    const TWO_LANGS = {
+      id: 'fixture-altlang',
+      lang: 'zh',
+      altLang: 'en',
+      phrases: [
+        { t: '南無佛', e: 'Homage to the Buddha' },
+        { t: '南無法', e: 'Homage to the Dharma' }
+      ]
+    }
+    // Voice ids carry their locale, as every real one does - the recitation
+    // choice is derived from that prefix, so a bare id would not be a choice.
+    const EN_VOICE = { voiceURI: 'en-US-TestNeural', lang: 'en-US', name: 'En', default: false, localService: true }
+    const ZH_VOICE = { voiceURI: 'zh-CN-TestNeural', lang: 'zh-CN', name: 'Zh', default: false, localService: true }
+    const BOTH_VOICES = [ZH_VOICE, EN_VOICE]
+
+    const choseEnglish = await page.evaluate(
+      (o) => window.__run(o),
+      {
+        prayerId: TWO_LANGS.id,
+        phrases: TWO_LANGS.phrases,
+        lang: TWO_LANGS.lang,
+        altLang: TWO_LANGS.altLang,
+        voices: BOTH_VOICES,
+        voiceChoice: 'en-US-TestNeural',
+        behaviour: 'normal',
+        timeout: 30000
+      }
+    )
+    notes.push(
+      `altlang + en choice:  texts=${choseEnglish.texts.map((x) => JSON.stringify(x.text)).join(', ')} lang=${choseEnglish.texts.map((x) => x.lang).join(',')}`
+    )
+    t('picking an English voice on a two-language prayer speaks its English text', () => {
+      eq(choseEnglish.reason, null, 'a working voice was needlessly abandoned')
+      assert(choseEnglish.texts.length > 0, 'nothing was spoken at all')
+      choseEnglish.texts.forEach((u, i) => {
+        eq(u.text, TWO_LANGS.phrases[i].e, `phrase ${i} was not the English recitation`)
+        eq(u.lang, 'en', `phrase ${i} was not tagged as the English recitation`)
+      })
+      eq(choseEnglish.finished, true, 'the prayer never finished')
+    })
+
+    const choseChinese = await page.evaluate(
+      (o) => window.__run(o),
+      {
+        prayerId: TWO_LANGS.id,
+        phrases: TWO_LANGS.phrases,
+        lang: TWO_LANGS.lang,
+        altLang: TWO_LANGS.altLang,
+        voices: BOTH_VOICES,
+        voiceChoice: 'zh-CN-TestNeural',
+        behaviour: 'normal',
+        timeout: 30000
+      }
+    )
+    notes.push(
+      `altlang + zh choice:  texts=${choseChinese.texts.map((x) => JSON.stringify(x.text)).join(', ')} lang=${choseChinese.texts.map((x) => x.lang).join(',')}`
+    )
+    t('picking a Chinese voice on the same prayer goes back to the original text', () => {
+      // The same prayer, the same session, the other language. Without this the
+      // toggle would be one-way, and the original script unreachable once the
+      // English had been chosen.
+      eq(choseChinese.reason, null, 'a working voice was needlessly abandoned')
+      assert(choseChinese.texts.length > 0, 'nothing was spoken at all')
+      choseChinese.texts.forEach((u, i) => {
+        eq(u.text, TWO_LANGS.phrases[i].t, `phrase ${i} was not the original text`)
+        eq(u.lang, 'zh', `phrase ${i} was not tagged as the original recitation`)
+      })
+      eq(choseChinese.finished, true, 'the prayer never finished')
     })
 
     t('misbehaving engines raised no uncaught errors', () => {

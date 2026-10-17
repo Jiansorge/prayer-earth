@@ -16,6 +16,7 @@ import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { sanitizeName } from '../src/shared/profanity.js'
+import { foldPrayers, FOLDED_PRAYERS } from '../src/shared/prayerFold.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -668,6 +669,51 @@ const stripComments = (text) =>
   check('the player passes the second recitation through to the job',
     /altLang:\s*prayer\.altLang \|\| null/.test(prayerPage),
     'the job must know which second language it may speak')
+
+  // (g) The Three Refuges and the Triple Refuge were the same vow in two
+  // languages, so they are now one prayer. Deleting the English-only id would
+  // have taken a listener's favourite, counts and streak with it, and none of
+  // that lives on the server — so the history folds forward instead. These run
+  // the fold for real, because a bug here loses data that cannot be recovered.
+  check('the duplicate English Refuges entry is gone',
+    !/id: 'refuges'/.test(buddhism),
+    'two prayers for one vow is the duplication being fixed')
+  check('the Triple Refuge offers its English recitation',
+    /id: 'sarana'[\s\S]{0,700}?altLang: 'en'/.test(buddhism),
+    'the surviving prayer carries both languages')
+
+  for (const [from, to] of FOLDED_PRAYERS) {
+    const folded = foldPrayers({
+      favorites: ['mani', from, to, 'metta'],
+      prayerCompletions: { [from]: 3, [to]: 4, mani: 9 },
+      prayerTotals: { [from]: 10 },
+      prayerDayCompletions: { '2026-01-01': { [from]: 2, [to]: 1 } },
+      prayerDayStats: { '2026-01-01': { [from]: 7, [to]: 5 }, '2026-01-02': { mani: 1 } },
+      prayerVoices: { [from]: 'en-US-AvaNeural', [to]: 'hi-IN-SwaraNeural' }
+    })
+    check(`folding ${from} into ${to} keeps both favourites, once each`,
+      folded.favorites.filter((id) => id === to).length === 1 && !folded.favorites.includes(from) &&
+        folded.favorites.includes('mani') && folded.favorites.includes('metta'),
+      JSON.stringify(folded.favorites))
+    check(`folding ${from} into ${to} adds its counts rather than replacing them`,
+      folded.prayerCompletions[to] === 7 && !folded.prayerCompletions[from] &&
+        folded.prayerCompletions.mani === 9,
+      `${to}=${folded.prayerCompletions[to]}`)
+    check(`folding ${from} into ${to} folds every day that carried it`,
+      folded.prayerDayCompletions['2026-01-01'][to] === 3 &&
+        folded.prayerDayStats['2026-01-01'][to] === 12 &&
+        !(from in folded.prayerDayCompletions['2026-01-01']) &&
+        !(from in folded.prayerDayStats['2026-01-01']) &&
+        folded.prayerDayStats['2026-01-02'].mani === 1,
+      `day totals ${JSON.stringify(folded.prayerDayStats['2026-01-01'])}`)
+    check(`folding ${from} into ${to} drops a voice chosen in the old language`,
+      !(from in folded.prayerVoices) && folded.prayerVoices[to] === 'hi-IN-SwaraNeural',
+      JSON.stringify(folded.prayerVoices))
+    const untouched = { favorites: ['mani'], prayerCompletions: { mani: 1 } }
+    check(`folding is a no-op when the deleted id was never used`,
+      foldPrayers(untouched) === untouched,
+      'a launch with no affected history must change nothing')
+  }
 }
 
 const failed = results.filter((r) => !r.pass)

@@ -782,7 +782,10 @@ class SpeechEngine {
     if (recite) {
       const voice = this.pickVoice(recite) || null
       const text = phrase.e || phrase.s || phrase.t
-      return { text, lang: voice ? voice.lang || recite : lang, voice }
+      // Tag the utterance with the RECITATION language, not the voice's own
+      // locale: the attached voice already decides how it is spoken, and the
+      // tag is what says which of this prayer's texts is being read.
+      return { text, lang: voice ? recite : lang, voice }
     }
     const voice = this.pickVoice(lang)
     if (voice) return { text: phrase.t, lang, voice }

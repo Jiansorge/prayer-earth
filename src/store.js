@@ -4,6 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { prayerBaseTotals, spiritBaseTotals } from './data/totals.js'
 import { mergeStats } from './shared/stats.js'
 import { AMBIENT_PRESETS, DEFAULT_AMBIENT_PRESET } from './audio/presets.js'
+import { foldPrayers } from './shared/prayerFold.js'
 
 // Cheap shallow equality for objects/arrays — skips Zustand subscriber
 // notifications when the values haven't actually changed. Used on the
@@ -747,7 +748,12 @@ version: 3,
   // never applied to them, and showing it to someone who already chose would be
   // noise. Only a genuinely new install is asked.
   migrate: (state) =>
-    state ? { ...state, presencePromptSeen: state.presencePromptSeen ?? true } : state,
+    state
+      ? {
+          ...foldPrayers(state),
+          presencePromptSeen: state.presencePromptSeen ?? true
+        }
+      : state,
       merge: (persisted, current) => {
         const saved = persisted && typeof persisted === 'object' ? { ...persisted } : {}
         delete saved.offlineQueue
