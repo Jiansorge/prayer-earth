@@ -871,6 +871,37 @@ const stripComments = (text) =>
   check('the prayer list still scrolls on its own',
     /\.picker-list\s*\{[^}]*overflow-y:\s*auto/.test(styles),
     'bounded only by the sheet, the list is what holds the long tradition')
+
+  // (j) The tradition view stopped at a fixed 82dvh, so the list got whatever
+  // the head, search and favourites band left over: 277px on a 700px phone,
+  // three rows of a thirty-prayer tradition with 3124px left to scroll. Only
+  // vertical space buys rows, so the sheet now fills the overlay it sits in.
+  // Two things are pinned: that the 82dvh cap stays gone, and that the sheet's
+  // height is derived from the overlay's own padding, since a sheet sized by
+  // viewport while the overlay still insets it is a card that outgrows its
+  // frame and clips. Strip the comment first - the note above names the 82dvh
+  // cap this test exists to keep out.
+  const sheetRule = ((styles.match(/\.picker-sheet\s*\{[^}]*\}/) || [''])[0])
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\s+/g, ' ')
+  const overlayRule = ((styles.match(/\.picker-overlay\s*\{[^}]*\}/) || [''])[0])
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\s+/g, ' ')
+  const rowRule = ((styles.match(/\.picker-row\s*\{[^}]*\}/) || [''])[0])
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\s+/g, ' ')
+  check('the tradition view fills the screen instead of stopping at 82dvh',
+    sheetRule !== '' && !/82dvh/.test(sheetRule) && /100dvh/.test(sheetRule),
+    sheetRule || '.picker-sheet rule not found')
+  const overlayPad = (overlayRule.match(/padding:\s*(\d+)px/) || [])[1]
+  const sheetGap = (sheetRule.match(/height:\s*min\(calc\(100dvh\s*-\s*(\d+)px\)/) || [])[1]
+  check('the sheet can never outgrow the overlay that holds it',
+    !!overlayPad && Number(sheetGap) === Number(overlayPad) * 2,
+    `overlay padding ${overlayPad}px vs sheet height minus ${sheetGap}px`)
+  const rowPad = (rowRule.match(/padding:\s*(\d+)px\s+\d+px/) || [])[1]
+  check('a prayer row is slim enough to show a tradition at a glance',
+    !!rowPad && Number(rowPad) <= 10,
+    `row padding ${rowPad}px - tall rows cost the reader a line each, thirty times`)
 }
 
 const failed = results.filter((r) => !r.pass)

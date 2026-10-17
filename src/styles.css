@@ -3756,14 +3756,20 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 14px;
   animation: picker-fade 0.25s var(--ease);
 }
 
 .picker-sheet {
   width: 100%;
   max-width: 560px;
-  max-height: 82dvh;
+  /* The tradition view takes the whole screen. Capped at 82dvh it left the
+     list ~277px once the head, search and favourites band were paid for, so a
+     thirty-prayer tradition showed three rows at a time and needed 3124px of
+     scrolling. The one thing that buys real rows is vertical space, so the
+     sheet now fills everything the overlay does not take, bounded for very
+     tall desktop windows where a 560px-wide column already looks stretched. */
+  height: min(calc(100dvh - 28px), 880px);
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, rgba(13, 34, 21, 0.97), rgba(8, 24, 14, 0.99));
@@ -3861,7 +3867,7 @@ textarea:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   border-radius: 16px;
-  padding: 12px 14px;
+  padding: 10px 14px;
   color: var(--ink);
   cursor: pointer;
   transition: background 0.25s var(--ease), border-color 0.25s var(--ease), transform 0.25s var(--ease);
@@ -3910,17 +3916,18 @@ textarea:focus-visible {
 
 .picker-row-title {
   font-family: var(--serif);
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
+  line-height: 1.25;
   display: block;
   overflow-wrap: anywhere;
 }
 
 .picker-row-sub {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--ink-faint);
   display: block;
-  margin-top: 2px;
+  margin-top: 1px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
