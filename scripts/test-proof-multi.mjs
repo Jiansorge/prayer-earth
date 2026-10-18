@@ -265,7 +265,30 @@ ok(
   !!j4 && s.playing && s.playingPrayerId === s.prayerId && s.playingPrayerId !== 'al-fatiha',
   `playing=${s.playing} ppid=${s.playingPrayerId} prayerId=${s.prayerId}`
 )
-ok('J5 no exceptions through picker churn', excA.length === 0, `exc=${excA.length}`)
+// A pick arms playback on a short timer, so tapping the same row twice (or
+// three times - people do) used to queue two starts: the second one raced the
+// first and could leave the prayer stopped with pendingPlay still set, or
+// speaking the wrong line. Stop, then hammer one row: exactly one coherent
+// playback must come out, with the pending arm consumed rather than left queued.
+await click('nav .nav-stop')
+await c1.waitFor(`window.__store.getState().playing === false`, 6000)
+await E.evaljs(`window.__store.getState().openPrayerPicker('christianity')`)
+await c1.waitFor(`!!document.querySelector('.picker-row')`)
+await E.evaljs(`(() => { const rows = document.querySelectorAll('.picker-row'); const row = rows[rows.length - 1]; row.click(); row.click(); row.click() })()`)
+const j5 = await c1.waitFor(
+  `window.__store.getState().playing && window.__store.getState().playingPrayerId === window.__store.getState().prayerId`,
+  8000
+)
+await sleep(600)
+s = await S()
+j = await job()
+const pendingAfter = await E.evaljs(`window.__store.getState().pendingPlay`)
+ok(
+  'J5 a triple-tap on one picker row plays exactly once, coherently',
+  !!j5 && s.playing && !s.paused && s.playingPrayerId === s.prayerId && pendingAfter === false && j.has,
+  `playing=${s.playing} ppid=${s.playingPrayerId} pendingPlay=${pendingAfter} job=${j.has}`
+)
+ok('J6 no exceptions through picker churn', excA.length === 0, `exc=${excA.length}`)
 
 // ---------- K. LEGAL PAGES + BAD ROUTES ----------
 console.log('\n== K. legal + bad routes ==')

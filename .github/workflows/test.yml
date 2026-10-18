@@ -165,6 +165,7 @@ jobs:
           - test-resource-motion
           - test-resource-loading
           - test-audio-fallback-runtime
+          - test-audio-ambient
           - test-a11y
           - test-settings-ui
           - test-main-thread
@@ -368,16 +369,16 @@ jobs:
   deploy-dispatch:
     # Deterministic gates only. android-smoke (a KVM emulator) is the flakiest
     # job in the file, so it reports Android health but does NOT block a
-    # production deploy — a stray emulator flake must not stop a copy change.
+    # production deploy â€” a stray emulator flake must not stop a copy change.
     #
     # `android` is out for a different reason. It is a ~2.5 minute Gradle build
-    # whose only product is an AAB, and nothing here deploys that AAB — the
+    # whose only product is an AAB, and nothing here deploys that AAB â€” the
     # release upload is a manual step against a file on disk. sync-engine rebuilds
     # the app itself before it deploys, so waiting on android delays production
     # without gating anything that reaches users. On run #263 the chain was
     # test -> 19:35:54, android -> 19:38:19, dispatch 19:38:22: ~2.5 minutes of
     # waiting for a job whose result production never sees. `android` still runs,
-    # still fails loudly, and still blocks the release — just not this.
+    # still fails loudly, and still blocks the release â€” just not this.
     #
     # `browser` IS a gate. Those suites used to be steps inside `test`, so they
     # were already gating the deploy; giving them their own job would have

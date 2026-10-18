@@ -49,7 +49,7 @@ export default {
   'keys.hint': 'Press Esc to close.',
   'settings.voiceLabel': 'Fallback voice',
   'settings.voiceHint':
-    'Most prayers already have 8 recorded neural voices, pick them in the prayer page\u2019s Tune (♪) panel. This fallback voice is only for the few prayers your device speaks itself.',
+    'Most prayers already have 8 recorded neural voices, pick them in the prayer page\u2019s Tune (⚙︎) panel. This fallback voice is only for the few prayers your device speaks itself.',
   'settings.noVoices': 'No device voices found yet, voices appear as they load.',
   'settings.softChant': 'Soft chant (no spoken voice)',
   'settings.hearSample': '🔊 Hear a sample',

@@ -1,4 +1,4 @@
-﻿// Every check CI runs, in one command.
+// Every check CI runs, in one command.
 //
 // `npm test` is the server, usage, backup, units and edge cases. It does not run
 // the browser tests, and the browser tests are the ones that have found real
@@ -60,6 +60,7 @@ const STEPS = [
   'scripts/test-resource-motion.mjs',
   'scripts/test-resource-loading.mjs',
   'scripts/test-audio-fallback-runtime.mjs',
+  'scripts/test-audio-ambient.mjs',
   'scripts/test-a11y.mjs',
   'scripts/test-main-thread.mjs',
   'scripts/test-settings-ui.mjs',

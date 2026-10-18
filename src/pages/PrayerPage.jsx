@@ -355,9 +355,11 @@ const countedRef = useRef(false)
         setActive(null)
 setChantMode(false)
     setChantReason(null)
-    // The prayer is over, so the bed goes quiet. The completion bell is a
-    // one-shot through its own bus and is unaffected by the bed level.
+    // The prayer is over, so the bed goes quiet - and released, not just
+    // muted. The completion bell is a one-shot through its own bus and is
+    // unaffected by the bed level or its teardown.
     ambient.setLevel(0)
+    ambient.stop()
     ambient.ring(0.8)
       }
     }
@@ -520,6 +522,10 @@ setChantMode(false)
     setChantMode(false)
     setChantReason(null)
     ambient.setLevel(0)
+    // The page's stop ends the bed for real - same release as the footer stop -
+    // so a stopped prayer costs nothing to sit behind, and the next play
+    // rebuilds the bed from the store's choice.
+    ambient.stop()
   }
 
   // Count prayer seconds while playing, through the shared store clock so the
@@ -791,43 +797,17 @@ aria-label={t('prayer.prev')}
         <h1 className="prayer-title">{prayerTitle(t, prayer.id, prayer.title)}</h1>
         <div className="prayer-sub">
           <span className="prayer-lang-badge">
-            {String(prayer.langLabel || '').split(' · ').slice(0, 2).join(' · ')}
+            {String(prayer.langLabel || '').split(' � ').slice(0, 2).join(' � ')}
           </span>
-          <span className="prayer-mode">
-            {prayer.loop ? t('prayer.repeated') : t('prayer.recited')}
-          </span>
+          {chantMode && chantReason !== 'chosen' && (
+            <span className="prayer-mode">{t('prayer.voiceUnavailable')}</span>
+          )}
         </div>
         <span className="sr-live" aria-live="polite">
           {playing && active != null && phrases[active]
             ? fillPractitionerName(phrases[active].t, named)
             : ''}
         </span>
-
-        <div className={`praying-now ${prayerCount ? 'together' : ''}`} title={t('prayer.prayingNowTitle')}>
-          <span className="pulse-dot" />
-          <b
-            style={{
-              textShadow: `0 0 ${6 + Math.min(1, Math.log10((prayerCount || 0) + 2) / 4) * 16}px rgba(232,196,122,${0.3 + Math.min(1, Math.log10((prayerCount || 0) + 2) / 4) * 0.7})`
-            }}
-          >
-            {prayerCount || 0}
-          </b>{' '}
-          <span className="praying-now-rest">
-            {t('prayer.prayingNowRest')}
-            <span className="praying-now-sub">
-              {t('prayer.across', { n: spiritCount || 0, name: spirit.name })}
-            </span>
-          </span>
-          <span
-            className="praying-now-total"
-            title={t('prayer.today', { n: prayerToday.toLocaleString() })}
-            style={{
-              textShadow: `0 0 ${5 + Math.min(1, Math.log10(prayerToday + 2) / 5) * 12}px rgba(232,196,122,${0.25 + Math.min(1, Math.log10(prayerToday + 2) / 5) * 0.6})`
-            }}
-          >
-            {t('prayer.today', { n: prayerToday.toLocaleString() })}
-          </span>
-        </div>
 
         <div className="prayer-lines" ref={linesRef}>
           {phrases.map((ph, i) => (
@@ -869,6 +849,32 @@ aria-label={t('prayer.prev')}
           <div className="chant-pill">{t('prayer.softChant')}</div>
         )}
 
+        <div className={`praying-now ${prayerCount ? 'together' : ''}`} title={t('prayer.prayingNowTitle')}>
+          <span className="pulse-dot" />
+          <b
+            style={{
+              textShadow: `0 0 ${6 + Math.min(1, Math.log10((prayerCount || 0) + 2) / 4) * 16}px rgba(232,196,122,${0.3 + Math.min(1, Math.log10((prayerCount || 0) + 2) / 4) * 0.7})`
+            }}
+          >
+            {prayerCount || 0}
+          </b>{' '}
+          <span className="praying-now-rest">
+            {t('prayer.prayingNowRest')}
+            <span className="praying-now-sub">
+              {t('prayer.across', { n: spiritCount || 0, name: spirit.name })}
+            </span>
+          </span>
+          <span
+            className="praying-now-total"
+            title={t('prayer.today', { n: prayerToday.toLocaleString() })}
+            style={{
+              textShadow: `0 0 ${5 + Math.min(1, Math.log10(prayerToday + 2) / 5) * 12}px rgba(232,196,122,${0.25 + Math.min(1, Math.log10(prayerToday + 2) / 5) * 0.6})`
+            }}
+          >
+            {t('prayer.today', { n: prayerToday.toLocaleString() })}
+          </span>
+        </div>
+
         <PrayerStats prayerId={prayer.id} />
       </div>
 
@@ -901,7 +907,7 @@ aria-label={t('prayer.prev')}
           aria-label={t('prayer.tuneLabel')}
           title={t('prayer.tune')}
         >
-          ♪
+          {'\u2699\uFE0E'}
         </button>
         <div className="vol-vert" role="group" aria-label={t('prayer.volume')}>
           <span className="vol-vert-icon" aria-hidden="true">

@@ -100,4 +100,9 @@ export async function stopPlayback() {
   })
   syncClient.presenceNow()
   ambient.setLevel(0)
+  // Level 0 silences the bed; stop() releases it. A stop from anywhere (footer
+  // button, any view) must end the bed the way the page's own stop does, or the
+  // oscillators keep living at zero behind every screen - the muted-forever
+  // cost that a level move cannot pay off.
+  ambient.stop()
 }

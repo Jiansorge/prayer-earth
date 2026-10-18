@@ -982,10 +982,12 @@ const stripComments = (text) =>
     readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8')
   )
   const speechSrc = stripComments(readFileSync(path.join(ROOT, 'src/audio/speech.js'), 'utf8'))
-  const bedFx = settingsSrc.slice(
-    settingsSrc.indexOf('const prevLevelRef'),
-    settingsSrc.indexOf('}, [open])')
-  )
+  // The dip effect itself, not from the ref declarations: the sandbox helpers
+  // (an audition at 0.4, its cancel flag) now live between prevLevelRef and the
+  // effect, and a wider slice counted their 0.4 as a second unconditional rise.
+  const dipStart = settingsSrc.indexOf('if (!ambient.ctx) return')
+  const dipEnd = settingsSrc.indexOf('}, [open])', dipStart)
+  const bedFx = settingsSrc.slice(dipStart, dipEnd)
   const dipAt = bedFx.indexOf('ambient.setLevel(0.4)')
   const guardAt = bedFx.indexOf('if (ambient.level > 0.4)')
   check(
@@ -1322,6 +1324,121 @@ const stripComments = (text) =>
     'the keyboard sheet loads with the first tap, not inside the ? keypress',
     /import\('\.\/components\/KeyboardHelp\.jsx'\)/.test(warmBlock),
     'the shortcut help is lazy() and was fetched at the moment of the keypress - the shortcut lag itself'
+  )
+}
+
+// --- 10. A muted bed is released, and the settings sheet stays a sandbox -----
+{
+  // Long sessions went staticy/laggy while the sheet and the nav looked fine,
+  // because stopping only ever MOVED A GAIN: the oscillators, LFOs, noise loop
+  // and Temple's interval kept running at zero from the first prayer onward,
+  // forever, on every screen - CPU and memory the user could never hand back.
+  // stop() must schedule the same teardown preset switching already uses, a
+  // rebuild inside the window must cancel it (the bed came back), and every
+  // true-stop path in the app must actually call stop() - not just setLevel(0),
+  // which is what pause/resume legitimately do instead.
+  const ambSrc = stripComments(readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8'))
+  check(
+    'ambient stop tears the preset graph down after the fade, not just to silence',
+    /stop\(\)\s*{[\s\S]*?_rampMaster\(0\.0001\)[\s\S]*?_stopTimer\s*=\s*setTimeout\([\s\S]*?_teardownPreset\(\)/.test(ambSrc) &&
+      /_stopTimer[^}]*?if \(this\.running\) return/.test(ambSrc),
+    'the graph must be released once the fade is inaudible, and a bed that came back owns it'
+  )
+  check(
+    'a rebuild cancels a pending stop teardown',
+    /buildPreset\(id\)\s*{[\s\S]*?clearTimeout\(this\._stopTimer\)/.test(ambSrc),
+    'otherwise setPreset/start lands a fresh bus that the pending teardown then kills'
+  )
+  check(
+    'an exhausted resume loop re-arms on the next return of the reader',
+    /_armIdleRetry\(\)/.test(ambSrc) &&
+      /visibilitychange/.test(ambSrc) &&
+      /addEventListener\('pointerdown'/.test(ambSrc) &&
+      /attempt >= 30[\s\S]{0,200}?_armIdleRetry\(\)/.test(ambSrc),
+    'the bounded loop used to give up with the sound permanently silent until an unrelated tap'
+  )
+  const pbSrc = stripComments(readFileSync(path.join(ROOT, 'src/playback.js'), 'utf8'))
+  check(
+    'the shared stopPlayback ends the bed, not just its level',
+    /setLevel\(0\)\s*[\s\S]{0,400}?ambient\.stop\(\)/.test(pbSrc),
+    'a stop from any view left the engine running muted behind every screen'
+  )
+  const prayerSrc = stripComments(readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8'))
+  check(
+    'the page stop and the finish path release the bed too',
+    (prayerSrc.match(/setLevel\(0\)\s*\n\s*ambient\.stop\(\)/g) || []).length >= 2,
+    'setLevel(0) alone mutes; only stop() pays the oscillators off'
+  )
+  const sheetSrc = stripComments(readFileSync(path.join(ROOT, 'src/components/SettingsSheet.jsx'), 'utf8'))
+  check(
+    'the sheet snapshots what was running and ends only its own audition',
+    /runningAtOpenRef\.current\s*=\s*ambient\.running/.test(sheetSrc) &&
+      /bedPickedRef\.current\s*&&\s*runningAtOpenRef\.current\s*===\s*false/.test(sheetSrc) &&
+      /endSheetBed\(\)/.test(sheetSrc),
+    'a bed the sheet started belongs to the sheet; a bed the prayer started belongs to the prayer'
+  )
+  check(
+    'the audition is cancelled if the sheet closes before the ctx is ready',
+    /previewCancelRef/.test(sheetSrc) &&
+      /if \(previewCancelRef\.current \|\| bedPickedRef\.current === false\) return/.test(sheetSrc),
+    'the async ensure() could otherwise resurrect a bed the sheet already gave up on'
+  )
+  check(
+    'stepping into a sub-panel ends the audition like a close does',
+    /open && \(panel \|\| legalOpen\)\) endSheetBed\(\)/.test(sheetSrc),
+    'Privacy/backup/keys/legal all leave the sound section the way Done does'
+  )
+  const scSrc = stripComments(readFileSync(path.join(ROOT, 'src/components/SoundControls.jsx'), 'utf8'))
+  check(
+    'only the sheet previews a bed; the prayer panel keeps its plain switch',
+    /previewBeds && !ambient\.running/.test(scSrc) && /onBedPick\?\.\(id\)/.test(scSrc),
+    'previewBeds is a prop: without it (prayer tune panel) onBed never starts anything'
+  )
+}
+
+// --- 11. The prayer view says what it means --------------------------------
+{
+  // Three edits of the same idea: the view was narrating choices the reader
+  // never made. The tune button wore a music note (readable as "this plays a
+  // tune" rather than "these are settings"), the help strings pointed at it by
+  // that note, the live "praying with you" pill sat above the lines it was
+  // interrupting, and every prayer claimed to be "recited aloud" - including
+  // silent ones, and ones whose voice had just failed (the failure already has
+  // its own toast and now has its own badge).
+  const psrc = stripComments(readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8'))
+  check(
+    'the tune button is a gear in text presentation, not a music note',
+    /'\\u2699\\uFE0E'/.test(psrc) && !/♪/.test(psrc),
+    'U+2699 with VS15 keeps Android from falling back to a colour emoji'
+  )
+  const helpFiles = ['en.js', 'bo.js', 'tl.js', 'vi.js']
+  const gearParens = `(${String.fromCodePoint(0x2699, 0xfe0e)})`
+  const noteParens = '(\u266A)'
+  for (const f of helpFiles) {
+    const loc = readFileSync(path.join(ROOT, 'src/locales', f), 'utf8')
+    check(
+      `the ${f} help string points at the gear, not the note`,
+      loc.includes(gearParens) && !loc.includes(noteParens),
+      'the four scripts that spelled out "Tune (note)" by glyph'
+    )
+  }
+  const linesAt = psrc.indexOf('prayer-lines')
+  const pillAt = psrc.indexOf('praying-now')
+  const statsAt = psrc.indexOf('<PrayerStats')
+  check(
+    'the live "praying together" pill sits with the stats, below the lines',
+    linesAt > -1 && pillAt > linesAt && statsAt > pillAt,
+    'it used to sit above the lines, pushing the prayer down the screen'
+  )
+  check(
+    'no prayer claims a recitation style it did not choose',
+    !/prayer\.recited/.test(psrc) && !/prayer\.repeated/.test(psrc),
+    'the keys stay in the locales; the view simply stopped asserting them'
+  )
+  check(
+    'a failed voice shows the unavailable badge, a chosen chant does not',
+    /chantMode && chantReason !== 'chosen' &&\s*\(\s*<span className="prayer-mode">\{t\('prayer\.voiceUnavailable'\)\}/.test(psrc),
+    'degradation is exactly when chantMode is on for a reason other than choice'
   )
 }
 

@@ -357,6 +357,16 @@ const bedLoud = await c.eval(`(async () => {
   await new Promise((r) => setTimeout(r, 2200))
   return { gain: a.master.gain.value, skipped: false }
 })()`)
+// Loud, not silent: a skip used to be indistinguishable from a pass in the
+// log (the assertion read `skipped || gain > 3`), so a machine where every run
+// suspends the context would "pass" this forever without ever measuring
+// anything. The skip still passes - it is environmental, not a defect - but it
+// now says so where a human (or a CI summary reader) will see it.
+if (bedLoud.skipped) {
+  console.log(
+    '  NOTE  ambient loudness check SKIPPED: headless AudioContext stayed suspended - master gain was NOT measured this run'
+  )
+}
 ok(
   'ambient bed reaches an audible level at 100% (master gain > 3)',
   bedLoud.skipped || bedLoud.gain > 3.0,

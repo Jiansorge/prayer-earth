@@ -49,7 +49,7 @@ export default {
   'keys.hint': 'Nhấn Esc để đóng.',
   'settings.voiceLabel': 'Giọng đọc thay thế',
   'settings.voiceHint':
-    'Hầu hết các lời cầu nguyện đã có sẵn 8 giọng đọc ghi âm sẵn, bạn chọn trong bảng Điều chỉnh (♪) ở trang cầu nguyện. Giọng thay thế này chỉ dành cho vài lời cầu nguyện mà thiết bị của bạn tự đọc.',
+    'Hầu hết các lời cầu nguyện đã có sẵn 8 giọng đọc ghi âm sẵn, bạn chọn trong bảng Điều chỉnh (⚙︎) ở trang cầu nguyện. Giọng thay thế này chỉ dành cho vài lời cầu nguyện mà thiết bị của bạn tự đọc.',
   'settings.noVoices': 'Chưa tìm thấy giọng đọc nào trên thiết bị, giọng sẽ xuất hiện khi tải xong.',
   'settings.softChant': 'Tụng nhẹ (không giọng nói)',
   'settings.hearSample': '🔊 Nghe thử',

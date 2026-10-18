@@ -49,7 +49,7 @@ export default {
   'keys.hint': 'Pindutin ang Esc upang isara.',
   'settings.voiceLabel': 'Kapalit na boses',
   'settings.voiceHint':
-    'Karamihan sa mga panalangin ay may 8 naka-record na neural na boses, piliin ang mga ito sa panel ng Tune (♪) sa pahina ng panalangin. Ang kapalit na boses na ito ay para lang sa ilang panalangin na binabasa mismo ng iyong device.',
+    'Karamihan sa mga panalangin ay may 8 naka-record na neural na boses, piliin ang mga ito sa panel ng Tune (⚙︎) sa pahina ng panalangin. Ang kapalit na boses na ito ay para lang sa ilang panalangin na binabasa mismo ng iyong device.',
   'settings.noVoices': 'Wala pang nahanap na boses sa device, lilitaw ang mga boses habang naglo-load.',
   'settings.softChant': 'Mahinang pagbigkas (walang binibigkas na boses)',
   'settings.hearSample': '🔊 Makinig ng sample',

@@ -14,7 +14,7 @@ import { applyMute } from '../audio/mute.js'
 import { applyVolumes } from '../audio/volumes.js'
 import { useT } from '../i18n.js'
 
-export default function SoundControls({ layout = 'field', showBeds = true }) {
+export default function SoundControls({ layout = 'field', showBeds = true, previewBeds = false, onBedPick }) {
   const t = useT()
   const volume = useStore((s) => s.volume)
   const setVolume = useStore((s) => s.setVolume)
@@ -67,7 +67,16 @@ export default function SoundControls({ layout = 'field', showBeds = true }) {
   }
   const onBed = (id) => {
     setAmbientPreset(id)
-    ambient.setPreset(id)
+    if (previewBeds && !ambient.running) {
+      // In the settings sheet, selection is the play: opening the sheet must
+      // not start sound, but tapping a chip IS a request to hear that bed, so
+      // audition it from the gesture (the sheet starts it and stops it again on
+      // close or a step into a sub-panel); an already-running bed just switches
+      // preset below, same as everywhere.
+      onBedPick?.(id)
+    } else {
+      ambient.setPreset(id)
+    }
   }
 
   return (

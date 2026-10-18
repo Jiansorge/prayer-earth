@@ -83,6 +83,12 @@ export class AmbientEngine {
     this._noise = null
     this._stateWatch = false
     this._stateRetry = null
+    // Set by _watchState so the idle re-arm can restart the bounded loop after
+    // it has given up; _stopTimer is a pending stop-teardown, cancelled by any
+    // rebuild that lands first.
+    this._tryResume = null
+    this._idleRearm = false
+    this._stopTimer = null
   }
 
   // Always returns a Promise. (It used to be `async`; when the ambient rewrite
@@ -175,12 +181,40 @@ export class AmbientEngine {
         const p = ctx.resume()
         if (p && typeof p.catch === 'function') p.catch(() => {})
       } catch {}
-      if (attempt >= 30) return
+      if (attempt >= 30) {
+        // The bounded loop gives up on a refusal with no further statechange
+        // coming, and that is the original bug returning with a longer fuse:
+        // silence until some unrelated tap happens to call ensure(). Arm the
+        // idle re-arm so the next moment the reader is actually back (visible
+        // tab, focused window, a pointer down) restarts the loop from zero.
+        this._armIdleRetry()
+        return
+      }
       clearTimeout(this._stateRetry)
       this._stateRetry = setTimeout(() => tryResume(attempt + 1), 2000)
     }
+    this._tryResume = tryResume
     this.ctx.onstatechange = () => tryResume(0)
     tryResume(0)
+  }
+
+  // Recovery after the bounded retry loop has exhausted itself. One cheap
+  // listener set, registered once, kept for the life of the graph: while the
+  // context is running each kick is a state check and a no-op, and while it is
+  // not, each kick restarts the bounded loop (so the bound still holds per
+  // interruption - an interruption nobody returns from schedules work exactly
+  // as long as it did before, which is not at all).
+  _armIdleRetry() {
+    if (this._idleRearm || !this._tryResume) return
+    this._idleRearm = true
+    const kick = () => {
+      clearTimeout(this._stateRetry)
+      this._stateRetry = null
+      this._tryResume(0)
+    }
+    document.addEventListener('visibilitychange', kick)
+    window.addEventListener('focus', kick)
+    window.addEventListener('pointerdown', kick, { passive: true })
   }
 
   // ---- ambient preset synthesis ----
@@ -403,6 +437,11 @@ export class AmbientEngine {
 
   buildPreset(id) {
     if (!this.ctx) return
+    // A pending stop-teardown is void the moment a (re)build lands: this new
+    // bus is the bed coming back (start, or a bed picked from a panel), not the
+    // one stop scheduled for release.
+    clearTimeout(this._stopTimer)
+    this._stopTimer = null
     this._teardownPreset()
     const builders = this._builders()
     const build = builders[id] || builders.reiki
@@ -599,6 +638,22 @@ export class AmbientEngine {
       // feel instant, and an exponential tail lingers audibly.
       this._rampMaster(0.0001)
     }
+    // Muted is not stopped. The fade above only moves a gain - the oscillators,
+    // LFOs, noise loop and (for Temple) its interval kept running at zero from
+    // the first prayer onward, forever, on every screen: the silent CPU/memory
+    // cost behind "long sessions get staticy/laggy" that no volume move can
+    // release. Tear the preset down once the fade is inaudible, using the same
+    // teardown preset switching already uses, so an actual stop releases the
+    // graph and the next start() rebuilds it from the store's choice. The
+    // limiter/master stay (the prayer voice routes through them), and a rebuild
+    // inside the window cancels this outright.
+    clearTimeout(this._stopTimer)
+    if (!this.ctx) return
+    this._stopTimer = setTimeout(() => {
+      this._stopTimer = null
+      if (this.running) return
+      this._teardownPreset()
+    }, 900)
   }
 }
 
