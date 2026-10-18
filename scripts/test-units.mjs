@@ -970,6 +970,140 @@ const stripComments = (text) =>
     'audio was decided to stay as recorded - a name in the utterance desyncs the highlight')
 }
 
+// --- 7. Audio reliability: silence stays silent, a line that ended ends ------
+{
+  // Every check here guards one reported defect. The class is the same in all
+  // of them: audio that keeps running after it should stop, or sits still after
+  // it should move, and a reader who hears it as "the sound is broken".
+  const settingsSrc = stripComments(
+    readFileSync(path.join(ROOT, 'src/components/SettingsSheet.jsx'), 'utf8')
+  )
+  const prayerPageSrc = stripComments(
+    readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8')
+  )
+  const speechSrc = stripComments(readFileSync(path.join(ROOT, 'src/audio/speech.js'), 'utf8'))
+  const bedFx = settingsSrc.slice(
+    settingsSrc.indexOf('const prevLevelRef'),
+    settingsSrc.indexOf('}, [open])')
+  )
+  const dipAt = bedFx.indexOf('ambient.setLevel(0.4)')
+  const guardAt = bedFx.indexOf('if (ambient.level > 0.4)')
+  check(
+    'opening settings never raises a bed that was off',
+    guardAt > -1 && dipAt > guardAt && (bedFx.match(/ambient\.setLevel\(0\.4\)/g) || []).length === 1,
+    'the sheet wrote 0.4 unconditionally and started the ambient sound with nothing playing'
+  )
+  check(
+    'the bed it dips is put back when the sheet closes',
+    /prevLevelRef\.current != null/.test(bedFx) && /ambient\.setLevel\(prevLevelRef\.current\)/.test(bedFx),
+    'a dip with no restore leaves the prayer quiet for the rest of the prayer'
+  )
+
+  const pbSrc = stripComments(readFileSync(path.join(ROOT, 'src/playback.js'), 'utf8'))
+  const toggle = pbSrc.slice(
+    pbSrc.indexOf('export async function requestPlayToggle'),
+    pbSrc.indexOf('export async function stopPlayback')
+  )
+  const pauseAt = toggle.indexOf('speech.pause()')
+  const resumeAt = toggle.indexOf('speech.resume()')
+  const pauseBranch = toggle.slice(pauseAt, resumeAt > pauseAt ? resumeAt : undefined)
+  const resumeBranch = toggle.slice(resumeAt > -1 ? resumeAt : 0)
+  check(
+    'pausing from anywhere also silences the ambient bed',
+    pauseAt > -1 && resumeAt > -1 && /ambient\.setLevel\(0\)/.test(pauseBranch),
+    'the footer pause left the bed running, so one pause stopped the sound on one screen and not the other'
+  )
+  check(
+    'resuming from anywhere brings the bed back at the prayer level',
+    /ambient\.setLevel\(0\.9\)/.test(resumeBranch) && /ambient\.setLevel\(0\.9\)/.test(prayerPageSrc),
+    'the two pause paths must agree on how loud the bed returns, or one of them starts from nothing'
+  )
+
+  check(
+    'a line that ended moves on instead of waiting out its estimate',
+    /advance\(i, fromEnd\)/.test(speechSrc) && /if \(!fromEnd && since < hold\)/.test(speechSrc),
+    'phraseHold is deliberately generous, so paying its remainder after onended stacked dead air after every line'
+  )
+  const realEnds = (speechSrc.match(/advance\(i, true\)/g) || []).length
+  const stallRetries = (speechSrc.match(/this\.advance\(i\)/g) || []).length
+  check(
+    'only a real end claims to be a real end',
+    realEnds === 3 && stallRetries === 1,
+    `${realEnds} real ends, ${stallRetries} stall retries - the stall path must keep the safety floor`
+  )
+  check(
+    'the breath between cycles scales with the chosen rate',
+    /j\.gapMs\) \|\| 900\) \/ rate/.test(speechSrc),
+    'a flat 900ms reads as a stall at 1.6x and as nothing at 0.7x'
+  )
+  check(
+    'the timed/chant fallback paces itself at the chosen rate',
+    /estimateMs\(opts\.phrases\[i\]\) \/ rate/.test(speechSrc) &&
+      /\(opts\.gapMs \|\| 900\) \/ rate/.test(speechSrc),
+    'the fallback walked the lines at plain reading pace whatever the reader selected'
+  )
+  check(
+    "the next line's audio is warmed while the current line is still playing",
+    /const next = i \+ 1[\s\S]{0,600}this\._bufferFor\(ns\)\.catch/.test(speechSrc),
+    'first pass paid the fetch inside the only gap the reader can hear'
+  )
+  check(
+    'the native and fast-rate routes warm the HTTP cache instead of decoding',
+    /fetch\(ns, \{ cache: 'force-cache' \}\)/.test(speechSrc),
+    'those routes play from an <audio> element, so a decoded buffer would be thrown away'
+  )
+  check(
+    'a phrase buffer is fetched once even while the prefetch is in flight',
+    /\.set\(url, load\)/.test(speechSrc) && /this\._bufferByUrl\.delete\(url\)/.test(speechSrc),
+    'caching only finished buffers let a line arriving early fire a second request for the same file'
+  )
+
+  const ambSrc = stripComments(readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8'))
+  const builtAt = ambSrc.indexOf('new AC()')
+  const armedAt = ambSrc.indexOf('this._watchState()')
+  const resumeAt2 = ambSrc.indexOf("state === 'suspended'")
+  check(
+    'the audio graph starts watching itself the moment it exists',
+    builtAt > -1 && armedAt > builtAt && resumeAt2 > armedAt,
+    'an interrupted context with nothing watching it stays silent until some unrelated tap'
+  )
+  check(
+    'an interrupted audio graph revives itself',
+    /onstatechange = \(\) => tryResume/.test(ambSrc) && /_stateRetry = setTimeout\(\(\) => tryResume/.test(ambSrc),
+    'a call or a backgrounded tab left the context interrupted - the reported cuts-out-until-I-tap-it'
+  )
+  check(
+    'the revival gives up on its own instead of scheduling work forever',
+    /attempt >= 30/.test(ambSrc),
+    'an unbounded retry keeps firing long after the app is done with the sound'
+  )
+  check(
+    'the output ceiling stays cheap enough to run under the 3D earth',
+    /oversample = '2x'/.test(ambSrc) && !/oversample = '4x'/.test(ambSrc),
+    'oversampling is per-sample work on the same audio thread the visuals compete with'
+  )
+
+  // _pad runs every note through ONE gain, so the stacked level a preset pushes
+  // into the shared bus is notes x gain (+ its air layer) - an upper bound, and
+  // the number that made a five-note bed louder than a three-note one at the
+  // same "0.05".
+  const stacked = (name) => {
+    const body = new RegExp(`${name}: \\(b, s\\) => \\{([\\s\\S]*?)\\n      \\}`).exec(ambSrc)
+    if (!body) return null
+    const pad = /_pad\(b, s, \{ notes: \[([^\]]+)\], gain: ([\d.]+)/.exec(body[1])
+    const air = /_air\(b, s, \{ gain: ([\d.]+)/.exec(body[1])
+    if (!pad || !air) return null
+    return pad[1].split(',').length * Number(pad[2]) + Number(air[1])
+  }
+  const reikiStack = stacked('reiki')
+  const oceanStack = stacked('ocean')
+  check(
+    'the default bed is not the loudest thing in the rack',
+    reikiStack != null && oceanStack != null && reikiStack <= oceanStack,
+    `reiki stacks ${reikiStack}, ocean stacks ${oceanStack}`
+  )
+}
+
 const failed = results.filter((r) => !r.pass)
 console.log(`\n[units] ${results.length - failed.length}/${results.length} passed`)
 if (failed.length) {

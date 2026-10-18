@@ -31,6 +31,12 @@ export async function requestPlayToggle() {
     speech.pause()
     useStore.setState({ paused: true, praying: false })
     syncClient.presenceNow()
+    // Pause means silent. The prayer page's own toggle always dropped the bed
+    // here; this path (footer play/pause, from any view) never touched it, so
+    // the same pause stopped the ambient sound on one screen and left it
+    // running on another - and leaving it up meant resuming had nothing to
+    // bring back.
+    ambient.setLevel(0)
     return
   }
 
@@ -51,6 +57,9 @@ export async function requestPlayToggle() {
     }
     useStore.setState({ paused: false, praying: true })
     syncClient.presenceNow()
+    // Mirror the prayer page's resume level, so both paths agree on how loud
+    // the bed comes back.
+    ambient.setLevel(0.9)
     return
   }
 

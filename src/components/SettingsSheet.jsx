@@ -124,12 +124,20 @@ export default function SettingsSheet() {
   // close. Without the restore, opening Settings mid-prayer left the bed at the
   // idle 0.4 for the rest of the prayer (and the ambience slider, which
   // re-applies ambient.level, could no longer climb back up).
+  //
+  // Only ever LOWER. This used to write 0.4 unconditionally, so a bed that was
+  // at 0 - prayer ended, paused, or never played - was raised to 0.4 and the
+  // ambient sound started with nothing playing at all, the moment the sheet
+  // opened. A silent bed stays silent; only a bed that was actually up gets
+  // dipped and restored.
   const prevLevelRef = useRef(null)
   useEffect(() => {
     if (!ambient.ctx) return
     if (open) {
-      prevLevelRef.current = ambient.level
-      ambient.setLevel(0.4)
+      if (ambient.level > 0.4) {
+        prevLevelRef.current = ambient.level
+        ambient.setLevel(0.4)
+      }
     } else if (prevLevelRef.current != null) {
       ambient.setLevel(prevLevelRef.current)
       prevLevelRef.current = null

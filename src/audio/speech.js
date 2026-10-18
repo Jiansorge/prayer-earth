@@ -224,24 +224,34 @@ class SpeechEngine {
   // same line many times). Returns null if the graph or the decode is missing.
   async _bufferFor(url) {
     const cached = this._bufferByUrl.get(url)
-    if (cached) return cached
+    // The map holds the in-flight request, not just the finished one. The
+    // prefetch in speakCloud() starts loading the next line while this one is
+    // still speaking; with a finished-only cache a line that arrives before the
+    // prefetch lands fires a second request for the same file. A failed load is
+    // evicted, so a transient error is retried instead of poisoning the entry.
+    if (cached) return await cached
     const ctx = ambient.ctx
     if (!ctx) return null
-    try {
-      if (this._bufferByUrl.size >= 128) {
-        const oldest = this._bufferByUrl.keys().next().value
-        this._bufferByUrl.delete(oldest)
-      }
-      const r = await xhrGet(url)
-      if (r.status !== 200) return null
-      let data = r.response
-      if (typeof data === 'string') data = new TextEncoder().encode(data).buffer
-      const buf = await ctx.decodeAudioData(data)
-      this._bufferByUrl.set(url, buf)
-      return buf
-    } catch {
-      return null
+    if (this._bufferByUrl.size >= 128) {
+      const oldest = this._bufferByUrl.keys().next().value
+      this._bufferByUrl.delete(oldest)
     }
+    const load = (async () => {
+      try {
+        const r = await xhrGet(url)
+        if (r.status !== 200) return null
+        let data = r.response
+        if (typeof data === 'string') data = new TextEncoder().encode(data).buffer
+        const buf = await ctx.decodeAudioData(data)
+        this._bufferByUrl.set(url, buf)
+        return buf
+      } catch {
+        this._bufferByUrl.delete(url)
+        return null
+      }
+    })()
+    this._bufferByUrl.set(url, load)
+    return await load
   }
 
   // The shared output stage: the ambience engine's limiter when available (so
@@ -422,7 +432,7 @@ class SpeechEngine {
         if (!j || !j.active || j !== job || j.mode !== 'tts') return
         if (job.done.has(token)) return
         job.done.add(token)
-        this.advance(i)
+        this.advance(i, true)
       }
       // Safety net set BEFORE playback so a stalled file or a muted environment
       // can never hang a prayer — the phrase always advances.
@@ -501,6 +511,19 @@ class SpeechEngine {
       const np = job.phrases[next]
       if (next < job.phrases.length && np && np.t) {
         const ns = await this.staticAudioUrl(job, next)
+        // Warm the next line's audio while this line is still playing. Without
+        // it the very first pass pays the fetch (and the decode) after the
+        // current line ends - inside the only gap the reader can hear, which is
+        // the reported pause between lines. The native/fast-rate routes can't
+        // use a decoded buffer, so they warm the HTTP cache instead; both are
+        // best-effort and never block the line that is playing.
+        if (ns) {
+          if (!preferElement && rate === 1) {
+            this._bufferFor(ns).catch(() => {})
+          } else {
+            fetch(ns, { cache: 'force-cache' }).catch(() => {})
+          }
+        }
         const nk = ns || `${job.lang}:${np.t}`
         if (!this.cloudCache.has(nk)) {
           if (this.cloudCache.size >= 100) {
@@ -983,7 +1006,7 @@ class SpeechEngine {
         this.timedLoop(j, true)
         return
       }
-      this.advance(i)
+      this.advance(i, true)
     }
     u.onerror = () => {
       const j = this.job
@@ -1008,7 +1031,7 @@ class SpeechEngine {
         this.timedLoop(j, true)
         return
       }
-      this.advance(i)
+      this.advance(i, true)
     }
     // A dead or swapped-out engine can throw straight out of speak(). Count it
     // as a failed phrase like any other error so the three-strike handoff above
@@ -1068,12 +1091,20 @@ class SpeechEngine {
   // onerror so a real voice and the timer always share one clock. Each phrase
   // stays on screen at least its estimated duration, so a fast or silent
   // engine can never make the highlight blaze through the prayer.
-  advance(i) {
+  advance(i, fromEnd) {
     const job = this.job
     if (!job || !job.active || job.paused) return
     const since = Date.now() - (job.phraseStart || 0)
     const hold = job.phraseHold || 0
-    if (since < hold) {
+    // A line that really ended has ended: go straight on. The floor below is a
+    // guard against an engine reporting "done" before the line could plausibly
+    // have finished - it is not a pause between verses. But phraseHold is an
+    // estimate that is deliberately generous (the watchdogs need it that way),
+    // so paying the remainder of the estimate after every onended stacked up to
+    // seconds of dead air after EVERY line, and it grew at higher rates: the
+    // recording finishes in half the time while the estimate does not scale, so
+    // the floor was longest exactly when the reader asked to go fastest.
+    if (!fromEnd && since < hold) {
       clearTimeout(job.advTimer)
       job.advTimer = setTimeout(() => {
         const j = this.job
@@ -1095,7 +1126,11 @@ class SpeechEngine {
 
   gap(fn) {
     const j = this.job
-    const delay = (j && j.gapMs) || 900
+    // The breath between cycles scales with the rate. A flat 900ms is over a
+    // second and a half of speech-time at 1.6x and reads as a stall at the end
+    // of every loop - the same complaint as the pause between lines.
+    const rate = j ? Math.max(0.6, Math.min(2, Number(j.rate) || 1)) : 1
+    const delay = ((j && j.gapMs) || 900) / rate
     setTimeout(() => {
       if (this.job === j && j.active) fn()
     }, delay)
@@ -1193,6 +1228,11 @@ class SpeechEngine {
     clearTimeout(j.guard)
     clearTimeout(j.advTimer)
     let i = j.index || 0
+    // Everything in this loop is wall-clock pacing, so the chosen rate has to
+    // reach it: an unscaled estimate keeps the timed/chant fallback walking the
+    // lines at plain reading pace no matter what the reader selected, and the
+    // breath between loops stayed a flat 900ms at any rate.
+    const rate = Math.max(0.6, Math.min(2, Number(j.rate) || 1))
     const step = () => {
       if (!j.active || this.job !== j) return
       if (j.paused) {
@@ -1201,14 +1241,14 @@ class SpeechEngine {
       }
       if (chant) ambient.hum(0.65)
       j.onPhrase(i, opts.phrases[i])
-      const dur = this.estimateMs(opts.phrases[i])
+      const dur = this.estimateMs(opts.phrases[i]) / rate
       if (i < opts.phrases.length - 1) {
         i += 1
         j.timer = setTimeout(step, dur)
       } else if (opts.loop) {
         if (opts.onCycle) opts.onCycle()
         i = 0
-        j.timer = setTimeout(step, opts.gapMs || 900)
+        j.timer = setTimeout(step, (opts.gapMs || 900) / rate)
       } else {
         this.finishJob()
       }

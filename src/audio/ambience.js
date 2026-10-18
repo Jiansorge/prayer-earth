@@ -81,6 +81,8 @@ export class AmbientEngine {
     this.presetBus = null
     this.chanBus = null
     this._noise = null
+    this._stateWatch = false
+    this._stateRetry = null
   }
 
   // Always returns a Promise. (It used to be `async`; when the ambient rewrite
@@ -108,9 +110,13 @@ export class AmbientEngine {
       this.limiter.release.value = 0.32
       this.ceiling = this.ctx.createWaveShaper()
       this.ceiling.curve = ceilingCurve()
-      // 4x oversampling keeps the saturated part from folding back as aliasing,
-      // which would be its own kind of grit.
-      this.ceiling.oversample = '4x'
+      // 2x, not 4x. Oversampling is per-sample work on the audio thread, and
+      // this node sits under WebGL, the sparkle loop and every re-render on an
+      // older device - where an audio thread competing for time with the UI is
+      // exactly how a sound drops out mid-action. The knee is a smooth tanh and
+      // is only driven into saturation by transients, so 2x already removes the
+      // aliasing that 4x was bought for. Audio must not be the thing that loses.
+      this.ceiling.oversample = '2x'
       this.limiter.connect(this.ceiling)
       this.ceiling.connect(this.ctx.destination)
         this.master = this.ctx.createGain()
@@ -128,6 +134,7 @@ export class AmbientEngine {
       } catch {
         return Promise.resolve()
       }
+      this._watchState()
     }
     if (this.ctx.state === 'suspended') {
       return this.ctx.resume().then(
@@ -136,6 +143,44 @@ export class AmbientEngine {
       )
     }
     return Promise.resolve()
+  }
+
+  // Keep the graph running once it exists.
+  //
+  // Safari INTERRUPTS an AudioContext (a call, Siri, another app taking the
+  // audio session) and leaves it in 'interrupted'. Every source routed through
+  // this graph - bed, recorded voice, chant - goes silent at once, and nothing
+  // else in the app reads ctx.state, so the silence lasts until some unrelated
+  // tap happens to call ensure() again. That is the reported "sound cuts out
+  // and comes back when I do things": the taps were not causing it, they were
+  // reviving it.
+  //
+  // statechange catches the interruption as it lands. resume() can also be
+  // refused outright (no gesture yet, page backgrounded) and a refusal fires
+  // no event, so the retry is explicit - bounded, because an interrupted
+  // context that will not return must not schedule work forever, and re-armed
+  // from scratch by the next statechange or the next ensure().
+  _watchState() {
+    if (this._stateWatch || !this.ctx) return
+    this._stateWatch = true
+    const tryResume = (attempt = 0) => {
+      const ctx = this.ctx
+      if (!ctx || ctx.state === 'running') {
+        clearTimeout(this._stateRetry)
+        this._stateRetry = null
+        return
+      }
+      if (ctx.state === 'closed') return
+      try {
+        const p = ctx.resume()
+        if (p && typeof p.catch === 'function') p.catch(() => {})
+      } catch {}
+      if (attempt >= 30) return
+      clearTimeout(this._stateRetry)
+      this._stateRetry = setTimeout(() => tryResume(attempt + 1), 2000)
+    }
+    this.ctx.onstatechange = () => tryResume(0)
+    tryResume(0)
   }
 
   // ---- ambient preset synthesis ----
@@ -268,9 +313,16 @@ export class AmbientEngine {
       // Reiki Drift — the classic warm healing pad: a broad major-9 that
       // breathes with a slow pulse, plus a midrange air layer so it's audible
       // on a phone speaker (which can't reproduce the low pad).
+      //
+      // Quietened from 0.05/0.05. _pad runs every note through ONE gain, so a
+      // five-note stack puts five oscillators under it where Ocean has three
+      // and Temple two: on paper all three beds "use" a gain near 0.05, and in
+      // practice the default preset was several dB the loudest thing in the
+      // rack - which is what "Reiki drift is too loud" is. Cut about 3 dB here
+      // rather than rescaling the master, because the complaint is this bed.
       reiki: (b, s) => {
-        this._pad(b, s, { notes: [130.81, 196.0, 261.63, 329.63, 493.88], gain: 0.05, filter: 420, breathe: 0.04, pulse: 0.2, pulseDepth: 0.3 })
-        this._air(b, s, { gain: 0.05, filter: 'bandpass', freq: 620, q: 0.4, lfo: 0.07, depth: 200 })
+        this._pad(b, s, { notes: [130.81, 196.0, 261.63, 329.63, 493.88], gain: 0.035, filter: 420, breathe: 0.04, pulse: 0.2, pulseDepth: 0.3 })
+        this._air(b, s, { gain: 0.035, filter: 'bandpass', freq: 620, q: 0.4, lfo: 0.07, depth: 200 })
       },
       // Ocean Hush — low pad under a slowly breathing band of surf noise, with
       // a slow tidal swell.
