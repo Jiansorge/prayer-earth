@@ -624,6 +624,7 @@ export class EarthScene {
       // the moon, with its real phase, hangs in the sky
       this.moon = this.buildMoon()
       this.scene.add(this.moon)
+      this._placeMoon()
 
       // sparks that shimmer out as collective prayer surges
       this.sparkPts = this.buildSparks()
@@ -928,8 +929,30 @@ if (this._readyTimer) clearTimeout(this._readyTimer)
     })
     const spr = new THREE.Sprite(mat)
     spr.scale.set(0.72, 0.72, 1)
-    spr.position.set(-3.6, 2.5, -1.6)
     return spr
+  }
+
+  // Hang the moon at a fixed SPOT OF SKY, not at a fixed world point.
+  //
+  // (-3.6, 2.5, -1.6) was written once and never re-measured. From the live
+  // camera that point renders at NDC y=1.13 - above the top edge - on every
+  // aspect ratio, and at NDC x=-3.4 on a portrait phone, three full screens to
+  // the left, so the phase-accurate moon never appeared on a phone at all and
+  // only a corner sliver survived on a wide monitor. Unprojecting the anchor
+  // through the current camera puts it in the upper-left sky at any aspect:
+  // clear of the globe's silhouette on wide screens, and - where a narrow
+  // screen's globe fills the width - lapping the upper-left limb like a moon
+  // setting behind the Earth, which depth-testing handles for free because the
+  // anchor sits behind the globe rather than in front of it.
+  _placeMoon() {
+    if (!this.moon || !this.camera) return
+    const cam = this.camera
+    const V = this.moon.position.constructor
+    const anchor = new V(-0.75, 0.75, 0.5)
+    anchor.unproject(cam)
+    const dir = anchor.sub(cam.position).normalize()
+    // Seven units along the ray is past the globe's far side.
+    this.moon.position.copy(cam.position).addScaledVector(dir, 7)
   }
 
 // Little sparks that shimmer out from the globe as collective prayer surges.
@@ -1849,11 +1872,20 @@ const arcticRow = Math.floor((H * 10) / 180)
     ]
     const planets = defs.map((d, i) => {
       const tex = this.makeOrbTexture(d.color, d.spots)
-      const mat = new THREE.MeshBasicMaterial({
-        map: tex,
-        transparent: true
-      })
-      const mesh = new THREE.Mesh(new THREE.SphereGeometry(d.r, 24, 24), mat)
+      // A billboard, not a sphere. The texture is a lit DISC on transparent
+      // ground - makeOrbTexture's arc fills its canvas edge to edge - and that
+      // drawing cannot be wrapped onto a SphereGeometry: equirect UVs land the
+      // disc's edge somewhere across the sphere and its transparent corners at
+      // the poles, so each body rendered with a hard seam and a bitten-out
+      // notch. A few pixels wide (the low-power path renders at DPR 1), that
+      // collapsed into an orange block that read as a square, not a world. A
+      // sprite keeps the drawing intact at any size and always faces the
+      // camera; the scale is the old sphere's diameter, so orbit sizes are
+      // unchanged.
+      const mesh = new THREE.Sprite(
+        new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false })
+      )
+      mesh.scale.set(d.r * 2, d.r * 2, 1)
       const ring = new THREE.Mesh(
         new THREE.RingGeometry(d.dist - d.size / 2, d.dist + d.size / 2, 48),
         new THREE.MeshBasicMaterial({
@@ -2151,6 +2183,9 @@ this.autoRotate = !this.reducedMotion
       const h = this.container.clientHeight || 1
       this.camera.aspect = w / h
       this.camera.updateProjectionMatrix()
+      // The moon is anchored in screen space (see _placeMoon), so an aspect
+      // change - rotating a phone, opening the window wider - re-hangs it too.
+      this._placeMoon()
       this.renderer.setSize(w, h)
     }
     window.addEventListener('resize', this._resize)
