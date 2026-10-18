@@ -3,6 +3,18 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './styles.css'
 
+// Tag weak hardware before the first paint so styles.css can gate the paint
+// that stacks on top of the WebGL canvas (stage blur, blend passes, particle
+// fields). The threshold mirrors EarthBackdrop's staticMode and sits where
+// EarthScene cuts its own geometry: <=4 cores or <=2GB catches the old iPads
+// and budget Androids that reported the chop without slowing anyone else.
+if (
+  typeof navigator !== 'undefined' &&
+  (navigator.hardwareConcurrency <= 4 || (navigator.deviceMemory ?? 8) <= 2)
+) {
+  document.documentElement.classList.add('low-power')
+}
+
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   const hadController = !!navigator.serviceWorker.controller
   window.addEventListener('load', () => {

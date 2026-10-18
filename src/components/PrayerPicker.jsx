@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITY_BY_ID, loadSpirit } from '../data/prayers.js'
 import { useT, prayerTitle } from '../i18n.js'
-import { stopPlayback } from '../playback.js'
+import { stopPlayback, playChosenPrayer } from '../playback.js'
 import useFocusTrap from '../shared/useFocusTrap.js'
 import Sparkles from './Sparkles.jsx'
 
@@ -53,19 +53,26 @@ function matchesDate(dates, season) {
 
 // A quiet sheet that lists every prayer of a chosen tradition, so a person
 // can see and choose any of them instead of always landing on the first one.
-function PickerRow({ p, i, spirit, openPrayer, close, t }) {
+function PickerRow({ p, i, spirit, t }) {
   const today = useStore((s) => s.getPrayerToday(p.id))
   const now = useStore((s) => s.prayerCounts[p.id] || 0)
   const fav = useStore((s) => s.favorites.includes(p.id))
   const toggleFavorite = useStore((s) => s.toggleFavorite)
-  const open = () => {
+  const open = async () => {
     const cur = useStore.getState()
     if (cur.playingPrayerId && cur.playingPrayerId !== p.id) {
       // Choosing a different prayer stops the one playing in the background.
-      stopPlayback()
+      // Awaited: stopPlayback clears pendingPlay as part of stopping, and it
+      // settles after an await of its own - firing the pick before that lands
+      // would let the stop's clear wipe the pick's freshly armed flag, and the
+      // chosen prayer would never speak.
+      await stopPlayback()
     }
-    openPrayer(spirit.id, p.id)
-    close()
+    // Picking a prayer means hearing it - arm the same pendingPlay path the
+    // footer play button uses so the prayer page starts it on mount. The
+    // store action closes the picker in the same set, so a double-tap is one
+    // nav key and the throttle drops the duplicate start.
+    playChosenPrayer(spirit.id, p.id)
   }
   return (
     <div
@@ -127,7 +134,6 @@ const listScrollMemory = Object.create(null)
 export default function PrayerPicker() {
   const spiritId = useStore((s) => s.prayerPickerSpiritId)
   const close = useStore((s) => s.closePrayerPicker)
-  const openPrayer = useStore((s) => s.openPrayer)
   const favorites = useStore((s) => s.favorites)
   const sheetRef = useFocusTrap(!!spiritId)
   const t = useT()
@@ -238,7 +244,7 @@ export default function PrayerPicker() {
         </div>
         {loading ? (
           <div className="picker-loading">
-            <span className="play-spinner" aria-hidden="true" />&ensp;{t('picker.loading')}
+            <span className="play-spinner" aria-hidden="true" />{t('picker.loading')}
           </div>
         ) : (
           <>
@@ -261,11 +267,12 @@ export default function PrayerPicker() {
                 <button
                   key={p.id}
                   className="picker-fav-chip"
-                  onClick={() => {
+                  onClick={async () => {
                     const cur = useStore.getState()
-                    if (cur.playingPrayerId && cur.playingPrayerId !== p.id) stopPlayback()
-                    openPrayer(spirit.id, p.id)
-                    close()
+                    if (cur.playingPrayerId && cur.playingPrayerId !== p.id) {
+                      await stopPlayback()
+                    }
+                    playChosenPrayer(spirit.id, p.id)
                   }}
                 >
                   ★ {prayerTitle(t, p.id, p.title).split(',')[0]}
@@ -277,7 +284,7 @@ export default function PrayerPicker() {
           {shown.length === 0 && (
             <div className="picker-empty">{t('picker.none')}</div>          )}
           {shown.map((p, i) => (
-            <PickerRowMemo key={p.id} p={p} i={i} spirit={spirit} openPrayer={openPrayer} close={close} t={t} />
+            <PickerRowMemo key={p.id} p={p} i={i} spirit={spirit} t={t} />
           ))}
         </div>
           </>

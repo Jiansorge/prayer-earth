@@ -1104,6 +1104,227 @@ const stripComments = (text) =>
   )
 }
 
+// --- 8. A pick plays, navigation runs once, the earth's small bodies show ----
+{
+  // (m) Three reported defects, one shape: a control that means one thing but
+  // did another. Picking a prayer from the list meant "open it" when the
+  // reader was asking to hear it; every navigation action ran unguarded, so a
+  // double-tap ran the work twice (and openLegal twice rewrote its own return
+  // point); the earth's moon sat at a fixed world point that no aspect keeps
+  // on screen, and its orbiting bodies wrapped an orb texture onto a sphere,
+  // which at phone resolution is an orange square drifting across the sky.
+  // Strip comments first - every source here narrates the bug it guards.
+  const pickStoreSrc = stripComments(readFileSync(path.join(ROOT, 'src/store.js'), 'utf8'))
+  const pickPbSrc = stripComments(readFileSync(path.join(ROOT, 'src/playback.js'), 'utf8'))
+  const pickPickerSrc = stripComments(
+    readFileSync(path.join(ROOT, 'src/components/PrayerPicker.jsx'), 'utf8')
+  )
+  const pickPageSrc = stripComments(readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8'))
+
+  const andPlayAt = pickStoreSrc.indexOf('openAndPlay:')
+  const andPlay = pickStoreSrc.slice(andPlayAt, andPlayAt + 420)
+  check(
+    'picking a prayer arms the play and closes the list in one set',
+    andPlayAt > -1 && /navThrottle\(`play:/.test(andPlay) &&
+      /pendingPlay: true/.test(andPlay) && /prayerPickerSpiritId: null/.test(andPlay),
+    'one atomic set means a double-tap is one nav key the throttle can drop'
+  )
+  const openOnly = pickStoreSrc.slice(pickStoreSrc.indexOf('openPrayer: (spiritId'), andPlayAt)
+  check(
+    'viewing a prayer without picking it still keeps the old one playing',
+    openOnly.length > 0 && !/pendingPlay/.test(openOnly),
+    'deep links and related chips are navigation, not a request to speak'
+  )
+
+  const chosenAt = pickPbSrc.indexOf('export function playChosenPrayer')
+  const chosen = pickPbSrc.slice(chosenAt, chosenAt + 320)
+  check(
+    'the pick unlocks audio inside the tap and never waits to navigate',
+    chosenAt > -1 && chosen.indexOf('primeAudio()') > -1 &&
+      chosen.indexOf('primeAudio()') < chosen.indexOf('openAndPlay(') &&
+      !/await primeAudio/.test(chosen),
+    'priming after the await leaves the unlock outside the gesture; awaiting it delays the sheet closing'
+  )
+  const stopSlice = pickPbSrc.slice(pickPbSrc.indexOf('export async function stopPlayback'))
+  check(
+    'stopping from anywhere also cancels a queued start',
+    /pendingPlay: false/.test(stopSlice),
+    'pendingPlay outlives a stop pressed inside the 60ms queue, so silence itself starts speaking'
+  )
+  const pageStopSlice = pickPageSrc.slice(
+    pickPageSrc.indexOf('const stopJob = () => {'),
+    pickPageSrc.indexOf('const elapsed = useStore((s) => s.elapsed)')
+  )
+  check(
+    'the prayer page stop beats a queued start too',
+    /setPendingPlay\(false\)/.test(pageStopSlice),
+    'the same lost race exists on the page stop button'
+  )
+
+  check(
+    'every way of choosing a prayer starts it',
+    (pickPickerSrc.match(/playChosenPrayer\(spirit\.id, p\.id\)/g) || []).length === 2 &&
+      !/openPrayer\(/.test(pickPickerSrc),
+    'row and favourite chip both speak; a leftover openPrayer would reopen the old silent behaviour'
+  )
+  check(
+    'the stop before a pick finishes first, or it cancels the pick it preceded',
+    (pickPickerSrc.match(/await stopPlayback\(\)/g) || []).length === 2,
+    'stopPlayback clears pendingPlay after an await of its own - unawaited, the clear lands after the arm'
+  )
+
+  check(
+    'navigation drops only a duplicate destination in the same instant',
+    /if \(key === lastNavKey && now - lastNavAt < NAV_WINDOW_MS\) return/.test(pickStoreSrc),
+    'a key-equality check that ignores time would swallow every later return to a view'
+  )
+  check(
+    'every navigation action runs through the throttle',
+    (pickStoreSrc.match(/navThrottle\(/g) || []).length === 8,
+    `${(pickStoreSrc.match(/navThrottle\(/g) || []).length} wrapped - go, openPrayer, openAndPlay, openLegal, closeLegal, closePrayer, both picker sides`
+  )
+
+  // The throttle is the part a substring cannot prove, so drive the store
+  // itself: a subscribe counter sees exactly the sets that were not dropped.
+  // The prime call runs one real navigation BEFORE the baseline is taken, so
+  // anything that settles on first touch (persist hydration firing a set of
+  // its own) is spent rather than miscounted as a duplicate.
+  const { useStore } = await import('../src/store.js')
+  let navFires = 0
+  const navUnsub = useStore.subscribe(() => { navFires++ })
+  try {
+    const navState = useStore.getState()
+    navState.openPrayer('judaism', 'shema') // prime: hydration and friends fire here
+    const nav0 = navFires
+    navState.openPrayer('judaism', 'shema') // the double-tap itself
+    check(
+      'a double-tapped prayer opens exactly once',
+      navFires - nav0 === 0,
+      `${navFires - nav0} extra sets for one destination tapped twice`
+    )
+    navState.go('home')
+    check(
+      'a different destination inside the window still moves',
+      navFires - nav0 === 1,
+      `${navFires - nav0} extra sets after a different destination`
+    )
+    const realNow = Date.now
+    try {
+      Date.now = () => realNow() + 300
+      navState.go('home')
+    } finally {
+      Date.now = realNow
+    }
+    check(
+      'the same destination runs again once the window has passed',
+      navFires - nav0 === 2,
+      `${navFires - nav0} extra sets after the window expired`
+    )
+    check(
+      'openAndPlay lands every field it exists to set',
+      (() => {
+        const g = useStore.getState()
+        g.openAndPlay('hinduism', 'gayatri')
+        const s = useStore.getState()
+        return s.view === 'prayer' && s.spiritId === 'hinduism' && s.prayerId === 'gayatri' &&
+          s.pendingPlay === true && s.prayerPickerSpiritId === null
+      })(),
+      'the prayer page keys its start effect off pendingPlay; the picker keys its render off the spirit id'
+    )
+  } finally {
+    navUnsub()
+  }
+
+  const pickStyles = readFileSync(path.join(ROOT, 'src/styles.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+  const loadingRule = ((pickStyles.match(/\.picker-loading\s*\{[^}]*\}/) || [''])[0])
+    .replace(/\s+/g, ' ')
+  const loadingSpin = ((pickStyles.match(/\.picker-loading \.play-spinner\s*\{[^}]*\}/) || [''])[0])
+    .replace(/\s+/g, ' ')
+  check(
+    'the loading line is styled for the dark sheet it sits on',
+    /display:\s*flex/.test(loadingRule) && /justify-content:\s*center/.test(loadingRule) &&
+      /color:\s*var\(--ink-dim\)/.test(loadingRule),
+    loadingRule || '.picker-loading rule not found'
+  )
+  check(
+    'the loading spinner is visible against that sheet',
+    /border-top-color:\s*rgba\(/.test(loadingSpin) && !/#0d2214/.test(loadingSpin),
+    loadingSpin || 'the play button\'s dark-green ring ships unretinted into a dark sheet'
+  )
+
+  const pickAppSrc = stripComments(readFileSync(path.join(ROOT, 'src/App.jsx'), 'utf8'))
+  check(
+    'the tradition picker is warmed with the rest of the first tap',
+    /import\('\.\/components\/PrayerPicker\.jsx'\)/.test(pickAppSrc),
+    'the picker is the first thing anyone taps, and it loaded its chunk inline on that tap'
+  )
+
+  const earthSrc = stripComments(readFileSync(path.join(ROOT, 'src/three/EarthScene.js'), 'utf8'))
+  check(
+    'the orbiting bodies are billboards, not wrapped spheres',
+    /new THREE\.Sprite\(/.test(earthSrc) && !/SphereGeometry\(d\.r/.test(earthSrc),
+    'the orb texture is a lit disc on transparent ground; equirect-wrapping it seams and notches into a blocky orange square at phone resolution'
+  )
+  const moonCallCount = (earthSrc.match(/this\._placeMoon\(\)/g) || []).length
+  check(
+    'the moon is placed from the screen, so no aspect can strand it off-screen',
+    /_placeMoon\(\)\s*\{/.test(earthSrc) && moonCallCount === 2 && /unproject/.test(earthSrc),
+    `${moonCallCount} call sites (build + resize) - a fixed world point measured above the frame on every aspect`
+  )
+}
+
+// --- 9. Weak hardware runs the same page with less paint --------------------
+{
+  // (n) "Old iPad" reported the app as choppy. The scene already cuts its own
+  // geometry on weak devices, but everything CSS stacked on top of that live
+  // canvas kept running at full price: backdrop blurs re-filtering the canvas
+  // per frame, screen-blended layers forcing blend passes on every scroll,
+  // particle fields animating shadowed dots, and a fixed aurora layer larger
+  // than the viewport. The gate is a class set before first paint; these
+  // checks pin both halves - the tag, and the paint it is meant to silence.
+  const mainSrc = stripComments(readFileSync(path.join(ROOT, 'src/main.jsx'), 'utf8'))
+  check(
+    'weak hardware is tagged before the first paint',
+    /documentElement\.classList\.add\('low-power'\)/.test(mainSrc) &&
+      /hardwareConcurrency <= 4/.test(mainSrc) && /deviceMemory/.test(mainSrc),
+    'the tag must be in the entry, not in a component that renders after the paint it gates'
+  )
+  const lpStyles = readFileSync(path.join(ROOT, 'src/styles.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+  const lpRule = (sel) => {
+    const m = lpStyles.match(new RegExp(`\\.low-power ${sel.replace(/[.:[\]]/g, '\\$&')}\\s*\\{[^}]*\\}`))
+    return m ? m[0].replace(/\s+/g, ' ') : ''
+  }
+  for (const sel of ['.prayer-stage', '.prayer-tune', '.prayer-stats', '.card', '.home-favs', '.picker-overlay']) {
+    check(
+      `low-power drops the blur behind ${sel}`,
+      /backdrop-filter:\s*none/.test(lpRule(sel)),
+      lpRule(sel) || `.low-power ${sel} rule not found`
+    )
+  }
+  check(
+    'low-power replaces the frosted grounds with opaque ones, not holes',
+    /background:\s*rgba\(/.test(lpRule('.card')) && /background:\s*rgba\(/.test(lpRule('.picker-overlay')),
+    'a translucent ground without its blur is unreadable over a live canvas'
+  )
+  check(
+    'low-power stops the blend passes and the particle work',
+    /display:\s*none/.test(lpRule('.fireflies')) &&
+      /animation:\s*none/.test(lpRule('.glow-field')) &&
+      /mix-blend-mode:\s*normal/.test(lpRule('.glow-field')) &&
+      /animation:\s*none/.test(lpRule('.sky::before')),
+    'the fireflies, the aurora and the canopy dapple were the per-frame costs, not the layout'
+  )
+  const lpAppSrc = stripComments(readFileSync(path.join(ROOT, 'src/App.jsx'), 'utf8'))
+  const warmBlock = lpAppSrc.slice(lpAppSrc.indexOf('const warm = () => {'))
+  check(
+    'the keyboard sheet loads with the first tap, not inside the ? keypress',
+    /import\('\.\/components\/KeyboardHelp\.jsx'\)/.test(warmBlock),
+    'the shortcut help is lazy() and was fetched at the moment of the keypress - the shortcut lag itself'
+  )
+}
+
 const failed = results.filter((r) => !r.pass)
 console.log(`\n[units] ${results.length - failed.length}/${results.length} passed`)
 if (failed.length) {

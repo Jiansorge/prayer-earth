@@ -232,13 +232,21 @@ ok('D9 no exceptions through background flows', excCount() === 0, `exc=${excCoun
 
 // ---------- E. CHANGING PRAYERS STOPS THE OLD ----------
 console.log('\n== E. changing prayers stops the old ==')
-// E1 via picker
+// E1 via picker - picking IS a play: the chosen prayer now starts speaking on
+// its own, which necessarily means the old one stopped first.
 await evaljs(`window.__store.getState().openPrayerPicker('christianity')`)
 await waitFor(`!!document.querySelector('.picker-row')`)
 await evaljs(`document.querySelector('.picker-row').click()`)
-await waitFor(`window.__store.getState().praying === false || !window.__store.getState().playing`)
+const e1 = await waitFor(
+  `window.__store.getState().playing && window.__store.getState().playingPrayerId && window.__store.getState().playingPrayerId === window.__store.getState().prayerId`,
+  8000
+)
 s = await S()
-ok('E1 picker selection stopped the playing prayer', !s.playing && s.playingPrayerId === null, `playing=${s.playing} ppid=${s.playingPrayerId}`)
+ok(
+  'E1 picking a prayer starts it and the old one is gone',
+  !!e1 && s.playing && s.playingPrayerId === s.prayerId && s.playingPrayerId !== 'metta',
+  `playing=${s.playing} ppid=${s.playingPrayerId} prayerId=${s.prayerId}`
+)
 
 // E2 via related-prayer chips (start metta then tap a chip to another prayer)
 await evaljs(`window.__store.getState().openPrayer('buddhism', 'metta')`)

@@ -510,6 +510,11 @@ setChantMode(false)
     useStore.getState().setPlayingSpiritId(null)
     useStore.getState().setPlayingSessionId(null)
     useStore.getState().setCurrentPhrase(null)
+    // Stop beats a queued start: pendingPlay's effect can still be sitting on
+    // its 60ms timer when stop is pressed (a pick just armed it), and without
+    // clearing the flag here the effect would run startJob right after the
+    // stop - speaking on a button whose whole meaning is silence.
+    useStore.getState().setPendingPlay(false)
     syncClient.presenceNow()
     setActive(null)
     setChantMode(false)

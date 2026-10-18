@@ -249,24 +249,43 @@ await sleep(300)
 s = await S()
 j = await job()
 ok('J3 closing the picker keeps the old prayer playing', s.playing && !s.paused && j.has, `playing=${s.playing}`)
-// pick a DIFFERENT prayer from the picker (should stop the old per the fix)
+// pick a DIFFERENT prayer from the picker - the old one stops and the picked
+// one starts in its place (a pick means hearing it, not just opening it)
 await E.evaljs(`window.__store.getState().openPrayerPicker('christianity')`)
 await c1.waitFor(`!!document.querySelector('.picker-row')`)
 await E.evaljs(`(() => { const rows = document.querySelectorAll('.picker-row'); rows[rows.length - 1].click() })()`)
+const j4 = await c1.waitFor(
+  `window.__store.getState().playing && window.__store.getState().playingPrayerId === window.__store.getState().prayerId`,
+  8000
+)
 await sleep(400)
 s = await S()
-ok('J4 selecting a different prayer stops the old', !s.playing && s.playingPrayerId === null, `playing=${s.playing} ppid=${s.playingPrayerId}`)
+ok(
+  'J4 picking a different prayer switches to it',
+  !!j4 && s.playing && s.playingPrayerId === s.prayerId && s.playingPrayerId !== 'al-fatiha',
+  `playing=${s.playing} ppid=${s.playingPrayerId} prayerId=${s.prayerId}`
+)
 ok('J5 no exceptions through picker churn', excA.length === 0, `exc=${excA.length}`)
 
 // ---------- K. LEGAL PAGES + BAD ROUTES ----------
 console.log('\n== K. legal + bad routes ==')
 await E.evaljs(`window.__store.getState().openLegal('privacy')`)
 await c1.waitFor(`window.__store.getState().view === 'legal'`)
+// The legal page is a lazy() chunk: view flips before the module lands, so
+// measuring the DOM in the very next roundtrip races the fetch (chars=0 on a
+// cold transform). Wait for the node itself, then measure it.
+const legalShown = await c1.waitFor(`!!document.querySelector('.legal-view')`, 6000)
 const legalText = await E.evaljs(`document.querySelector('.legal-view') ? document.body.innerText.length : 0`)
-ok('K1 legal page renders content', legalText > 200, `chars=${legalText}`)
+ok('K1 legal page renders content', !!legalShown && legalText > 200, `chars=${legalText}`)
 await E.evaljs(`window.__store.getState().closeLegal()`)
-await c1.waitFor(`window.__store.getState().view === 'home'`)
-ok('K2 legal closes back to home', (await S()).view === 'home')
+// Closing returns to wherever the page was OPENED from - the contract the
+// settings sheet depends on ("Back must return to the sheet, not home"; the
+// usage suite asserts it synchronously there). Here the harness opened it on
+// top of the prayer view, so prayer is where back must land; asserting home
+// would only hold if legalReturn pointed at the legal page itself, which was
+// a double-run bug, not a behaviour.
+await c1.waitFor(`window.__store.getState().view === 'prayer'`)
+ok('K2 legal closes back to where it was opened from', (await S()).view === 'prayer', `view=${(await S()).view}`)
 await E.evaljs(`location.hash = '#/terms'`)
 await c1.waitFor(`window.__store.getState().view === 'legal'`, 6000)
 ok('K3 terms deep link works', (await S()).view === 'legal')

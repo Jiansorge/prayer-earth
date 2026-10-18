@@ -298,6 +298,29 @@ function detectInitialLocale() {
   return 'en'
 }
 
+// ---- navigation throttle ----
+// Every navigation here runs real work: a view mount, a scroll restore, a lazy
+// chunk fetch, and openAndPlay arms pendingPlay, which starts audio. There
+// was no re-entrancy guard anywhere, so a double-tap - the normal way people
+// hit small targets - ran all of it twice: two mounts racing, two prefetches,
+// audio started twice. That is the "laggy navigation" people report, and no
+// test or back-button path needs a repeat, because a repeated call for the
+// SAME destination inside the window is a no-op anyway (same view, same
+// prayer). A different destination is always accepted, so home -> pray ->
+// earth tapped in quick succession still lands where the reader pointed.
+// 250ms sits above a stray second tap (~50-100ms) and below a deliberate
+// next tap (~300ms+), so it swallows only true duplicates.
+const NAV_WINDOW_MS = 250
+let lastNavKey = ''
+let lastNavAt = 0
+const navThrottle = (key, fn) => {
+  const now = Date.now()
+  if (key === lastNavKey && now - lastNavAt < NAV_WINDOW_MS) return
+  lastNavKey = key
+  lastNavAt = now
+  fn()
+}
+
 export const useStore = create(
   persist(
     (set, get) => ({
@@ -435,39 +458,79 @@ export const useStore = create(
   deleteToken: '',
 
       // ---- navigation ----
+      // Throttled through navThrottle (see its comment above the store): a
+      // duplicate tap on the same destination inside the window is dropped, so
+      // the work each of these performs only runs once per real navigation.
       go: (view) =>
-        set((s) => {
-          if (view === 'prayer' && !s.spiritId) {
-            return { view, spiritId: 'christianity', prayerId: 'lords-prayer' }
-          }
-          return { view }
-        }),
-      openPrayer: (spiritId, prayerId) =>
-        set({ view: 'prayer', spiritId, prayerId }),
-      openLegal: (legalPage) =>
-        set((s) => ({
-          view: 'legal',
-          legalPage,
-          // Remember where the legal page was opened from (it is only reachable
-          // from the Settings sheet) so Back returns to that sheet instead of
-          // dumping the user on the home screen.
-          legalReturn: { view: s.view, settingsOpen: s.settingsOpen },
-          settingsOpen: false
-        })),
-      closeLegal: () =>
-        set((s) =>
-          s.legalReturn
-            ? {
-                view: s.legalReturn.view,
-                legalPage: null,
-                settingsOpen: s.legalReturn.settingsOpen,
-                legalReturn: null
-              }
-            : { view: 'home', legalPage: null }
+        navThrottle(`go:${view}`, () =>
+          set((s) => {
+            if (view === 'prayer' && !s.spiritId) {
+              return { view, spiritId: 'christianity', prayerId: 'lords-prayer' }
+            }
+            return { view }
+          })
         ),
-      closePrayer: () => set({ view: 'home', praying: false, pendingPlay: false }),
-      openPrayerPicker: (spiritId) => set({ prayerPickerSpiritId: spiritId }),
-      closePrayerPicker: () => set({ prayerPickerSpiritId: null }),
+      openPrayer: (spiritId, prayerId) =>
+        navThrottle(`open:${spiritId}/${prayerId}`, () =>
+          set({ view: 'prayer', spiritId, prayerId })
+        ),
+      // Picking a prayer from the tradition list (row or favourite chip) means
+      // "hear it now" - the reader chose it to be SPOKEN, not just read. One
+      // atomic set: view + ids + the pendingPlay arm + closing the picker, so
+      // the nav throttle sees a double-tap as the same key and drops the
+      // duplicate start, and the prayer page's pendingPlay effect picks it up
+      // on mount. openPrayer alone (deep links, related chips) deliberately
+      // does NOT arm this: viewing a different prayer still keeps the old one
+      // playing in the background.
+      openAndPlay: (spiritId, prayerId) =>
+        navThrottle(`play:${spiritId}/${prayerId}`, () =>
+          set({
+            view: 'prayer',
+            spiritId,
+            prayerId,
+            pendingPlay: true,
+            prayerPickerSpiritId: null
+          })
+        ),
+      openLegal: (legalPage) =>
+        navThrottle(`legal:${legalPage}`, () =>
+          set((s) => ({
+            view: 'legal',
+            legalPage,
+            // Remember where the legal page was opened from (it is only reachable
+            // from the Settings sheet) so Back returns to that sheet instead of
+            // dumping the user on the home screen. A double-tap used to run this
+            // twice, and the second run read the view the FIRST had just set -
+            // legalReturn ended up pointing at the legal page itself, so Back
+            // from it returned to it. The throttle means the second tap never
+            // reaches the setter, and legalReturn keeps its real origin.
+            legalReturn: { view: s.view, settingsOpen: s.settingsOpen },
+            settingsOpen: false
+          }))
+        ),
+      closeLegal: () =>
+        navThrottle('legal:close', () =>
+          set((s) =>
+            s.legalReturn
+              ? {
+                  view: s.legalReturn.view,
+                  legalPage: null,
+                  settingsOpen: s.legalReturn.settingsOpen,
+                  legalReturn: null
+                }
+              : { view: 'home', legalPage: null }
+          )
+        ),
+      closePrayer: () =>
+        navThrottle('close:prayer', () =>
+          set({ view: 'home', praying: false, pendingPlay: false })
+        ),
+      openPrayerPicker: (spiritId) =>
+        navThrottle(`picker:${spiritId}`, () =>
+          set({ prayerPickerSpiritId: spiritId })
+        ),
+      closePrayerPicker: () =>
+        navThrottle('picker:close', () => set({ prayerPickerSpiritId: null })),
       setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
 
       setPraying: (praying) => set({ praying }),

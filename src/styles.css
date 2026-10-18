@@ -3858,6 +3858,27 @@ textarea:focus-visible {
   font-size: 13px;
 }
 
+/* The list of prayers is a lazily-imported chunk, so the first tap on a
+   tradition shows this state for a beat. It shipped with no rule at all: raw
+   16px text left-aligned at the top of the sheet, carrying the play button's
+   spinner - a dark green ring (#0d2214) drawn for that LIGHT button - on the
+   sheet's dark green gradient, so the spinner was invisible and the text
+   unstyled. Fills the sheet now, and re-tints the ring for this background. */
+.picker-loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 26px 18px;
+  color: var(--ink-dim);
+  font-size: 13px;
+}
+.picker-loading .play-spinner {
+  border-color: rgba(255, 255, 255, 0.18);
+  border-top-color: rgba(232, 196, 122, 0.9);
+}
+
 .picker-row {
   display: flex;
   align-items: center;
@@ -4727,4 +4748,64 @@ select:focus-visible {
 .skip-link:focus { top: 12px; }
 @media (prefers-reduced-motion: reduce) {
   .skip-link { transition: none; }
+}
+
+
+/* ---- low-power paint gate ------------------------------------------------
+   main.jsx tags <html> with .low-power before the first paint for devices at
+   or below the same line EarthScene draws its geometry down to (<=4 cores or
+   <=2GB - the old iPads and budget Androids that reported the chop). None of
+   these rules change WHAT is shown; they remove compositor work that stacked
+   on top of the WebGL canvas. The stage, tune panel, stats pills and picker
+   overlay re-filtered the live canvas through backdrop blurs for as long as a
+   prayer drew behind them; the home cards did the same over the animated
+   themes (so they trade the frost for a more opaque ground instead); the
+   screen-blended layers pushed every frame behind them through a blend pass,
+   paid again on every scroll; the fireflies animated dozens of shadowed dots
+   on the main thread; and the fixed aurora rasters a layer 40% larger than
+   the viewport to translate it a few percent, forever. The look stays; only
+   the layer work goes - the same bargain reduced-motion already makes for a
+   different reason. Declarations are repeated here (rather than shared with
+   the base rules) because each is a one-line cost removing its own class. */
+.low-power .prayer-stage {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.low-power .prayer-tune {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.low-power .prayer-stats {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(9, 25, 16, 0.82);
+}
+.low-power .card {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(18, 24, 58, 0.8);
+}
+.low-power .home-favs {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(10, 24, 18, 0.84);
+}
+.low-power .picker-overlay {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(4, 7, 20, 0.74);
+}
+.low-power .fireflies {
+  display: none;
+}
+.low-power .sky::before {
+  animation: none;
+  mix-blend-mode: normal;
+}
+.low-power .glow-field {
+  animation: none;
+  mix-blend-mode: normal;
+}
+.low-power .sp {
+  box-shadow: 0 0 6px 1px rgba(205, 225, 255, 0.6);
 }

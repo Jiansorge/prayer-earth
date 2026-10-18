@@ -70,6 +70,16 @@ export async function requestPlayToggle() {
   useStore.setState({ view: 'prayer', spiritId, prayerId, pendingPlay: true })
 }
 
+// Picking a prayer from the tradition list starts it right away: a pick is a
+// request to hear that prayer, not just to open it. openAndPlay arms the same
+// pendingPlay path the footer play button uses, and primeAudio is kicked off
+// first (never awaited) so the graph unlocks inside the tap's own stack - a
+// hung resume() must not delay the pick, exactly as it must not delay play.
+export function playChosenPrayer(spiritId, prayerId) {
+  primeAudio()
+  useStore.getState().openAndPlay(spiritId, prayerId)
+}
+
 // Stop playback from anywhere (footer stop button). The current prayer stops
 // and the world stops counting it; the last prayer is remembered for later.
 export async function stopPlayback() {
@@ -81,7 +91,12 @@ export async function stopPlayback() {
     praying: false,
     playingPrayerId: null,
     playingSpiritId: null,
-    playingSessionId: null
+    playingSessionId: null,
+    // An explicit stop must also cancel a queued start. pendingPlay is armed
+    // before the prayer page's 60ms effect runs it, so without this a stop
+    // pressed in that window was itself beaten by the start it meant to stop:
+    // the effect saw the flag still true and started speaking anyway.
+    pendingPlay: false
   })
   syncClient.presenceNow()
   ambient.setLevel(0)
