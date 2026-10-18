@@ -118,5 +118,28 @@ if (swPresent) {
     readable.join(' | ') || `${appChunks.length} chunks checked`)
 }
 
+// 5. Size budgets for the web payload. The dist/ tree is mostly the audio
+// library (content, not code), so the budgets watch what an accidental import
+// or an un-minified dependency would actually bloat: the JS chunks, the entry
+// HTML (which carries the inlined CSS), and the CSS itself. The bars sit at
+// roughly double today's sizes on purpose - this is a tripwire for a real
+// jump (a whole library inlined, a chunk duplicated), not a style check that
+// fails every deliberate feature. Measure first, then tighten.
+{
+  const KB = 1024
+  const jsFiles = readdirSync(assetDir).filter((f) => f.endsWith('.js'))
+  const jsSizes = jsFiles.map((f) => readFileSync(path.join(assetDir, f)).length)
+  const jsTotal = jsSizes.reduce((a, b) => a + b, 0)
+  const jsMax = Math.max(...jsSizes)
+  const jsMaxFile = jsFiles[jsSizes.indexOf(jsMax)]
+  check('total JS within budget (2.5 MB)', jsTotal <= 2.5 * 1024 * KB, `${(jsTotal / 1024 / KB).toFixed(2)} MB across ${jsFiles.length} chunks`)
+  check('largest JS chunk within budget (700 KB)', jsMax <= 700 * KB, `${jsMaxFile} at ${(jsMax / KB).toFixed(0)} KB`)
+  check('index.html within budget (150 KB, inlined CSS included)', html.length <= 150 * KB, `${(html.length / KB).toFixed(1)} KB`)
+  const cssTotal = readdirSync(assetDir)
+    .filter((f) => f.endsWith('.css'))
+    .reduce((n, f) => n + readFileSync(path.join(assetDir, f)).length, 0)
+  check('total CSS within budget (150 KB)', cssTotal <= 150 * KB, `${(cssTotal / KB).toFixed(1)} KB`)
+}
+
 console.log(fails === 0 ? '\n[audit] ALL CHECKS PASSED' : `\n[audit] ${fails} check(s) FAILED`)
 process.exit(fails === 0 ? 0 : 1)

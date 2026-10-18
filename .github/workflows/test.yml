@@ -122,6 +122,16 @@ jobs:
       # languages. These assert the count against the data, not against itself.
       - name: Prayer counts are true everywhere they are stated
         run: node scripts/audit-counts.mjs
+      # The offline cache version is bumped by hand. New audio shipped under an
+      # un-bumped CACHE serves the stale manifest forever (cache-first SW), so a
+      # phone with no TTS voices gets silence instead of the new recording -
+      # the v25 -> v26 incident, 274 prayers. Compares this push against its own
+      # base; the shallow checkout fetches that commit on demand.
+      - name: Audio library changes move the offline cache version
+        run: node scripts/audit-sw-cache.mjs
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+          GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
       # Whether CI and `npm run test:all` still run the same checks. A step added
       # to one and not the other is a check that only ever runs on one machine,
       # which is how CI sat red for three days on a thing nobody ran locally.

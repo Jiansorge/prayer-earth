@@ -67,6 +67,7 @@ const STEPS = [
   'scripts/audit-counts.mjs',
   'scripts/test-canonical-urls.mjs',
   'scripts/test-backup.mjs',
+  'scripts/audit-sw-cache.mjs',
   'scripts/audit-test-parity.mjs'
 ]
 
