@@ -2315,6 +2315,13 @@ this.autoRotate = !this.reducedMotion
     if (this.disposed) return
     requestAnimationFrame(this.animate)
     if (this.hidden) return
+    // The prayer stage scrolls on the same main thread this loop runs on: a
+    // backdrop render every 42ms competes with the swipe's paint and misses
+    // the deadline (idle prayer pages measure 121ms median frames against
+    // 19ms for the earth view with no fireflies or sparkles). Pause for the
+    // gesture; the class drops 160ms after the last scroll event and dt is
+    // capped at 3 frames, so the globe resumes without a time jump.
+    if (document.documentElement.classList.contains('is-scrolling')) return
     // Firefox keeps the rAF loop honest at 60fps even when the tab is merely
     // visible-but-unfocused; there's nobody looking, so drop to ~10fps then.
     const focusMs = document.hasFocus() ? 0 : 120

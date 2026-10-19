@@ -4,4 +4,6 @@
     <string name="title_activity_main">Joining Palms</string>
     <string name="package_name">app.joiningpalms</string>
     <string name="custom_url_scheme">app.joiningpalms</string>
+    <string name="playback_channel">Prayer playback</string>
+    <string name="playback_notification">Prayer audio is playing</string>
 </resources>

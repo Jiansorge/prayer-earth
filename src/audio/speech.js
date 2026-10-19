@@ -74,6 +74,10 @@ class SpeechEngine {
   constructor() {
     this.synth = window.speechSynthesis
     this.job = null
+    // Android background-audio bracket (see _fgs): whether the media
+    // foreground service is currently running, and the cached native face.
+    this._fgsOn = false
+    this._fgsPlugin = null
     this.kicker = null
     this.voices = []
     this.primed = false
@@ -505,7 +509,14 @@ class SpeechEngine {
           clearTimeout(job.advTimer)
           job.advTimer = setTimeout(finish, secs * 1000 + 2500)
         }
-        el.volume = Math.max(0.001, Math.min(1, (useStore.getState().volume ?? 0.8) * 1))
+        // Start silent and ramp up - the same click class the buffer path
+        // already fades out of with its 20ms ramp: an mp3's first sample is
+        // only zero by luck, and at full volume it lands as a step on every
+        // phrase start (on native the element route plays every phrase, so
+        // that step was the recorded-prayer click). The shared ramp helper
+        // also cancels itself if the user moves the volume slider mid-phrase.
+        const target = Math.max(0.001, Math.min(1, (useStore.getState().volume ?? 0.8) * 1))
+        el.volume = 0.001
         el.playbackRate = rate
         el.currentTime = 0
         el.onended = finish
@@ -514,6 +525,7 @@ class SpeechEngine {
         try {
           await el.play()
         } catch {}
+        this._rampElementVolume(el, target)
       }
       const next = i + 1
       const np = job.phrases[next]
@@ -621,6 +633,29 @@ class SpeechEngine {
     } catch {}
   }
 
+  // Android 17 mutes an app's audio the moment it is backgrounded unless a
+  // mediaPlayback foreground service is running (background audio hardening:
+  // "visible activity or a non-SHORT foreground service", enforced through the
+  // CONTROL_AUDIO app op - observed as mutedState=opControlAudio a few seconds
+  // after HOME, and as failed focus requests from the background). The mute is
+  // what made the ambient bed "disconnect" whenever the app left the screen.
+  // The service therefore brackets a job's whole life: armed in start(), where
+  // the user's tap still has the app in the foreground (the only moment such a
+  // service may be started), released in finishJob() and stop(), and kept
+  // across pause so a resume never needs a background start. Web builds skip
+  // it entirely.
+  _fgs(on) {
+    try {
+      const cap = typeof window !== 'undefined' ? window.Capacitor : null
+      if (!cap?.isNativePlatform?.()) return
+      if (on === !!this._fgsOn) return
+      this._fgsOn = !!on
+      if (!this._fgsPlugin) this._fgsPlugin = cap.registerPlugin('PrayerAudio')
+      const call = on ? this._fgsPlugin.startPlayback() : this._fgsPlugin.stopPlayback()
+      if (call && call.catch) call.catch(() => {})
+    } catch {}
+  }
+
   // Starts a job. opts: { phrases, lang, rate, loop, gapMs, index, onPhrase,
   // onCycle, onEnd }. `index` lets a resumed job start at the current phrase
   // instead of the top (e.g. after switching voices mid-prayer).
@@ -636,6 +671,7 @@ class SpeechEngine {
       done: new Set(),
       advTimer: null
     }
+    this._fgs(true)
 
     if (!this.synth) {
       // No TTS engine (e.g. a de-Googled device without speechSynthesis): the
@@ -1280,6 +1316,7 @@ class SpeechEngine {
   finishJob() {
     const j = this.job
     this.job = null
+    this._fgs(false)
     clearInterval(this.kicker)
     this.teardownReverb()
     this.stopCloudSource()
@@ -1365,6 +1402,7 @@ class SpeechEngine {
       clearTimeout(this.job.advTimer)
     }
     this.job = null
+    this._fgs(false)
     clearInterval(this.kicker)
     clearTimeout(this.timer)
     this.teardownReverb()

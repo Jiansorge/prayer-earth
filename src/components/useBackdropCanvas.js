@@ -70,6 +70,13 @@ export function useBackdropCanvas(ref, draw) {
       // Always queue the next frame first: skipping that when we skip a draw
       // would stall the loop completely.
       raf = requestAnimationFrame(loop)
+      // While any region scrolls the renderer's main thread is the scroll's
+      // thread: a full-screen canvas draw here competes with the swipe's own
+      // paint and pushes the frame over the deadline (idle pages measure
+      // 101-121ms median frames against 19ms on the page without a canvas).
+      // The class drops 160ms after the last scroll event, so the backdrop
+      // resumes the moment the gesture is over - same bargain as visibility.
+      if (document.documentElement.classList.contains('is-scrolling')) return
       if (t - lastDraw < minFrameMs) return
       lastDraw = t
       try {

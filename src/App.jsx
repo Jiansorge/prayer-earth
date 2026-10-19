@@ -95,6 +95,31 @@ export default function App() {
     document.documentElement.lang = locale
   }, [locale])
 
+  // While any region scrolls, a root class lets the stylesheet drop the
+  // backdrop blurs on the layers that move through it. Android re-runs a
+  // backdrop-filter every frame painted pixels shift behind it, so each swipe
+  // through the prayer stage re-blurred the cards, the stats strip and the
+  // stage itself: measured 97ms median frames (10fps) with 44.9% janky on a
+  // Pixel 7. The frosted look stays whenever the page is still; only the
+  // gesture trades it away, and 160ms of quiet brings it back - longer than
+  // the fastest fling's trailing frames, short enough to not notice the swap.
+  // Capture phase, because element scroll events do not bubble.
+  useEffect(() => {
+    let idle = 0
+    const onScroll = () => {
+      const root = document.documentElement
+      if (!root.classList.contains('is-scrolling')) root.classList.add('is-scrolling')
+      clearTimeout(idle)
+      idle = setTimeout(() => root.classList.remove('is-scrolling'), 160)
+    }
+    document.addEventListener('scroll', onScroll, { passive: true, capture: true })
+    return () => {
+      document.removeEventListener('scroll', onScroll, { capture: true })
+      clearTimeout(idle)
+      document.documentElement.classList.remove('is-scrolling')
+    }
+  }, [])
+
   // Which scenic time of day the world is in right now.
   const [scene, setScene] = useState(getScene())
   useEffect(() => {

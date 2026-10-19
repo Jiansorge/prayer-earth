@@ -4836,3 +4836,60 @@ select:focus-visible {
 .low-power .sp {
   box-shadow: 0 0 6px 1px rgba(205, 225, 255, 0.6);
 }
+
+/* ---- scroll paint gate ----------------------------------------------------
+   The same bargain .low-power makes permanently, triggered by the gesture
+   instead of the hardware: while any region scrolls, App.jsx tags <html> with
+   .is-scrolling and the moving layers drop their backdrop blurs. Android
+   re-runs a backdrop-filter on every frame painted pixels shift behind the
+   element, so a swipe through the prayer stage re-blurred the stage, the
+   cards and the stats strip each frame - measured on a Pixel 7 (8 cores, well
+   above the low-power line) at 97ms median frames with 44.9% janky frames and
+   44 missed vsyncs per six flings, against 19ms/0.2% on the same device with
+   nothing moving. Backgrounds take the more opaque grounds .low-power uses,
+   so the frost's absence never exposes the aurora mid-gesture; 160ms after
+   the last scroll event the class drops and the frost returns on idle pixels,
+   where its recompute is not competing with a frame deadline. */
+.is-scrolling .prayer-stage,
+.is-scrolling .prayer-tune,
+.is-scrolling .prayer-stats,
+.is-scrolling .card,
+.is-scrolling .home-favs,
+.is-scrolling .picker-overlay {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.is-scrolling .prayer-stats {
+  background: rgba(9, 25, 16, 0.82);
+}
+.is-scrolling .card {
+  background: rgba(18, 24, 58, 0.8);
+}
+.is-scrolling .home-favs {
+  background: rgba(10, 24, 18, 0.84);
+}
+.is-scrolling .picker-overlay {
+  background: rgba(4, 7, 20, 0.74);
+}
+/* The blur cut alone was not enough - the same device still measured 85-133ms
+   median frames on the prayer stage and 73ms on the home page while swiping,
+   because the rest of the .low-power bargain was still running through every
+   moving frame: the sky and glow-field stayed screen-blended (each frame
+   re-blends everything behind them), the fireflies kept animating shadowed
+   dots on the main thread, and the shooting stars kept repainting their
+   trails. These mirror .low-power exactly, for the gesture's duration only. */
+.is-scrolling .sky::before {
+  animation: none;
+  mix-blend-mode: normal;
+}
+.is-scrolling .glow-field {
+  animation: none;
+  mix-blend-mode: normal;
+}
+.is-scrolling .fireflies {
+  display: none;
+}
+.is-scrolling .sp {
+  box-shadow: 0 0 6px 1px rgba(205, 225, 255, 0.6);
+  animation: none;
+}

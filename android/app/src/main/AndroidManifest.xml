@@ -44,11 +44,29 @@
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- The prayer keeps speaking while the app is in the background: the
+             WebView plays through the system mixer, and Android 17's background
+             audio hardening only allows that while a visible activity exists or
+             a mediaPlayback foreground service runs. speech.js brackets the
+             life of a prayer job with startPlayback()/stopPlayback() on
+             PrayerAudioPlugin, which runs this service. Without it the system
+             mutes the app's stream (CONTROL_AUDIO app op) seconds after
+             minimize - heard as the ambient bed cutting out. -->
+        <service
+            android:name=".PrayerPlaybackService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
     </application>
 
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Foreground services for the prayer's background audio: Android 17
+         mutes backgrounded playback without a mediaPlayback service (see the
+         .PrayerPlaybackService declaration below). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <!-- Coarse location places your light on the Earth; precise is optional.
          Capacitor's WebView bridge requests both, and graceful-degrades to
          coarse-only on Android 12+. The app never sends precise coordinates:

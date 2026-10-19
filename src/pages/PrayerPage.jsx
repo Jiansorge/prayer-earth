@@ -530,8 +530,12 @@ setChantMode(false)
   }
 
   // Count prayer seconds while playing, through the shared store clock so the
-  // count keeps running even when this page isn't on screen.
-  const elapsed = useStore((s) => s.elapsed)
+  // count keeps running even when this page isn't on screen. The page itself
+  // only ever shows the number after the prayer finishes (the clock is stopped
+  // by then), so the selector yields a constant while it plays: subscribing to
+  // the live value re-rendered this whole page on every one-second tick - a
+  // full React pass inside the only frames scrolling is already fighting for.
+  const elapsed = useStore((s) => (finished ? s.elapsed : -1))
 
   const togglePlay = () => {
     const live = useStore.getState()

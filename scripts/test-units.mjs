@@ -1595,6 +1595,194 @@ const stripComments = (text) =>
   )
 }
 
+// --- 13. Background audio survives Android 17, and scrolling drops its blurs --
+{
+  // Android 17 enforces "background audio hardening": an app that is neither
+  // visible nor running a mediaPlayback foreground service gets its audio
+  // muted through the CONTROL_AUDIO app op seconds after it is backgrounded.
+  // The prayer therefore used to go silent on minimize and roar back on return
+  // - the reported ambient "disconnect". The service must exist, be typed
+  // mediaPlayback, and be tied to the life of a speech job: started where a
+  // job activates, stopped where the job dies, kept across pause.
+  const read = (p) => {
+    try {
+      return readFileSync(path.join(ROOT, p), 'utf8')
+    } catch {
+      return null
+    }
+  }
+  const fnBody = (src, sig) => {
+    if (!src) return null
+    const at = src.indexOf(sig)
+    if (at < 0) return null
+    const open = src.indexOf('{', at)
+    if (open < 0) return null
+    const close = src.indexOf('\n  }', open)
+    return close < 0 ? null : src.slice(open, close + 4)
+  }
+
+  const manifest = read('android/app/src/main/AndroidManifest.xml')
+  check('the manifest exists to declare a media foreground service', !!manifest, 'AndroidManifest.xml unreadable')
+  check(
+    'the app may run foreground services at all',
+    !!manifest && /android\.permission\.FOREGROUND_SERVICE"/.test(manifest),
+    'FOREGROUND_SERVICE permission missing'
+  )
+  check(
+    'the foreground service may be of the media type Android 17 requires',
+    !!manifest && /android\.permission\.FOREGROUND_SERVICE_MEDIA_PLAYBACK/.test(manifest),
+    'FOREGROUND_SERVICE_MEDIA_PLAYBACK permission missing'
+  )
+  // Services without an intent-filter are written self-closing (<service ... />),
+  // so the pattern accepts either form.
+  const serviceTag =
+    !!manifest && (manifest.match(/<service[\s\S]*?(?:\/>|<\/service>)/g) || []).find((t) => t.includes('.PrayerPlaybackService'))
+  check(
+    'the manifest declares the playback service as mediaPlayback',
+    !!serviceTag && /foregroundServiceType="mediaPlayback"/.test(serviceTag),
+    serviceTag ? 'PrayerPlaybackService is declared but not typed mediaPlayback' : 'no .PrayerPlaybackService declaration'
+  )
+
+  const service = read('android/app/src/main/java/app/joiningpalms/PrayerPlaybackService.java')
+  check('the playback service class exists', !!service, 'PrayerPlaybackService.java missing')
+  check(
+    'the service promotes itself to the foreground with the media type',
+    !!service && /startForeground\(/.test(service) && /FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK/.test(service),
+    service ? 'startForeground must pass FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK' : 'no service class to check'
+  )
+
+  const plugin = read('android/app/src/main/java/app/joiningpalms/PrayerAudioPlugin.java')
+  check('the native bridge plugin class exists', !!plugin, 'PrayerAudioPlugin.java missing')
+  check(
+    'the plugin is named PrayerAudio and exposes start/stop',
+    !!plugin &&
+      /@CapacitorPlugin\(name = "PrayerAudio"\)/.test(plugin) &&
+      /void startPlayback\(/.test(plugin) &&
+      /void stopPlayback\(/.test(plugin),
+    plugin ? 'plugin name or methods do not match what speech.js calls' : 'no plugin class to check'
+  )
+
+  const main = read('android/app/src/main/java/app/joiningpalms/MainActivity.java')
+  const regIdx = main ? main.indexOf('registerPlugin(PrayerAudioPlugin.class)') : -1
+  const superIdx = main ? main.indexOf('super.onCreate(') : -1
+  check(
+    'the plugin is registered before the bridge is built',
+    regIdx >= 0 && superIdx >= 0 && regIdx < superIdx,
+    main
+      ? regIdx < 0
+        ? 'MainActivity never registers PrayerAudioPlugin'
+        : 'BridgeActivity.onCreate builds the bridge; registering after super.onCreate feeds a builder that was already consumed'
+      : 'MainActivity.java missing'
+  )
+
+  const speechSrc = stripComments(readFileSync(path.join(ROOT, 'src/audio/speech.js'), 'utf8'))
+  const startBody = fnBody(speechSrc, 'async start(opts) {')
+  check(
+    'starting a prayer arms the background service under the tap that began it',
+    !!startBody && /this\._fgs\(true\)/.test(startBody),
+    startBody ? 'no _fgs(true) in start(): backgrounding the app mutes the prayer' : 'SpeechEngine.start not found'
+  )
+  const finishBody = fnBody(speechSrc, 'finishJob() {')
+  check(
+    'a prayer that ends on its own releases the service',
+    !!finishBody && /this\._fgs\(false\)/.test(finishBody),
+    finishBody ? 'finishJob leaves the service running after the last line' : 'finishJob not found'
+  )
+  const stopBody = fnBody(speechSrc, '\n  stop() {')
+  check(
+    'the stop button releases the service',
+    !!stopBody && /this\._fgs\(false\)/.test(stopBody),
+    stopBody ? 'stop() leaves the service running with nothing to play' : 'SpeechEngine.stop not found'
+  )
+
+  // The native route plays every phrase through the shared <audio> element,
+  // which starts at full volume on whatever its first sample happens to be -
+  // the same step the buffer path already fades out of, heard on Android as a
+  // click at every phrase start.
+  const cloudBody = fnBody(speechSrc, 'async speakCloud(i) {')
+  const elStart = cloudBody ? cloudBody.slice(cloudBody.indexOf('const el = this._elementEl()'), cloudBody.indexOf('await el.play()')) : null
+  const elAfter = cloudBody ? cloudBody.slice(cloudBody.indexOf('await el.play()'), cloudBody.indexOf('const next = i + 1')) : null
+  check(
+    'a recorded phrase starts silent on the element path',
+    !!elStart && /el\.volume = 0\.001/.test(elStart),
+    elStart ? 'the element jumps to full volume on its first sample' : 'element branch not located'
+  )
+  check(
+    'a recorded phrase ramps up to the chosen volume after play',
+    !!elAfter && /this\._rampElementVolume\(el, target\)/.test(elAfter),
+    elAfter ? 'no ramp after play(): the fade-in never reaches the user volume' : 'element branch not located'
+  )
+
+  const appSrc = readFileSync(path.join(ROOT, 'src/App.jsx'), 'utf8')
+  check(
+    'the app marks the document while any region is scrolling',
+    /addEventListener\('scroll'/.test(appSrc) && /capture: true/.test(appSrc) && /is-scrolling/.test(appSrc),
+    'no capture-phase scroll listener driving the is-scrolling class'
+  )
+  const css = readFileSync(path.join(ROOT, 'src/styles.css'), 'utf8')
+  const scrollRules = css.match(/\.is-scrolling [\s\S]{0,600}?\}/)
+  check(
+    'backdrop blurs are suspended while the page moves',
+    !!scrollRules &&
+      /\.is-scrolling \.prayer-stage/.test(scrollRules[0]) &&
+      /backdrop-filter:\s*none/.test(scrollRules[0]) &&
+      /\.is-scrolling \.card/.test(scrollRules[0]),
+    scrollRules ? 'is-scrolling rules missing the stage or the cards' : 'no .is-scrolling block in styles.css'
+  )
+  // The blur cut alone left a Pixel 7 measuring 85-133ms median frames (and the
+  // home page 73ms) while moving: the rest of the .low-power bargain was never
+  // ported. The screen-blended sky and glow-field re-blend every frame behind
+  // them during a swipe, the fireflies animate shadowed dots on the main
+  // thread, and the shooting stars repaint their trails - all work the
+  // low-power comment already names as recurring on every scroll.
+  const scrollSection = css.slice(css.indexOf('.is-scrolling .prayer-stage'))
+  check(
+    'the screen-blended sky stops blending while the page moves',
+    /\.is-scrolling \.sky::before \{[^}]*animation:\s*none[^}]*mix-blend-mode:\s*normal/.test(scrollSection),
+    scrollSection ? 'is-scrolling keeps the sky screen-blended: every scroll frame pays a blend pass' : 'no .is-scrolling section in styles.css'
+  )
+  check(
+    'the glow field stops blending while the page moves',
+    /\.is-scrolling \.glow-field \{[^}]*animation:\s*none[^}]*mix-blend-mode:\s*normal/.test(scrollSection),
+    'is-scrolling keeps the glow-field screen-blended: every scroll frame pays a blend pass'
+  )
+  check(
+    'the fireflies are hidden while the page moves',
+    /\.is-scrolling \.fireflies \{[^}]*display:\s*none/.test(scrollSection),
+    'is-scrolling still animates the fireflies on the main thread during a swipe'
+  )
+  check(
+    'the shooting stars drop their trails while the page moves',
+    /\.is-scrolling \.sp \{[^}]*box-shadow:\s*0 0 6px/.test(scrollSection),
+    'is-scrolling still repaints full shooting-star trails every moving frame'
+  )
+  // Idle measurements split the pages cleanly: earth view (no fireflies, no
+  // sparkles, no theme canvas) idles at 19ms median frames while home sits at
+  // 101ms and prayer at 121ms - the always-on backgrounds own the budget the
+  // scroll then has to fit inside. The gesture must pause them the way
+  // visibilitychange already does, or every fling frame competes with a
+  // full-screen canvas draw or a WebGL render.
+  const hookSrc = stripComments(readFileSync(path.join(ROOT, 'src/components/useBackdropCanvas.js'), 'utf8'))
+  const loopArm = hookSrc.slice(hookSrc.indexOf('const loop = (t)'), hookSrc.indexOf('const onResize'))
+  check(
+    'the theme backdrop stops drawing while the page scrolls',
+    !!loopArm && /requestAnimationFrame\(loop\)[\s\S]{0,160}is-scrolling/.test(loopArm),
+    loopArm ? 'useBackdropCanvas keeps drawing full-screen frames under every swipe' : 'backdrop loop not located'
+  )
+  const earthSrc = stripComments(readFileSync(path.join(ROOT, 'src/three/EarthScene.js'), 'utf8'))
+  const animateBody = fnBody(earthSrc, 'animate = () => {')
+  check(
+    'the prayer globe stops rendering while the page scrolls',
+    !!animateBody && /is-scrolling/.test(animateBody),
+    animateBody ? 'EarthScene keeps rendering its 24fps backdrop under the scrolling prayer text' : 'EarthScene.animate not found'
+  )
+  check(
+    'the sparkle twinkle stops while the page moves',
+    /\.is-scrolling \.sp \{[^}]*animation:\s*none/.test(scrollSection),
+    'is-scrolling still animates 24 box-shadow sparkles on the main thread every moving frame'
+  )
+}
+
 const failed = results.filter((r) => !r.pass)
 console.log(`\n[units] ${results.length - failed.length}/${results.length} passed`)
 if (failed.length) {
