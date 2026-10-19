@@ -95,6 +95,10 @@ class SpeechEngine {
     this.cloudProbed = false
     this.cloudCache = new Map()
     this.cloudAudio = null
+    // The pending fade-then-pause on the shared element, and the watchdog's
+    // consecutive stalled observations (one stale read is not evidence).
+    this._elSilence = null
+    this._stallHits = 0
     this.reverbWetGain = REVERB_WET_GAIN
     // Decoded copies of each recorded phrase (Web Audio route) so a WebView
     // whose <audio> element stalls at 0:00 can still speak. Loaded on demand.
@@ -310,9 +314,9 @@ class SpeechEngine {
     // A volume ramp aimed at the element we are about to reuse would otherwise
     // keep writing after the phrase it belongs to is gone, and land the next
     // one at the wrong loudness.
-    if (this._volRaf) {
-      cancelAnimationFrame(this._volRaf)
-      this._volRaf = null
+    if (this._volTimer) {
+      clearTimeout(this._volTimer)
+      this._volTimer = null
     }
 
     if (src) {
@@ -347,13 +351,40 @@ class SpeechEngine {
       }
     }
 
-    // Also stop the shared <audio> element. If a recorded phrase was still
-    // playing (a slow connect let the advance timer move on early) and the next
-    // phrase takes the Web-Audio path, the element would keep playing underneath
-    // — two voices at once.
+    // Fade to silence, then pause. A plain pause at full amplitude cuts the
+    // waveform mid-sample - a step to digital silence, one click per cut -
+    // and on the phone every boundary, supersede, pause and watchdog restart
+    // lands here. One pending cut per element: a second caller joins the
+    // fade already running instead of racing it.
     if (this.cloudAudio) {
-      try { this.cloudAudio.pause() } catch {}
+      this._cutElement()
     }
+  }
+
+  // The pending cut, for a caller about to reuse the element.
+  _silenceElement() {
+    return this._elSilence || Promise.resolve()
+  }
+
+  _cutElement(ms = 35) {
+    const el = this.cloudAudio
+    if (!el) return Promise.resolve()
+    if (this._elSilence) return this._elSilence
+    let audible = false
+    try {
+      audible = !el.paused && !el.ended && el.volume > 0.002
+    } catch {}
+    if (!audible) {
+      // Already silent (a phrase that really ended, or never started): the
+      // pause is a no-op and there is no step to hide.
+      try { el.pause() } catch {}
+      return Promise.resolve()
+    }
+    this._elSilence = this._rampElementVolume(el, 0.001, ms).then(() => {
+      try { el.pause() } catch {}
+      this._elSilence = null
+    })
+    return this._elSilence
   }
 
   // One shared, hidden <audio> element attached to the document. Attached media
@@ -488,6 +519,10 @@ class SpeechEngine {
         // it really plays here; swapping src keeps it registered as the active
         // media across every phrase.
         this.stopCloudSource()
+        // A cut fades the previous phrase out before pausing; the swap must
+        // wait for that fade or the new src starts under a ramp still aimed
+        // at the old phrase's element (the same element, reused).
+        await this._silenceElement()
         const el = this._elementEl()
         el.preservesPitch = true
         el.mozPreservesPitch = true
@@ -794,14 +829,31 @@ class SpeechEngine {
   }
 
   // The <audio> element's volume is a plain number rather than an AudioParam,
-  // so it has to be moved by hand. One ramp per element, cancelled when a new
+  // so it has to be moved by hand. One ramp at a time, cancelled when a new
   // target arrives: without that, a drag across the slider leaves several
   // loops running that each write the same field and fight to the end.
-  _rampElementVolume(el, target) {
-    if (!el) return
-    if (this._volRaf) {
-      cancelAnimationFrame(this._volRaf)
-      this._volRaf = null
+  //
+  // Timers, not frames. A 60ms ramp on requestAnimationFrame looked fine on a
+  // 60fps desktop, but on a phone idling near 10fps frames it collapses to a
+  // single write - the exact step the ramp exists to remove - so every phrase
+  // start clicked on the device that plays every phrase through this element.
+  // setTimeout keeps the step count tied to wall-clock time whatever the
+  // compositor is doing. Resolves when the ramp is done (immediately on an
+  // instant write), so a cut can pause only after the fade it scheduled.
+  _rampElementVolume(el, target, ms = 60) {
+    if (!el) return Promise.resolve()
+    if (this._volTimer) {
+      clearTimeout(this._volTimer)
+      this._volTimer = null
+    }
+    // A ramp superseded mid-flight must still resolve: _cutElement's pause
+    // hangs off this promise, so a slider drag during a 35ms fade would
+    // otherwise leave the element fading with no end - and the prayer's own
+    // line advance waits on that promise before the next phrase can start.
+    if (this._volDone) {
+      const done = this._volDone
+      this._volDone = null
+      done()
     }
     let from = 0
     try {
@@ -814,21 +866,33 @@ class SpeechEngine {
         el.volume = Math.max(0, Math.min(1, v))
       } catch {}
     }
-    if (Math.abs(from - target) < 0.002 || document.hidden || typeof requestAnimationFrame !== 'function') {
+    // A hidden page may skip straight to a real volume - nobody is listening
+    // for a step. A cut (target below audible) must always step down, hidden
+    // or not: the service keeps playing behind the app.
+    if (Math.abs(from - target) < 0.002 || (document.hidden && target > 0.002)) {
       write(target)
-      return
+      return Promise.resolve()
     }
     const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now()
-    const step = (now) => {
-      const k = Math.min(1, (now - t0) / 60)
-      write(from + (target - from) * k)
-      if (k < 1) {
-        this._volRaf = requestAnimationFrame(step)
-      } else {
-        this._volRaf = null
+    return new Promise((resolve) => {
+      this._volDone = resolve
+      const step = () => {
+        // Superseded while queued: the newer ramp owns the element and has
+        // already resolved this one - neither write nor bookkeeping here.
+        if (this._volDone !== resolve) return
+        const now = typeof performance !== 'undefined' ? performance.now() : Date.now()
+        const k = Math.min(1, (now - t0) / ms)
+        write(from + (target - from) * k)
+        if (k < 1) {
+          this._volTimer = setTimeout(step, 15)
+        } else {
+          this._volTimer = null
+          this._volDone = null
+          resolve()
+        }
       }
-    }
-    this._volRaf = requestAnimationFrame(step)
+      step()
+    })
   }
 
   // Plays a short spoken sample of the currently-chosen voice so the user can
@@ -1260,13 +1324,23 @@ class SpeechEngine {
       // engine whether it is producing anything before cutting it off.
       if (j.mode === 'tts' && !j.paused && !document.hidden) {
         const elapsed = Date.now() - (j.phraseStart || 0)
-        if (elapsed > (j.phraseHold || 4000) * 2 + 4000 && this.voiceHealth() !== 'ok') {
+        const health = this.voiceHealth()
+        if (health === 'ok') {
+          this._stallHits = 0
+        } else if (this._stallHits < 2) {
+          this._stallHits = (this._stallHits || 0) + 1
+        }
+        // Two consecutive non-ok reads, 6s apart, before cutting. One stale
+        // currentTime under a busy frame loop is a false one, and the cut is
+        // a hard restart from the phrase top - the crackle that follows
+        // activity. A genuinely dead engine costs one extra tick (12s) to
+        // prove itself dead, which the elapsed floor above already dominates.
+        if (elapsed > (j.phraseHold || 4000) * 2 + 4000 && health !== 'ok' && this._stallHits >= 2) {
           try {
             this.synth.cancel()
           } catch {}
-          try {
-            if (this.cloudAudio) this.cloudAudio.pause()
-          } catch {}
+          // No hard pause here: stopCloudSource fades the element out and the
+          // restart's phrase start awaits that fade.
           this.stopCloudSource()
           this.speakIndex(j.index)
         }
@@ -1334,11 +1408,8 @@ class SpeechEngine {
 
   // Gracefully pause mid-utterance. The job survives so it can be resumed.
   pause() {
-    if (this.cloudAudio) {
-      try {
-        this.cloudAudio.pause()
-      } catch {}
-    }
+    // stopCloudSource fades the element out before pausing it; a pause at
+    // full amplitude is a cut, and this button is pressed mid-phrase.
     this.stopCloudSource()
     if (this.job) {
       this.job.paused = true
@@ -1364,9 +1435,6 @@ class SpeechEngine {
     if (j.mode === 'tts') {
       try {
         this.synth.cancel()
-      } catch {}
-      try {
-        if (this.cloudAudio) this.cloudAudio.pause()
       } catch {}
       this.stopCloudSource()
       clearTimeout(j.guard)
@@ -1407,12 +1475,9 @@ class SpeechEngine {
     clearTimeout(this.timer)
     this.teardownReverb()
     this.stopCloudSource()
-    if (this.cloudAudio) {
-      try {
-        this.cloudAudio.pause()
-        this.cloudAudio = null
-      } catch {}
-    }
+    // stopCloudSource's cut fades and pauses; drop the handle so a late
+    // volume write from the dying ramp cannot find its way back.
+    this.cloudAudio = null
     if (this._bufferByUrl) this._bufferByUrl.clear()
     try {
       this.synth.cancel()

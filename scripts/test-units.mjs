@@ -582,13 +582,43 @@ const stripComments = (text) =>
     teardown.slice(0, 240))
 
   // The clock is not evidence. Under load Date.now() runs past the limit while
-  // the phrase is healthy, and the "restart" is a cut plus the phrase from the
-  // top - repeated, that is the crackle that follows activity.
+  // the phrase is healthy, and the "restart" it performs is a cut plus the
+  // phrase from the top - repeated, that is the crackle that follows activity.
+  // One stale read is not evidence either: two consecutive non-ok observations
+  // (12s of disagreement) separate a dead engine from a busy frame loop.
   check('the watchdog asks the engine before cutting a healthy phrase',
-    /elapsed > \(j\.phraseHold \|\| 4000\) \* 2 \+ 4000 && this\.voiceHealth\(\) !== 'ok'/.test(speech),
+    /elapsed > \(j\.phraseHold \|\| 4000\) \* 2 \+ 4000 && health !== 'ok' && this\._stallHits >= 2/.test(speech),
     'elapsed time alone mistook a busy main thread for a dead engine')
   check('the stall guard also waits while a phrase is still sounding',
     /voiceHealth\(\) === 'ok'/.test(speech))
+
+  // The phone plays every phrase through the shared <audio> element, so its
+  // boundaries are the ones the ear judges. Three defects met there: the
+  // fade-in ran on requestAnimationFrame (a Pixel idling near 10fps frames
+  // collapses a 60ms ramp to one write - the very click it removed), a cut
+  // paused the element at full amplitude (a step to silence at every
+  // boundary, supersede and restart), and a single stale currentTime under
+  // load hard-restarted a healthy phrase.
+  const rampBody = stripComments(
+    (speech.match(/_rampElementVolume\(el, target, ms = 60\) \{[\s\S]{0,3200}?\n  \}/) || [''])[0]
+  )
+  check('the element volume ramp is driven by timers, not frames',
+    !!rampBody && /setTimeout/.test(rampBody) && !/requestAnimationFrame/.test(rampBody),
+    rampBody ? 'the fade-in still rides frame pacing and collapses under jank' : '_rampElementVolume(el, target, ms) not found')
+  check('a superseded volume ramp still resolves its promise',
+    !!rampBody && /this\._volDone = resolve/.test(rampBody) && /done\(\)/.test(rampBody),
+    rampBody ? 'a slider drag during a cut leaves the pending fade unresolvable - the next phrase never starts' : '_rampElementVolume not found')
+  const cutBody = stripComments(
+    (speech.match(/_cutElement\(ms = 35\) \{[\s\S]{0,900}?\n  \}/) || [''])[0]
+  )
+  check('a phrase boundary fades the element out before the cut',
+    !!cutBody && /_rampElementVolume\(el, 0\.001, ms\)/.test(cutBody) && /el\.pause\(\)/.test(cutBody) &&
+      /await this\._silenceElement\(\)/.test(speech) && /this\._cutElement\(\)/.test(stopBody),
+    cutBody ? 'the element still pauses at full amplitude on every cut' : '_cutElement not found')
+  check('the watchdog needs two stalled reads before it cuts',
+    /this\._stallHits = \(this\._stallHits \|\| 0\) \+ 1/.test(speech) &&
+      /health === 'ok'\) \{\s*this\._stallHits = 0/.test(speech),
+    'one stale currentTime under load still hard-restarts a healthy phrase')
 
   // Each preview call built a fresh Audio element and kept no handle, so
   // auditioning voices in quick succession stacked them at full volume.
