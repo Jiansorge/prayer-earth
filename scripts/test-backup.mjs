@@ -713,18 +713,44 @@ t('an opted-out presence frame still reports praying=false',
 })()`
 
 let suite = []
-await withPage(async (page) => {
-  if (b) {
-    await page.goto(APP, { waitUntil: 'load' })
-    await page.waitForTimeout(2500)
+try {
+  await withPage(async (page) => {
+    if (b) {
+      await page.goto(APP, { waitUntil: 'load' })
+      await page.waitForTimeout(2500)
+    }
+    // Warm every module the in-page suite imports before running it. Their
+    // first fetch against a fresh random-port dev server is where this
+    // machine's local connections fail or stall outright (measured in
+    // suite: TypeError "Failed to fetch dynamically imported module"
+    // naming backup.js, while standalone runs passed; sibling suites saw
+    // the same class at 0.1s-149s per first read). Once a fetch completes,
+    // the ES module registry holds the graph and the suite's own imports
+    // never touch the network again - so this absorbs the stall without
+    // weakening a single assertion.
+    await page.evaluate(async () => {
+      const mods = [
+        '/src/shared/backup.js',
+        '/src/store.js',
+        '/src/shared/deletion.js',
+        '/src/sync/client.js'
+      ]
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const ok = await Promise.all(
+          mods.map((m) => import(m).then(() => true, () => false))
+        )
+        if (ok.every(Boolean)) return
+        await new Promise((r) => setTimeout(r, 1000))
+      }
+    })
     suite = await page.evaluate(SUITE)
-  } else {
-    suite = await page.evaluate(SUITE)
-  }
-})
-
-if (b) await b.close()
-dev.kill()
+  })
+} finally {
+  // Always release the browser and the dev server: on a thrown suite they
+  // used to outlive the process and pile up behind the next step.
+  try { if (b) await b.close() } catch {}
+  try { dev.kill() } catch {}
+}
 
 for (const r of suite) check(r.name, r.pass, r.extra)
 const failed = results.filter((r) => !r.pass)

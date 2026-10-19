@@ -51,7 +51,14 @@ const waitGone = (page) => settle(page, 1300)
 
 const openSheet = async (page) => {
   await page.evaluate(() => document.querySelector('.gear-btn')?.click())
-  await page.waitForSelector('.sheet-body', { timeout: 8000 })
+  // 30s, not 8s: SettingsSheet is a lazy chunk, and this machine's first
+  // read of that file inside a fresh dev server measured anywhere from
+  // 0.1s to 149s (measured: vite:load 5354ms while vite:transform itself
+  // was 60ms) - a green test failing on a server that was working
+  // perfectly, the same class as the cold-navigation timeouts in
+  // devserver.mjs. The prewarm in boot below pays that stall once; this
+  // budget covers the case where it was paid there instead.
+  await page.waitForSelector('.sheet-body', { timeout: 30000 })
   await settle(page, 450)
 }
 const closeSheet = async (page) => {
@@ -83,6 +90,27 @@ try {
       { timeout: 5000 }
     )
     await settle(page, 400)
+
+    // Pay the SettingsSheet chunk's one-time first read here, with retries
+    // and no sheet budget riding on it. The first read of that file inside a
+    // fresh dev server is exactly where this machine stalls for seconds to
+    // minutes (vite's [fs] load, not its transform), and after one completed
+    // fetch vite serves it from its module graph in single-digit
+    // milliseconds - so the sheet open later runs against a warm chunk.
+    for (let i = 0; i < 3; i++) {
+      const warmed = await page
+        .evaluate(async () => {
+          try {
+            const r = await fetch('/src/components/SettingsSheet.jsx')
+            await r.text()
+            return r.ok
+          } catch {
+            return false
+          }
+        })
+        .catch(() => false)
+      if (warmed) break
+    }
 
     // ---- stop releases the graph; restart rebuilds it ----------------------
     let s = await snap(page)
