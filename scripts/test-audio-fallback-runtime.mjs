@@ -208,6 +208,30 @@ window.__run = async (opts) => {
     onEnd: () => { record.finished = true }
   })
 
+  // --- repeat toggle probe ---------------------------------------------------
+  // The repeat switch flips mid-prayer without stopping it, so the engine has
+  // to carry the new value on the job it is already running. Read it back off
+  // the live job object: a different object here means the UI stopped and
+  // restarted the prayer, which is what re-speaks the current line from its
+  // top and rebuilds the job with a flag captured before the click. It runs
+  // before the wait loop because a finished job has no flag left to flip.
+  if (opts.loopProbe) {
+    const job = speech.job
+    const probe = { hadJob: !!job, sameJob: false, on: false, off: false, error: null }
+    try {
+      speech.setLoop(true)
+      probe.sameJob = speech.job === job
+      probe.on = !!job && job.loop === true
+      speech.setLoop(false)
+      probe.sameJob = probe.sameJob && speech.job === job
+      probe.off = !!job && job.loop === false
+    } catch (e) {
+      probe.error = String((e && e.message) || e)
+    }
+    speech.stop()
+    return probe
+  }
+
   const deadline = Date.now() + (opts.timeout || 25000)
   while (!record.finished && Date.now() < deadline) {
     await new Promise((r) => setTimeout(r, 100))
@@ -418,6 +442,28 @@ try {
       assert(normal.spoken >= PHRASES.length, `expected ${PHRASES.length} utterances, saw ${normal.spoken}`)
       eq(normal.hum, 0, 'the chant ran even though the voice worked')
       eq(normal.finished, true, 'the prayer never finished')
+    })
+
+    // ---- repeat toggle: the flag moves onto the job that is already speaking -
+    // Two user faults met here: toggling repeat mid-prayer re-spoke the current
+    // line from its top (the toggle stopped the job and started a new one), and
+    // the restarted job was built through a closure captured BEFORE the click,
+    // so it carried the old loop flag - the switch read "on" while the prayer
+    // was already set to end. The probe drives setLoop against a live job and
+    // reads the result off that same object.
+    const loopProbe = await page.evaluate(
+      (o) => window.__run(o),
+      { prayerId: UNRECORDED, phrases: PHRASES, voices: [VOICE], behaviour: 'normal', loopProbe: true, timeout: 5000 }
+    )
+    notes.push(
+      `repeat probe:             had=${loopProbe.hadJob} same=${loopProbe.sameJob} on=${loopProbe.on} off=${loopProbe.off}${loopProbe.error ? ` err=${loopProbe.error}` : ''}`
+    )
+    t('repeat flips on the running job instead of restarting the prayer', () => {
+      eq(loopProbe.error, null, `setLoop threw: ${loopProbe.error}`)
+      eq(loopProbe.hadJob, true, 'no live job to toggle')
+      eq(loopProbe.sameJob, true, 'the job object changed across a repeat toggle - the prayer restarted')
+      eq(loopProbe.on, true, 'repeat never reached the running job')
+      eq(loopProbe.off, true, 'repeat never switched back off on the running job')
     })
 
     // ---- speakLang: a prayer whose own script has no voice -----------------

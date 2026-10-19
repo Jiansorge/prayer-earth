@@ -341,12 +341,28 @@ const jm = await job()
 ok('G3 starting B mid-prayer leaves only B playing', s.playing && s.playingPrayerId === 'mani' && !s.paused, `ppid=${s.playingPrayerId} paused=${s.paused}`)
 ok('G4 single live job after the switch', jm && jm.has, JSON.stringify(jm))
 
-// G5 loop toggle while playing
+// G5 loop toggle while playing. Two faults met here: the toggle used to stop
+// and restart the job, which re-spoke the current line from its top, and the
+// restart ran through a closure built BEFORE the click, so the new job was
+// born with the old loop flag - the switch read "on" while the prayer was
+// already set to end. Tagging the job object makes identity survive the round
+// trip; the flag is then read back off that same object.
+const g5State = () => evaljs(`(() => { const sp = window.__speech; const g = window.__store ? window.__store.getState() : {}; return sp ? { tagged: !!(sp.job && sp.job.__g5), jobLoop: sp.job ? !!sp.job.loop : null, storeLoop: !!g.loopOn } : null })()`)
+await evaljs(`(() => { const sp = window.__speech; if (sp && sp.job) sp.job.__g5 = 1; return !!(sp && sp.job) })()`)
 await click('.ctrl-btn.repeat')
 await sleep(500)
 s = await S()
+const g5Off = await g5State()
 ok('G5 loop toggle while playing keeps it playing', s.playing, `playing=${s.playing}`)
+ok('G5 repeat-off reaches the live job without restarting it',
+  !!g5Off && g5Off.tagged && g5Off.jobLoop === false && g5Off.storeLoop === false,
+  JSON.stringify(g5Off))
 await click('.ctrl-btn.repeat')
+await sleep(500)
+const g5On = await g5State()
+ok('G5 repeat-on reaches the live job before the prayer ends',
+  !!g5On && g5On.tagged && g5On.jobLoop === true && g5On.storeLoop === true,
+  JSON.stringify(g5On))
 
 // G6 voice switch while playing (open the tune panel, pick the first voice)
 await sleep(300)

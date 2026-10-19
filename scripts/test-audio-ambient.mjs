@@ -15,6 +15,11 @@
 //      leaving silence until some unrelated tap happened to call ensure(). The
 //      idle re-arm restarts the loop when the reader comes back - and must
 //      register exactly once, so recovery is not itself a leak.
+//   4. A periodic click with no trigger at all: the shared noise loop wrapped
+//      with a hard step once every 3 seconds, on every bed. State cannot see
+//      a sample discontinuity, so the last section renders the real generator
+//      (and a whole preset) through an OfflineAudioContext and reads the
+//      output for steps far beyond their neighbours.
 //
 // Everything reads window.__ambient / window.__store, which the dev server
 // exposes (TEST_HOOKS is build-gated to DEV/VITE_TEST, never runtime-gated).
@@ -263,6 +268,83 @@ try {
       eq(s.running, false)
       eq(s.bus, false, 'a bed survived the storm unmuted')
       eq(storm.errors.length, 0, storm.errors.join('; '))
+    })
+
+    // ---- the rendered graph contains no click ------------------------------
+    // Everything above pins state; a click lives in samples. Render the real
+    // generator - and then a whole preset - through an OfflineAudioContext and
+    // read the output the way an ear does: a click is a sample-to-sample step
+    // far beyond its neighbours. Math.random is seeded so the buffer is the
+    // same on every machine and the wrap points are reproducible.
+    const render = await page.evaluate(async () => {
+      const { makeNoiseBuffer, AmbientEngine } = await import('/src/audio/ambience.js')
+      let lcg = 42
+      const real = Math.random
+      Math.random = () => {
+        lcg = (lcg * 1664525 + 1013904223) >>> 0
+        return lcg / 4294967296
+      }
+      try {
+        const sr = 44100
+        const len = sr * 3
+        const ctx = new OfflineAudioContext(1, sr * 7, sr)
+        const buf = makeNoiseBuffer(ctx)
+        const src = ctx.createBufferSource()
+        src.buffer = buf
+        src.loop = true
+        const g = ctx.createGain()
+        g.gain.value = 0.5
+        src.connect(g)
+        g.connect(ctx.destination)
+        src.start(0)
+        const out = await ctx.startRendering()
+        const d = out.getChannelData(0)
+        let maxStep = 0
+        for (let i = 1; i < d.length; i++) {
+          // The wrap pairs (len-1->len and 2len-1->2len) are the seams under
+          // test; including them in the baseline would let a click certify
+          // itself, since the max step would then BE the seam.
+          if (i === len || i === 2 * len) continue
+          maxStep = Math.max(maxStep, Math.abs(d[i] - d[i - 1]))
+        }
+        const seam1 = Math.abs(d[len] - d[len - 1])
+        const seam2 = Math.abs(d[2 * len] - d[2 * len - 1])
+
+        // A whole preset end to end: any builder that starts or stops a
+        // source without a ramp lands here as a gross step.
+        const e = new AmbientEngine()
+        const octx = new OfflineAudioContext(2, sr * 7, sr)
+        e.ctx = octx
+        e.master = octx.createGain()
+        e.master.gain.value = 1.6
+        e.master.connect(octx.destination)
+        e.buildPreset('reiki')
+        const full = await octx.startRendering()
+        const fd = full.getChannelData(0)
+        let fullMax = 0
+        for (let i = 1; i < fd.length; i++) {
+          fullMax = Math.max(fullMax, Math.abs(fd[i] - fd[i - 1]))
+        }
+        return { maxStep, seam1, seam2, fullMax }
+      } finally {
+        Math.random = real
+      }
+    })
+    note(`render: loopMaxStep=${render.maxStep.toFixed(4)} seams=${render.seam1.toFixed(4)}/${render.seam2.toFixed(4)} presetMaxStep=${render.fullMax.toFixed(4)}`)
+    t('the rendered noise loop clicks at neither wrap point', () => {
+      // The walk's own consecutive samples land near 0.037 at gain 0.5. A
+      // wrap twice that is the periodic click; a crossfaded seam stays inside
+      // the walk's own step distribution, so 2x plus an absolute floor holds
+      // the fix with margin while still failing the hard wrap by ~50%.
+      const bound = Math.max(render.maxStep * 2, 0.05)
+      assert(render.seam1 <= bound, `wrap 1: ${render.seam1.toFixed(4)} > ${bound.toFixed(4)}`)
+      assert(render.seam2 <= bound, `wrap 2: ${render.seam2.toFixed(4)} > ${bound.toFixed(4)}`)
+    })
+    t('a full preset renders without a gross discontinuity', () => {
+      // Generous on purpose: this is the net for a hard start/stop of the
+      // whole graph, not a tone check. Healthy builders stay well under 0.5;
+      // a source cut at full master gain lands near 1.0.
+      assert(render.fullMax < 0.5, `preset max step ${render.fullMax.toFixed(4)}`)
     })
 
     // Navigation still answers after everything above. The deep link selects

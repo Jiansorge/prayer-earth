@@ -454,12 +454,14 @@ const stripComments = (text) =>
 
 // --- sound must never clip, and never be cut while it is still audible -----
 // Reported as a crunchy, glitchy quality that arrives when a lot happens fast
-// (scrolling hard, a burst of taps). Four distinct causes, each asserted here:
-// samples leaving Web Audio above full scale, a gain written instead of moved,
-// a phrase stopped mid-waveform, and a wall-clock watchdog mistaking a busy
-// main thread for a dead engine. There is no harness in this file that can
-// listen to output, so every check is over source or over the pure curve
-// arithmetic.
+// (scrolling hard, a burst of taps), and as a soft periodic click with no
+// trigger at all. Six distinct causes, each asserted here: samples leaving Web
+// Audio above full scale, a gain written instead of moved, a phrase stopped
+// mid-waveform, a wall-clock watchdog mistaking a busy main thread for a dead
+// engine, the noise loop wrapping with a step once every three seconds, and a
+// decoded phrase starting at full amplitude from its first sample. There is no
+// harness in this file that can listen to output, so every check is over
+// source or over the pure arithmetic.
 {
   const amb = readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8')
   const speech = readFileSync(path.join(ROOT, 'src/audio/speech.js'), 'utf8')
@@ -491,6 +493,64 @@ const stripComments = (text) =>
   check('the output ceiling is wired into the graph',
     /createWaveShaper\(\)[\s\S]{0,600}limiter\.connect\(this\.ceiling\)[\s\S]{0,300}ceiling\.connect\(this\.ctx\.destination\)/.test(amb),
     'a ceiling that nothing connects to guarantees nothing')
+
+  // The looping noise buffer every "air" layer plays used to wrap with a hard
+  // step: brown noise ends wherever the random walk wandered, and jumping back
+  // to sample 0 is a discontinuity once every 3 seconds - a periodic click on
+  // all seven beds, belonging to no gesture and no control. The generator is
+  // pure, so the seam is asserted directly: seed Math.random so the buffer is
+  // identical on every machine, and require the wrap step to stay inside the
+  // bound the walk's own consecutive samples already respect.
+  const { makeNoiseBuffer } = await import('../src/audio/ambience.js')
+  const fakeCtx = {
+    sampleRate: 44100,
+    // One channel array, returned for every call: the generator writes
+    // through getChannelData(0) and the assertions read it back, so a fake
+    // that mints a fresh array per call would hand both sides different
+    // buffers and compare zeros.
+    createBuffer: (ch, len, sr) => {
+      const data = new Float32Array(len)
+      return { length: len, sampleRate: sr, getChannelData: () => data }
+    }
+  }
+  let lcg = 42
+  const realRandom = Math.random
+  Math.random = () => {
+    lcg = (lcg * 1664525 + 1013904223) >>> 0
+    return lcg / 4294967296
+  }
+  let noise
+  try {
+    noise = makeNoiseBuffer(fakeCtx, { seconds: 3 })
+  } finally {
+    Math.random = realRandom
+  }
+  const nd = noise.getChannelData(0)
+  const seam = Math.abs(nd[0] - nd[nd.length - 1])
+  let maxStep = 0
+  for (let i = 1; i < nd.length; i++) {
+    maxStep = Math.max(maxStep, Math.abs(nd[i] - nd[i - 1]))
+  }
+  check('the looping noise buffer is continuous at its loop point',
+    seam <= 0.09,
+    `wrap step ${seam.toFixed(3)} vs in-loop max step ${maxStep.toFixed(3)} - a step here is a click every 3 seconds on every bed`)
+  // The crossfade region blends two independent halves of the walk, so its
+  // steps can approach the sum of two walk steps (~0.13 worst case) - that
+  // is the price of a seamless wrap and is inaudible inside filtered air
+  // layers. The seam itself is held to ONE walk step (the check above); this
+  // bound only catches a blend gone wrong (weights flipped, double-write).
+  check('the crossfade region stays within two walk steps',
+    maxStep <= 0.15,
+    `in-loop max step ${maxStep.toFixed(3)}`)
+
+  // A decoded phrase starts at full gain from its first sample. If that sample
+  // is not zero - and a recording's first sample is only zero by luck - the
+  // graph sees a step and the shared limiter pumps the bed behind it: one
+  // click on the voice, heard as the room clicking. The start must ramp in.
+  const voiceBranch = (speech.match(/const gain = ctx\.createGain\(\)[\s\S]{0,1400}?src\.start\(0, 0\)/) || [''])[0]
+  check('a decoded phrase fades in instead of starting at full amplitude',
+    /linearRampToValueAtTime|setTargetAtTime/.test(voiceBranch) && !/gain\.gain\.value\s*=/.test(voiceBranch),
+    voiceBranch.slice(0, 260) || 'the buffer-source phrase start was not found in speech.js')
 
   // Moving a gain while a phrase sounds must be a move. Assigning .value is a
   // step between two adjacent samples, which is a click - and the volume
@@ -1430,6 +1490,37 @@ const stripComments = (text) =>
     linesAt > -1 && pillAt > linesAt && statsAt > pillAt,
     'it used to sit above the lines, pushing the prayer down the screen'
   )
+  // The words used to stop being highlighted and the stage simply continued at
+  // the same brightness - no visual close, so the reader inferred the end from
+  // silence alone. The band sits between the lines and the footer description,
+  // and the pill gets top air so it no longer runs into that description.
+  const styles = readFileSync(path.join(ROOT, 'src/styles.css'), 'utf8')
+  const bandAt = psrc.indexOf('prayer-end-band')
+  const translationAt = psrc.indexOf('prayer-translation')
+  check(
+    'an end-of-prayer band sits between the words and the footer description',
+    bandAt > linesAt && bandAt > -1 && bandAt < translationAt,
+    'the recitation needs a visual close, not just a highlight that stops'
+  )
+  const bandRule = (styles.match(/\.prayer-end-band\s*\{[^}]*\}/) || [''])[0]
+  check(
+    'the end-of-prayer band is a darker floor, not more of the same stage',
+    /linear-gradient\(/.test(bandRule) && /rgba\(0,\s*0,\s*0/.test(bandRule),
+    bandRule.replace(/\s+/g, ' ').slice(0, 160)
+  )
+  check(
+    'the praying-together pill has air above it',
+    /\.praying-now\s*\{[^}]*margin:\s*[1-9]\d*px auto/.test(styles),
+    'the footer description used to run straight into the pill'
+  )
+  // The compact feed's pills wrap; baseline aligns only the first line, so the
+  // icon sat at the top edge while the wrapped text ran below it.
+  const compactPillRules = styles.match(/\.earth-view \.world-feed\.compact \.feed-pill\s*\{[^}]*\}/g) || []
+  check(
+    'the earth feed pills centre their icon against wrapped text',
+    compactPillRules.length >= 2 && compactPillRules.every((r) => /align-items:\s*center/.test(r)),
+    `${compactPillRules.length} compact-pill rule(s), ${compactPillRules.filter((r) => !/align-items:\s*center/.test(r)).length} still top-aligned`
+  )
   check(
     'no prayer claims a recitation style it did not choose',
     !/prayer\.recited/.test(psrc) && !/prayer\.repeated/.test(psrc),
@@ -1439,6 +1530,68 @@ const stripComments = (text) =>
     'a failed voice shows the unavailable badge, a chosen chant does not',
     /chantMode && chantReason !== 'chosen' &&\s*\(\s*<span className="prayer-mode">\{t\('prayer\.voiceUnavailable'\)\}/.test(psrc),
     'degradation is exactly when chantMode is on for a reason other than choice'
+  )
+}
+
+// --- 12. The repeat switch changes the prayer that is already speaking ------
+{
+  // Toggling repeat mid-prayer used to stop the job and start a new one 120ms
+  // later, and that one restart produced both reported faults: the current
+  // line re-spoke from its top, and the restart ran through a setTimeout
+  // closure built BEFORE the click, so the new job was born holding the old
+  // loop flag - the switch read "on" while the prayer was already set to end.
+  // Repeat is therefore a live property of the running job: the switch flips
+  // the flag where the engine reads it and nothing restarts.
+  const loopPage = stripComments(readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8'))
+  const loopSpeech = stripComments(readFileSync(path.join(ROOT, 'src/audio/speech.js'), 'utf8'))
+  // Slice one top-level function out of a file by its signature. Everything
+  // inside is indented past the signature, so the first line that closes at the
+  // signature's own indent ("\n  }") is its end - comments are already gone.
+  const fnBody = (src, sig) => {
+    const at = src.indexOf(sig)
+    if (at < 0) return null
+    const open = src.indexOf('{', at)
+    if (open < 0) return null
+    const close = src.indexOf('\n  }', open)
+    return close < 0 ? null : src.slice(open, close + 4)
+  }
+
+  const toggle = fnBody(loopPage, 'const toggleLoop = () => {')
+  check('the repeat toggle handler is present', !!toggle, 'signature not found in PrayerPage.jsx')
+  check(
+    'toggling repeat no longer stops and restarts the prayer',
+    !!toggle && !/stopJob\(/.test(toggle) && !/startJob\(/.test(toggle) && !/restartTimer/.test(toggle),
+    toggle ? 'the restart re-speaks the current line from its top' : 'no handler to check'
+  )
+  check(
+    'the repeat toggle hands the new value to the engine',
+    !!toggle && /speech\.setLoop\(/.test(toggle),
+    toggle ? 'the switch only changed React state; the running job never heard about it' : 'no handler to check'
+  )
+
+  const setter = fnBody(loopSpeech, 'setLoop(on) {')
+  check(
+    'the engine writes the loop flag onto the job it is already running',
+    !!setter && /this\.job\.loop = !!on/.test(setter),
+    setter ? setter.replace(/\s+/g, ' ').slice(0, 120) : 'SpeechEngine has no setLoop(on)'
+  )
+
+  const timed = fnBody(loopSpeech, 'timedLoop(opts, chant) {')
+  check(
+    'the chant/timeout loop reads the live job flag, not the value captured at start',
+    !!timed && /j\.loop/.test(timed) && !/opts\.loop/.test(timed),
+    timed ? (timed.includes('opts.loop') ? 'opts.loop was captured before the switch was pressed' : 'no j.loop read') : 'timedLoop not found'
+  )
+
+  check(
+    'a prayer starts with the loop flag the store holds at that moment',
+    /loop: useStore\.getState\(\)\.loopOn/.test(loopPage) && !/loop: loopOn,/.test(loopPage),
+    'a render-time binding is stale for any start scheduled before a toggle'
+  )
+  check(
+    'the restart timer that re-spoke the line is gone from the page',
+    !/restartTimer/.test(loopPage),
+    'nothing else arms it; it only ever existed to restart after a toggle'
   )
 }
 

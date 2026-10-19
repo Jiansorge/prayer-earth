@@ -63,6 +63,40 @@ export function ceilingCurve(size = 4097, knee = CEILING_KNEE) {
   return curve
 }
 
+// The 3-second brown-ish noise loop every "air" layer plays. Exported so the
+// loop point can be asserted without an AudioContext (the generator only
+// needs ctx.createBuffer), because the loop point is where a periodic click
+// hides: the walk ends wherever it wandered to, and wrapping back to sample
+// 0 used to be a step discontinuity once every three seconds - on every
+// preset, all day. The seam is now the walk's own next step: a crossfade
+// folds the walk's continuation (samples len..len+xf) back over its head, so
+// d[0] equals where d[len-1] was heading and the wrap is just another sample.
+export function makeNoiseBuffer(ctx, { seconds = 3, fade = 0.25 } = {}) {
+  const sr = ctx.sampleRate
+  const len = Math.floor(sr * seconds)
+  const xf = Math.min(Math.floor(sr * fade), Math.floor(len / 4))
+  // Walk a little past the end; the overrun is what folds back over the head.
+  const walk = new Float32Array(len + xf)
+  let last = 0
+  for (let i = 0; i < walk.length; i++) {
+    const white = Math.random() * 2 - 1
+    last = (last + 0.02 * white) / 1.02
+    walk[i] = last * 3.2
+  }
+  const buf = ctx.createBuffer(1, len, sr)
+  const d = buf.getChannelData(0)
+  d.set(walk.subarray(0, len))
+  // Equal-power blend: the two independent halves trade places at constant
+  // power, so the crossfade region neither dips nor bumps as it passes.
+  for (let i = 0; i < xf; i++) {
+    const k = i / xf
+    const tailWeight = Math.cos((k * Math.PI) / 2) // walk[len+i], 1 -> 0
+    const headWeight = Math.sin((k * Math.PI) / 2) // walk[i],     0 -> 1
+    d[i] = walk[i] * headWeight + walk[len + i] * tailWeight
+  }
+  return buf
+}
+
 export class AmbientEngine {
   constructor() {
     this.ctx = null
@@ -221,18 +255,8 @@ export class AmbientEngine {
   // A single looping noise buffer, shared by every "air" layer.
   _noiseBuffer() {
     if (this._noise) return this._noise
-    const ctx = this.ctx
-    const len = ctx.sampleRate * 3
-    const buf = ctx.createBuffer(1, len, ctx.sampleRate)
-    const d = buf.getChannelData(0)
-    let last = 0
-    for (let i = 0; i < len; i++) {
-      const white = Math.random() * 2 - 1
-      last = (last + 0.02 * white) / 1.02
-      d[i] = last * 3.2
-    }
-    this._noise = buf
-    return buf
+    this._noise = makeNoiseBuffer(this.ctx)
+    return this._noise
   }
 
   // Warm sustained chord: the body of most presets. Slow-breathing gain keeps

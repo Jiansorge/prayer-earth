@@ -1006,7 +1006,10 @@ html[dir='rtl'] .chooser-arrow.right {
   gap: 8px;
   width: max-content;
   max-width: 100%;
-  margin: 0 auto 20px;
+  /* The top margin separates this from the footer description above it. The
+     dashed-border translation block used to run straight into the pill with
+     only its own padding between them, so the two read as one paragraph. */
+  margin: 28px auto 20px;
   padding: 8px 16px;
   border-radius: 999px;
   background: rgba(127, 214, 194, 0.1);
@@ -1099,6 +1102,20 @@ html[dir='rtl'] .chooser-arrow.right {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* The end-of-prayer mark: a darker floor under the last line. The stage
+   stays the same translucent navy top to bottom, so when the recitation
+   stopped being highlighted the page simply went quiet with no visual
+   closure — the reader had to infer the end from silence alone. This band
+   fades the panel down a shade, which reads as the words resting rather
+   than the screen having frozen. */
+.prayer-end-band {
+  height: 52px;
+  margin-top: 20px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.32));
+  pointer-events: none;
 }
 
 .prayer-line {
@@ -3474,7 +3491,11 @@ html[dir='rtl'] .chooser-arrow.right {
     width: 100%;
     white-space: normal;
     row-gap: 2px;
-    align-items: baseline;
+    /* Center, not baseline: these pills wrap, and baseline aligns only the
+       first line — the icon sat at the top edge while the wrapped text ran
+       below it. Centering puts the icon on the pill's middle axis so icon
+       and text share one horizontal line however the text wraps. */
+    align-items: center;
   }
   .earth-view .world-feed.compact .feed-prayer {
     max-width: 100%;
@@ -3518,6 +3539,7 @@ html[dir='rtl'] .chooser-arrow.right {
   white-space: normal;
   justify-content: flex-start;
   line-height: 1.35;
+  align-items: center;
 }
 
 /* ---- home favorites ---- */

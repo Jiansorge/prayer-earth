@@ -460,7 +460,15 @@ class SpeechEngine {
         src.buffer = buffer
         src.playbackRate.value = 1
         const gain = ctx.createGain()
-        gain.gain.value = Math.max(0.001, Math.min(1, (useStore.getState().volume ?? 0.8) * 1))
+        // Fade in over 20ms. The first sample of a decoded phrase is only
+        // zero by luck: starting at full gain turns whatever it happens to
+        // be into a step - a click at every phrase start, and a transient
+        // the shared limiter ducks the bed behind, heard as the room
+        // clicking. setValueAtTime + linearRamp starts from silence and
+        // reaches the true level exactly, with no discontinuity.
+        const target = Math.max(0.001, Math.min(1, (useStore.getState().volume ?? 0.8) * 1))
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime)
+        gain.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.02)
         this.voiceConnect(src, gain)
         this.cloudSource = src
         this.cloudGain = gain
@@ -699,6 +707,19 @@ class SpeechEngine {
         j.onFallback(reason)
       } catch {}
     }
+  }
+
+  // Adjusts whether a prayer repeats while it is underway; both the spoken
+  // advance and the chant/timeout loop read the flag at the moment they need
+  // it, so the change lands on the phrase in flight. Safe to call when idle.
+  //
+  // This has to be a live write rather than a stop-and-restart: restarting to
+  // change one flag re-speaks the current line from its top, and the restart
+  // was scheduled through a closure built before the switch was pressed, so
+  // the new job was born holding the OLD flag - the switch read "on" while the
+  // prayer was already set to end.
+  setLoop(on) {
+    if (this.job) this.job.loop = !!on
   }
 
   // Adjusts the speaking rate while a prayer is underway; the next phrase (and
@@ -1245,7 +1266,7 @@ class SpeechEngine {
       if (i < opts.phrases.length - 1) {
         i += 1
         j.timer = setTimeout(step, dur)
-      } else if (opts.loop) {
+      } else if (j.loop) {
         if (opts.onCycle) opts.onCycle()
         i = 0
         j.timer = setTimeout(step, (opts.gapMs || 900) / rate)

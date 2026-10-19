@@ -105,7 +105,6 @@ export default function PrayerPage() {
   const startAt = useRef(0)
 const startingRef = useRef(false)
 const startingWatchdog = useRef(null)
-const restartTimer = useRef(null)
 const joinedTimer = useRef(null)
 const prevCountRef = useRef(null)
 const prevPrayerRef = useRef(null)
@@ -231,7 +230,6 @@ const countedRef = useRef(false)
   useEffect(
     () => () => {
       clearTimeout(joinedTimer.current)
-      clearTimeout(restartTimer.current)
       clearTimeout(startingWatchdog.current)
     },
     []
@@ -292,7 +290,11 @@ const countedRef = useRef(false)
       speakLang: prayer.speakLang || null,
       altLang: prayer.altLang || null,
       rate: speechRate,
-      loop: loopOn,
+      // Read off the store at the moment of the start, not the render-time
+      // binding: a start scheduled while the switch was being pressed (the
+      // pendingPlay queue, a resume after the job died) would otherwise carry
+      // the flag as it was before the click.
+      loop: useStore.getState().loopOn,
       gapMs: prayer.loop ? 250 : 700,
       onPhrase: (i) => {
         // First phrase engaging means audio is actually starting — drop the
@@ -502,7 +504,6 @@ setChantMode(false)
   const stopJob = () => {
     speech.stop()
     clearTimeout(startingWatchdog.current)
-    clearTimeout(restartTimer.current)
     startingRef.current = false
     setStarting(false)
     setPlaying(false)
@@ -569,14 +570,13 @@ setChantMode(false)
   const toggleLoop = () => {
     const next = !loopOn
     setLoopOn(next)
-    if (playing) {
-      // Toggling repeat must not restart the prayer — resume from the phrase
-      // we're on, just with the new loop setting.
-      const fromIndex = speech.currentIndex()
-      stopJob()
-      clearTimeout(restartTimer.current)
-      restartTimer.current = setTimeout(() => startJob(fromIndex), 120)
-    }
+    // Repeat is read live off the running job, so the switch flips it in
+    // place. It used to stop the job and start a new one 120ms later, which
+    // re-spoke the current line from its top - and the restart was scheduled
+    // through a closure built before this click, so the new job inherited the
+    // flag from BEFORE the toggle: switch off and the prayer kept looping,
+    // switch on and the prayer stopped at the end of its cycle.
+    speech.setLoop(next)
   }
 
   const setLiveVolume = (v) => {
@@ -831,6 +831,12 @@ aria-label={t('prayer.prev')}
             </div>
           ))}
         </div>
+
+        {/* The words end here. Without a mark, the prayer just stopped being
+            highlighted and the stage continued at the same brightness, so the
+            reader had to notice the silence themselves. A darker band under
+            the last line is the page saying the recitation is complete. */}
+        <div className="prayer-end-band" aria-hidden="true" />
 
           <div className="prayer-translation">{tPrayer(prayer, locale)}</div>
 
