@@ -615,6 +615,16 @@ const stripComments = (text) =>
     !!cutBody && /_rampElementVolume\(el, 0\.001, ms\)/.test(cutBody) && /el\.pause\(\)/.test(cutBody) &&
       /await this\._silenceElement\(\)/.test(speech) && /this\._cutElement\(\)/.test(stopBody),
     cutBody ? 'the element still pauses at full amplitude on every cut' : '_cutElement not found')
+  // Only _rampElementVolume ends a ramp - by finishing it, or by a newer
+  // ramp superseding it (which resolves the promise first). stopCloudSource
+  // clearing the shared timer killed a running cut's last tick without
+  // settling _volDone, so the promise _cutElement awaits never settled: stop
+  // mid-phrase, press play, and the first phrase waited forever on a fade
+  // that could no longer finish - recorded audio silently never starting.
+  const stopClean = stripComments(stopBody)
+  check('a stop while a fade is running does not strand the fade',
+    !!stopClean && !/_volTimer|_volDone/.test(stopClean),
+    stopClean ? 'stopCloudSource kills the fade timer without settling its promise - the next phrase waits forever' : 'stopCloudSource not found')
   check('the watchdog needs two stalled reads before it cuts',
     /this\._stallHits = \(this\._stallHits \|\| 0\) \+ 1/.test(speech) &&
       /health === 'ok'\) \{\s*this\._stallHits = 0/.test(speech),

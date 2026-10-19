@@ -311,13 +311,12 @@ class SpeechEngine {
     this.cloudSource = null
     this.cloudNodes = []
     this.cloudGain = null
-    // A volume ramp aimed at the element we are about to reuse would otherwise
-    // keep writing after the phrase it belongs to is gone, and land the next
-    // one at the wrong loudness.
-    if (this._volTimer) {
-      clearTimeout(this._volTimer)
-      this._volTimer = null
-    }
+    // The element's volume ramp owns _volTimer/_volDone and is ended only by
+    // finishing it or by a newer ramp superseding it (which resolves the
+    // promise first). Clearing the timer here killed a running cut's last
+    // tick without settling it, and the next phrase's await
+    // _silenceElement() then waited forever on a fade that could no longer
+    // finish - stop mid-phrase, press play, no recording ever started.
 
     if (src) {
       try {
