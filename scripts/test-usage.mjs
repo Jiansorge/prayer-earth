@@ -154,7 +154,12 @@ async function openSettings() {
   for (let attempt = 0; attempt < 3; attempt++) {
     if (await c.eval(`!!document.querySelector('.sheet')`)) return true
     await c.eval(`document.querySelector('.gear-btn')?.click()`)
-    if (await c.waitFor(`!!document.querySelector('.sheet')`, 5000)) return true
+    // 15s per attempt, not 5s: SettingsSheet is a lazy chunk and this
+    // machine's first read of it inside a fresh dev server measured anywhere
+    // from 0.1s to 149s (vite:load 5354ms while vite:transform was 60ms) -
+    // the same measured class as the sheet timeouts already hardened in
+    // test-audio-ambient.
+    if (await c.waitFor(`!!document.querySelector('.sheet')`, 15000)) return true
   }
   return false
 }
@@ -192,7 +197,11 @@ async function closeSettings() {
 log('navigating to home')
 await nav(APP)
 
-ok('home renders title', await c.waitFor(`document.body.innerText.includes('Pray with the whole world')`))
+// 20s, not the 8s default: this machine's dev server intermittently stalls a
+// first file read for tens of seconds (measured: vite:load up to 149s on a
+// file whose transform was 60ms), and the whole app render waits behind its
+// entry chunk - a green test failing on a server that was working.
+ok('home renders title', await c.waitFor(`document.body.innerText.includes('Pray with the whole world')`, 20000))
 ok(
   'all spirituality tiles render',
   (await c.eval(`document.querySelectorAll('.tile').length`)) === SPIRITUALITIES.length,
