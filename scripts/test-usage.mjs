@@ -1301,6 +1301,32 @@ const reverbMix = await c.eval(`window.__speech?.reverbWetGain`)
 ok('reverb mix is 24%', reverbMix === 0.24, `gain=${reverbMix}`)
 await c.eval(`document.querySelector('.ctrl-btn.stop')?.click()`)
 
+// Regression: a stop while the cut's fade was still running used to strand
+// the fade's promise - the one the next phrase awaits before it ever sets
+// cloudAudio - so stop mid-phrase, press play, and the recording never
+// started. The fix lets only the ramp end its own timer; this drives the
+// real sequence (audible element, stop, immediate play) instead of reading
+// the source, so any future path that restrands the fade fails here. The
+// element must be provably audible first, or the stop has no fade to strand.
+await c.eval(`window.__store.getState().setVoiceURI(null); window.__store.getState().setSpeechRate(0.85)`)
+await c.eval(`document.querySelector('.ctrl-btn.play').click()`)
+const midPhraseAudible = await c.waitFor(`(() => {
+  const a = window.__speech
+  return !!(a && a.job?.active && a.cloudAudio && !a.cloudAudio.paused && !a.cloudAudio.ended && a.cloudAudio.currentTime > 0.15 && a.cloudAudio.volume > 0.05)
+})()`, 15000)
+await c.eval(`document.querySelector('.ctrl-btn.stop').click()`)
+await c.eval(`document.querySelector('.ctrl-btn.play').click()`)
+const spokeAgain = await c.waitFor(`(() => {
+  const a = window.__speech
+  return !!(a && a.job?.active && a.cloudAudio && !a.cloudAudio.paused && !a.cloudAudio.ended)
+})()`, 15000)
+ok(
+  'a stop mid-phrase still lets the next play speak the recording',
+  !!midPhraseAudible && !!spokeAgain,
+  JSON.stringify({ midPhraseAudible: !!midPhraseAudible, spokeAgain: !!spokeAgain })
+)
+await c.eval(`document.querySelector('.ctrl-btn.stop').click()`)
+
 await c.eval(`document.querySelector('.ctrl-btn.stop')?.click()`)
 
 await c.eval(`window.__store.getState().setVoiceURI(null); window.__store.getState().setSpeechRate(1); location.hash = '#/pray/buddhism/21-taras'`)
