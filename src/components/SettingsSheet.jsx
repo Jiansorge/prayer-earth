@@ -1,49 +1,34 @@
-﻿import React, { startTransition, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
-import { speech, CHANT_VOICE } from '../audio/speech.js'
-import { openExternal } from '../shared/openExternal.js'
-import { ambient } from '../audio/ambience.js'
+import { speech } from '../audio/speech.js'
 import SoundControls from './SoundControls.jsx'
 import { SPIRITUALITY_BY_ID } from '../data/prayers.js'
-import { useT, LOCALES, prayerTitle } from '../i18n.js'
-import { sanitizeName } from '../shared/profanity.js'
+import { useT } from '../i18n.js'
 import useFocusTrap from '../shared/useFocusTrap.js'
 import QRCard from './QRCard.jsx'
 import LegalSheet from './LegalSheet.jsx'
-import { canInstall, promptInstall } from '../shared/installPrompt.js'
-import { isMobile, isIos, isAppShell } from '../shared/mobile.js'
-import { CANONICAL_ORIGIN, REPORT_URL } from '../shared/canonical.js'
+import { CANONICAL_ORIGIN } from '../shared/canonical.js'
 import { shareLink, showManualCopy } from '../shared/share.js'
-import { PrivacyPanel, BackupPanel, DataPanel, SettingsRow, KeysPanel } from './SettingsPanels.jsx'
+import { PLAY_STORE_URL } from '../shared/playStore.js'
+import SettingsProfile from './SettingsProfile.jsx'
+import SettingsWarnings from './SettingsWarnings.jsx'
+import SettingsLook from './SettingsLook.jsx'
+import SettingsShare from './SettingsShare.jsx'
+import SettingsInstall from './SettingsInstall.jsx'
+import SettingsAbout from './SettingsAbout.jsx'
+import { SettingsRow } from './SettingsRow.jsx'
+import { PrivacyPanel } from './PrivacyPanel.jsx'
+import { BackupPanel } from './BackupPanel.jsx'
+import { DataPanel } from './DataPanel.jsx'
+import { KeysPanel } from './KeysPanel.jsx'
+import useSheetBed from '../shared/useSheetBed.js'
+import useSheetScroll from '../shared/useSheetScroll.js'
 
-const isInstalled = () =>
-  window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone
-
-// Nature avatars and light colours for your presence on the Earth.
-const AVATARS = ['🌿', '🌙', '🌺', '🕊️', '🌊', '⛰️', '🌾', '🦋', '☀️', '🍃', '🐚', '🌟', '🌸', '🍁', '🪷', '🔥']
-const COLORS = ['#7fc9a0', '#dfb05c', '#7aa2ff', '#ff9e4f', '#ffd166', '#b09dff', '#e8b06f', '#7fd488']
-const DONATE_URL = 'https://ko-fi.com/joiningpalms'
-
-// Scroll memory for the settings sheet.
-//
-// Module-level on purpose: the sheet returns null when closed, so a ref inside
-// the component is recreated from scratch on the next open and remembers
-// nothing. Someone who scrolled to the delete button, closed the sheet to check
-// something, and came back should land where they were, not at the top.
-//
-// Keyed by panel so that going into Privacy and pressing Back also returns you
-// to where you were in the list behind it.
-const scrollMemory = { main: 0, privacy: 0, backup: 0, data: 0, keys: 0 }
 
 // Share links must point at the canonical production origin, never at the
 // localhost/dev/standalone host the app happens to be running on — a copied
 // `window.location.origin` would hand someone a dead "localhost" link.
 const APP_ORIGIN = CANONICAL_ORIGIN
-// Play-Store listing URL, supplied at build time via VITE_PLAY_STORE_URL once
-// the listing is live (the deploy sets it alongside VITE_SYNC_ENGINE). When it
-// is unset (null) the share row shows a "coming soon" note instead of a dead
-// link, so nothing is hardcoded to a placeholder.
-const PLAY_STORE_URL = import.meta.env.VITE_PLAY_STORE_URL || null
 
 export default function SettingsSheet() {
   const open = useStore((s) => s.settingsOpen)
@@ -120,83 +105,7 @@ export default function SettingsSheet() {
     }
   }, [])
 
-  // Soften the bed while the sheet is open, then restore the prayer level on
-  // close. Without the restore, opening Settings mid-prayer left the bed at the
-  // idle 0.4 for the rest of the prayer (and the ambience slider, which
-  // re-applies ambient.level, could no longer climb back up).
-  //
-  // Only ever LOWER. This used to write 0.4 unconditionally, so a bed that was
-  // at 0 - prayer ended, paused, or never played - was raised to 0.4 and the
-  // ambient sound started with nothing playing at all, the moment the sheet
-  // opened. A silent bed stays silent; only a bed that was actually up gets
-  // dipped and restored.
-  const prevLevelRef = useRef(null)
-  // Ambient in this sheet is a sandbox. Opening it never starts sound (the
-  // effect below only ever lowers); tapping a bed chip DOES - picking a sound
-  // is the one explicit request to hear it - but that sound belongs to the
-  // sheet: closing the sheet, or stepping into a sub-panel (Privacy, backup,
-  // data, keys, legal), ends it. A bed that was already running when the sheet
-  // opened is the prayer's, and the dip/restore above owns it: killing it here
-  // would silence the prayer behind the sheet, which is the opposite of the
-  // restore's contract.
-  const runningAtOpenRef = useRef(null)
-  const bedPickedRef = useRef(false)
-  // The audition's ctx creation is async: the sheet can close (or step into a
-  // sub-panel) before ensure() resolves, and the start that lands after would
-  // otherwise resurrect the bed endSheetBed just gave up on. The flag closes
-  // that window - set before the reset, checked inside the pending start.
-  const previewCancelRef = useRef(false)
-  const endSheetBed = () => {
-    const playingNow = useStore.getState().playing
-    if (bedPickedRef.current && runningAtOpenRef.current === false && !playingNow) {
-      ambient.stop()
-      ambient.setLevel(0)
-    }
-    previewCancelRef.current = true
-    bedPickedRef.current = false
-  }
-  // The sheet's own audition: chip tapped while nothing is playing starts the
-  // bed from that gesture at the sheet's idle level - never on open, only on
-  // the explicit pick - and is tracked as the sheet's to stop.
-  const onBedPick = () => {
-    bedPickedRef.current = true
-    previewCancelRef.current = false
-    ambient.ensure().then(() => {
-      if (previewCancelRef.current || bedPickedRef.current === false) return
-      ambient.start().catch(() => {})
-      ambient.setLevel(0.4)
-    }).catch(() => {})
-  }
-  useEffect(() => {
-    if (open) {
-      runningAtOpenRef.current = ambient.running
-      bedPickedRef.current = false
-      previewCancelRef.current = false
-    }
-  }, [open])
-  // A step into a sub-panel is an exit for the same reason a close is: the
-  // reader left the sound section, so the preview ends there too.
-  useEffect(() => {
-    if (open && (panel || legalOpen)) endSheetBed()
-  }, [open, panel, legalOpen])
-  useEffect(() => {
-    if (!ambient.ctx) return
-    if (open) {
-      if (ambient.level > 0.4) {
-        prevLevelRef.current = ambient.level
-        ambient.setLevel(0.4)
-      }
-    } else {
-      if (prevLevelRef.current != null) {
-        ambient.setLevel(prevLevelRef.current)
-        prevLevelRef.current = null
-      }
-      // Unconditional: a bed the sheet auditioned may have started with no
-      // dip at all (no ctx existed when the sheet opened), so the restore's
-      // branch alone would miss it.
-      endSheetBed()
-    }
-  }, [open])
+  const { onBedPick } = useSheetBed({ open, panel, legalOpen })
 
   useEffect(() => {
     if (!open) return
@@ -212,61 +121,7 @@ export default function SettingsSheet() {
     }
   }, [open])
 
-  // Restore this panel's scroll position on open, and bank it on the way out.
-  //
-  // This must sit ABOVE the `if (!open) return null` below. A hook after an
-  // early return is a conditional hook, React throws on it, and the settings
-  // sheet stops rendering entirely - which is exactly what happened the first
-  // time this was written.
-  //
-  // The bodyRef is null while closed, so the effect no-ops then and does its real
-  // work on the open. Keyed on `panel` so going into Privacy and pressing Back
-  // restores the list's place rather than the sub-panel's.
-  useEffect(() => {
-    const el = bodyRef.current
-    if (!el) return undefined
-    const key = panel || 'main'
-    const wanted = scrollMemory[key]
-
-    // Bank the position as the user scrolls, not on the way out.
-    //
-    // Reading it in the cleanup does not work: the cleanup runs when `open`
-    // flips to false, and by then React has already removed .sheet-body from
-    // the DOM, so el.scrollTop is 0 no matter where the sheet had been left.
-    // That was measured, not assumed - the banked value came back as 0 from a
-    // sheet scrolled to 400.
-    //
-    // Guarded on `key` still being the visible panel. When a sub-panel opens,
-    // the browser clamps the container's scrollTop (the new content is shorter)
-    // and fires a scroll event during the scroll-steps phase - BEFORE passive
-    // effects, and so before this listener is removed. Without the guard that
-    // clamp wrote the old panel's key, and pressing Back restored the clamped
-    // position instead of where the user had been.
-    const onScroll = () => {
-      if ((panel || 'main') !== key) return
-      scrollMemory[key] = el.scrollTop
-    }
-    el.addEventListener('scroll', onScroll, { passive: true })
-
-    // Restore after layout, not during the commit: the sheet moves focus into
-    // itself shortly after opening, and a focused element is scrolled into
-    // view; lazy images are still growing the content, so the clamp is computed
-    // against a shorter scrollHeight than the offset was taken from.
-    //
-    // The else branch matters. With no stored offset - opening a sub-panel for
-    // the first time - the container is still sitting at the list's offset, and
-    // a shorter sub-panel opened mid-scroll hides its own Back control above the
-    // fold. Start at the top instead.
-    let frame = 0
-    frame = requestAnimationFrame(() => {
-      if (bodyRef.current !== el) return
-      el.scrollTop = wanted || 0
-    })
-    return () => {
-      if (frame) cancelAnimationFrame(frame)
-      el.removeEventListener('scroll', onScroll)
-    }
-  }, [panel, open])
+  useSheetScroll({ open, panel, bodyRef })
 
   if (!open) return null
 
@@ -301,76 +156,13 @@ export default function SettingsSheet() {
 
         {panel === null && (
         <>
-        <label className="field-label section">{t('profile.title')}</label>
-
-        <div className="field-hint">{t('profile.nameHint')}</div>
-        <input
-          id="profile-name"
-          className="field-input"
-          maxLength={20}
-          value={profile.name}
-          placeholder={t('profile.namePlaceholder')}
-          onChange={(e) => {
-            const v = e.target.value
-            // block vulgar or profane display names
-            if (sanitizeName(v) === '' && v.trim() !== '') return
-            setProfile({ name: v.slice(0, 20) })
-          }}
-        />
-
-        <label className="field-label" htmlFor="avatar-grid">{t('profile.avatar')}</label>
-        <div id="avatar-grid" className="avatar-grid">
-          {AVATARS.map((a) => (
-            <button
-              key={a}
-              type="button"
-              className={`avatar-btn ${profile.avatar === a ? 'on' : ''}`}
-              onClick={() => setProfile({ avatar: a })}
-            >
-              {a}
-            </button>
-          ))}
-        </div>
-
-        <label className="field-label">{t('profile.color')}</label>
-        <div className="swatch-row">
-          {COLORS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              className={`swatch ${profile.color === c ? 'on' : ''}`}
-              style={{ background: c }}
-              onClick={() => setProfile({ color: c })}
-              aria-label={c}
-            />
-          ))}
-        </div>
+      <SettingsProfile profile={profile} setProfile={setProfile} />
 
         <div className="field-divider" />
 
         <label className="field-label section">{t('settings.secPraying')}</label>
 
-        {/* If localStorage writes are failing, the user's prayer counts are not
-            being saved — warn them (durability: never lose a prayer silently). */}
-        {persistFailed && (
-          <div className="save-warning" role="alert">
-            {t('settings.saveFailed')}
-          </div>
-        )}
-
-        {dataQuarantined && (
-          <div className="save-warning" role="alert">
-            {dataPreservationFailed
-              ? t('settings.dataPreservationFailed')
-              : t('settings.dataQuarantined')}
-          </div>
-        )}
-
-        {storagePersisted === false && !isAppShell() && (
-          <div className="save-warning" role="status">
-            {t('settings.storageNotPersisted')}
-          </div>
-        )}
+      <SettingsWarnings persistFailed={persistFailed} dataQuarantined={dataQuarantined} dataPreservationFailed={dataPreservationFailed} storagePersisted={storagePersisted} />
 
         {/* The sound controls (prayer voice volume, ambient sound volume, speed,
             ambient bed picker) are shared verbatim with the prayer mini panel so
@@ -385,132 +177,11 @@ export default function SettingsSheet() {
 
         <div className="field-divider" />
 
-        <label className="field-label section">{t('settings.secLook')}</label>
-
-        <label className="field-label">{t('settings.theme')}</label>
-        <div className="field-hint">{t('settings.themeHint')}</div>
-        <div className="theme-pick">
-          {[
-            { id: 'mystic', emoji: '🌌', label: t('theme.mystic') },
-            { id: 'nature', emoji: '🌲', label: t('theme.nature') },
-            { id: 'space', emoji: '🚀', label: t('theme.space') },
-            { id: 'temple', emoji: '🏛️', label: t('theme.temple') },
-            { id: 'ocean', emoji: '🌊', label: t('theme.ocean') },
-            { id: 'dawn', emoji: '🌅', label: t('theme.dawn') }
-          ].map((th) => (
-            <button
-              key={th.id}
-              type="button"
-              className={`theme-opt ${theme === th.id ? 'on' : ''}`}
-              onClick={() => startTransition(() => setTheme(th.id))}
-              aria-pressed={theme === th.id}
-            >
-              <span className="theme-emoji">{th.emoji}</span>
-              <span>{th.label}</span>
-            </button>
-          ))}
-        </div>
-
-        <label className="field-label" htmlFor="locale-picker">{t('settings.languageLabel')}</label>
-        <select
-          id="locale-picker"
-          className="field-select"
-          value={locale}
-          onChange={(e) => setLocale(e.target.value)}
-        >
-          {LOCALES.map((l) => (
-            <option key={l.code} value={l.code}>
-              {l.label}
-            </option>
-          ))}
-        </select>
-
-        <label className="field-label" htmlFor="voice-picker">{t('settings.voiceLabel')}</label>
-        <div className="field-hint">
-          {t('settings.voiceHint')}
-        </div>
-        <select
-          id="voice-picker"
-          className="field-select"
-          value={voiceURI || ''}
-          onChange={(e) => setVoiceURI(e.target.value || null)}
-        >
-          <option value="">{t('settings.automatic')}</option>
-          <option value={CHANT_VOICE}>{t('settings.softChant')}</option>
-          {grouped.map((v) => (
-            <option key={v.voiceURI} value={v.voiceURI}>
-              {v.name} ({v.lang})
-            </option>
-          ))}
-        </select>
-        {voiceURI ? null : <div className="field-hint">{t('settings.automaticHint')}</div>}
-        {grouped.length === 0 && (
-          <div className="field-hint">{t('settings.noVoices')}</div>
-        )}
-        <button
-          className="field-preview"
-          onClick={preview}
-          aria-label={t('settings.hearSample')}
-        >
-          {previewing ? t('settings.listening') : t('settings.hearSample')}
-        </button>
+      <SettingsLook theme={theme} setTheme={setTheme} locale={locale} setLocale={setLocale} voiceURI={voiceURI} setVoiceURI={setVoiceURI} grouped={grouped} previewing={previewing} preview={preview} />
 
         <div className="field-divider" />
 
-        <label className="field-label section">{t('settings.secShare')}</label>
-
-        <label className="field-label">{t('settings.sharePrayerLabel')}</label>
-        <div className="field-hint">
-          {prayer
-            ? t('settings.sharePrayerHint', { title: prayerTitle(t, prayer.id, prayer.title) })
-            : t('settings.sharePrayerHintNone')}
-        </div>
-        <button
-          className="field-btn"
-          disabled={!prayer}
-          onClick={() => setQrOpen(true)}
-        >
-          {t('settings.showQr')}
-        </button>
-
-        <label className="field-label">{t('settings.shareAppLabel')}</label>
-        <div className="field-hint">
-          {t('settings.shareAppHint')}
-        </div>
-        <button className="field-btn" onClick={() => shareApp('web')}>
-          {appCopied ? t('settings.copied') : t('settings.shareApp')}
-        </button>
-        <button className="field-url" onClick={() => shareApp('web')} title={APP_ORIGIN}>
-          {APP_ORIGIN}
-        </button>
-        {PLAY_STORE_URL ? (
-          <button className="field-btn" onClick={() => shareApp('store')} style={{ marginTop: 8 }}>
-            {t('settings.sharePlayStore')}
-          </button>
-        ) : (
-          <div className="field-hint" style={{ marginTop: 8, opacity: 0.6 }}>
-            {t('settings.playStoreComingSoon')}
-          </div>
-        )}
-
-        <div className="field-divider" />
-
-        {/* Support sits directly under sharing the app: both are "get the word
-            out", and keeping them together puts the donate button where
-            someone who just shared a link is already looking.
-
-            No wrap: the Ko-fi badge is 36px tall and the label is one line, and
-            letting this wrap put the badge on a line of its own under the text,
-            which read as two unrelated buttons. The label shrinks instead. */}
-        <label className="field-label section">{t('settings.secSupport')}</label>
-        <div className="donate-row">
-          <button type="button" className="field-btn donate-label" onClick={() => openExternal(DONATE_URL)}>
-            {t('settings.donateButton')}
-          </button>
-          <button type="button" className="field-btn donate-badge-btn" onClick={() => openExternal(DONATE_URL)} aria-label="Ko-fi — joiningpalms" title="Ko-fi — joiningpalms">
-            <img src="/kofi6.png" alt="Support on Ko-fi" style={{ height: 36, border: 0, display: 'block' }} loading="lazy" />
-          </button>
-        </div>
+      <SettingsShare prayer={prayer} setQrOpen={setQrOpen} shareApp={shareApp} appCopied={appCopied} origin={APP_ORIGIN} />
 
         {/* The three things that used to be one very long section. Privacy,
             backup and deletion are each something a person looks for on its
@@ -541,70 +212,9 @@ export default function SettingsSheet() {
           testId="row-data"
         />
 
-        {!isAppShell() && !isInstalled() && isMobile() && (
-          <>
-        <div className="field-divider" />
+      <SettingsInstall installed={installed} setInstalled={setInstalled} showIosTip={showIosTip} setShowIosTip={setShowIosTip} />
 
-            <label className="field-label section">{t('settings.installApp')}</label>
-
-
-            {canInstall() ? (
-              <>
-                <div className="field-hint">{t('settings.installHint')}</div>
-                <button
-                  className="field-btn"
-                  onClick={async () => {
-                    const ok = await promptInstall()
-                    if (ok) setInstalled(true)
-                  }}
-                >
-                  {installed ? t('settings.done') : t('settings.installApp')}
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="field-hint">
-                  {t(isIos() ? 'settings.installHintIos' : 'settings.installHintBrowser')}
-                </div>
-                <button
-                  className="field-btn"
-                  onClick={() => setShowIosTip(!showIosTip)}
-                >
-                  {showIosTip ? t('settings.done') : t('settings.installApp')}
-                </button>
-              </>
-            )}
-          </>
-        )}
-
-        <div className="field-divider" />
-
-        <label className="field-label section">{t('settings.secAbout')}</label>
-
-        <button className="field-btn" onClick={() => setLegalOpen(true)}>
-          {t('settings.legal')}
-        </button>
-
-        {/* Attribution + a way to report a re-upload. Honest scope: the app
-            ships free and stays free. This cannot stop someone repackaging an
-            APK -- any Android build can be unpacked -- but it puts the author's
-            name and a reporting route inside the app itself, which is what makes
-            a takedown straightforward if a copy is published. */}
-        <div className="field-hint" style={{ marginTop: 14 }}>{t('settings.madeBy')}</div>
-        <button className="field-url" onClick={() => shareApp('web')} title={APP_ORIGIN}>
-          {APP_ORIGIN}
-        </button>
-        <button type="button" className="field-report" onClick={() => openExternal(REPORT_URL)}>
-          {t('settings.reportCopy')}
-        </button>
-
-        {!isAppShell() && !isMobile() && (
-          <SettingsRow
-            label={`⌨ ${t('keys.title')}`}
-            onClick={() => setPanel('keys')}
-            testId="row-keys"
-          />
-        )}
+      <SettingsAbout origin={APP_ORIGIN} shareApp={shareApp} setLegalOpen={setLegalOpen} setPanel={setPanel} />
 
         <button className="sheet-close" onClick={() => setOpen(false)}>
           {t('settings.done')}

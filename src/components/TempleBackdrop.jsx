@@ -1,20 +1,10 @@
 import React, { useRef } from 'react'
 import { useBackdropCanvas, fitCanvas } from './useBackdropCanvas.js'
+import { mulberry } from './mulberry.js'
 
 // A quiet, non-denominational ancient temple: warm stone columns under a
 // classical pediment, a glowing central doorway, moonlight and stars, candles
 // flickering, incense smoke drifting, and dust motes in the light.
-
-function mulberry(seed) {
-  let s = seed
-  return () => {
-    s |= 0
-    s = (s + 0x6d2b79f5) | 0
-    let t = Math.imul(s ^ (s >>> 15), 1 | s)
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
 
 const rnd = mulberry(71)
 const columns = Array.from({ length: 7 }, (_, i) => ({

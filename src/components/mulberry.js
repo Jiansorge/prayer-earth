@@ -1,0 +1,15 @@
+// The deterministic PRNG every theme backdrop uses to lay out its stars,
+// clouds, waves and candles. One implementation, seeded per backdrop, so a
+// scene is reproducible frame-to-frame and across builds - and so changing the
+// algorithm (which would reshuffle every scene) happens in exactly one place.
+// scripts/test-units.mjs pins the output sequence.
+export function mulberry(seed) {
+  let s = seed
+  return () => {
+    s |= 0
+    s = (s + 0x6d2b79f5) | 0
+    let t = Math.imul(s ^ (s >>> 15), 1 | s)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}

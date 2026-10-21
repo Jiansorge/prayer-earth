@@ -1,19 +1,9 @@
 import React, { useRef } from 'react'
 import { useBackdropCanvas, fitCanvas } from './useBackdropCanvas.js'
+import { mulberry } from './mulberry.js'
 
 // A mystical night backdrop, deep indigo space, drifting nebula glows,
 // aurora veils, twinkling stars, a soft glowing orb, and rising motes of light.
-
-function mulberry(seed) {
-  let s = seed
-  return () => {
-    s |= 0
-    s = (s + 0x6d2b79f5) | 0
-    let t = Math.imul(s ^ (s >>> 15), 1 | s)
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
 
 const NEBULA_HUES = ['214,120,255', '80,220,255', '255,190,110', '150,120,255', '70,255,200']
 const VEIL_COLORS = ['rgba(110,255,200,ALPHA)', 'rgba(150,130,255,ALPHA)', 'rgba(255,210,120,ALPHA)']

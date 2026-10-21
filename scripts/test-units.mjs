@@ -17,6 +17,11 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { sanitizeName } from '../src/shared/profanity.js'
 import { foldPrayers, FOLDED_PRAYERS } from '../src/shared/prayerFold.js'
+import { dayKeyUTC, streakFromDays, mergeStats } from '../src/shared/stats.js'
+import { crc32, summarizeState, summarizePayload } from '../src/shared/backup.js'
+import { useStore, quarantine, neverLoseData, safeStorage } from '../src/store.js'
+import { tPhrase, PHRASE_MEANING_L10N } from '../src/i18n/prayerL10n.js'
+import { mulberry } from '../src/components/mulberry.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -276,14 +281,28 @@ const stripComments = (text) =>
 // which is why the report-a-re-upload link, the delete-data link, the manual
 // deletion link and both Ko-fi buttons were all dead on a phone.
 {
-  const sheet = readFileSync(path.join(ROOT, 'src/components/SettingsSheet.jsx'), 'utf8')
+  // The settings surface is one UI across many files now: the sheet plus its
+  // extracted sections and sub-panels. Every file that links out must go
+  // through openExternal, and none may fall back to a dead target=_blank.
+  const settingsFiles = [
+    'SettingsSheet.jsx', 'SettingsProfile.jsx', 'SettingsWarnings.jsx',
+    'SettingsLook.jsx', 'SettingsShare.jsx', 'SettingsInstall.jsx',
+    'SettingsAbout.jsx', 'SettingsRow.jsx', 'KeysPanel.jsx',
+    'PrivacyPanel.jsx', 'BackupPanel.jsx', 'DataPanel.jsx'
+  ].map((f) => path.join(ROOT, 'src/components', f))
+  const settingsParts = settingsFiles.map((p) => readFileSync(p, 'utf8'))
+  const blankLeft = settingsParts.filter((s) => /target="_blank"/.test(s))
   check(
     'the settings sheet has no target=_blank links',
-    !/target="_blank"/.test(sheet),
-    'remaining: ' + (sheet.match(/target="_blank"/g) || []).length
+    blankLeft.length === 0,
+    'remaining: ' + blankLeft.length
   )
-  check('external links go through openExternal', /openExternal\(/.test(sheet))
-  check('openExternal is imported', /from '\.\.\/shared\/openExternal\.js'/.test(sheet))
+  check('external links go through openExternal', settingsParts.some((s) => /openExternal\(/.test(s)))
+  const missingImport = settingsFiles.filter(
+    (p, i) => /openExternal\(/.test(settingsParts[i]) && !/from '\.\.\/shared\/openExternal\.js'/.test(settingsParts[i])
+  )
+  check('openExternal is imported', missingImport.length === 0,
+    missingImport.map((p) => path.basename(p)).join(', '))
 
   const helper = readFileSync(path.join(ROOT, 'src/shared/openExternal.js'), 'utf8')
   check('openExternal uses the Capacitor Browser plugin', /Plugins\?\.Browser/.test(helper))
@@ -629,6 +648,27 @@ const stripComments = (text) =>
     /this\._stallHits = \(this\._stallHits \|\| 0\) \+ 1/.test(speech) &&
       /health === 'ok'\) \{\s*this\._stallHits = 0/.test(speech),
     'one stale currentTime under load still hard-restarts a healthy phrase')
+
+  // Without a user activation the browser does not reject resume() - it leaves
+  // the promise pending forever. Awaiting it directly hung speakCloud inside
+  // the suspended-graph branch: no element assigned, no source started, only
+  // the safety net advancing through silence (the reported "voices stopped").
+  // Both awaits of it - the phrase's own resume and ambience ensure(), which
+  // start() blocks on - must race a deadline so a pend falls through the way a
+  // refusal always did, and speakCloud must latch a pending one so each later
+  // phrase of the same suspension does not pay the deadline again.
+  const speechResumeRace = stripComments(speech)
+  check('a resume that never settles still falls through to the element backup',
+    /Promise\.race\(\[\s*ctx\.resume\(\)\.then\(/.test(speechResumeRace) &&
+      !/await ctx\.resume\(\)/.test(speechResumeRace),
+    'speakCloud awaits resume() directly again - a pending resume hangs the phrase with no audio at all')
+  check('a hung resume is paid once per suspension, not once per phrase',
+    /this\._resumeHung = true/.test(speechResumeRace) && /if \(!this\._resumeHung\)/.test(speechResumeRace),
+    'the resume deadline is charged for every phrase while the graph stays suspended')
+  const ensureResumeRace = stripComments(amb)
+  check('starting the bed cannot hang on a pending resume',
+    /Promise\.race\(\[\s*this\.ctx\.resume\(\)/.test(ensureResumeRace),
+    'ambient.ensure() returns resume() directly - start() awaits it and hangs with the graph suspended')
 
   // Each preview call built a fresh Audio element and kept no handle, so
   // auditioning voices in quick succession stacked them at full volume.
@@ -1057,11 +1097,14 @@ const stripComments = (text) =>
   const pageSrc = readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*\/\/.*$/gm, '')
+  const stageSrc = readFileSync(path.join(ROOT, 'src/components/PrayerStage.jsx'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '')
   check('the prayer page fills the line and the screen-reader line',
-    /fillPractitionerName\(ph\.t/.test(pageSrc) &&
-      /fillPractitionerName\(phrases\[active\]\.t/.test(pageSrc) &&
-      /s\.sharePresence/.test(pageSrc),
-    'PrayerPage must read consent itself; the helper cannot know it')
+    /fillPractitionerName\(ph\.t/.test(stageSrc) &&
+      /fillPractitionerName\(phrases\[active\]\.t/.test(stageSrc) &&
+      /s\.sharePresence/.test(stageSrc),
+    'the prayer view must read consent itself; the helper cannot know it')
   const speechSrc = readFileSync(path.join(ROOT, 'src/audio/speech.js'), 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*\/\/.*$/gm, '')
@@ -1076,7 +1119,7 @@ const stripComments = (text) =>
   // of them: audio that keeps running after it should stop, or sits still after
   // it should move, and a reader who hears it as "the sound is broken".
   const settingsSrc = stripComments(
-    readFileSync(path.join(ROOT, 'src/components/SettingsSheet.jsx'), 'utf8')
+    readFileSync(path.join(ROOT, 'src/shared/useSheetBed.js'), 'utf8')
   )
   const prayerPageSrc = stripComments(
     readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8')
@@ -1355,10 +1398,10 @@ const stripComments = (text) =>
     loadingSpin || 'the play button\'s dark-green ring ships unretinted into a dark sheet'
   )
 
-  const pickAppSrc = stripComments(readFileSync(path.join(ROOT, 'src/App.jsx'), 'utf8'))
+  const pickAppSrc = stripComments(readFileSync(path.join(ROOT, 'src/shared/useWarmApp.js'), 'utf8'))
   check(
     'the tradition picker is warmed with the rest of the first tap',
-    /import\('\.\/components\/PrayerPicker\.jsx'\)/.test(pickAppSrc),
+    /import\('\.\.?\/components\/PrayerPicker\.jsx'\)/.test(pickAppSrc),
     'the picker is the first thing anyone taps, and it loaded its chunk inline on that tap'
   )
 
@@ -1418,11 +1461,11 @@ const stripComments = (text) =>
       /animation:\s*none/.test(lpRule('.sky::before')),
     'the fireflies, the aurora and the canopy dapple were the per-frame costs, not the layout'
   )
-  const lpAppSrc = stripComments(readFileSync(path.join(ROOT, 'src/App.jsx'), 'utf8'))
+  const lpAppSrc = stripComments(readFileSync(path.join(ROOT, 'src/shared/useWarmApp.js'), 'utf8'))
   const warmBlock = lpAppSrc.slice(lpAppSrc.indexOf('const warm = () => {'))
   check(
     'the keyboard sheet loads with the first tap, not inside the ? keypress',
-    /import\('\.\/components\/KeyboardHelp\.jsx'\)/.test(warmBlock),
+    /import\('\.\.?\/components\/KeyboardHelp\.jsx'\)/.test(warmBlock),
     'the shortcut help is lazy() and was fetched at the moment of the keypress - the shortcut lag itself'
   )
 }
@@ -1470,22 +1513,24 @@ const stripComments = (text) =>
     'setLevel(0) alone mutes; only stop() pays the oscillators off'
   )
   const sheetSrc = stripComments(readFileSync(path.join(ROOT, 'src/components/SettingsSheet.jsx'), 'utf8'))
+  const bedSrc = stripComments(readFileSync(path.join(ROOT, 'src/shared/useSheetBed.js'), 'utf8'))
   check(
     'the sheet snapshots what was running and ends only its own audition',
-    /runningAtOpenRef\.current\s*=\s*ambient\.running/.test(sheetSrc) &&
-      /bedPickedRef\.current\s*&&\s*runningAtOpenRef\.current\s*===\s*false/.test(sheetSrc) &&
-      /endSheetBed\(\)/.test(sheetSrc),
+    /runningAtOpenRef\.current\s*=\s*ambient\.running/.test(bedSrc) &&
+      /bedPickedRef\.current\s*&&\s*runningAtOpenRef\.current\s*===\s*false/.test(bedSrc) &&
+      /endSheetBed\(\)/.test(bedSrc) &&
+      /useSheetBed\(\{ open, panel, legalOpen \}\)/.test(sheetSrc),
     'a bed the sheet started belongs to the sheet; a bed the prayer started belongs to the prayer'
   )
   check(
     'the audition is cancelled if the sheet closes before the ctx is ready',
-    /previewCancelRef/.test(sheetSrc) &&
-      /if \(previewCancelRef\.current \|\| bedPickedRef\.current === false\) return/.test(sheetSrc),
+    /previewCancelRef/.test(bedSrc) &&
+      /if \(previewCancelRef\.current \|\| bedPickedRef\.current === false\) return/.test(bedSrc),
     'the async ensure() could otherwise resurrect a bed the sheet already gave up on'
   )
   check(
     'stepping into a sub-panel ends the audition like a close does',
-    /open && \(panel \|\| legalOpen\)\) endSheetBed\(\)/.test(sheetSrc),
+    /open && \(panel \|\| legalOpen\)\) endSheetBed\(\)/.test(bedSrc),
     'Privacy/backup/keys/legal all leave the sound section the way Done does'
   )
   const scSrc = stripComments(readFileSync(path.join(ROOT, 'src/components/SoundControls.jsx'), 'utf8'))
@@ -1505,7 +1550,16 @@ const stripComments = (text) =>
   // interrupting, and every prayer claimed to be "recited aloud" - including
   // silent ones, and ones whose voice had just failed (the failure already has
   // its own toast and now has its own badge).
-  const psrc = stripComments(readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8'))
+  // The prayer view is composed of the page plus the sections it renders
+  // (stage, controls, tune sheet, chrome); structural pins read all of them.
+  const psrc = stripComments(
+    ['src/pages/PrayerPage.jsx', 'src/components/PrayerStage.jsx', 'src/components/PrayerControls.jsx',
+      'src/components/PrayerTuneSheet.jsx', 'src/components/PrayerBackRow.jsx', 'src/components/PrayerChooser.jsx',
+      'src/components/PrayerToasts.jsx', 'src/components/PrayerNotes.jsx', 'src/pages/usePrayerKeys.js',
+      'src/pages/usePrayerSync.js']
+      .map((f) => readFileSync(path.join(ROOT, f), 'utf8'))
+      .join('\n')
+  )
   check(
     'the tune button is a gear in text presentation, not a music note',
     /'\\u2699\\uFE0E'/.test(psrc) && !/♪/.test(psrc),
@@ -1821,6 +1875,274 @@ const stripComments = (text) =>
     /\.is-scrolling \.sp \{[^}]*animation:\s*none/.test(scrollSection),
     'is-scrolling still animates 24 box-shadow sparkles on the main thread every moving frame'
   )
+}
+
+// --- 14. Lifetime data, streak math and the extracted shared helpers ---------
+// Direct tests for the exports store.js says exist for exactly this purpose
+// (safeStorage / neverLoseData / quarantine), for the pure streak math that
+// nothing guarded yet, and for the two modules this refactor extracted
+// (mulberry, LocaleSelect) so their behaviour cannot silently drift back into
+// copies.
+{
+  const fakeStorage = () => {
+    const map = new Map()
+    return {
+      getItem: (k) => (map.has(k) ? map.get(k) : null),
+      setItem: (k, v) => map.set(k, String(v)),
+      removeItem: (k) => map.delete(k),
+      get: (k) => map.get(k)
+    }
+  }
+  const flags = () => ({
+    quarantined: useStore.getState().dataQuarantined,
+    failed: useStore.getState().dataPreservationFailed
+  })
+  const resetFlags = () => useStore.setState({ dataQuarantined: false, dataPreservationFailed: false, persistFailed: false })
+  const hadWindow = Object.prototype.hasOwnProperty.call(globalThis, 'window')
+  const savedWindow = globalThis.window
+  try {
+    resetFlags()
+
+    // quarantine: unreadable bytes are MOVED aside, counted, and surfaced -
+    // never silently overwritten by the defaults the app is about to write.
+    globalThis.window = { localStorage: fakeStorage() }
+    check(
+      'quarantine preserves unreadable bytes instead of overwriting them',
+      quarantine('pe-state', 'corrupt{{{') === true &&
+        globalThis.window.localStorage.get('pe-state.unreadable') === 'corrupt{{{'
+    )
+    check(
+      'quarantine counts repeated incidents',
+      globalThis.window.localStorage.get('pe-state.unreadable.count') === '1' &&
+        quarantine('pe-state', 'corrupt-again') === true &&
+        globalThis.window.localStorage.get('pe-state.unreadable.count') === '2'
+    )
+    check(
+      'quarantine tells the store the data was preserved',
+      flags().quarantined === true && flags().failed === false
+    )
+
+    // Storage refuses the write (quota / sandbox): the store must be told
+    // preservation FAILED, because defaults are about to land on top of it.
+    globalThis.window = {
+      localStorage: {
+        getItem: () => null,
+        setItem: () => {
+          throw new Error('QuotaExceededError')
+        },
+        removeItem: () => {}
+      }
+    }
+    resetFlags()
+    check(
+      'quarantine reports failure when storage refuses the write',
+      quarantine('pe-state', 'raw') === false && flags().quarantined === true && flags().failed === true
+    )
+
+    // safeStorage: corrupt JSON reads as null (and is quarantined first),
+    // valid JSON passes through, missing keys are null.
+    const st = fakeStorage()
+    st.setItem('pe-state', '{"broken":')
+    globalThis.window = { localStorage: st }
+    check(
+      'safeStorage quarantines a corrupt entry and reads null',
+      safeStorage.getItem('pe-state') === null && st.get('pe-state.unreadable') === '{"broken":'
+    )
+    st.setItem('pe-good', '{"ok":1}')
+    check('safeStorage passes valid JSON through untouched', safeStorage.getItem('pe-good') === '{"ok":1}')
+    check('safeStorage reads a missing key as null', safeStorage.getItem('pe-missing') === null)
+
+    // neverLoseData: a write may never LOWER stored counters, keeps the
+    // identity the server knows (anonId + delete token), and takes ordinary
+    // preferences from the incoming value.
+    globalThis.window = {
+      localStorage: (() => {
+        const map = new Map([
+          [
+            'pe-state',
+            JSON.stringify({
+              state: {
+                localPrayerSeconds: 100,
+                bestStreak: 7,
+                streak: 3,
+                anonId: 'anon-kept',
+                deleteToken: 'tok-kept',
+                theme: 'dawn',
+                prayerCompletions: { alpha: 4 },
+                prayerDayStats: { '2026-10-19': { seconds: 50 } }
+              }
+            })
+          ]
+        ])
+        return {
+          getItem: (k) => (map.has(k) ? map.get(k) : null),
+          setItem: (k, v) => map.set(k, String(v)),
+          removeItem: (k) => map.delete(k)
+        }
+      })()
+    }
+    const merged = JSON.parse(
+      neverLoseData(
+        'pe-state',
+        JSON.stringify({
+          state: {
+            localPrayerSeconds: 50,
+            bestStreak: 2,
+            streak: 9,
+            theme: 'mystic',
+            anonId: '',
+            deleteToken: '',
+            prayerCompletions: { beta: 1 },
+            prayerDayStats: { '2026-10-19': { seconds: 20 } }
+          }
+        })
+      )
+    )
+    check('a lower localPrayerSeconds can never be persisted', merged.state.localPrayerSeconds === 100)
+    check('bestStreak is max-merged and never drops below the streak', merged.state.bestStreak === 9)
+    check('the anonId survives an incoming empty identity', merged.state.anonId === 'anon-kept')
+    check('the delete token survives an incoming empty token', merged.state.deleteToken === 'tok-kept')
+    check('non-counter preferences come from the incoming value', merged.state.theme === 'mystic')
+    check('per-day counters max-merge instead of overwriting', merged.state.prayerDayStats['2026-10-19'].seconds === 50)
+
+    // With storage access throwing at all (bare node, blocked window) the
+    // value comes back untouched rather than being dropped.
+    delete globalThis.window
+    const passthrough = '{"state":{"localPrayerSeconds":7}}'
+    check('neverLoseData returns the value unchanged when storage is unreachable',
+      neverLoseData('pe-state', passthrough) === passthrough)
+
+    resetFlags()
+  } finally {
+    if (hadWindow) globalThis.window = savedWindow
+    else delete globalThis.window
+    resetFlags()
+  }
+}
+
+{
+  // Streak math: derived from the day map so a lapsed streak can decrease.
+  check('dayKeyUTC pads month and day to two digits', dayKeyUTC(new Date(Date.UTC(2025, 0, 5))) === '2025-01-05')
+  check('dayKeyUTC reads the UTC date, not local', dayKeyUTC(new Date(Date.UTC(2025, 11, 31))) === '2025-12-31')
+
+  const now = new Date('2026-10-20T12:00:00Z')
+  const [d0, d1, d2] = ['2026-10-20', '2026-10-19', '2026-10-18']
+  check('an empty day map is a zero streak', streakFromDays({}, now) === 0)
+  check('praying today keeps the streak alive', streakFromDays({ [d0]: {} }, now) === 1)
+  check('praying only yesterday still keeps it alive', streakFromDays({ [d1]: {} }, now) === 1)
+  check('a three-day run counts three', streakFromDays({ [d0]: {}, [d1]: {}, [d2]: {} }, now) === 3)
+  check(
+    'a gap behind yesterday stops the count at today, it does not zero a live streak',
+    streakFromDays({ [d0]: {}, [d2]: {} }, now) === 1
+  )
+  check(
+    'an older run behind a gap never merges into the live one',
+    streakFromDays({ [d0]: {}, [d1]: {}, '2026-10-16': {} }, now) === 2
+  )
+  check('the count walks back from yesterday when today is missed', streakFromDays({ [d1]: {}, [d2]: {} }, now) === 2)
+  check('a future-only day map is not a streak', streakFromDays({ '2026-10-21': {} }, now) === 0)
+
+  // Key the map off the real clock: mergeStats re-derives with new Date(), so
+  // hardcoded day keys silently go stale the moment UTC rolls past midnight.
+  const yesterday = dayKeyUTC(new Date(Date.now() - 86400000))
+  const out = mergeStats({ streak: 99, bestStreak: 0, localPrayerSeconds: 100, prayerDayCompletions: { [yesterday]: {} } }, {})
+  check('streak is re-derived from days, never max-restored', out.streak === 1)
+  check('bestStreak is never lower than the derived streak', out.bestStreak === 1)
+  check(
+    'localPrayerSeconds takes the greater side',
+    mergeStats({ localPrayerSeconds: 100 }, { localPrayerSeconds: 50 }).localPrayerSeconds === 100 &&
+      mergeStats({ localPrayerSeconds: 50 }, { localPrayerSeconds: 150 }).localPrayerSeconds === 150
+  )
+  check(
+    'lastPrayedDay keeps the later of the two days',
+    mergeStats({ lastPrayedDay: '2026-10-19' }, { lastPrayedDay: '2026-10-20' }).lastPrayedDay === '2026-10-20' &&
+      mergeStats({ lastPrayedDay: '2026-10-20' }, { lastPrayedDay: '2026-10-19' }).lastPrayedDay === '2026-10-20'
+  )
+  const many = {}
+  for (let i = 0; i < 121; i++) many[dayKeyUTC(new Date(Date.UTC(2026, 0, 1) + i * 86400000))] = {}
+  const capped = mergeStats({}, { prayerDayCompletions: many }).prayerDayCompletions
+  check('the merged day map is capped at 120 entries', Object.keys(capped).length === 120)
+  check('the oldest day is the one dropped from the cap', !('2026-01-01' in capped))
+}
+
+{
+  // Backup digest + checksum: the recovery code's integrity primitive.
+  check('crc32 matches the standard CRC-32 check vector', crc32('123456789') === 0xcbf43926)
+  check('crc32 of an empty string is zero', crc32('') === 0)
+  check(
+    'crc32 is deterministic and input-sensitive',
+    crc32('prayer') === crc32('prayer') && crc32('prayer') !== crc32('prayers')
+  )
+  const rich = { localPrayerSeconds: 9, bestStreak: 4, prayerCompletions: { alpha: 2 } }
+  check(
+    'summarizeState is the state-side alias of summarizePayload',
+    JSON.stringify(summarizeState(rich)) === JSON.stringify(summarizePayload(rich))
+  )
+  check(
+    'summarizeState of empty state reports zeroes',
+    JSON.stringify(summarizeState({})) ===
+      JSON.stringify({ distinctPrayers: 0, completions: 0, seconds: 0, bestStreak: 0, days: 0, fromDay: 0, toDay: 0 })
+  )
+}
+
+{
+  // Phrase-level meaning translations (the small "e" line under a prayer).
+  check('a known phrase meaning translates', tPhrase('Glory be to God.', 'es') === 'Gloria a Dios.')
+  check(
+    'an untranslated phrase falls back to its meaning',
+    tPhrase('A phrase nobody translated.', 'es') === 'A phrase nobody translated.'
+  )
+  check('the phrase table holds entries', Object.keys(PHRASE_MEANING_L10N).length >= 10)
+  const badEntries = Object.entries(PHRASE_MEANING_L10N).filter(
+    ([, v]) => !v || typeof v !== 'object' || !Object.values(v).every((s) => typeof s === 'string' && s.trim())
+  )
+  check(
+    'every phrase entry maps to non-empty locale strings',
+    badEntries.length === 0,
+    badEntries.map(([k]) => k).join(', ')
+  )
+}
+
+{
+  // The extracted shared helpers: one PRNG, one locale select - pinned so the
+  // copies cannot come back.
+  const r = mulberry(31)
+  const five = [r(), r(), r(), r(), r()]
+  check(
+    'mulberry(31) opens with the pinned sequence',
+    JSON.stringify(five) ===
+      JSON.stringify([0.6722561160568148, 0.8359460374340415, 0.7496604530606419, 0.04891713825054467, 0.41673933155834675])
+  )
+  const a = mulberry(7)
+  const b = mulberry(7)
+  let same = true
+  for (let i = 0; i < 50; i++) if (a() !== b()) same = false
+  check('the same seed replays the same sequence', same)
+  check('a different seed gives a different stream', mulberry(31)() !== mulberry(777)())
+  check('every draw lands inside [0, 1)', five.every((x) => x >= 0 && x < 1))
+
+  const defs = srcFiles.filter((p) => /function mulberry\(/.test(stripComments(readFileSync(p, 'utf8'))))
+  check(
+    'the PRNG has exactly one definition in src',
+    defs.length === 1 && defs[0].endsWith(path.join('components', 'mulberry.js')),
+    defs.map((p) => path.relative(ROOT, p)).join(', ')
+  )
+  const backdrops = ['DawnBackdrop', 'MysticBackdrop', 'NatureBackdrop', 'OceanBackdrop', 'SpaceBackdrop', 'TempleBackdrop']
+  const missing = backdrops.filter(
+    (b) => !/from '\.\/mulberry\.js'/.test(readFileSync(path.join(ROOT, 'src', 'components', `${b}.jsx`), 'utf8'))
+  )
+  check('every theme backdrop imports the shared PRNG', missing.length === 0, missing.join(', '))
+
+  const selFiles = srcFiles.filter((p) => /LOCALES\.map\(/.test(readFileSync(p, 'utf8')))
+  check(
+    'the locale select has exactly one implementation',
+    selFiles.length === 1 && selFiles[0].endsWith(path.join('components', 'LocaleSelect.jsx')),
+    selFiles.map((p) => path.relative(ROOT, p)).join(', ')
+  )
+  const users = ['Onboarding.jsx', 'SettingsLook.jsx'].filter(
+    (f) => !/<LocaleSelect /.test(readFileSync(path.join(ROOT, 'src/components', f), 'utf8'))
+  )
+  check('onboarding and the settings look section both use the shared select', users.length === 0, users.join(', '))
 }
 
 const failed = results.filter((r) => !r.pass)

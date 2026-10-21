@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useStore } from '../store.js'
-import { useT, LOCALES } from '../i18n.js'
+import { useT } from '../i18n.js'
 import { sanitizeName } from '../shared/profanity.js'
 import { syncClient } from '../sync/client.js'
 import useFocusTrap from '../shared/useFocusTrap.js'
+import LocaleSelect from './LocaleSelect.jsx'
 
 const KEY = 'pe-onboarded'
 
@@ -126,18 +127,7 @@ export default function Onboarding() {
 
         <div className="onboard-language">
           <label className="onboard-step-title" htmlFor="onboard-locale">{t('settings.languageLabel')}</label>
-          <select
-            id="onboard-locale"
-            className="field-select"
-            value={locale}
-            onChange={(e) => setLocale(e.target.value)}
-          >
-            {LOCALES.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.label}
-              </option>
-            ))}
-          </select>
+          <LocaleSelect id="onboard-locale" locale={locale} setLocale={setLocale} />
         </div>
 
         <div className="onboard-profile">

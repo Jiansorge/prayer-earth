@@ -372,9 +372,6 @@ function buildLightKeys() {
   return keys
 }
 
-const LAT_MIN = -60
-const LAT_MAX = 72
-
 // Real inhabited places used by the light snap logic: a small island with a
 // town on it (Hawaii, the Maldives, an atoll) must keep its prayer light, so
 // its component is trusted even when it is only 1-2 grid cells.
@@ -389,14 +386,6 @@ const SNAP_CITIES = [
   [38.9, -77.0], [4.7, -74.1], [13.1, -59.5], [12.9, 45.0], [-17.8, 31.0],
   [19.4, -99.1], [30.6, 104.1], [25.8, -80.2]
 ]
-
-// Rounds a coordinate onto the shared 1-degree light grid (matches the server).
-export function lightGridKey(lat, lon) {
-  const la = Math.max(LAT_MIN, Math.min(LAT_MAX, Math.round(lat)))
-  let lo = Math.round(lon)
-  if (lo >= 180) lo = -180
-  return `${la},${lo}`
-}
 
 // Evolving effect ladder: cumulative prayers unlock the world's surge and new
 // effects at logarithmic milestones (10 → 100 → 1k → 20k → … → 100M). Each

@@ -1,27 +1,23 @@
-﻿import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { SPIRITUALITY_BY_ID, loadSpirit, isLoaded } from '../data/prayers.js'
 import { speech } from '../audio/speech.js'
 import { ambient } from '../audio/ambience.js'
 import { syncClient } from '../sync/client.js'
 import { useT, prayerTitle } from '../i18n.js'
-import { tPrayer, tPhrase } from '../i18n/prayerL10n.js'
-import PrayerStats from '../components/PrayerStats.jsx'
 import Sparkles from '../components/Sparkles.jsx'
-import SoundControls from '../components/SoundControls.jsx'
-import { stopPlayback } from '../playback.js'
-import { toggleMute, applyMute } from '../audio/mute.js'
 import { applyVolumes } from '../audio/volumes.js'
 import { shareLink, showManualCopy } from '../shared/share.js'
-import { practitionerName, fillPractitionerName } from '../shared/prayerName.js'
-import { isAppShell } from '../shared/mobile.js'
 import { CANONICAL_ORIGIN } from '../shared/canonical.js'
-
-const fmt = (s) => {
-  const m = Math.floor(s / 60)
-  const sec = s % 60
-  return m > 0 ? `${m}m ${sec}s` : `${sec}s`
-}
+import PrayerToasts from '../components/PrayerToasts.jsx'
+import PrayerBackRow from '../components/PrayerBackRow.jsx'
+import PrayerChooser from '../components/PrayerChooser.jsx'
+import PrayerStage from '../components/PrayerStage.jsx'
+import PrayerControls from '../components/PrayerControls.jsx'
+import PrayerTuneSheet from '../components/PrayerTuneSheet.jsx'
+import PrayerNotes from '../components/PrayerNotes.jsx'
+import usePrayerKeys from './usePrayerKeys.js'
+import usePrayerSync, { broadcastPlayStarted } from './usePrayerSync.js'
 
 // Scripts that read right-to-left, their original text must flow RTL even
 // though the transliteration and meaning below stay left-to-right.
@@ -30,25 +26,6 @@ const newPlaybackSessionId = () =>
   typeof crypto?.randomUUID === 'function'
     ? crypto.randomUUID()
     : `play-${Date.now()}-${Math.random().toString(36).slice(2)}`
-
-// Human names for the locales that can sit beside their own script in a single
-// prayer's voice list. Only reached when a prayer ships more than one
-// recitation, so a short map beats pulling in a whole locale database.
-const VOICE_LANGS = {
-  zh: '中文',
-  yue: '粵語',
-  en: 'English',
-  hi: 'हिन्दी',
-  ja: '日本語',
-  ko: '한국어',
-  ar: 'العربية',
-  fr: 'Français',
-  de: 'Deutsch',
-  es: 'Español',
-  pt: 'Português',
-  ru: 'Русский',
-  it: 'Italiano'
-}
 
 export default function PrayerPage() {
   const closePrayer = useStore((s) => s.closePrayer)
@@ -66,7 +43,6 @@ export default function PrayerPage() {
   const setPlayingSessionId = useStore((s) => s.setPlayingSessionId)
   const pendingPlay = useStore((s) => s.pendingPlay)
   const notePrayerComplete = useStore((s) => s.notePrayerComplete)
-  const getPrayerTotal = useStore((s) => s.getPrayerTotal)
   const loopOn = useStore((s) => s.loopOn)
   const setLoopOn = useStore((s) => s.setLoopOn)
   const speechRate = useStore((s) => s.speechRate)
@@ -74,12 +50,6 @@ export default function PrayerPage() {
   const chosenVoice = useStore((s) => (prayerId ? s.prayerVoices[prayerId] : null))
   const favorite = useStore((s) => (prayerId ? s.favorites.includes(prayerId) : false))
   const toggleFavorite = useStore((s) => s.toggleFavorite)
-  const profileName = useStore((s) => (s.profile ? s.profile.name : ''))
-  const sharePresence = useStore((s) => s.sharePresence)
-  // Prayers that call for the practitioner's name read it here, gated by the
-  // same consent that governs whether the name is ever shown to anyone else.
-  // '' keeps the plain ellipsis, so an opted-out device reads as it always has.
-  const named = practitionerName(profileName, sharePresence)
   const volume = useStore((s) => s.volume)
   const setVolume = useStore((s) => s.setVolume)
   const people = useStore((s) => s.peoplePraying)
@@ -133,45 +103,6 @@ const countedRef = useRef(false)
       useStore.getState().go('home')
     }
   }, [spirit, prayer, spiritId])
-
-  // One prayer at a time per browser: another tab starting playback pauses us.
-  // BroadcastChannel also delivers to this same tab, so each message carries its
-  // sender's tab id and we ignore our own.
-  const TAB_ID = (window.__PE_TAB = window.__PE_TAB || Math.random().toString(36).slice(2))
-  useEffect(() => {
-    const ch = new BroadcastChannel('prayer-earth')
-    ch.onmessage = (e) => {
-      const m = e.data
-      if (!m || m.type !== 'play' || m.from === TAB_ID) return
-      const s = useStore.getState()
-      // Another tab just started a prayer — one-at-a-time: pause us, and never
-      // let our local "starting…" guard swallow it.
-      if (s.playing && !s.paused) {
-        speech.pause()
-        s.setPaused(true)
-        s.setPraying(false)
-        syncClient.presenceNow()
-        ambient.setLevel(0)
-      }
-    }
-    return () => ch.close()
-  }, [playing])
-
-  // The footer play button from home/earth lands here ready to play. Runs both
-  // when this page mounts AND when a play request arrives while already here
-  // (e.g. after picking a prayer). Delayed a moment so React StrictMode's dev
-  // remount (mount → unmount → mount) settles before starting.
-  useEffect(() => {
-    if (!pendingPlay || !prayer) return
-    const t = setTimeout(() => {
-      if (useStore.getState().pendingPlay) {
-        useStore.getState().setPendingPlay(false)
-        startJob()
-      }
-    }, 60)
-    return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingPlay, prayer])
 
   // Prayer keeps playing in the background even when the tab is hidden or the
   // user navigates to Home/Earth — no global pause on visibilitychange.
@@ -272,9 +203,7 @@ const countedRef = useRef(false)
     ambient.setLevel(0.9)
     ambient.ring(0.6)
     if (fromIndex === 0) useStore.getState().setElapsed(0)
-    try {
-      new BroadcastChannel('prayer-earth').postMessage({ type: 'play', from: TAB_ID })
-    } catch {}
+    broadcastPlayStarted()
 
     const opts = {
       phrases,
@@ -368,6 +297,8 @@ setChantMode(false)
     speech.start(opts)
   }
 
+  usePrayerSync({ playing, pendingPlay, prayer, startJob })
+
   const celebrateStreak = () => {
     const s = useStore.getState()
     if (s.celebrateStreak > 0) {
@@ -380,23 +311,6 @@ setChantMode(false)
 
   useEffect(() => () => clearTimeout(celebrationTimer.current), [])
 
-  // Keep the chosen prayer's chip in view when switching prayers or traditions.
-  const chooserRef = useRef(null)
-
-  // Hovering the prayer list, a vertical mouse-wheel scrolls it horizontally.
-  useEffect(() => {
-    const el = chooserRef.current
-    if (!el) return
-    const onWheel = (e) => {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        el.scrollLeft += e.deltaY
-        e.preventDefault()
-      }
-    }
-    el.addEventListener('wheel', onWheel, { passive: false })
-    return () => el.removeEventListener('wheel', onWheel)
-  }, [])
-
   // The voice/tune panel closes when you tap anywhere outside it.
   useEffect(() => {
     if (!tuning) return
@@ -407,99 +321,6 @@ setChantMode(false)
     document.addEventListener('pointerdown', onDoc)
     return () => document.removeEventListener('pointerdown', onDoc)
   }, [tuning])
-
-  // Keyboard controls: Space play/pause, ↑/↓ volume, M mute, R repeat, S stop.
-  // Handlers reference refs to avoid detaching/re-attaching on every volume
-  // change or play-state toggle, which previously happened on every slider drag.
-  // Ref assignments live inside the effect so they can reference functions
-  // declared later in the component body (no TDZ in the minified bundle).
-  const keysRef = useRef({})
-  useEffect(() => {
-    keysRef.current.togglePlay = togglePlay
-    keysRef.current.toggleMute = toggleMute
-    keysRef.current.toggleLoop = toggleLoop
-    keysRef.current.stopJob = stopJob
-    keysRef.current.setLiveVolume = setLiveVolume
-    const onKey = (e) => {
-      const tag = (e.target && e.target.tagName) || ''
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
-      // Escape closes the tune panel on EVERY platform (including Android),
-      // before the web-only key binds below.
-      if (e.key === 'Escape' && tuning) {
-        e.preventDefault()
-        setTuning(false)
-        return
-      }
-      // Space/arrows/m/r/s are physical-keyboard binds — the Android shell has
-      // no physical keyboard, so treat the whole handler as web-only.
-      if (isAppShell()) return
-      // Space must still activate focused buttons/links (share, favorite,
-      // close, …) — only take it over when focus is on the page background.
-      if (e.target && e.target.closest && e.target.closest('button, a, [role="button"]')) return
-      if (e.code === 'Space') {
-        e.preventDefault()
-        keysRef.current.togglePlay()
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        const s = useStore.getState()
-        keysRef.current.setLiveVolume(Math.min(1, Math.round((s.volume + 0.08) * 100) / 100))
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        const s = useStore.getState()
-        keysRef.current.setLiveVolume(Math.max(0, Math.round((s.volume - 0.08) * 100) / 100))
-      } else if (e.key === 'm' || e.key === 'M') {
-        keysRef.current.toggleMute()
-      } else if (e.key === 'r' || e.key === 'R') {
-        keysRef.current.toggleLoop()
-      } else if (e.key === 's' || e.key === 'S') {
-        keysRef.current.stopJob()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [tuning])
-  useEffect(() => {
-    const el = chooserRef.current
-    if (!el) return
-    const active = el.querySelector('.chip.on')
-    if (active && active.scrollIntoView) {
-      active.scrollIntoView({ inline: 'nearest', block: 'nearest' })
-    }
-  }, [prayerId, spiritId])
-
-  // Left/right arrows make the horizontal prayer list obviously scrollable.
-  const [canLeft, setCanLeft] = useState(false)
-  const [canRight, setCanRight] = useState(false)
-  const updateArrows = () => {
-    const el = chooserRef.current
-    if (!el) return
-    setCanLeft(el.scrollLeft > 4)
-    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4)
-  }
-  useEffect(() => {
-    updateArrows()
-    const el = chooserRef.current
-    if (!el) return
-    el.addEventListener('scroll', updateArrows, { passive: true })
-    window.addEventListener('resize', updateArrows)
-    return () => {
-      el.removeEventListener('scroll', updateArrows)
-      window.removeEventListener('resize', updateArrows)
-    }
-  }, [spiritId])
-  const scrollChooser = (dir) => {
-    const el = chooserRef.current
-    if (!el) return
-    el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: 'smooth' })
-  }
-
-  // While playing, keep the phrase being voiced centred on screen.
-  const linesRef = useRef(null)
-  useEffect(() => {
-    if (!playing || active == null) return
-    const el = linesRef.current?.querySelector('.prayer-line.on')
-    if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' })
-  }, [active, playing])
 
   const stopJob = () => {
     speech.stop()
@@ -596,18 +417,7 @@ setChantMode(false)
     applyVolumes()
   }
 
-  const friendlyVoice = (v) =>
-    String(v).replace(/^[a-z]{2,3}-[A-Z]{2,3}-/i, '').replace(/Neural$/, '')
-
-  // When a prayer offers a second recitation, the chip names its language
-  // first — otherwise two chips reading "Xiaoxiao" and "Ava" give the
-  // listener nothing to tell the Chinese from the English.
-  const voiceChipLabel = (v) => {
-    const name = friendlyVoice(v)
-    if (!prayer?.altLang) return name
-    const base = String(v).split('-')[0]
-    return `${VOICE_LANGS[base] || base} · ${name}`
-  }
+  usePrayerKeys({ tuning, setTuning, togglePlay, toggleLoop, stopJob, setLiveVolume })
 
   const pickVoice = (v) => {
     setPrayerVoice(prayer.id, v)
@@ -652,396 +462,18 @@ setChantMode(false)
   return (
     <div className="view prayer-page">
       <Sparkles count={14} />
-      {joinedToast && (
-        <div
-          className="joined-moment join-pulse"
-          role="status"
-          aria-live="polite"
-          style={{
-            position: 'fixed',
-            bottom: 84,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 55,
-            padding: '9px 16px',
-            borderRadius: 999,
-            background: 'rgba(11, 16, 38, 0.92)',
-            color: '#e8e6df',
-            fontFamily: 'var(--sans)',
-            fontSize: 13,
-            boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
-            pointerEvents: 'none'
-          }}
-         >
-           {t('prayer.joinedYou', { n: prayerCount })}
-         </div>
-       )}
-       {reflection !== null && (
-         <div
-           className="joined-moment join-pulse"
-           role="status"
-           aria-live="polite"
-           style={{
-             position: 'fixed',
-             bottom: 84,
-             left: '50%',
-             transform: 'translateX(-50%)',
-             zIndex: 55,
-             padding: '9px 16px',
-             borderRadius: 999,
-             background: 'rgba(11, 16, 38, 0.92)',
-             color: '#e8e6df',
-             fontFamily: 'var(--sans)',
-             fontSize: 13,
-             boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
-             pointerEvents: 'none'
-           }}
-         >
-            ✶ {reflection} {t('prayer.today', { n: prayerToday.toLocaleString() })} — your prayer is carried.
-         </div>
-       )}
-       <div className="back-row">
-        <button onClick={closePrayer} aria-label={t('prayer.back')}>
-          ←
-        </button>
-        <div>
-          <div style={{ fontSize: 14, color: 'var(--ink-dim)' }}>
-            {spirit.emoji} {t(`trad.${spirit.id}.name`)}
-          </div>
-          <div className="subtitle" style={{ fontSize: 13, marginTop: 2, color: 'rgba(226, 236, 255, 0.9)' }}>
-            {t(`trad.${spirit.id}.tagline`)}
-          </div>
-        </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span className="pulse-dot" />
-          <span style={{ fontSize: 13, color: 'var(--ink-dim)' }}>{t('prayer.peoplePraying', { n: Math.max(playing && !paused ? 1 : 0, people) })}</span>
-          <button
-            className={`fave-btn ${favorite ? 'on' : ''}`}
-            onClick={() => toggleFavorite(prayer.id)}
-            aria-label={t('prayer.favorite')}
-            title={t('prayer.favorite')}
-          >
-            {favorite ? '★' : '☆'}
-          </button>
-          <button className="share-btn" onClick={share} aria-label={t('prayer.share')} title={t('prayer.share')}>
-            ⇪
-          </button>
-          {copied && <span className="copied-pill">{t('settings.copied')}</span>}
-        </div>
-      </div>
+      <PrayerToasts joinedToast={joinedToast} prayerCount={prayerCount} reflection={reflection} prayerToday={prayerToday} />
+      <PrayerBackRow spirit={spirit} prayer={prayer} closePrayer={closePrayer} playing={playing} paused={paused} people={people} favorite={favorite} toggleFavorite={toggleFavorite} share={share} copied={copied} />
 
-      <div className="chooser-wrap">
-        <button
-          className={`chooser-arrow left ${canLeft ? '' : 'off'}`}
-          onClick={() => scrollChooser(-1)}
-          disabled={!canLeft}
-aria-label={t('prayer.prev')}
-        >
-          ‹
-        </button>
-        <div className="chooser" ref={chooserRef}>
-          <button
-            className="chip chip-all"
-            onClick={() => openPrayerPicker(spiritId)}
-            title={t('picker.all')}
-          >
-            ☰ <span className="chip-all-label">{t('picker.all')}</span>
-          </button>
-          {(spirit.prayers || []).map((p) => (
-            <button
-              key={p.id}
-              className={`chip ${p.id === prayerId ? 'on' : ''}`}
-              onClick={() => {
-                const cur = useStore.getState()
-                if (cur.playingPrayerId && cur.playingPrayerId !== p.id) stopJob()
-                openPrayer(spiritId, p.id)
-              }}
-            >
-              {prayerTitle(t, p.id, p.title)}
-              <span className={`chip-count ${p.id === prayerId ? 'on' : ''}`}>
-                {prayerCounts[p.id] || 0}
-              </span>
-            </button>
-          ))}
-        </div>
-        <button
-          className={`chooser-arrow right ${canRight ? '' : 'off'}`}
-          onClick={() => scrollChooser(1)}
-          disabled={!canRight}
-          aria-label={t('prayer.next')}
-        >
-          ›
-        </button>
-      </div>
+      <PrayerChooser spirit={spirit} spiritId={spiritId} prayerId={prayerId} prayerCounts={prayerCounts} stopJob={stopJob} openPrayer={openPrayer} openPrayerPicker={openPrayerPicker} />
 
-      {/* tabIndex: this is the scroll container for the whole prayer. A
-          keyboard-only user cannot scroll a region they cannot focus, so
-          without it a long prayer is unreachable past the visible lines, and
-          screen readers announce the region without saying it scrolls.
-          This must stay a JSX comment - a bare `//` here is not a comment at
-          all, it is a text node, and it renders on the page. */}
-      <div
-        className="prayer-stage fade-in"
-        key={prayer.id}
-        tabIndex={0}
-        role="group"
-        aria-label={prayer.name || t('prayer.title')}
-      >
-        {prayer.loop && (
-          <div className="loop-dots">
-            {phrases.map((_, i) => (
-              <span
-                key={i}
-                className={`loop-dot ${active === i ? 'lit' : ''}`}
-              />
-            ))}
-          </div>
-        )}
+      <PrayerStage key={prayer.id} prayer={prayer} phrases={phrases} active={active} rtl={rtl} locale={locale} chantMode={chantMode} chantReason={chantReason} playing={playing} finished={finished} elapsed={elapsed} setFinished={setFinished} prayerCount={prayerCount} spiritCount={spiritCount} spirit={spirit} prayerToday={prayerToday} />
 
-        <h1 className="prayer-title">{prayerTitle(t, prayer.id, prayer.title)}</h1>
-        <div className="prayer-sub">
-          <span className="prayer-lang-badge">
-            {String(prayer.langLabel || '').split(' � ').slice(0, 2).join(' � ')}
-          </span>
-          {chantMode && chantReason !== 'chosen' && (
-            <span className="prayer-mode">{t('prayer.voiceUnavailable')}</span>
-          )}
-        </div>
-        <span className="sr-live" aria-live="polite">
-          {playing && active != null && phrases[active]
-            ? fillPractitionerName(phrases[active].t, named)
-            : ''}
-        </span>
+      <PrayerControls loopOn={loopOn} toggleLoop={toggleLoop} starting={starting} playing={playing} paused={paused} togglePlay={togglePlay} stopJob={stopJob} tuning={tuning} setTuning={setTuning} volume={volume} muted={muted} setLiveVolume={setLiveVolume} />
 
-        <div className="prayer-lines" ref={linesRef}>
-          {phrases.map((ph, i) => (
-            <div
-              key={i}
-              className={`prayer-line ${active === i ? 'on' : ''}`}
-              dir={rtl ? 'rtl' : 'ltr'}
-              lang={prayer.lang}
-            >
-              <span className="hlt">{fillPractitionerName(ph.t, named)}</span>
-              {ph.s && (
-                <span className="sub">
-                  {fillPractitionerName(ph.s, named)}
-                </span>
-              )}
-              {ph.e && (
-                <span className="en">
-                  {fillPractitionerName(tPhrase(ph.e, locale), named)}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
+      <PrayerTuneSheet tuning={tuning} setTuning={setTuning} prayer={prayer} prayerVoices={prayerVoices} chosenVoice={chosenVoice} pickVoice={pickVoice} muted={muted} loopOn={loopOn} toggleLoop={toggleLoop} />
 
-        {/* The words end here. Without a mark, the prayer just stopped being
-            highlighted and the stage continued at the same brightness, so the
-            reader had to notice the silence themselves. A darker band under
-            the last line is the page saying the recitation is complete. */}
-        <div className="prayer-end-band" aria-hidden="true" />
-
-          <div className="prayer-translation">{tPrayer(prayer, locale)}</div>
-
-        {finished && !playing && (
-          <div className="done-card fade-in">
-            <div className="done-emoji">🕊️</div>
-            <div className="done-title">{t('prayer.doneTitle')}</div>
-            <div className="done-sub">
-              {t('prayer.doneSub', { time: fmt(elapsed) })}
-            </div>
-            <button onClick={() => setFinished(false)}>{t('prayer.keepListening')}</button>
-          </div>
-        )}
-
-        {chantMode && (
-          <div className="chant-pill">{t('prayer.softChant')}</div>
-        )}
-
-        <div className={`praying-now ${prayerCount ? 'together' : ''}`} title={t('prayer.prayingNowTitle')}>
-          <span className="pulse-dot" />
-          <b
-            style={{
-              textShadow: `0 0 ${6 + Math.min(1, Math.log10((prayerCount || 0) + 2) / 4) * 16}px rgba(232,196,122,${0.3 + Math.min(1, Math.log10((prayerCount || 0) + 2) / 4) * 0.7})`
-            }}
-          >
-            {prayerCount || 0}
-          </b>{' '}
-          <span className="praying-now-rest">
-            {t('prayer.prayingNowRest')}
-            <span className="praying-now-sub">
-              {t('prayer.across', { n: spiritCount || 0, name: spirit.name })}
-            </span>
-          </span>
-          <span
-            className="praying-now-total"
-            title={t('prayer.today', { n: prayerToday.toLocaleString() })}
-            style={{
-              textShadow: `0 0 ${5 + Math.min(1, Math.log10(prayerToday + 2) / 5) * 12}px rgba(232,196,122,${0.25 + Math.min(1, Math.log10(prayerToday + 2) / 5) * 0.6})`
-            }}
-          >
-            {t('prayer.today', { n: prayerToday.toLocaleString() })}
-          </span>
-        </div>
-
-        <PrayerStats prayerId={prayer.id} />
-      </div>
-
-      <div className="controls">
-        <button
-          className={`ctrl-btn repeat ${loopOn ? 'on' : ''}`}
-          onClick={toggleLoop}
-          aria-label="Repeat"
-          title={t('prayer.repeat')}
-        >
-          {'⟳\uFE0E'}
-        </button>
-        <button
-          className={`ctrl-btn play ${starting ? 'starting' : ''}`}
-          onClick={togglePlay}
-          aria-label={starting ? t('prayer.loading') : playing ? t('prayer.pause') : t('prayer.pray')}
-        >
-          {starting ? <span className="play-spinner" aria-hidden="true" /> : (playing && !paused ? '❚❚' : '▶\uFE0E')}
-        </button>
-        <button
-          className="ctrl-btn stop"
-          onClick={stopJob}
-          aria-label={t('prayer.stop')}
-        >
-          ◼
-        </button>
-        <button
-          className={`ctrl-btn tune ${tuning ? 'on' : ''}`}
-          onClick={() => setTuning(!tuning)}
-          aria-label={t('prayer.tuneLabel')}
-          title={t('prayer.tune')}
-        >
-          {'\u2699\uFE0E'}
-        </button>
-        <div className="vol-vert" role="group" aria-label={t('prayer.volume')}>
-          <span className="vol-vert-icon" aria-hidden="true">
-            {volume <= 0 ? '🔇' : volume < 0.4 ? '🔉' : '🔊'}
-          </span>
-          <input
-            className="vol-slider-vert"
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value={muted ? 0 : volume}
-            onChange={(e) => {
-              const v = parseFloat(e.target.value)
-              setLiveVolume(v)
-              if (muted && v > 0) {
-                // Seed lastVolume with the chosen level BEFORE unmuting, else
-                // applyMute(false) restores the pre-mute level and the thumb
-                // snaps back (the bug SoundControls.onVoice already fixed).
-                useStore.setState({ lastVolume: v })
-                applyMute(false)
-              }
-            }}
-            aria-label={t('prayer.volume')}
-          />
-        </div>
-      </div>
-
-      {tuning && (
-        <div
-          className="prayer-tune fade-in"
-          role="group"
-          aria-label={t('prayer.tuneLabel')}
-          tabIndex={-1}
-          ref={(el) => el && el.focus()}
-        >
-          <button
-            className="pt-close"
-            onClick={() => setTuning(false)}
-            aria-label={t('prayer.tuneClose')}
-            title={t('prayer.tuneClose')}
-          >
-            ▼
-          </button>
-          {!isAppShell() && (
-            <button
-              className="pt-help"
-              onClick={() => useStore.getState().setKeyboardHelpOpen(true)}
-              aria-label={t('keys.help')}
-              title={t('keys.help')}
-            >
-              ?
-            </button>
-          )}
-          {prayerVoices.length > 1 && (
-            <div className="pt-row pt-voices">
-              <label className="pt-label" id="pt-voice-label">
-                {/* A prayer that ships a second recitation is really offering a
-                    language choice, so name it as one; otherwise the row is
-                    just voices. */}
-                {prayer?.altLang ? t('prayer.recitation') : t('prayer.voice')}
-              </label>
-              <div className="voice-chips" role="group" aria-labelledby="pt-voice-label">
-                {prayerVoices.map((v) => {
-                  const active = (chosenVoice || prayerVoices[0]) === v
-                  return (
-                    <button
-                      key={v}
-                      type="button"
-                      className={`voice-chip ${active ? 'on' : ''}`}
-                      onClick={() => pickVoice(v)}
-                      aria-pressed={active}
-                    >
-                      {voiceChipLabel(v)}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-          {/* Shared sound controls (identical labels/order/behavior to Settings):
-              prayer voice volume, ambient sound volume, speed, then the bed picker. */}
-          <SoundControls layout="pt" />
-          {muted && <div className="pt-muted">🔇 {t('prayer.muted')}</div>}
-          <div className="pt-row">
-            <label className="pt-label" htmlFor="pt-loop">{t('prayer.repeat')}</label>
-            <button
-              id="pt-loop"
-              type="button"
-              className={`switch ${loopOn ? 'on' : ''}`}
-              role="switch"
-              aria-checked={loopOn}
-              onClick={toggleLoop}
-            >
-              <span className="switch-knob" />
-            </button>
-            <span className="pt-val">{loopOn ? '∞' : t('prayer.once')}</span>
-          </div>
-        </div>
-      )}
-
-      {celebration > 0 && (
-        <div className="streak-toast" role="status">
-          🔥 {celebration} {t(celebration === 1 ? 'day.one' : 'day.other', { n: celebration })}
-        </div>
-      )}
-
-      {voiceNote && (
-        <div className="voice-note">
-          <button
-            className="voice-note-x"
-            onClick={() => setVoiceNote(false)}
-            aria-label={t('prayer.close')}
-          >
-            🕯️
-          </button>
-          <div className="voice-note-title">
-            {chantMode ? t('prayer.softChant') : t('prayer.voiceUnavailable')}
-          </div>
-          <div className="voice-note-body">
-            {t('prayer.voiceNoteBody')}
-          </div>
-        </div>
-      )}
+      <PrayerNotes celebration={celebration} voiceNote={voiceNote} setVoiceNote={setVoiceNote} chantMode={chantMode} />
     </div>
   )
 }

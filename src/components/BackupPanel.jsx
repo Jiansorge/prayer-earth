@@ -1,14 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store.js'
 import { useT } from '../i18n.js'
-import { openExternal } from '../shared/openExternal.js'
 import { isAppShell } from '../shared/mobile.js'
 import { copyText } from '../shared/share.js'
 import { buildBackupCode, parseBackupCode, applyBackup } from '../shared/backup.js'
-import { requestDeletion, forgetIdentity } from '../shared/deletion.js'
 import { syncClient } from '../sync/client.js'
-import { DELETE_DATA_URL, REPORT_URL } from '../shared/canonical.js'
-import ShortcutList from './KeyboardShortcuts.jsx'
+import PanelShell from './PanelShell.jsx'
 
 // Restore summary readout. "Restored." alone tells the user nothing about
 // whether they pasted the right code, so spell out what came back.
@@ -20,92 +17,6 @@ const fmtDuration = (secs) => {
   const h = Math.floor(m / 60)
   if (h < 24) return `${h}h ${m % 60}m`
   return `${Math.floor(h / 24)}d ${h % 24}h`
-}
-
-// A row that opens a panel. A <button> rather than a div so it is reachable by
-// keyboard and announced as activatable.
-export function SettingsRow({ label, hint, onClick, testId, className = '' }) {
-  return (
-    <button
-      type="button"
-      className={`settings-row ${className}`.trim()}
-      onClick={onClick}
-      data-testid={testId}
-    >
-      <span className="settings-row-text">
-        <span className="settings-row-label">{label}</span>
-        {hint ? <span className="settings-row-hint">{hint}</span> : null}
-      </span>
-      <span className="settings-row-chevron" aria-hidden="true">›</span>
-    </button>
-  )
-}
-
-// Shared chrome for a sub-panel: the title, and a Back control that returns to
-// the main list.
-function PanelShell({ title, onBack, children, testId }) {
-  const t = useT()
-  return (
-    <div className="settings-panel" data-testid={testId}>
-      <div className="settings-panel-head">
-        <button type="button" className="settings-back" onClick={onBack}>
-          ‹ {t('settings.back')}
-        </button>
-        <div className="settings-panel-title">{title}</div>
-      </div>
-      {children}
-    </div>
-  )
-}
-
-// The shortcut list, as a settings sub-panel. It used to close the whole sheet
-// and open the separate "?" modal on top, which threw away the scroll position
-// and every other control, and left no way back into settings. From here Back
-// returns to the list you came from, like Privacy and the rest.
-export function KeysPanel({ onBack }) {
-  const t = useT()
-  return (
-    <PanelShell title={`⌨ ${t('keys.title')}`} onBack={onBack} testId="panel-keys">
-      <div className="keys-panel-list">
-        <ShortcutList />
-      </div>
-    </PanelShell>
-  )
-}
-
-// Privacy: the one place another person can see you, so the toggle lives here
-// with a plain statement of what is and is not sent.
-export function PrivacyPanel({ onBack, onOpenLegal }) {
-  const t = useT()
-  const sharePresence = useStore((s) => s.sharePresence)
-
-  return (
-    <PanelShell title={t('settings.secPrivacy')} onBack={onBack} testId="panel-privacy">
-      <div className="presence-row">
-        <input
-          id="share-presence"
-          type="checkbox"
-          className="presence-toggle"
-          checked={!!sharePresence}
-          onChange={(e) => syncClient.setPresenceSharing(e.target.checked)}
-          data-testid="privacy-presence-toggle"
-        />
-        <label htmlFor="share-presence" className="presence-label">
-          <span className="presence-title">{t('settings.sharePresence')}</span>
-          <span className="field-hint">{t('settings.sharePresenceHint')}</span>
-        </label>
-      </div>
-
-      {/* Say what is happening right now, not only what the toggle does. */}
-      <div className="field-hint" data-testid="privacy-state">
-        {sharePresence ? t('settings.privacyOn') : t('settings.privacyOff')}
-      </div>
-
-      <button type="button" className="field-btn" onClick={onOpenLegal}>
-        {t('settings.legal')}
-      </button>
-    </PanelShell>
-  )
 }
 
 // Backup and restore, together: they are two halves of the same recovery code,
@@ -254,12 +165,12 @@ export function BackupPanel({ onBack }) {
         </button>
       )}
       {isAppShell() && (
-        <div className="field-hint" style={{ marginTop: 10 }}>{t('settings.backupWhereToSave')}</div>
+        <div className="field-hint field-note">{t('settings.backupWhereToSave')}</div>
       )}
       {(backupCode || isAppShell()) && (
         <>
           {!isAppShell() && (
-            <div className="field-hint" style={{ marginTop: 10 }}>{t('settings.backupShowHint')}</div>
+            <div className="field-hint field-note">{t('settings.backupShowHint')}</div>
           )}
           <textarea
             className="field-textarea"
@@ -346,147 +257,6 @@ export function BackupPanel({ onBack }) {
           )}
         </div>
       )}
-    </PanelShell>
-  )
-}
-
-// Your data: the anonymous ID, and the deletion that cannot be undone.
-export function DataPanel({ onBack, onOpenLegal }) {
-  const t = useT()
-  const [anonCopied, setAnonCopied] = useState(false)
-  const [deleteArmed, setDeleteArmed] = useState(false)
-  const [deleteBusy, setDeleteBusy] = useState(false)
-  const [deleteResult, setDeleteResult] = useState(null)
-
-  const copyAnonId = async () => {
-    const id = useStore.getState().getAnonId()
-    const ok = await copyText(id)
-    setAnonCopied(ok)
-    return ok
-  }
-
-  // Self-service deletion. The request only leaves the device after an explicit
-  // confirmation, and the local wipe happens ONLY once the server has confirmed
-  // - so a failed or offline request never costs the user their data.
-  const doDelete = async () => {
-    setDeleteBusy(true)
-    const outcome = await requestDeletion()
-    setDeleteBusy(false)
-    // 'local_only' also wipes: there was no synced record to erase, so the only
-    // data that exists is the local copy and the user asked for it to go.
-    if (outcome === 'deleted' || outcome === 'local_only') forgetIdentity()
-    setDeleteArmed(false)
-    setDeleteResult(outcome)
-  }
-
-  // The escape hatch for someone who cannot reach the server. This clears only
-  // this device and says so plainly: whatever the server still holds is
-  // untouched, and we will say so rather than implying a full deletion.
-  const doDeleteLocalOnly = () => {
-    forgetIdentity()
-    setDeleteArmed(false)
-    setDeleteResult('device_only')
-  }
-
-  return (
-    <PanelShell title={t('settings.secData')} onBack={onBack} testId="panel-data">
-      {/* The data-deletion page on our Play listing tells people to copy this
-          ID, so it must exist here. The anonymous ID is the only way we can
-          identify a record to erase, and the user is the only one who has it. */}
-      <div className="field-hint">{t('settings.myDataHint')}</div>
-      <button
-        className="field-btn"
-        onClick={copyAnonId}
-        data-testid="copy-anon-id"
-      >
-        {anonCopied ? t('settings.copied') : t('settings.copyAnonId')}
-      </button>
-
-      {/* The manual route stays visible whether or not the delete button is
-          armed. It is not a destructive control - it opens a webpage - and
-          burying an escape hatch behind two taps would leave anyone who cannot
-          use the in-app flow with no way to ask. */}
-      <button type="button" className="field-report" onClick={() => openExternal(DELETE_DATA_URL)}>
-        {t('settings.deleteDataLink')}
-      </button>
-
-      <div className="field-divider" />
-
-      {/* Two deliberate steps. Arming says plainly that this is permanent and
-          that the next tap asks again, so nobody loses a record to a stray tap
-          in a long scrolling sheet. */}
-      {!deleteArmed && !deleteResult && (
-        <button
-          className="field-btn field-btn-danger"
-          onClick={() => setDeleteArmed(true)}
-          data-testid="delete-arm"
-        >
-          {t('settings.deleteDataButton')}
-        </button>
-      )}
-
-      {deleteArmed && !deleteResult && (
-        <div className="delete-panel" role="alertdialog" aria-label={t('settings.deleteDataButton')}>
-          <div className="field-hint" data-testid="delete-armed-hint">
-            {t('settings.deleteDataArmedHint')}
-          </div>
-          <div className="field-hint">{t('settings.deleteDataConfirmHint')}</div>
-          <button
-            className="field-btn field-btn-danger"
-            disabled={deleteBusy}
-            onClick={doDelete}
-            data-testid="delete-confirm"
-          >
-            {deleteBusy ? t('settings.deleteDataWorking') : t('settings.deleteDataConfirm')}
-          </button>
-          <button
-            className="field-btn"
-            onClick={() => setDeleteArmed(false)}
-            style={{ marginTop: 8 }}
-            data-testid="delete-cancel"
-          >
-            {t('settings.deleteDataCancel')}
-          </button>
-        </div>
-      )}
-
-      {deleteResult && (
-        <>
-          <div
-            className="field-hint"
-            role="status"
-            style={{
-              marginTop: 10,
-              color:
-                deleteResult === 'deleted' ||
-                deleteResult === 'local_only' ||
-                deleteResult === 'device_only'
-                  ? 'var(--ok,#7fc9a0)'
-                  : 'var(--warn,#ffb4a2)'
-            }}
-          >
-            {t(`settings.deleteResult.${deleteResult}`)}
-          </div>
-          {/* Being offline left a user with no way to erase anything at all -
-              the server could not be reached, and the only other route was
-              emailing us. The local copy is entirely theirs, so offer it
-              explicitly rather than refusing. */}
-          {deleteResult === 'offline' && (
-            <button className="field-btn" onClick={doDeleteLocalOnly} style={{ marginTop: 8 }}>
-              {t('settings.deleteDeviceOnly')}
-            </button>
-          )}
-        </>
-      )}
-
-      <div className="field-divider" />
-
-      <button type="button" className="field-btn" onClick={onOpenLegal}>
-        {t('settings.legal')}
-      </button>
-      <button type="button" className="field-report" onClick={() => openExternal(REPORT_URL)}>
-        {t('settings.reportCopyLink')}
-      </button>
     </PanelShell>
   )
 }

@@ -1,21 +1,11 @@
 import React, { useEffect, useRef } from 'react'
 import { getScene } from './Scenery.jsx'
 import { fitCanvas } from './useBackdropCanvas.js'
+import { mulberry } from './mulberry.js'
 
 // A rich, painterly nature backdrop rendered to a canvas, layered skies,
 // glowing sun or moon, drifting clouds, mist, mountain ridges, and pines.
 // Self-contained (no external images), tuned per time of day.
-
-function mulberry(seed) {
-  let s = seed
-  return () => {
-    s |= 0
-    s = (s + 0x6d2b79f5) | 0
-    let t = Math.imul(s ^ (s >>> 15), 1 | s)
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
 
 function scenePalette(scene) {
   const p = {
