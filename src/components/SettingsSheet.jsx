@@ -16,6 +16,7 @@ import SettingsLook from './SettingsLook.jsx'
 import SettingsShare from './SettingsShare.jsx'
 import SettingsInstall from './SettingsInstall.jsx'
 import SettingsAbout from './SettingsAbout.jsx'
+import SettingsVoice from './SettingsVoice.jsx'
 import { SettingsRow } from './SettingsRow.jsx'
 import { PrivacyPanel } from './PrivacyPanel.jsx'
 import { BackupPanel } from './BackupPanel.jsx'
@@ -177,7 +178,7 @@ export default function SettingsSheet() {
 
         <div className="field-divider" />
 
-      <SettingsLook theme={theme} setTheme={setTheme} locale={locale} setLocale={setLocale} voiceURI={voiceURI} setVoiceURI={setVoiceURI} grouped={grouped} previewing={previewing} preview={preview} />
+      <SettingsLook theme={theme} setTheme={setTheme} locale={locale} setLocale={setLocale} />
 
         <div className="field-divider" />
 
@@ -215,6 +216,14 @@ export default function SettingsSheet() {
       <SettingsInstall installed={installed} setInstalled={setInstalled} showIosTip={showIosTip} setShowIosTip={setShowIosTip} />
 
       <SettingsAbout origin={APP_ORIGIN} shareApp={shareApp} setLegalOpen={setLegalOpen} setPanel={setPanel} />
+
+        {/* The fallback voice goes last: most prayers ship recorded neural
+            voices and this picker only matters for the handful the device
+            speaks itself, so it used to sit between the language picker and
+            everything the sheet exists for. (Requested Oct 20.) */}
+        <div className="field-divider" />
+
+      <SettingsVoice voiceURI={voiceURI} setVoiceURI={setVoiceURI} grouped={grouped} previewing={previewing} preview={preview} />
 
         <button className="sheet-close" onClick={() => setOpen(false)}>
           {t('settings.done')}

@@ -175,27 +175,14 @@ for (const width of [470, 520]) {
     if (count) throw new Error(`${count} divider(s) directly above a settings row`)
   })
 
-  await t(`@${width}px Privacy & care opens a sheet with a Back control`, async () => {
-    await page.evaluate(() => document.querySelector('[data-testid="row-privacy"]')?.click())
-    await page.waitForTimeout(700)
-    await page.evaluate(() => {
-      const btn = [...document.querySelectorAll('.field-btn')].find((b) => /privacy & care/i.test(b.textContent))
-      btn?.click()
-    })
-    await page.waitForTimeout(900)
-    const hasBack = await page.evaluate(() => !!document.querySelector('.legal-sheet .settings-back'))
-    if (!hasBack) throw new Error('the legal sheet has no Back button')
-    await page.evaluate(() => document.querySelector('.legal-sheet .settings-back')?.click())
-    await page.waitForTimeout(600)
-  })
-
   await t(`@${width}px Keyboard shortcuts is a panel with a working Back`, async () => {
-    // The previous test leaves the sheet inside the Privacy panel, where the
-    // main list is not in the DOM at all. Come back before looking for a row.
-    await page.evaluate(() => document.querySelector('.settings-back')?.click())
-    await page.waitForTimeout(700)
+    // The row is gated to desktop-ish sessions (a372827: hidden for a real
+    // mobile UA / touch, kept for desktop). This suite runs a desktop UA at a
+    // narrow viewport, so the row is present and the panel mechanics are
+    // checkable here. It used to run only after a Privacy-panel round trip,
+    // which left the sheet on a panel view where row-keys does not exist -
+    // and that cascade hid every failure below it. Run it from the list.
     await page.evaluate(() => {
-      // The row only exists where the shortcuts are actually bound.
       document.querySelector('[data-testid="row-keys"]')?.click()
     })
     await page.waitForTimeout(700)
@@ -224,7 +211,52 @@ for (const width of [470, 520]) {
     if (!back.sheetStillOpen) throw new Error('Back closed the settings sheet entirely')
   })
 
+  await t(`@${width}px Privacy & care opens a sheet with a Back control`, async () => {
+    await page.evaluate(() => document.querySelector('[data-testid="row-privacy"]')?.click())
+    await page.waitForTimeout(700)
+    await page.evaluate(() => {
+      const btn = [...document.querySelectorAll('.field-btn')].find((b) => /privacy & care/i.test(b.textContent))
+      btn?.click()
+    })
+    await page.waitForTimeout(900)
+    const hasBack = await page.evaluate(() => !!document.querySelector('.legal-sheet .settings-back'))
+    if (!hasBack) throw new Error('the legal sheet has no Back button')
+    await page.evaluate(() => document.querySelector('.legal-sheet .settings-back')?.click())
+    await page.waitForTimeout(600)
+  })
+
+  await t(`@${width}px the Privacy panel is a panel with a working Back`, async () => {
+    // The previous test leaves the sheet inside the Privacy panel, where the
+    // main list is not in the DOM at all. Panel mechanics live here: Back must
+    // leave the panel, return to the settings list, and keep the sheet open -
+    // the exact assertions the keyboard test used to make at this width.
+    const state = await page.evaluate(() => ({
+      panel: !!document.querySelector('[data-testid="panel-privacy"]'),
+      back: !!document.querySelector('[data-testid="panel-privacy"] .settings-back'),
+      strayModal: !!document.querySelector('.keys-sheet')
+    }))
+    if (!state.panel) throw new Error('the Privacy & Care button did not open a settings panel')
+    if (!state.back) throw new Error('the Privacy panel has no Back button')
+    if (state.strayModal) throw new Error('it opened a separate sheet instead of a panel')
+    await page.evaluate(() =>
+      document.querySelector('[data-testid="panel-privacy"] .settings-back')?.click()
+    )
+    await page.waitForTimeout(700)
+    const back = await page.evaluate(() => ({
+      panelGone: !document.querySelector('[data-testid="panel-privacy"]'),
+      listBack: !!document.querySelector('[data-testid="row-privacy"]'),
+      sheetStillOpen: !!document.querySelector('.sheet-body')
+    }))
+    if (!back.panelGone) throw new Error('Back did not leave the Privacy panel')
+    if (!back.listBack) throw new Error('Back did not return to the settings list')
+    if (!back.sheetStillOpen) throw new Error('Back closed the settings sheet entirely')
+  })
+
   await t(`@${width}px there is breathing room above Privacy`, async () => {
+    // Make sure we are on the main list (a stray panel would make row-privacy
+    // unmeasurable) before measuring the space above the Privacy row.
+    await page.evaluate(() => document.querySelector('.sheet-body .settings-back')?.click())
+    await page.waitForTimeout(700)
     // The row draws its own border; without space above, that line reads as a
     // stray rule against the section above rather than the start of a group.
     const gap = await page.evaluate(() => {

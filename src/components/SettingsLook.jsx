@@ -1,9 +1,8 @@
 import React, { startTransition } from 'react'
 import { useT } from '../i18n.js'
-import { speech, CHANT_VOICE } from '../audio/speech.js'
 import LocaleSelect from './LocaleSelect.jsx'
 
-export default function SettingsLook({ theme, setTheme, locale, setLocale, voiceURI, setVoiceURI, grouped, previewing, preview }) {
+export default function SettingsLook({ theme, setTheme, locale, setLocale }) {
   const t = useT()
   return (
     <>
@@ -35,36 +34,6 @@ export default function SettingsLook({ theme, setTheme, locale, setLocale, voice
   
           <label className="field-label" htmlFor="locale-picker">{t('settings.languageLabel')}</label>
           <LocaleSelect id="locale-picker" locale={locale} setLocale={setLocale} />
-  
-          <label className="field-label" htmlFor="voice-picker">{t('settings.voiceLabel')}</label>
-          <div className="field-hint">
-            {t('settings.voiceHint')}
-          </div>
-          <select
-            id="voice-picker"
-            className="field-select"
-            value={voiceURI || ''}
-            onChange={(e) => setVoiceURI(e.target.value || null)}
-          >
-            <option value="">{t('settings.automatic')}</option>
-            <option value={CHANT_VOICE}>{t('settings.softChant')}</option>
-            {grouped.map((v) => (
-              <option key={v.voiceURI} value={v.voiceURI}>
-                {v.name} ({v.lang})
-              </option>
-            ))}
-          </select>
-          {voiceURI ? null : <div className="field-hint">{t('settings.automaticHint')}</div>}
-          {grouped.length === 0 && (
-            <div className="field-hint">{t('settings.noVoices')}</div>
-          )}
-          <button
-            className="field-preview"
-            onClick={preview}
-            aria-label={t('settings.hearSample')}
-          >
-            {previewing ? t('settings.listening') : t('settings.hearSample')}
-          </button>
     </>
   )
 }

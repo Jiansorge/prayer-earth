@@ -1,6 +1,7 @@
 import React from 'react'
 import { useT } from '../i18n.js'
 import PanelShell from './PanelShell.jsx'
+import ShortcutList from './KeyboardShortcuts.jsx'
 
 // The shortcut list, as a settings sub-panel. It used to close the whole sheet
 // and open the separate "?" modal on top, which threw away the scroll position

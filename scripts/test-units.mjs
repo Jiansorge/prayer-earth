@@ -287,10 +287,20 @@ const stripComments = (text) =>
   const settingsFiles = [
     'SettingsSheet.jsx', 'SettingsProfile.jsx', 'SettingsWarnings.jsx',
     'SettingsLook.jsx', 'SettingsShare.jsx', 'SettingsInstall.jsx',
-    'SettingsAbout.jsx', 'SettingsRow.jsx', 'KeysPanel.jsx',
+    'SettingsAbout.jsx', 'SettingsVoice.jsx', 'SettingsRow.jsx', 'KeysPanel.jsx',
     'PrivacyPanel.jsx', 'BackupPanel.jsx', 'DataPanel.jsx'
   ].map((f) => path.join(ROOT, 'src/components', f))
   const settingsParts = settingsFiles.map((p) => readFileSync(p, 'utf8'))
+  // The panel split rendered <ShortcutList /> without importing it: every
+  // canonical test passed because none of them open the keyboard panel, and
+  // the orphaned settings-ui suite that would have caught the crash was never
+  // wired in. Pin the import next to the file that renders it.
+  check(
+    'the keyboard panel imports the shortcut list it renders',
+    /import ShortcutList from '\.\/KeyboardShortcuts\.jsx'/.test(settingsParts[settingsFiles.findIndex((p) => p.endsWith('KeysPanel.jsx'))]) &&
+      /<ShortcutList \/>/.test(settingsParts[settingsFiles.findIndex((p) => p.endsWith('KeysPanel.jsx'))]),
+    'KeysPanel.jsx lost the KeyboardShortcuts import'
+  )
   const blankLeft = settingsParts.filter((s) => /target="_blank"/.test(s))
   check(
     'the settings sheet has no target=_blank links',
