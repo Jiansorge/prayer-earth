@@ -61,7 +61,7 @@ function WorldFeed({ limit = 10, compact = false }) {
           serious. The pills inside are spans, so there is nothing else to land
           on. */}
       <div
-        className="world-feed-scroll"
+        className={`world-feed-scroll${compact ? ' compact' : ''}`}
         tabIndex={0}
         role="group"
         aria-label={t('feed.prayingNow')}
@@ -72,7 +72,10 @@ function WorldFeed({ limit = 10, compact = false }) {
             : null
           const isRecent = Date.now() - e.t < 120000
           return (
-            <span key={e.id} className={`feed-pill ${isRecent ? 'recent' : ''}`}>
+            <span
+              key={e.id}
+              className={`feed-pill${isRecent ? ' recent' : ''}${compact ? ' compact' : ''}`}
+            >
               <span className="feed-emoji">{SPIRIT[e.spiritId]?.emoji || '🕯️'}</span>
               <b>{e.name}</b>
               <span className="feed-prayer">

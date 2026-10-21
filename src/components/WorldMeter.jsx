@@ -23,7 +23,7 @@ export default function WorldMeter() {
   }
 
   return (
-    <div className="card world-meter" style={{ marginTop: 18 }}>
+    <div className="card world-meter">
       <div className="wm-row">
         <span className="wm-label">{t('meter.prayingNow')}</span>
         <span className="wm-value" style={glow(people)}>{people}</span>
@@ -31,22 +31,20 @@ export default function WorldMeter() {
       <div className="wm-bar">
         <div className="wm-bar-fill" style={{ width: `${Math.max(2, glowPct)}%` }} />
       </div>
-      <div className="wm-row" style={{ marginTop: 8, marginBottom: 0 }}>
+      <div className="wm-row">
         <span className="wm-label">{t('meter.toMillion')}</span>
         <span className="wm-value" style={glow(glowPct)}>{fmtPct(glowPct)}%</span>
       </div>
-      <div className="wm-row" style={{ marginTop: 8, marginBottom: 0 }}>
+      <div className="wm-row">
         <span className="wm-label">{t('meter.prayedToday')}</span>
         <span className="wm-value" style={glow(usersToday)}>{usersToday}</span>
-        <span className="wm-label" style={{ marginInlineStart: 14 }}>
+        <span className="wm-label wm-pair">
           {t('meter.prayedWeek')}
         </span>
         <span className="wm-value" style={glow(usersWeek)}>{usersWeek}</span>
       </div>
       {!connected && (
-        <p className="hint" style={{ marginTop: 8 }}>
-          {t('meter.quietCompany')}
-        </p>
+        <p className="hint">{t('meter.quietCompany')}</p>
       )}
     </div>
   )

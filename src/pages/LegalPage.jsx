@@ -20,7 +20,7 @@ export default function LegalPage() {
           <div style={{ fontSize: 14, color: 'var(--ink-dim)' }}>
             {legalPage === 'privacy' ? t('legal.privacyTitle') : t('legal.termsTitle')}
           </div>
-          <div className="subtitle" style={{ fontSize: 13, marginTop: 2 }}>
+          <div className="subtitle subline">
             Joining Palms
           </div>
         </div>
@@ -65,7 +65,7 @@ export default function LegalPage() {
             <p className="legal-p">{t('legal.pRightsEu')}</p>
             <p className="legal-p">{t('legal.pRightsCa')}</p>
             <p className="legal-p">{t('legal.pRightsIntl')}</p>
-            <p className="legal-p" style={{ marginTop: 8 }}>{t('legal.pLgpdBody')}</p>
+            <p className="legal-p">{t('legal.pLgpdBody')}</p>
           </section>
           <section className="legal-page-section">
             <h3>6. {t('legal.pCookTitle')}</h3>
