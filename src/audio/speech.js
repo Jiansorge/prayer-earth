@@ -482,8 +482,35 @@ class SpeechEngine {
       if (ctx && ctx.state === 'suspended') {
         // A user-tap call stack can resume the ambient graph; a refused resume
         // (headless/background) just falls through to the element backup.
+        //
+        // But a refusal is only half the story: without a user activation the
+        // browser does not REJECT resume(), it leaves the promise PENDING
+        // forever, and awaiting it alone hung the phrase right here - no
+        // element assigned, no source started, only the safety net advancing
+        // through silence, which reads as "the voices stopped". Race it against
+        // a short deadline so both a refusal and a pend fall through, and
+        // latch a pending one so every later phrase of the same suspension
+        // skips the wait instead of paying the deadline again. The latch
+        // clears the moment that resume eventually settles (the next real
+        // tap), returning a recovered graph to the buffer path.
         try {
-          await ctx.resume()
+          if (!this._resumeHung) {
+            let resumeTimer
+            const won = await Promise.race([
+              ctx.resume().then(() => 'done', () => 'refused'),
+              new Promise((resolve) => {
+                resumeTimer = setTimeout(() => resolve('pending'), 400)
+              })
+            ])
+            clearTimeout(resumeTimer)
+            if (won === 'pending') {
+              this._resumeHung = true
+              const clear = () => {
+                this._resumeHung = false
+              }
+              ctx.resume().then(clear, clear)
+            }
+          }
         } catch {}
       }
       if (!isCurrent()) return true

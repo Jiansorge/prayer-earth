@@ -177,10 +177,24 @@ export class AmbientEngine {
       this._watchState()
     }
     if (this.ctx.state === 'suspended') {
-      return this.ctx.resume().then(
-        () => {},
-        () => {}
-      )
+      // resume() refuses by rejecting only when the browser has a reason to;
+      // with no user activation it stays PENDING forever instead, and start()
+      // awaits this - a pending resume used to hang the whole bed build with
+      // the graph still suspended. Race a deadline so callers always get an
+      // answer; _watchState's bounded retry keeps working the context in the
+      // background either way, and a suspended-then-built graph goes audible
+      // the moment that resume lands.
+      let resumeTimer
+      const settled = Promise.race([
+        this.ctx.resume().then(
+          () => {},
+          () => {}
+        ),
+        new Promise((resolve) => {
+          resumeTimer = setTimeout(resolve, 400)
+        })
+      ])
+      return settled.then(() => clearTimeout(resumeTimer))
     }
     return Promise.resolve()
   }
