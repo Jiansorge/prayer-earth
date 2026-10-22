@@ -104,8 +104,9 @@ const countedRef = useRef(false)
     }
   }, [spirit, prayer, spiritId])
 
-  // Prayer keeps playing in the background even when the tab is hidden or the
-  // user navigates to Home/Earth — no global pause on visibilitychange.
+  // Navigating to Home/Earth keeps the prayer playing - there is no pause on
+  // in-app navigation. Hiding the whole app is different: playback.js pauses
+  // there, so a minimized app never competes with another app's video.
   useEffect(() => {
     // Reset only this page's view state when a different prayer is shown; a
     // prayer already playing in the background keeps playing (see togglePlay).

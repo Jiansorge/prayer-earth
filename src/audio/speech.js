@@ -115,10 +115,12 @@ class SpeechEngine {
         )
       }
     }
-    // The prayer keeps playing while the tab is hidden or you switch to another
-    // tab/window — no pause on visibilitychange. If the machine sleeps anyway
-    // and the audio engine dies silently, the kicker watchdog revives it with a
-    // fresh phrase the moment the tab is visible again (see primeKicker).
+    // Switching views INSIDE the app (prayer -> Home -> Earth) never pauses.
+    // Hiding the app itself does - playback.js's hidden-pause takes the pause
+    // button's own path so a minimized app never talks over another video
+    // (Oct 20). If the machine sleeps anyway and the audio engine dies
+    // silently, the kicker watchdog revives it with a fresh phrase the moment
+    // the tab is visible again (see primeKicker).
   }
 
   // Ask the server whether the Google TTS proxy is available (once).
@@ -549,6 +551,16 @@ class SpeechEngine {
         // wait for that fade or the new src starts under a ramp still aimed
         // at the old phrase's element (the same element, reused).
         await this._silenceElement()
+        // The await above is a real gap - a pending cut fade - and it is the
+        // LAST await before this branch writes to the shared element. A voice
+        // switch mid-phrase tears the job down (stop() + a fresh start()) right
+        // inside that gap; without this check the stale continuation lands
+        // afterwards and repoints el.src at the old recording, replaces the new
+        // job's onended/onerror with an inert closure (j !== job), and re-arms
+        // this.cloudAudio after stop() nulled it - the shared element is then
+        // owned by a dead job, and the live one's phrase never advances. That
+        // is "voices stopped working completely" after swarea -> madhur.
+        if (!isCurrent()) return true
         const el = this._elementEl()
         el.preservesPitch = true
         el.mozPreservesPitch = true
@@ -586,6 +598,10 @@ class SpeechEngine {
         try {
           await el.play()
         } catch {}
+        // play() is the second await in this branch; if the job was superseded
+        // while it settled (stop() nulled cloudAudio), ramping now would
+        // re-volume an element the new job has already taken over.
+        if (!isCurrent()) return true
         this._rampElementVolume(el, target)
       }
       const next = i + 1
@@ -712,8 +728,20 @@ class SpeechEngine {
       if (on === !!this._fgsOn) return
       this._fgsOn = !!on
       if (!this._fgsPlugin) this._fgsPlugin = cap.registerPlugin('PrayerAudio')
-      const call = on ? this._fgsPlugin.startPlayback() : this._fgsPlugin.stopPlayback()
-      if (call && call.catch) call.catch(() => {})
+      // The two native calls used to be issued fire-and-forget, and a voice
+      // switch fires stop then start within ONE tap (stop() in start()'s
+      // prologue, then _fgs(true)): if stopPlayback landed on the native
+      // side after startPlayback, the mediaPlayback service ended up dead
+      // while _fgsOn above insisted it was up - so every later _fgs(true)
+      // no-opped on the latch and Android kept the audio muted until reload
+      // ("i changed voices mid prayer and now voices stopped completely").
+      // Chain them through _fgsSeq so they always run in issue order.
+      this._fgsSeq = Promise.resolve(this._fgsSeq)
+        .catch(() => {})
+        .then(() => {
+          const call = on ? this._fgsPlugin.startPlayback() : this._fgsPlugin.stopPlayback()
+          if (call && call.catch) call.catch(() => {})
+        })
     } catch {}
   }
 
@@ -1507,6 +1535,14 @@ class SpeechEngine {
     if (this._bufferByUrl) this._bufferByUrl.clear()
     try {
       this.synth.cancel()
+      // cancel() clears the queue but not every engine's paused flag, and
+      // pause() sets that flag (user paused, or a visibility pause). Left
+      // latched, the next job's speak() queues behind a paused synth and
+      // never fires onstart/onend - voices dead with a job that looks alive.
+      // resume() after cancel is a no-op when not paused, and is the only
+      // thing here that unblocks the queue for the job start() is about to
+      // create (a voice switch is exactly stop-then-start).
+      this.synth.resume()
     } catch {}
   }
 }

@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useRef, useCallback } from 'react'
 import { getScene } from './Scenery.jsx'
-import { fitCanvas } from './useBackdropCanvas.js'
+import { useBackdropCanvas, fitCanvas } from './useBackdropCanvas.js'
 import { mulberry } from './mulberry.js'
 
 // A rich, painterly nature backdrop rendered to a canvas, layered skies,
@@ -240,38 +240,20 @@ function drawScene(ctx, w, h, scene, t = 0) {
 
 export default function NatureBackdrop() {
   const ref = useRef(null)
-  useEffect(() => {
-    const canvas = ref.current
-    const ctx = canvas.getContext('2d')
-    let raf = 0
-    const draw = () => {
-      // Released before the work, not after. If drawScene threw, raf kept its
-      // stale non-zero value, so every later `if (!raf)` failed and the backdrop
-      // froze for the life of the mount while cleanup cancelled an already-fired
-      // handle.
-      raf = 0
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
-      const w = window.innerWidth
-      const h = window.innerHeight
-      fitCanvas(canvas, w, h, dpr)
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      drawScene(ctx, w, h, getScene(), Date.now() / 1000)
-    }
-    const onResize = () => {
-      if (!raf) raf = requestAnimationFrame(draw)
-    }
-    draw()
-    window.addEventListener('resize', onResize)
-    // re-render when the time of day changes
-    const t = setInterval(() => {
-      if (!raf) raf = requestAnimationFrame(draw)
-    }, 60000)
-    return () => {
-      cancelAnimationFrame(raf)
-      clearInterval(t)
-      window.removeEventListener('resize', onResize)
-    }
+  // The shared harness, like every other backdrop. This component used to
+  // draw once, on resize, and on a 60s interval - so its fireflies, birds
+  // and light drift were still between redraws and then jumped on each one,
+  // which reads as the backdrop's small lights moving "in pulses instead of
+  // continuously" (the nature theme was the only one not on the loop). The
+  // harness gives it the same 24fps cap, scroll/visibility pauses, low-power
+  // resolution and reduced-motion static frame as its siblings, so smooth
+  // motion costs nothing the other backdrops don't already pay.
+  const drawNature = useCallback((ctx, dpr, t, _reduced, size) => {
+    fitCanvas(ctx.canvas, size.w, size.h, dpr)
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    drawScene(ctx, size.w, size.h, getScene(), t)
   }, [])
+  useBackdropCanvas(ref, drawNature)
 
   return <canvas ref={ref} className="nature-backdrop" aria-hidden="true" />
 }

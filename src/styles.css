@@ -420,7 +420,14 @@ h3,
   user-select: text;
   -webkit-user-select: text;
   transition: opacity 0.55s var(--ease), transform 0.55s var(--ease);
-  animation: viewIn 0.55s var(--ease) both;
+  /* backwards, not both: with both, the finished view keeps
+     transform: translateY(0) for the life of the route, and a filled
+     transform leaves this scroll container promoted - a transformed
+     composited scroller is a known source of blank child tiles on mobile
+     WebViews until scroll forces a re-composite. backwards still covers the
+     from-state during any delay; after the animation the view falls back to
+     its own (identical) base styles, so nothing visible snaps. */
+  animation: viewIn 0.55s var(--ease) backwards;
 }
 
 @keyframes viewIn {
@@ -843,6 +850,10 @@ h3,
   /* A touch more breathing room from the view edge than the generic 22px
      padding: the back control is the first thing a thumb reaches for. */
   margin-inline-start: 6px;
+  /* ...and air below it, so the big 'Privacy' / 'Terms' title underneath reads
+     as the page's title rather than as something pinned to the button.
+     (Requested Oct 20.) */
+  margin-bottom: 12px;
 }
 
 /* The second line of a stacked back-row header (org name / tradition tagline)
@@ -2093,7 +2104,11 @@ html[dir='rtl'] .chooser-arrow.right {
 /* a fixed header (close + title) and a scrollable body */
 .sheet-head {
   flex: 0 0 auto;
-  padding: 14px 22px 0;
+  /* Edge padding, not a gutter: 22px + the title row's own 14px put 'Settings'
+     36px from the modal border and the ✕ the same distance from the other side,
+     which read as the content floating away from its own frame. (Requested
+     Oct 20.) */
+  padding: 14px 12px 0;
 }
 .sheet-body {
   flex: 1 1 auto;
@@ -2112,14 +2127,6 @@ html[dir='rtl'] .chooser-arrow.right {
 .sheet-body::-webkit-scrollbar,
 .sheet::-webkit-scrollbar {
   display: none;
-}
-
-.sheet-handle {
-  width: 44px;
-  height: 5px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 0 auto 18px;
 }
 
   /* The sheet title sits beside the close button, always visible at the top
@@ -2205,7 +2212,10 @@ html[dir='rtl'] .chooser-arrow.right {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 2px 0 4px;
+  /* The air the Oct 20 pass asked for: room under the toggle row so the
+     "Sharing your prayer with others is on." state line reads as its own
+     statement, not as a run-on of the hint above it. */
+  padding: 2px 0 12px;
 }
 
 .presence-toggle {
@@ -2220,7 +2230,8 @@ html[dir='rtl'] .chooser-arrow.right {
 .presence-label {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  /* A few more pixels under 'Show my prayer to others' before its hint. */
+  gap: 6px;
   cursor: pointer;
   min-width: 0;
 }
@@ -2307,12 +2318,16 @@ html[dir='rtl'] .chooser-arrow.right {
   display: flex;
   align-items: center;
   gap: 12px;
-  /* The Back row sat 2px from the top edge with the arrow hard against the
-     left, so the header read as clipped rather than deliberate. The left inset
-     is sized to line the arrow up with the sheet's own content edge rather than
-     floating inside it. */
-  padding: 12px 0 14px 10px;
-  margin-left: -2px;
+  /* The Back control starts on the sheet's own content edge: sub-panels live
+     inside .sheet-body's 22px inset, so the head adds none of its own. */
+  padding: 10px 0 14px;
+}
+
+/* The legal sheet's head sits outside .sheet-body, so it takes the 22px inset
+   itself - the back control then starts at the same edge in both places, which
+   is the left padding the Privacy & Care sheet was missing. (Requested Oct 20.) */
+.legal-sheet > .settings-panel-head {
+  padding-left: 22px;
 }
 
 .settings-panel-title {
@@ -2327,14 +2342,20 @@ html[dir='rtl'] .chooser-arrow.right {
 
 .settings-back {
   flex: 0 0 auto;
-  background: none;
-  border: 0;
-  /* Also a larger target: the Back control on a sub-panel is the only way out
-     of that panel, and 6px of vertical padding is thin for a thumb. */
-  padding: 10px 12px 10px 0;
-  color: rgba(241, 245, 232, 0.8);
+  /* One back affordance for the whole app: the same round arrow the prayer and
+     legal pages use, not a ‹-plus-word hybrid. The word survives as the button's
+     accessible name, so screen readers still hear "Back". (Requested Oct 20:
+     "stick with using either 'back' or the arrow every time".) */
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--ink);
   font: inherit;
-  font-size: 14px;
+  font-size: 18px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -2357,10 +2378,21 @@ html[dir='rtl'] .chooser-arrow.right {
 
 .field-select {
   width: 100%;
-  padding: 12px 14px;
+  /* A drawn chevron with real clearance from the right edge. The native arrow
+     hugs the border with only a few pixels of room - the crowding reported on
+     the language and fallback-voice dropdowns (Oct 20) - and its inset is the
+     browser's, not ours. The wider right padding keeps the text out of the
+     chevron's lane; background-position sets the clearance we actually want. */
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 12px 38px 12px 14px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
+  background-color: rgba(255, 255, 255, 0.06);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23f1f5e8' stroke-opacity='0.7' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 10px 6px;
   color: var(--ink);
   font-family: var(--sans);
   font-size: 14px;
@@ -3840,7 +3872,13 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14px;
+  padding: 24px 14px 14px;
+  /* The sheet must clear the Android status bar (time, battery, wifi): the
+     flat 14px inset put its top edge under the icons on an edge-to-edge
+     WebView. The explicit padding-top comes after the shorthand so it wins,
+     and the sheet's max-height: 100% below keeps it inside whatever the
+     inset leaves. (Requested Oct 20.) */
+  padding-top: calc(24px + env(safe-area-inset-top, 0px));
   animation: picker-fade 0.25s var(--ease);
 }
 
@@ -3853,7 +3891,10 @@ textarea:focus-visible {
      scrolling. The one thing that buys real rows is vertical space, so the
      sheet now fills everything the overlay does not take, bounded for very
      tall desktop windows where a 560px-wide column already looks stretched. */
-  height: min(calc(100dvh - 28px), 880px);
+  height: min(calc(100dvh - 48px), 880px);
+  /* Never taller than the inset the overlay actually leaves, so a tall
+     status-bar cutout cannot make the card clip at either end. */
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, rgba(13, 34, 21, 0.97), rgba(8, 24, 14, 0.99));
@@ -3912,6 +3953,13 @@ textarea:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* Absorb the sheet's leftover height. With the list left at its content
+     size, a short tradition ended rows early and the bottom of the sheet was
+     blank dead space - the Oct 20 ask was to spend that space showing the
+     prayers instead. min-height: 0 keeps the scroll working once the flex
+     base is set. */
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* quick filter above a long prayer list */
@@ -4386,6 +4434,11 @@ input[type='radio'] {
 .swatch:active,
 .feed-pill:active {
   transform: scale(0.94);
+  /* Feedback has to arrive inside the tap, not over the 0.3s hover transition:
+     on Android the settings sheet opens after a chunk load, and a press that
+     takes 300ms to show anything reads as "nothing happened". (Requested
+     Oct 20.) */
+  transition-duration: 0.08s;
 }
 
 /* the main play button gets a twinkle ring when hovered/focused */
@@ -4943,10 +4996,19 @@ select:focus-visible {
   animation: none;
   mix-blend-mode: normal;
 }
+/* Pause, don't cancel. display:none/animation:none stop the ticking just as
+   well for the gesture's duration, but they CANCEL the running animation -
+   and dropping the class restarts every firefly from 0% with its full
+   animation-delay (up to 12s) reapplied. Every scroll nudge therefore threw
+   the lights back below the fold and re-staged them over seconds, which is
+   the reported "rising lights move in pulses instead of continuously".
+   animation-play-state: paused freezes them exactly where they are - a
+   paused animation ticks nothing, so the main-thread saving the gate exists
+   for is unchanged - and the climb resumes mid-flight when the class drops. */
 .is-scrolling .fireflies {
-  display: none;
+  animation-play-state: paused;
 }
 .is-scrolling .sp {
   box-shadow: 0 0 6px 1px rgba(205, 225, 255, 0.6);
-  animation: none;
+  animation-play-state: paused;
 }

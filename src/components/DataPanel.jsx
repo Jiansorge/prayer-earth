@@ -136,9 +136,10 @@ export function DataPanel({ onBack, onOpenLegal }) {
         </>
       )}
 
-      <div className="field-divider" />
-
-      <button type="button" className="field-btn" onClick={onOpenLegal}>
+      {/* No rule above Privacy & Care: the divider read as a barrier before the
+          one button that leads somewhere gentle, and the Oct 20 pass questioned
+          whether the line belonged at all. (Requested Oct 20.) */}
+      <button type="button" className="field-btn" onClick={onOpenLegal} style={{ marginTop: 14 }}>
         {t('settings.legal')}
       </button>
       <button type="button" className="field-report" onClick={() => openExternal(REPORT_URL)}>

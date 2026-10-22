@@ -30,7 +30,6 @@ export default function KeyboardHelp() {
             <h3 className="sheet-title">⌨ {t('keys.title')}</h3>
             <button className="sheet-x" onClick={() => setOpen(false)} aria-label={t('keys.close')} title={t('keys.close')}>✕</button>
           </div>
-          <div className="sheet-handle" />
         </div>
         <div className="sheet-body">
           <ShortcutList />

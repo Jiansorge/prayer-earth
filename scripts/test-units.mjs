@@ -332,6 +332,65 @@ const stripComments = (text) =>
   check('the mail link no longer assigns href during the click',
     !/currentTarget\.href\s*=\s*`mailto:/.test(email))
 }
+// Oct 20 styling pass: the settings/legal surface asked for a list of small
+// spacing and affordance corrections. Each is a visible pixel the user named,
+// so each is pinned rather than trusted to survive the next restyle.
+{
+  const css = readFileSync(path.join(ROOT, 'src/styles.css'), 'utf8')
+  const sel = css.match(/\.field-select \{[^}]*\}/)
+  const selRule = sel ? sel[0] : ''
+  check('the dropdown draws its own chevron with room from the right edge',
+    /appearance:\s*none/.test(selRule) &&
+      /background-position:\s*right\s*(1[4-9]|[2-9]\d)px/.test(selRule) &&
+      /padding:\s*12px\s*(3[4-9]|[4-9]\d)px/.test(selRule),
+    selRule || '.field-select rule not found')
+  check('the settings header sits close to the modal edge',
+    /\.sheet-head \{[^}]*padding:\s*14px\s*(1[0-5]|[0-9])px/.test(css),
+    (/\.sheet-head \{[^}]*padding:[^;]*/.exec(css) || ['(absent)'])[0])
+  check('the movable-modal handle line is gone from the sheets',
+    !/sheet-handle/.test(css) &&
+      !/sheet-handle/.test(readFileSync(path.join(ROOT, 'src/components/SettingsSheet.jsx'), 'utf8')) &&
+      !/sheet-handle/.test(readFileSync(path.join(ROOT, 'src/components/KeyboardHelp.jsx'), 'utf8')),
+    'the drag-handle pill under the header is what made the modal read as movable')
+  const presenceRow = (/\.presence-row \{[^}]*\}/.exec(css) || [''])[0]
+  const presenceLabel = (/\.presence-label \{[^}]*\}/.exec(css) || [''])[0]
+  check('the presence state line has air above it',
+    /padding:\s*2px 0 (1[2-9]|[2-9]\d)px/.test(presenceRow),
+    presenceRow || '.presence-row rule not found')
+  check("the hint under 'Show my prayer to others' is not glued to it",
+    /gap:\s*(6|7|8)px/.test(presenceLabel),
+    presenceLabel || '.presence-label rule not found')
+  const data = readFileSync(path.join(ROOT, 'src/components/DataPanel.jsx'), 'utf8')
+  check("the Your data panel has no rule line above 'Privacy & Care'",
+    (data.match(/field-divider/g) || []).length === 1 &&
+      !/field-divider[\s\S]{0,160}settings\.legal/.test(data),
+    'the divider the Oct 20 pass questioned is still before the legal button')
+  check('the Privacy & Care sheet back control starts on the content edge',
+    /\.legal-sheet > \.settings-panel-head \{[^}]*padding-left:\s*22px/.test(css),
+    'the legal sheet head sits outside .sheet-body, so it needs the 22px inset itself')
+  check('the legal page back row has air below it before the title',
+    /\.legal-view \.back-row \{[^}]*margin-bottom:\s*(1[0-9]|[2-9]\d)px/.test(css),
+    'the arrow sat pinned against the big Privacy / Terms title')
+  const back = (/\.settings-back \{[^}]*\}/.exec(css) || [''])[0]
+  check('the settings back control is the same round arrow as everywhere else',
+    /width:\s*38px/.test(back) && /place-items:\s*center/.test(back) && /border-radius:\s*50%/.test(back),
+    back || '.settings-back rule not found')
+  const shellSrc = readFileSync(path.join(ROOT, 'src/components/PanelShell.jsx'), 'utf8')
+  const legalSheetSrc = readFileSync(path.join(ROOT, 'src/components/LegalSheet.jsx'), 'utf8')
+  for (const [name, src] of [['sub-panels', shellSrc], ['the legal sheet', legalSheetSrc]]) {
+    check(`the back control in ${name} is the arrow, with the word as its label`,
+      /aria-label=\{t\('settings\.back'\)\}/.test(src) &&
+        /←/.test(src) && !/‹\s*\{t\('settings\.back'\)\}/.test(src),
+      name + ' still shows a ‹-plus-word hybrid back button')
+  }
+  check('a pressed control answers inside the tap, not over the hover transition',
+    /gear-btn:active,[^{]*\{[^}]*transition-duration:\s*0\.0\d/.test(css) &&
+      /\.gear-btn:active,/.test(css) && /scale\(0\.94\)/.test(css),
+    'the settings gear is the reported case: the sheet opens after a chunk load, and a 0.3s press shows nothing in a quick tap')
+  check('the last legal section carries the rule above it',
+    /\.legal-view \.legal-page-section:last-child \{[^}]*border-top/.test(css),
+    'the Oct 20 pass asked for a line above 14. Effective Date - the pin is the last-section rule that draws it')
+}
 //
 // capacitor:// is a non-special scheme, so it is an opaque origin and every
 // browser serialises its Origin header as the literal string "null" - which the
@@ -440,6 +499,28 @@ const stripComments = (text) =>
   const nasty = [at(NaN, 1, 1), at(1, -5, 1), at(1, 1, 99), at(undefined, undefined, undefined)]
   check('junk input clamps to a safe gain rather than NaN',
     nasty.every((g) => Number.isFinite(g) && g >= 0), JSON.stringify(nasty))
+
+  // The seven beds are hand-tuned per preset, so their loudness was whatever
+  // the inline literals happened to produce - measured, that ran from 0.67x to
+  // 1.54x the median ("some are louder than others"). The fix is one trim
+  // table applied at the preset bus; pin the table's shape here and the
+  // rendered levels in test-audio-ambient's OfflineAudioContext band.
+  {
+    const { PRESET_TRIM } = await import('../src/audio/ambience.js')
+    const { AMBIENT_PRESETS } = await import('../src/audio/presets.js')
+    const missing = AMBIENT_PRESETS.filter((p) => !(p in PRESET_TRIM))
+    check('every ambient preset has a loudness trim',
+      missing.length === 0 && Object.keys(PRESET_TRIM).length === AMBIENT_PRESETS.length,
+      'missing=' + JSON.stringify(missing))
+    const vals = Object.values(PRESET_TRIM)
+    check('every trim is a sane finite level',
+      vals.every((v) => Number.isFinite(v) && v >= 0.5 && v <= 2),
+      JSON.stringify(PRESET_TRIM))
+    const ambSrc = readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8')
+    check('buildPreset applies the trim on the preset bus',
+      /linearRampToValueAtTime\(PRESET_TRIM\[id\] \?\? 1/.test(ambSrc),
+      'the bus ramp no longer reads PRESET_TRIM - a rebuilt bed would skip its level')
+  }
 
   // Every volume control must go through the shared applyVolumes(), or the
   // asymmetry comes straight back. Asserted as an invariant rather than by
@@ -679,6 +760,39 @@ const stripComments = (text) =>
   check('starting the bed cannot hang on a pending resume',
     /Promise\.race\(\[\s*this\.ctx\.resume\(\)/.test(ensureResumeRace),
     'ambient.ensure() returns resume() directly - start() awaits it and hangs with the graph suspended')
+
+  // The mid-prayer voice switch (the reported swarea -> madhur silence) runs
+  // stop() then start() inside one tap, and three unguarded seams turned that
+  // rebuild into permanent silence: the Android service calls issued
+  // unordered (a stop landing after the start left _fgsOn latched over a dead
+  // service), the element branch writing to the shared element after its last
+  // await with no ownership recheck (a stale continuation repointed src at the
+  // old recording and replaced the new job's onended), and stop() clearing
+  // synth's queue with cancel() but not its paused flag - after which the
+  // next job's speak() queues behind a paused synth and never fires.
+  const sp = stripComments(speech)
+  const fgsBody = (sp.match(/_fgs\(on\) \{[\s\S]{0,1600}?\n  \}/) || [''])[0]
+  check('the foreground-service stop/start runs in issue order',
+    !!fgsBody && /this\._fgsSeq = Promise\.resolve\(this\._fgsSeq\)/.test(fgsBody) &&
+      /\.then\(\(\) =>/.test(fgsBody),
+    fgsBody ? '_fgs fires the native calls unordered again - a voice switch can leave the service dead while _fgsOn says it is up' : '_fgs(on) not found')
+  const iSil = sp.indexOf('await this._silenceElement()')
+  const iEl = sp.indexOf('const el = this._elementEl()', iSil)
+  const silSeg = iSil >= 0 && iEl > iSil ? sp.slice(iSil, iEl) : ''
+  check('the element branch re-owns the element after the silence wait',
+    !!silSeg && silSeg.includes('if (!isCurrent()) return true'),
+    'a superseded continuation writes el.src/onended for a dead job after _silenceElement - the live phrase never advances')
+  const iPlay = sp.indexOf('await el.play()')
+  const iRamp = sp.indexOf('this._rampElementVolume(el, target)', iPlay)
+  const playSeg = iPlay >= 0 && iRamp > iPlay && iRamp - iPlay < 400 ? sp.slice(iPlay, iRamp) : ''
+  check('a phrase superseded during play() is not ramped',
+    !!playSeg && playSeg.includes('if (!isCurrent()) return true'),
+    'a stale ramp re-volumes the shared element the new job took over')
+  const iCancel = sp.lastIndexOf('this.synth.cancel()')
+  const stopSeg = iCancel >= 0 ? sp.slice(iCancel, iCancel + 300) : ''
+  check('stop() unblocks the synth queue as well as clearing it',
+    /synth\.cancel\(\)[\s\S]{0,200}?synth\.resume\(\)/.test(stopSeg),
+    'cancel() alone can leave the synth paused - the next job speaks into a paused queue and stays silent')
 
   // Each preview call built a fresh Audio element and kept no handle, so
   // auditioning voices in quick succession stacked them at full volume.
@@ -1001,6 +1115,20 @@ const stripComments = (text) =>
   check('a tradition tile fades in faster than the shared .fade-in',
     /\.tile\.fade-in\s*\{[^}]*animation-duration:\s*0\.[0-7]\d*s/.test(styles),
     'a nineteen-tile wall at 0.8s each is a long time to look empty')
+  // fill:both keeps the finished transform on every tile, and a filled
+  // transform pins the tile to its own composited layer - over a rounded
+  // mask, a gradient pseudo-surface and a drop-shadow filter, which Android
+  // WebView can fail to raster: one tile stayed blank until a scroll forced
+  // a repaint ("tiles appearing blank, goes away on scroll"). HomePage now
+  // drops the class on animationend, and .view uses backwards fill so the
+  // route scroller itself does not keep a promoted transform forever.
+  check('a finished tile drops its entrance class instead of pinning a layer',
+    /onAnimationEnd/.test(homeSrc) && /classList\.remove\('fade-in'\)/.test(homeSrc) &&
+      /animationName === 'fadeUp'/.test(homeSrc),
+    'a tile that keeps fill:both after its animation can sit blank until scroll')
+  check('the view entrance does not leave the scroller promoted',
+    /animation:\s*viewIn[^;]*backwards/.test(styles),
+    '.view still fills with both - a permanent transform on the top scroller is a known source of blank child tiles')
 
   // (i) The picker sheet is a fixed-height column that clips, and the favourites
   // strip sits above the prayer list inside it. As a flex item with visible
@@ -1052,6 +1180,16 @@ const stripComments = (text) =>
   check('a prayer row is slim enough to show a tradition at a glance',
     !!rowPad && Number(rowPad) <= 10,
     `row padding ${rowPad}px - tall rows cost the reader a line each, thirty times`)
+  // The Oct 20 pass: the sheet's flat 14px top put its edge under the Android
+  // status-bar icons, and a short tradition ended in blank space at the bottom
+  // of an otherwise full-height sheet.
+  check('the picker clears the Android status bar at the top',
+    /padding-top:\s*calc\(24px \+ env\(safe-area-inset-top/.test(overlayRule) &&
+      /max-height:\s*100%/.test(sheetRule),
+    overlayRule || '.picker-overlay rule not found')
+  check('the picker list spends the sheet height on prayers, not on air',
+    /\.picker-list\s*\{[^}]*flex:\s*1 1 auto[\s\S]*?min-height:\s*0/.test(styles),
+    'the list ends at its content and the sheet keeps dead space below it')
 
   // (k) "I, whose name is . . . , take refuge..." (issue #21). The blank is
   // filled at render time and only where the device has consented to being
@@ -1516,6 +1654,26 @@ const stripComments = (text) =>
     /setLevel\(0\)\s*[\s\S]{0,400}?ambient\.stop\(\)/.test(pbSrc),
     'a stop from any view left the engine running muted behind every screen'
   )
+  // Oct 20: "if i minimize the app on my phone, and try to play another video,
+  // the app wont interfere." Hidden must pause through the button's own path,
+  // and coming back must not resume on its own - an auto-resume into someone
+  // else's video is the same interference.
+  const hide = pbSrc.slice(pbSrc.indexOf('function pauseForHidden'))
+  check(
+    'the app pauses its own sound the moment it is hidden',
+    /addEventListener\('visibilitychange'/.test(pbSrc) &&
+      /if \(document\.hidden\) pauseForHidden\(\)/.test(pbSrc) &&
+      /appStateChange/.test(pbSrc) &&
+      /!isActive\) pauseForHidden\(\)/.test(pbSrc),
+    'the WebView keeps talking while hidden unless both surfaces arm the pause'
+  )
+  check(
+    'the hidden pause reuses the pause button path instead of a second one',
+    !!hide && /if \(!s\.playing \|\| s\.paused\) return/.test(hide) &&
+      /requestPlayToggle\(\)\.catch/.test(hide) &&
+      !/resume\(/.test(hide),
+    'a second pause implementation drifts from the button, and a resume here would talk over another video'
+  )
   const prayerSrc = stripComments(readFileSync(path.join(ROOT, 'src/pages/PrayerPage.jsx'), 'utf8'))
   check(
     'the page stop and the finish path release the bed too',
@@ -1851,9 +2009,12 @@ const stripComments = (text) =>
     'is-scrolling keeps the glow-field screen-blended: every scroll frame pays a blend pass'
   )
   check(
-    'the fireflies are hidden while the page moves',
-    /\.is-scrolling \.fireflies \{[^}]*display:\s*none/.test(scrollSection),
-    'is-scrolling still animates the fireflies on the main thread during a swipe'
+    'the fireflies pause mid-flight while the page moves',
+    /\.is-scrolling \.fireflies \{[^}]*animation-play-state:\s*paused/.test(scrollSection) &&
+      !/\.is-scrolling \.fireflies \{[^}]*(display:\s*none|animation:\s*none)/.test(scrollSection),
+    scrollSection
+      ? 'is-scrolling must pause the fireflies, not cancel them: cancelling restarts every light from 0% with its full delay on the next scroll - the reported pulsed rise'
+      : 'no .is-scrolling section in styles.css'
   )
   check(
     'the shooting stars drop their trails while the page moves',
@@ -1881,9 +2042,10 @@ const stripComments = (text) =>
     animateBody ? 'EarthScene keeps rendering its 24fps backdrop under the scrolling prayer text' : 'EarthScene.animate not found'
   )
   check(
-    'the sparkle twinkle stops while the page moves',
-    /\.is-scrolling \.sp \{[^}]*animation:\s*none/.test(scrollSection),
-    'is-scrolling still animates 24 box-shadow sparkles on the main thread every moving frame'
+    'the sparkle twinkle pauses while the page moves',
+    /\.is-scrolling \.sp \{[^}]*animation-play-state:\s*paused/.test(scrollSection) &&
+      !/\.is-scrolling \.sp \{[^}]*animation:\s*none/.test(scrollSection),
+    'is-scrolling must pause the sparkles, not cancel them: cancellation restarts each streak from zero on every scroll'
   )
 }
 
@@ -2142,6 +2304,19 @@ const stripComments = (text) =>
     (b) => !/from '\.\/mulberry\.js'/.test(readFileSync(path.join(ROOT, 'src', 'components', `${b}.jsx`), 'utf8'))
   )
   check('every theme backdrop imports the shared PRNG', missing.length === 0, missing.join(', '))
+
+  // ...and every theme backdrop must animate through the shared harness: it
+  // caps the frame rate at 24fps, pauses on scroll and visibility, lowers
+  // resolution on low-power hardware and draws one static frame for reduced
+  // motion. Nature drew once plus on a 60s interval instead, so its
+  // fireflies and birds held still for a minute and then jumped - the
+  // nature theme's small lights "moving in pulses instead of continuously".
+  const ownLoop = backdrops.filter((b) => {
+    const src = readFileSync(path.join(ROOT, 'src', 'components', `${b}.jsx`), 'utf8')
+    return !/useBackdropCanvas\(/.test(src) || /setInterval\(/.test(stripComments(src))
+  })
+  check('every theme backdrop animates through the shared harness',
+    ownLoop.length === 0, ownLoop.join(', '))
 
   const selFiles = srcFiles.filter((p) => /LOCALES\.map\(/.test(readFileSync(p, 'utf8')))
   check(

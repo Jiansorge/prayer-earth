@@ -10,13 +10,13 @@ export default function LegalSheet({ onClose }) {
   return (
     <div className="sheet-backdrop" onClick={onClose}>
       <div className="sheet legal-sheet" onClick={(e) => e.stopPropagation()}>
-        {/* Same ‹ Back affordance as the Privacy / Backup / Your data panels, in
+        {/* Same round Back arrow as the Privacy / Backup / Your data panels, in
             the same place. Reaching this sheet through "Privacy & Care" and
             finding no way back but a small ✕ in the far corner made it feel like
             a different kind of screen from the one it replaced. */}
         <div className="settings-panel-head">
-          <button type="button" className="settings-back" onClick={onClose}>
-            ‹ {t('settings.back')}
+          <button type="button" className="settings-back" onClick={onClose} aria-label={t('settings.back')}>
+            ←
           </button>
           <div className="settings-panel-title">{t('legal.title')}</div>
         </div>

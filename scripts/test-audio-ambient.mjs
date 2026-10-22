@@ -375,6 +375,64 @@ try {
       assert(render.fullMax < 0.5, `preset max step ${render.fullMax.toFixed(4)}`)
     })
 
+    // ---- all seven beds are equally loud ---------------------------------
+    // The builders hand-tune their own pad/air gains, and nothing ever
+    // equalized the result: measured raw, Space ran 1.54x the median and
+    // Temple 0.67x - a 2.3x spread ("some are louder than others"). The fix
+    // is PRESET_TRIM on the preset bus; this renders every preset through
+    // the real graph and asserts the levels land inside one band, so a
+    // generator retune that re-unbalances the rack fails here rather than
+    // in someone's headphones. Offline renders are deterministic (seeded
+    // Math.random, fixed length), so the band can be tight.
+    const loudness = await page.evaluate(async () => {
+      const { AmbientEngine } = await import('/src/audio/ambience.js')
+      let lcg = 42
+      const real = Math.random
+      Math.random = () => {
+        lcg = (lcg * 1664525 + 1013904223) >>> 0
+        return lcg / 4294967296
+      }
+      try {
+        const sr = 44100
+        const ids = ['reiki', 'ocean', 'temple', 'rain', 'forest', 'space', 'warm']
+        const out = {}
+        for (const id of ids) {
+          const octx = new OfflineAudioContext(2, sr * 6, sr)
+          const e = new AmbientEngine()
+          e.ctx = octx
+          e.master = octx.createGain()
+          e.master.gain.value = 1
+          e.master.connect(octx.destination)
+          e.buildPreset(id)
+          const rendered = await octx.startRendering()
+          const d = rendered.getChannelData(0)
+          const skip = Math.floor(sr * 1.1) // past the crossfade
+          let sum = 0
+          let n = 0
+          for (let i = skip; i < d.length; i++) {
+            sum += d[i] * d[i]
+            n++
+          }
+          out[id] = Math.sqrt(sum / n)
+        }
+        return out
+      } finally {
+        Math.random = real
+      }
+    })
+    const levels = Object.entries(loudness)
+    const rmsList = levels.map(([, v]) => v)
+    const lo = Math.min(...rmsList)
+    const hi = Math.max(...rmsList)
+    note(`loudness: ` + levels.map(([k, v]) => `${k}=${v.toFixed(4)}`).join(' ') +
+      ` spread=${(hi / lo).toFixed(3)}x`)
+    t('all seven ambient beds render at the same loudness', () => {
+      assert(lo > 0, 'a bed rendered silent: ' + JSON.stringify(loudness))
+      assert(hi / lo <= 1.15,
+        `bed spread ${(hi / lo).toFixed(2)}x > 1.15x - a preset drifted off the rack: ` +
+        JSON.stringify(Object.fromEntries(levels.map(([k, v]) => [k, +v.toFixed(4)]))))
+    })
+
     // Navigation still answers after everything above. The deep link selects
     // the prayer itself; bare '#/prayer' renders only with a prior selection,
     // which a fresh profile does not have.

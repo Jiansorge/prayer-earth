@@ -249,6 +249,17 @@ export default function HomePage() {
               animationDelay: `${Math.min(i, 5) * 55}ms`
             }}
             onClick={() => openPrayerPicker(s.id)}
+            onAnimationEnd={(e) => {
+              // Drop the entrance class the moment it finishes. With
+              // fill:both the tile keeps its transform after the animation,
+              // which pins it to its own composited layer (over a rounded
+              // mask, a gradient pseudo-surface and a drop-shadow filter) -
+              // exactly the layer Android WebView can fail to raster, leaving
+              // one tile blank until a scroll repaints it ("tiles appearing
+              // blank, goes away on scroll"). Returning to a plain static
+              // element at the end gives every tile the normal paint path.
+              if (e.animationName === 'fadeUp') e.currentTarget.classList.remove('fade-in')
+            }}
           >
             <span className="tile-emoji">{s.emoji}</span>
             <span className="tile-name">{t(`trad.${s.id}.name`)}</span>

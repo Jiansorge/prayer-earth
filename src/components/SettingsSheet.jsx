@@ -140,7 +140,6 @@ export default function SettingsSheet() {
               ✕
             </button>
           </div>
-          <div className="sheet-handle" />
         </div>
         <div className="sheet-body" ref={bodyRef}>
 

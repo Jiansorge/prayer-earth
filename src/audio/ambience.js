@@ -25,6 +25,38 @@ const XFADE = 0.85
 // inaudible on a handset.
 export const BED_HEADROOM = 7.5
 
+// Per-preset loudness trim, applied on the preset bus in buildPreset.
+//
+// The seven builders hand-tune their own pad/air gains, which sets their
+// tone but not their level: _pad sums every note under one gain, so a
+// five-note stack (Reiki) and a two-note stack (Temple) at the "same" gain
+// are not the same loudness, and nothing ever equalized the result. The
+// request was simple - "some are louder than others, normalize them" - and
+// the honest way to do that is to measure, not to guess: render each preset
+// through an OfflineAudioContext and take the RMS past the crossfade.
+//
+// Measured at master gain 1 (median = Reiki):
+//   reiki 0.0765  ocean 0.0872  temple 0.0512  rain 0.0561
+//   forest 0.0608  space 0.1176  warm   0.0855
+// i.e. Space ran 1.54x the median and Temple 0.67x - a 2.3x spread from
+// the quietest bed to the loudest. Each trim is median/rms, so after the
+// table every bed lands on the same measured level (test-audio-ambient
+// renders all seven and asserts they stay inside a band).
+//
+// Kept as one table at the single choke point every bed passes through
+// (the bus ramp in buildPreset), so rebuilding a generator can never
+// silently re-unbalance the rack, and the values are testable without an
+// AudioContext - same pattern as BED_HEADROOM and ceilingCurve.
+export const PRESET_TRIM = {
+  reiki: 1,
+  ocean: 0.88,
+  temple: 1.5,
+  rain: 1.36,
+  forest: 1.26,
+  space: 0.65,
+  warm: 0.9
+}
+
 export function bedTarget({ level, ambienceLevel, volume }) {
   const l = Math.max(0, Math.min(1, Number(level) || 0))
   const a = Math.max(0, Math.min(1, Number(ambienceLevel) || 0))
@@ -486,9 +518,12 @@ export class AmbientEngine {
     const ctx = this.ctx
     const bus = ctx.createGain()
     // Ramp the new bed in so switching is a crossfade, not a level step.
+    // The ramp target is the bed's measured loudness trim (PRESET_TRIM), not
+    // unity - the trim IS the level of the bed, applied at the one point all
+    // seven pass through.
     const t = ctx.currentTime
     bus.gain.setValueAtTime(0.0001, t)
-    bus.gain.linearRampToValueAtTime(1, t + XFADE)
+    bus.gain.linearRampToValueAtTime(PRESET_TRIM[id] ?? 1, t + XFADE)
     bus.connect(this.master)
     this.presetBus = bus
     this.presetStops = []

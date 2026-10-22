@@ -211,6 +211,25 @@ ok(
   'tiles show per-spirit counts',
   (await c.eval(`document.querySelectorAll('.tile-praying').length`)) === SPIRITUALITIES.length
 )
+// Regression: one home tile used to sit blank until a scroll repainted it.
+// The entrance animation leaves a filled transform (fill:both) that pins each
+// tile to its own composited layer - the layer Android WebView can fail to
+// raster - so HomePage now drops the fade-in class on animationend and every
+// tile finishes as a plain static element. Once the cascade (max 275ms delay
+// + 0.55s) has certainly finished, assert the end state for every tile:
+// fully visible, no animation left running, real painted box. A blank tile
+// fails this even though it is in the DOM.
+ok(
+  'every home tile finishes visible with no lingering entrance animation',
+  await c.waitFor(`(() => {
+    const tiles = document.querySelectorAll('.tile')
+    if (!tiles.length) return false
+    return [...tiles].every((el) => {
+      const cs = getComputedStyle(el)
+      return cs.opacity === '1' && cs.animationName === 'none' && el.getBoundingClientRect().width > 0
+    })
+  })()`, 8000)
+)
 
 // --- settings sheet ---
 ok('settings button present', await c.waitFor(`!!document.querySelector('.gear-btn')`))

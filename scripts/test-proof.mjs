@@ -364,16 +364,62 @@ ok('G5 repeat-on reaches the live job before the prayer ends',
   !!g5On && g5On.tagged && g5On.jobLoop === true && g5On.storeLoop === true,
   JSON.stringify(g5On))
 
-// G6 voice switch while playing (open the tune panel, pick the first voice)
+// G6 voice switch while playing (open the tune panel, pick another voice).
+// The old assertion was `playing && !paused` - which a stranded engine
+// satisfies happily, because the store flags stay set while nothing makes a
+// sound. That is exactly the reported failure: change the voice mid-prayer
+// (swarea -> madhur) and speech died for good while the UI looked fine. So
+// the switch must now prove a rebuild really happened: a new job object took
+// over (tag the old one first), a different voice is selected when the
+// prayer offers one, an audio path is provably alive, and it is actually
+// progressing - the element's clock advancing between two samples.
 await sleep(300)
 const tuneOpened = await click('.ctrl-btn.tune')
 ok('G6a tune panel opens', !!tuneOpened)
 const voiceChip = await waitFor(`!!document.querySelector('.voice-chip')`, 6000)
 if (voiceChip) {
-  await click('.voice-chip')
-  await sleep(600)
-  s = await S()
-  ok('G6 voice switch while playing keeps it playing', s.playing && !s.paused, `playing=${s.playing} paused=${s.paused}`)
+  await evaljs(`(() => { const sp = window.__speech; if (sp && sp.job) sp.job.__g6 = 1; return !!(sp && sp.job) })()`)
+  const g6pick = await evaljs(`(() => {
+    const chips = [].slice.call(document.querySelectorAll('.voice-chip'))
+    const alt = chips.find((c) => !c.classList.contains('on'))
+    const chip = alt || chips[0]
+    const st = window.__store.getState()
+    const before = (st.prayerVoices || {})[st.prayerId] || null
+    if (chip) chip.click()
+    return { count: chips.length, changed: !!alt, before, prayerId: st.prayerId }
+  })()`)
+  await sleep(700)
+  const g6s1 = await evaljs(`(() => {
+    const sp = window.__speech, st = window.__store.getState()
+    const el = sp && sp.cloudAudio
+    return {
+      playing: !!st.playing, paused: !!st.paused, active: !!(sp && sp.job && sp.job.active),
+      fresh: !!(sp && sp.job && !sp.job.__g6),
+      buf: !!(sp && sp.cloudSource), synth: !!(sp && sp.synth && sp.synth.speaking),
+      el: el ? { paused: el.paused, ended: el.ended, t: el.currentTime } : null,
+      after: (st.prayerVoices || {})[st.prayerId] || null
+    }
+  })()`)
+  await sleep(500)
+  const g6s2 = await evaljs(`(() => {
+    const sp = window.__speech
+    const el = sp && sp.cloudAudio
+    return { t: el ? el.currentTime : null, buf: !!(sp && sp.cloudSource), synth: !!(sp && sp.synth && sp.synth.speaking) }
+  })()`)
+  const g6alive = g6s1.buf || (g6s1.el && !g6s1.el.paused && !g6s1.el.ended) || g6s1.synth
+  const g6progress = g6s1.el
+    ? typeof g6s2.t === 'number' && g6s2.t > g6s1.el.t
+    : g6s1.buf ? !!g6s2.buf : !!g6s2.synth
+  ok('G6 voice switch while playing keeps it playing',
+    g6s1.playing && !g6s1.paused, `playing=${g6s1.playing} paused=${g6s1.paused}`)
+  ok('G6 the switch rebuilt the job and an audio path is alive and progressing',
+    g6s1.active && g6s1.fresh && !!g6alive && g6progress,
+    JSON.stringify({ g6pick, g6s1, g6s2 }))
+  if (g6pick.changed) {
+    ok('G6 a different voice was selected',
+      !!g6s1.after && g6s1.after !== g6pick.before,
+      JSON.stringify({ before: g6pick.before, after: g6s1.after }))
+  }
   await click('.ctrl-btn.tune') // close the panel
 } else {
   ok('G6 voice chip available', false, 'no .voice-chip')
@@ -387,6 +433,45 @@ s = await S()
 const j7 = await job()
 ok('G7 playing survives opening settings', s.playing && !s.paused && j7.has, `playing=${s.playing} paused=${s.paused}`)
 await evaljs(`window.__store.getState().setSettingsOpen(false)`)
+
+// H. The app leaves the screen: pause, do not compete (Oct 20: "if i minimize
+// the app on my phone, and try to play another video, the app wont interfere").
+// The hidden state takes the pause button's own path - job preserved, bed
+// silenced - and returning does NOT auto-resume, because resuming into someone
+// else's video would be the same interference. document.hidden is overridden
+// because a headless window cannot actually be minimized; the event path is
+// the one the listener registers for.
+await sleep(300)
+const hBefore = await S()
+await evaljs(`(() => {
+  Object.defineProperty(document, 'hidden', { configurable: true, get: () => true })
+  document.dispatchEvent(new Event('visibilitychange'))
+})()`)
+await sleep(600)
+s = await S()
+const jh = await job()
+ok('H1 hiding the app pauses the prayer', hBefore.playing && s.playing && s.paused, `playing=${s.playing} paused=${s.paused}`)
+ok('H2 the job survives the hide for a later resume', jh.has && jh.paused, JSON.stringify(jh))
+await evaljs(`(() => {
+  Object.defineProperty(document, 'hidden', { configurable: true, get: () => false })
+  document.dispatchEvent(new Event('visibilitychange'))
+})()`)
+await sleep(400)
+s = await S()
+ok('H3 returning to the app does not auto-resume', s.playing && s.paused, `playing=${s.playing} paused=${s.paused}`)
+await evaljs(`(() => {
+  // The footer play only exists off the prayer view; here the page's own
+  // toggle is the resume control. Either way it is the user's tap that wakes
+  // the hidden-paused job - nothing resumes on its own.
+  const nav = document.querySelector('nav .nav-play')
+  if (nav) { nav.click(); return 'nav' }
+  const page = document.querySelector('.ctrl-btn.play')
+  if (page) { page.click(); return 'page' }
+  return 'none'
+})()`)
+await waitFor(`window.__store.getState().paused === false`, 6000)
+s = await S()
+ok('H4 the play control still wakes the prayer after a hide', s.playing && !s.paused, `playing=${s.playing} paused=${s.paused}`)
 
 // G8 final: stop everything, zero exceptions anywhere
 await click('nav .nav-stop')

@@ -106,3 +106,45 @@ export async function stopPlayback() {
   // cost that a level move cannot pay off.
   ambient.stop()
 }
+
+// ---- The app left the screen: pause, do not compete -------------------------
+// "if i minimize the app on my phone, and try to play another video, the app
+// wont interfere with other phone functionality (esp when our app is
+// minimized), right?" Until now the answer was no: with the app hidden the
+// WebView kept speaking, so the next video on the phone played over ours.
+// Hopping between views INSIDE the app is still not a pause (the proof's D
+// series and the earth suite's T2 pin that); only leaving the screen is.
+//
+// Hiding takes the exact path the pause button takes - the audited branch in
+// requestPlayToggle: the job survives for a later resume, the bed drops to
+// silence, presence reports the pause. Coming back does NOT auto-resume;
+// resuming into someone else's video would be the same interference, so the
+// person taps play when they want the prayer again (the wake-recovery clicks
+// in the earth suite).
+export function pauseForHidden() {
+  const s = useStore.getState()
+  if (!s.playing || s.paused) return
+  requestPlayToggle().catch(() => {})
+}
+
+// Both surfaces, because neither covers every case alone: visibilitychange is
+// what the web fires, and the Capacitor App plugin's appStateChange is the
+// guaranteed signal on Android, where the WebView's own visibility has been
+// unreliable across versions. Idempotent through the paused guard above, so
+// the two firing together is one pause.
+let hiddenPauseArmed = false
+function armHiddenPause() {
+  if (hiddenPauseArmed || typeof document === 'undefined') return
+  hiddenPauseArmed = true
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseForHidden()
+  })
+  import('@capacitor/app')
+    .then((m) =>
+      m.App.addListener('appStateChange', ({ isActive }) => {
+        if (!isActive) pauseForHidden()
+      })
+    )
+    .catch(() => {}) // web build: no native App runtime, visibility covers it
+}
+armHiddenPause()

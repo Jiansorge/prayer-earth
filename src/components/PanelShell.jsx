@@ -7,8 +7,8 @@ export default function PanelShell({ title, onBack, children, testId }) {
   return (
     <div className="settings-panel" data-testid={testId}>
       <div className="settings-panel-head">
-        <button type="button" className="settings-back" onClick={onBack}>
-          ‹ {t('settings.back')}
+        <button type="button" className="settings-back" onClick={onBack} aria-label={t('settings.back')}>
+          ←
         </button>
         <div className="settings-panel-title">{title}</div>
       </div>
