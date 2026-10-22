@@ -373,13 +373,34 @@ class SpeechEngine {
     if (this._elSilence) return this._elSilence
     let audible = false
     try {
-      audible = !el.paused && !el.ended && el.volume > 0.002
+      // Under the graph the element sits at 1 for its whole life, so the
+      // audibility of the phrase is the gain's target, not el.volume.
+      audible = !el.paused && !el.ended &&
+        (this._elGain ? this._elTarget > 0.002 : el.volume > 0.002)
     } catch {}
     if (!audible) {
       // Already silent (a phrase that really ended, or never started): the
       // pause is a no-op and there is no step to hide.
       try { el.pause() } catch {}
       return Promise.resolve()
+    }
+    if (this._elGain) {
+      // Audio-thread fade: continuous under any main-thread load, where the
+      // stepped el.volume writes bunched into audible jumps on the phone.
+      try {
+        this._elGain.gain.setTargetAtTime(0.0001, this._elGain.context.currentTime, 0.012)
+      } catch {}
+      this._elTarget = 0.0001
+      let self
+      self = new Promise((resolve) => {
+        setTimeout(() => {
+          if (this._elSilence === self) this._elSilence = null
+          try { el.pause() } catch {}
+          resolve()
+        }, Math.max(ms, 60))
+      })
+      this._elSilence = self
+      return self
     }
     this._elSilence = this._rampElementVolume(el, 0.001, ms).then(() => {
       try { el.pause() } catch {}
@@ -403,6 +424,66 @@ class SpeechEngine {
     }
     this._el = el
     return el
+  }
+
+  // Wire the shared <audio> element into the WebAudio graph, once per context.
+  //
+  // On native the element plays every phrase, and its fades were writes to
+  // el.volume on a 15ms timer: four big steps per fade-in, and under a busy
+  // main thread fewer and larger ones - the intermittent static/clicky sound
+  // reported on the phone. A MediaElementAudioSourceNode hands the same audio
+  // to the audio thread, so both fades become the continuous ramps the decoded
+  // path already uses, and the phrase joins the shared limiter it used to
+  // bypass. Returns null whenever the graph cannot take it - no context, a
+  // suspended one (the element still sounds without the graph, so a fallback
+  // phrase must stay on the hardware route), or an element already bound to a
+  // dead context - and every caller then falls back to the stepped ramp.
+  _phraseOut() {
+    const el = this._elementEl()
+    const ctx = ambient.ctx
+    if (!ctx || ctx.state !== 'running') return null
+    try {
+      if (
+        this._elSource && this._elSource.context === ctx &&
+        this._elGain && this._elGain.context === ctx
+      ) {
+        return this._elGain
+      }
+      // End a fallback-era volume ramp the same way a superseding ramp would,
+      // so no stale timer keeps writing el.volume under the graph.
+      if (this._volTimer) {
+        clearTimeout(this._volTimer)
+        this._volTimer = null
+      }
+      if (this._volDone) {
+        const done = this._volDone
+        this._volDone = null
+        done()
+      }
+      const source = ctx.createMediaElementSource(el)
+      const gain = ctx.createGain()
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime)
+      source.connect(gain)
+      gain.connect(this._outNode(ctx))
+      if (TEST_HOOKS) {
+        // Audibility probe for the device suite: an analyser behind the gain
+        // so the phone can prove sound really crosses the graph - a
+        // MediaElementSource that outputs silence would pass every state check.
+        try {
+          const an = ctx.createAnalyser()
+          an.fftSize = 2048
+          gain.connect(an)
+          this._elAnalyser = an
+        } catch {}
+      }
+      this._elSource = source
+      this._elGain = gain
+      this._elTarget = 0.0001
+      try { el.volume = 1 } catch {}
+      return gain
+    } catch {
+      return null
+    }
   }
 
   async speakCloud(i) {
@@ -562,6 +643,10 @@ class SpeechEngine {
         // is "voices stopped working completely" after swarea -> madhur.
         if (!isCurrent()) return true
         const el = this._elementEl()
+        // Graph route when the context is running; otherwise the element keeps
+        // the hardware route (a suspended context would silence it) and the
+        // stepped ramp below.
+        const out = this._phraseOut()
         el.preservesPitch = true
         el.mozPreservesPitch = true
         el.webkitPreservesPitch = true
@@ -589,7 +674,11 @@ class SpeechEngine {
         // that step was the recorded-prayer click). The shared ramp helper
         // also cancels itself if the user moves the volume slider mid-phrase.
         const target = Math.max(0.001, Math.min(1, (useStore.getState().volume ?? 0.8) * 1))
-        el.volume = 0.001
+        // Silent before the first sample either way: under the graph the gain
+        // owns loudness and the element sits at 1 (also overwriting any low
+        // volume a fallback-era ramp left behind); without the graph the
+        // element itself starts silent for the stepped ramp below.
+        el.volume = out ? 1 : 0.001
         el.playbackRate = rate
         el.currentTime = 0
         el.onended = finish
@@ -602,7 +691,20 @@ class SpeechEngine {
         // while it settled (stop() nulled cloudAudio), ramping now would
         // re-volume an element the new job has already taken over.
         if (!isCurrent()) return true
-        this._rampElementVolume(el, target)
+        if (out) {
+          // Audio-thread fade-in: continuous whatever the main thread is
+          // doing, the same class of ramp the decoded path uses.
+          try {
+            const g = out.gain
+            const t = ctx.currentTime
+            g.cancelScheduledValues(t)
+            g.setValueAtTime(0.0001, t)
+            g.linearRampToValueAtTime(target, t + 0.06)
+            this._elTarget = target
+          } catch {}
+        } else {
+          this._rampElementVolume(el, target)
+        }
       }
       const next = i + 1
       const np = job.phrases[next]
@@ -873,7 +975,18 @@ class SpeechEngine {
   // crackled the voice instead of turning it down.
   setVolume(volume) {
     const vol = Math.max(0, Math.min(1, volume ?? 0.8))
-    if (this.cloudAudio) this._rampElementVolume(this.cloudAudio, vol)
+    if (this.cloudAudio) {
+      if (this._elGain) {
+        // Graph route: the same audio-thread ramp as the buffer path, from
+        // wherever the gain actually is.
+        try {
+          this._elTarget = vol
+          this._elGain.gain.setTargetAtTime(Math.max(0.001, vol), this._elGain.context.currentTime, 0.03)
+        } catch {}
+      } else {
+        this._rampElementVolume(this.cloudAudio, vol)
+      }
+    }
     if (this.cloudGain) {
       try {
         // Starts from wherever the gain actually is, so it cannot jump in.

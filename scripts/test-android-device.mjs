@@ -283,6 +283,28 @@ const testAudio = async () => {
   check('Android audio route starts', !!audio, JSON.stringify(state))
   check('reverb configuration reaches the APK', state.reverb === 0.24, `gain=${state.reverb}`)
   if (state.element) check('audio element is not paused', state.paused === false, JSON.stringify(state))
+  // Prove the phrase is audible THROUGH the graph. Since Oct 22 the element
+  // route fades on a MediaElementSource gain node (the fix for the phone's
+  // intermittent static/clicky boundaries), and a source that outputs silence
+  // on some WebView would pass every state check above - the analyser sits
+  // behind that gain, so this reads the actual waveform crossing it.
+  if (state.element) {
+    const rms = await cdp.evaluate(`(async () => {
+      const an = window.__speech?._elAnalyser
+      if (!an) return { have: false }
+      const buf = new Float32Array(an.fftSize)
+      let peak = 0
+      for (let i = 0; i < 10; i++) {
+        await new Promise((r) => setTimeout(r, 120))
+        try { an.getFloatTimeDomainData(buf) } catch { return { have: true, err: true } }
+        let s = 0
+        for (let j = 0; j < buf.length; j++) s += buf[j] * buf[j]
+        peak = Math.max(peak, Math.sqrt(s / buf.length))
+      }
+      return { have: true, peak }
+    })()`)
+    check('the phrase is audible through the graph', !!(rms && rms.have && rms.peak > 0.002), JSON.stringify(rms))
+  }
   const exceptions = cdp.events.filter((event) => event.method === 'Runtime.exceptionThrown')
   const exceptionText = exceptions.map((event) => event.params?.exceptionDetails?.exception?.description || event.params?.exceptionDetails?.text || 'unknown').join(' | ')
   // Must match BOTH app-shell schemes. The shell is served from https://localhost

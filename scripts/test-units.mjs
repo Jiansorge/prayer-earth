@@ -671,6 +671,10 @@ const stripComments = (text) =>
     setVol.slice(0, 220))
   check('the element volume ramps instead of stepping',
     /_rampElementVolume\(this\.cloudAudio/.test(setVol))
+  check('the element route re-tunes on the audio thread when it is in the graph',
+    /this\._elGain\.gain\.setTargetAtTime/.test(setVol) &&
+      /this\._elTarget = vol/.test(setVol),
+    'a slider drag would step el.volume under the graph instead of ramping the gain')
 
   // A phrase stopped at full amplitude ends mid-waveform. The fade has to be
   // scheduled before the stop, and the stop has to be in the future.
@@ -719,12 +723,28 @@ const stripComments = (text) =>
     !!rampBody && /this\._volDone = resolve/.test(rampBody) && /done\(\)/.test(rampBody),
     rampBody ? 'a slider drag during a cut leaves the pending fade unresolvable - the next phrase never starts' : '_rampElementVolume not found')
   const cutBody = stripComments(
-    (speech.match(/_cutElement\(ms = 35\) \{[\s\S]{0,900}?\n  \}/) || [''])[0]
+    (speech.match(/_cutElement\(ms = 35\) \{[\s\S]{0,2400}?\n  \}/) || [''])[0]
   )
   check('a phrase boundary fades the element out before the cut',
-    !!cutBody && /_rampElementVolume\(el, 0\.001, ms\)/.test(cutBody) && /el\.pause\(\)/.test(cutBody) &&
+    !!cutBody && /_elGain\.gain\.setTargetAtTime\(0\.0001/.test(cutBody) &&
+      /_rampElementVolume\(el, 0\.001, ms\)/.test(cutBody) && /el\.pause\(\)/.test(cutBody) &&
       /await this\._silenceElement\(\)/.test(speech) && /this\._cutElement\(\)/.test(stopBody),
-    cutBody ? 'the element still pauses at full amplitude on every cut' : '_cutElement not found')
+    cutBody ? 'the element still pauses at full amplitude on some route' : '_cutElement not found')
+  // The graph route the phone plays through: one guarded attach, fades on the
+  // audio thread, and the stepped timer kept only as the fallback for a
+  // context that is not running (the element still sounds without the graph).
+  const phraseOut = stripComments(
+    (speech.match(/_phraseOut\(\) \{[\s\S]{0,2600}?\n  \}/) || [''])[0]
+  )
+  check('the element joins the shared graph through one guarded attach',
+    !!phraseOut && /createMediaElementSource\(el\)/.test(phraseOut) &&
+      /gain\.connect\(this\._outNode\(ctx\)\)/.test(phraseOut) &&
+      /ctx\.state !== 'running'/.test(phraseOut) &&
+      !/gain\.value\s*=/.test(phraseOut),
+    phraseOut ? 'the attach lost its guard or steps a gain' : '_phraseOut not found')
+  check('the graph attach leaves no stale element-volume timer running',
+    !!phraseOut && /this\._volTimer/.test(phraseOut) && /clearTimeout\(this\._volTimer\)/.test(phraseOut),
+    phraseOut ? 'a fallback-era ramp keeps writing el.volume under the graph' : '_phraseOut not found')
   // Only _rampElementVolume ends a ramp - by finishing it, or by a newer
   // ramp superseding it (which resolves the promise first). stopCloudSource
   // clearing the shared timer killed a running cut's last tick without
@@ -784,9 +804,11 @@ const stripComments = (text) =>
     'a superseded continuation writes el.src/onended for a dead job after _silenceElement - the live phrase never advances')
   const iPlay = sp.indexOf('await el.play()')
   const iRamp = sp.indexOf('this._rampElementVolume(el, target)', iPlay)
-  const playSeg = iPlay >= 0 && iRamp > iPlay && iRamp - iPlay < 400 ? sp.slice(iPlay, iRamp) : ''
+  // Both fade-ins live after the guard: the graph ramp (if (out) {...}) and
+  // the stepped fallback. The window spans both.
+  const playSeg = iPlay >= 0 && iRamp > iPlay && iRamp - iPlay < 900 ? sp.slice(iPlay, iRamp) : ''
   check('a phrase superseded during play() is not ramped',
-    !!playSeg && playSeg.includes('if (!isCurrent()) return true'),
+    !!playSeg && playSeg.includes('if (!isCurrent()) return true') && playSeg.includes('if (out)'),
     'a stale ramp re-volumes the shared element the new job took over')
   const iCancel = sp.lastIndexOf('this.synth.cancel()')
   const stopSeg = iCancel >= 0 ? sp.slice(iCancel, iCancel + 300) : ''
@@ -1957,22 +1979,31 @@ const stripComments = (text) =>
     stopBody ? 'stop() leaves the service running with nothing to play' : 'SpeechEngine.stop not found'
   )
 
-  // The native route plays every phrase through the shared <audio> element,
-  // which starts at full volume on whatever its first sample happens to be -
-  // the same step the buffer path already fades out of, heard on Android as a
-  // click at every phrase start.
+  // The native route plays every phrase through the shared <audio> element.
+  // It used to start at full volume on whatever its first sample happened to
+  // be; now it starts silent either way - under the graph the gain owns
+  // loudness (the element sits at 1), and without the graph the element itself
+  // starts at 0.001 for the stepped ramp.
   const cloudBody = fnBody(speechSrc, 'async speakCloud(i) {')
   const elStart = cloudBody ? cloudBody.slice(cloudBody.indexOf('const el = this._elementEl()'), cloudBody.indexOf('await el.play()')) : null
   const elAfter = cloudBody ? cloudBody.slice(cloudBody.indexOf('await el.play()'), cloudBody.indexOf('const next = i + 1')) : null
   check(
     'a recorded phrase starts silent on the element path',
-    !!elStart && /el\.volume = 0\.001/.test(elStart),
+    !!elStart && /el\.volume = out \? 1 : 0\.001/.test(elStart) &&
+      /const out = this\._phraseOut\(\)/.test(elStart),
     elStart ? 'the element jumps to full volume on its first sample' : 'element branch not located'
   )
   check(
     'a recorded phrase ramps up to the chosen volume after play',
     !!elAfter && /this\._rampElementVolume\(el, target\)/.test(elAfter),
     elAfter ? 'no ramp after play(): the fade-in never reaches the user volume' : 'element branch not located'
+  )
+  check(
+    'under a running context the element fades in on the audio thread',
+    !!elAfter && /if \(out\)/.test(elAfter) &&
+      /cancelScheduledValues\(t\)/.test(elAfter) &&
+      /linearRampToValueAtTime\(target, t \+ 0\.06\)/.test(elAfter),
+    elAfter ? 'no graph fade-in after play(): every phrase start is the stepped ramp again' : 'element branch not located'
   )
 
   const appSrc = readFileSync(path.join(ROOT, 'src/App.jsx'), 'utf8')
