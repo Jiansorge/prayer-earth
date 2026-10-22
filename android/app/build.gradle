@@ -66,7 +66,7 @@ android {
     // opt-in presence sharing, which did not exist in the uploaded 25.
     // 28: the picker keeps your place in a tradition, its favourites strip fits
     // inside the sheet, and the home grid no longer returns half-blank.
-    versionCode 28
+    versionCode 30
     versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
@@ -90,6 +90,15 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+        }
+        debug {
+            // The phone already carries an app signed with the upload key, so
+            // the default debug keystore cannot update it
+            // (INSTALL_FAILED_UPDATE_INCOMPATIBLE) and an uninstall would take
+            // the reader's prayer counts with it. Sign device-test debug builds
+            // with the release key when this machine has it; a fresh clone
+            // without key.properties keeps the default debug keystore.
+            if (keystorePropsFile.exists()) signingConfig signingConfigs.release
         }
     }
 }
