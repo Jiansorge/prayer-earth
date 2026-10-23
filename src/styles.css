@@ -537,6 +537,10 @@ h3,
   display: flex;
   align-items: center;
   justify-content: center;
+  /* The play triangle's ink measured 1px low in the nav's circle (Oct 22).
+     The base rule (.nav button) gives this 8px of padding on every side; the
+     extra 2px on the bottom lifts the centered line by 1px. */
+  padding-bottom: 10px;
   cursor: pointer;
   transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
 }
@@ -844,6 +848,9 @@ h3,
      a hair left of the button's true center. (Requested Oct 20.) */
   display: grid;
   place-items: center;
+  /* Vertically, this arrow's ink measured 1px low on Oct 22 (see .settings-back
+     for the same lift, sized to this page's own reading). */
+  padding-bottom: 2px;
 }
 
 .legal-view .back-row {
@@ -1328,6 +1335,10 @@ html[dir='rtl'] .chooser-arrow.right {
   width: 52px;
   height: 52px;
   font-size: 19px;
+  /* The control glyphs inked up to 1.5px low (Oct 22 measurement); 1px of
+     padding lifts everything half a pixel without pushing the high ink of
+     the repeat glyph past centre. */
+  padding-bottom: 1px;
 }
 
 .ctrl-btn:hover,
@@ -2149,6 +2160,8 @@ html[dir='rtl'] .chooser-arrow.right {
   height: 34px;
   border-radius: 50%;
   font-size: 15px;
+  /* The ✕ inked half a pixel low (Oct 22). */
+  padding-bottom: 1px;
   cursor: pointer;
   transition: background 0.2s var(--ease), color 0.2s var(--ease);
 }
@@ -2356,6 +2369,10 @@ html[dir='rtl'] .chooser-arrow.right {
   color: var(--ink);
   font: inherit;
   font-size: 18px;
+  /* The arrow's ink measures 1.5px below the button's centre (TextMetrics,
+     Oct 22) - grid centering lines up the line box, not the glyph inside it.
+     Padding-bottom shrinks the content box, lifting the line by half of it. */
+  padding-bottom: 3px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -2686,6 +2703,9 @@ html[dir='rtl'] .chooser-arrow.right {
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.04);
   font-size: 20px;
+  /* Emoji ink varies by glyph (+1 to +2.5px measured Oct 22): this lifts all
+     of them half the worst case, leaving every swatch within a pixel. */
+  padding-bottom: 3px;
   cursor: pointer;
   transition: transform 0.2s var(--ease), border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
 }
@@ -2914,6 +2934,8 @@ html[dir='rtl'] .chooser-arrow.right {
   width: 46px;
   height: 46px;
   border-radius: 50%;
+  /* The share glyph inked 1px above centre (Oct 22). */
+  padding-top: 2px;
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -4570,6 +4592,9 @@ input[type='radio'] {
   border-radius: 50%;
   font-size: 16px;
   line-height: 1;
+  /* The star's ink sits above the centre (measured -1.5px, Oct 22); padding-top
+     lowers the line by half of it. */
+  padding-top: 3px;
   cursor: pointer;
   transition: color 0.2s var(--ease), border-color 0.2s var(--ease), text-shadow 0.2s var(--ease), transform 0.25s var(--ease);
 }
