@@ -214,33 +214,49 @@ class CDP {
 }
 
 const connect = async () => {
-  const pid = await appPid()
-  try { adb(['forward', '--remove', `tcp:${PORT}`]) } catch {}
-  adb(['forward', `tcp:${PORT}`, `localabstract:webview_devtools_remote_${pid}`])
-  forwarded = true
-  for (let i = 0; i < 40; i++) {
-    try {
-      const response = await fetch(`http://127.0.0.1:${PORT}/json`, { signal: AbortSignal.timeout(1000) })
-      const pages = await response.json()
-      const page = pages.find((item) => item.type === 'page')
-      if (page) {
-        const client = new CDP(page.webSocketDebuggerUrl)
-        try {
-          await client.open()
-          await client.send('Runtime.enable')
-          try { await client.send('Log.enable') } catch {}
-          await client.send('Page.enable')
-          cdp = client
-          return cdp
-        } catch (error) {
-          client.close()
-          throw error
+  // Hold one referenced handle for the whole attempt. Twice on Oct 22 the
+  // first run after a fresh USB plug died with Node exit 13 ("unsettled
+  // top-level await") right at this call, before any step could reject or
+  // report, even though every step below is individually bounded. An idle
+  // interval changes no outcome - it only keeps the process alive long
+  // enough to surface the rejections those bounds guarantee, instead of
+  // vanishing before them.
+  const beat = setInterval(() => {}, 1000)
+  try {
+    const pid = await appPid()
+    try { adb(['forward', '--remove', `tcp:${PORT}`]) } catch {}
+    adb(['forward', `tcp:${PORT}`, `localabstract:webview_devtools_remote_${pid}`])
+    forwarded = true
+    let lastError = ''
+    for (let i = 0; i < 40; i++) {
+      try {
+        const response = await fetch(`http://127.0.0.1:${PORT}/json`, { signal: AbortSignal.timeout(1000) })
+        const pages = await response.json()
+        const page = pages.find((item) => item.type === 'page')
+        if (page) {
+          const client = new CDP(page.webSocketDebuggerUrl)
+          try {
+            await client.open()
+            await client.send('Runtime.enable')
+            try { await client.send('Log.enable') } catch {}
+            await client.send('Page.enable')
+            cdp = client
+            return cdp
+          } catch (error) {
+            client.close()
+            throw error
+          }
         }
+        lastError = 'no page in /json'
+      } catch (error) {
+        lastError = String((error && error.message) || error).slice(0, 160)
       }
-    } catch {}
-    await sleep(250)
+      await sleep(250)
+    }
+    throw new Error(`WebView DevTools endpoint did not become available${lastError ? ` (last error: ${lastError})` : ''}`)
+  } finally {
+    clearInterval(beat)
   }
-  throw new Error('WebView DevTools endpoint did not become available')
 }
 
 const dismissOnboarding = async () => {
