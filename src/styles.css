@@ -853,6 +853,16 @@ h3,
   padding-bottom: 2px;
 }
 
+/* The back arrow alone needs a bigger lift than its row-mates: the same glyph
+   reads 0px with Segoe UI Symbol (Windows), +2px with DejaVu (the Linux CI
+   runner) and +2.8px with Noto (Android) - measured Oct 23 - and 1.5px is the
+   largest lift that brings all three inside +-1.5px. Scoped to the first child
+   so the favourite and share buttons keep the 2px their own tuning assumed
+   (the row rule above reaches all three). */
+.back-row button:first-child {
+  padding-bottom: 5px;
+}
+
 .legal-view .back-row {
   /* A touch more breathing room from the view edge than the generic 22px
      padding: the back control is the first thing a thumb reaches for. */
