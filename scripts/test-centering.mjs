@@ -15,7 +15,10 @@
 // (PanelShell back), and the legal sheet (its own back + close). Every run
 // re-walks every screen; RUNS defaults to 10, and a selector's offset must
 // stay within TOL on every single run (variance is its own smell: a glyph that
-// lands somewhere different between runs is riding an animation).
+// lands somewhere different between runs is riding an animation). One
+// uncounted warm-up walk runs first, and every counted walk must measure the
+// same controls per screen - a short walk fails, because a PASS over an
+// incomplete walk claims coverage nobody took (Oct 23).
 //
 // Usage: node scripts/test-centering.mjs            (10 runs)
 //        RUNS=3 TOL=1.5 REPORT=1 node scripts/test-centering.mjs
@@ -168,8 +171,24 @@ const go = async (hash, marker) => {
   await settle()
 }
 
+// The settings sheet is an overlay independent of the hash, so a walk that
+// ends inside it (every walk does) hands the next one a sheet still open over
+// the page: the probe then measures behind-sheet controls and the per-walk
+// control count swings (home 1 vs 19, settings 34 vs 19 - observed Oct 23).
+// A count that moves between walks means no walk can claim full coverage, so
+// every walk starts by closing whatever is open.
+const closeSheet = async () => {
+  for (let i = 0; i < 4; i++) {
+    const open = await page.evaluate(() => !!document.querySelector('.sheet-body'))
+    if (!open) return
+    await page.evaluate(() => document.querySelector('.sheet-x')?.click())
+    await settle(400)
+  }
+}
+
 // Every screen a glyph-only control appears on, in walk order.
 const walk = async () => {
+  await closeSheet()
   const stops = []
   const snap = async (name) => {
     const rows = await page.evaluate(probe)
@@ -208,10 +227,18 @@ const walk = async () => {
 // ---- the pass ----------------------------------------------------------------
 const worst = new Map() // `${screen} :: ${sel}` -> { off, run }
 const runsSeen = []
+const perRunScreens = [] // controls seen per screen, per counted walk
 let offenderRuns = 0
+
+// The very first walk on a cold page sees fewer controls than any after it
+// (home grid at 1 vs 19, earth at 1 vs 3 - the render caches and entrance
+// states are not warm yet). One uncounted walk warms them, so every counted
+// walk starts from the same DOM and the count guard below is meaningful.
+await walk()
 
 for (let run = 1; run <= RUNS; run++) {
   const stops = await walk()
+  perRunScreens.push(stops.map((s) => s.rows.length))
   const offenders = []
   for (const { name, rows } of stops) {
     for (const row of rows) {
@@ -246,6 +273,23 @@ const finalStops = await walk()
 const finalRows = finalStops.flatMap((s) => s.rows.map((r) => ({ screen: s.name, ...r })))
 const finalOffenders = finalRows.filter((r) => Math.abs(r.off) > TOL)
 
+// Count guard: every counted walk and the final walk must see the same number
+// of controls on each screen. A short walk means coverage was claimed for a
+// screen nobody measured - the first cold walk saw 101 of 110 controls (Oct
+// 23) while printing PASS, and that is exactly the false pass this stops.
+const screenNames = finalStops.map((s) => s.name)
+const walks = [...perRunScreens, finalStops.map((s) => s.rows.length)]
+const full = screenNames.map((_, i) => Math.max(...walks.map((w) => w[i])))
+const drift = [
+  ...new Set(
+    walks.flatMap((w, i) =>
+      w.flatMap((n, j) =>
+        n === full[j] ? [] : [`walk ${i + 1} "${screenNames[j]}" saw ${n} of ${full[j]} controls`]
+      )
+    )
+  )
+]
+
 console.log(`[centering] tolerance ±${TOL}px across ${RUNS} walk(s)`)
 if (worst.size === 0) {
   console.log('[centering] FAIL  no glyph-only controls were found - the probe is broken')
@@ -256,12 +300,13 @@ for (const [key, v] of [...worst.entries()].sort()) {
   const flag = Math.abs(v.off) > TOL ? '  <-- OFF' : ''
   console.log(`[centering] ${Math.abs(v.off) > TOL ? 'FAIL' : 'ok  '}  ${key} worst=${v.off > 0 ? '+' : ''}${v.off}px${flag}`)
 }
+for (const d of drift) console.log(`[centering] FAIL  incomplete - ${d}`)
 
-const ok = offenderRuns === 0 && finalOffenders.length === 0
+const ok = offenderRuns === 0 && finalOffenders.length === 0 && drift.length === 0
 console.log(
   ok
     ? `[centering] PASS  ${worst.size} controls x ${RUNS} runs all within ±${TOL}px`
-    : `[centering] FAILED  ${finalOffenders.length} over tolerance on the final walk (offender runs: ${offenderRuns}/${RUNS})`
+    : `[centering] FAILED  ${finalOffenders.length} over tolerance on the final walk (offender runs: ${offenderRuns}/${RUNS})${drift.length ? `, ${drift.length} incomplete walk reading(s)` : ''}`
 )
 
 await browser.close()
