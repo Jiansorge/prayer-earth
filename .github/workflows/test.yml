@@ -178,6 +178,7 @@ jobs:
           - test-audio-ambient
           - test-a11y
           - test-settings-ui
+          - test-centering
           - test-main-thread
     steps:
       - uses: actions/checkout@v7

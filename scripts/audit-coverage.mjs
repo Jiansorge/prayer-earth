@@ -220,6 +220,22 @@ const ROWS = [
     'scripts/test-units.mjs', /click risk/,
     'an audible click on stop'],
 
+  // --- the phrase must reach the speakers without a pop ------------------
+  // The user heard "staticy clicky" prayer audio: fades ran on a JS timer
+  // that could not outpace playback, so the element's volume lagged its
+  // actual output. The fix moved them onto the audio thread.
+  ['app: phrase fades run on the audio thread, not a JS timer',
+    'scripts/test-units.mjs', /createMediaElementSource/,
+    'a JS-timer fade cannot outpace playback, so phrases popped in staticky'],
+  ['app: the phrase is audible through the graph on device',
+    'scripts/test-android-device.mjs', /the phrase is audible through the graph/,
+    'a graph that reaches the analyser but never the speakers is silent on Android'],
+
+  // --- every glyph sits in the middle of its button ----------------------
+  ['app: glyph centering holds across every control',
+    'scripts/test-centering.mjs', /actualBoundingBox/,
+    'the settings back arrow sat visibly low and padding drifts silently recur'],
+
   // --- release artefact ---
   ['release AAB carries no test hooks',
     'scripts/audit-aab.mjs', /test hooks are compiled out/,

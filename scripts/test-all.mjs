@@ -64,6 +64,7 @@ const STEPS = [
   'scripts/test-a11y.mjs',
   'scripts/test-main-thread.mjs',
   'scripts/test-settings-ui.mjs',
+  'scripts/test-centering.mjs',
   'scripts/audit-counts.mjs',
   'scripts/test-canonical-urls.mjs',
   'scripts/test-backup.mjs',
