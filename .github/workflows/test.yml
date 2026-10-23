@@ -192,7 +192,7 @@ jobs:
       # keyed on the lockfile, so the install only really downloads on the first
       # run after Playwright changes version.
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -236,7 +236,7 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -341,7 +341,7 @@ jobs:
       # the image is fetched once and never again until the API level changes.
       - name: Cache emulator system image
         id: sysimg-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /usr/local/lib/android/sdk/system-images/android-35/default/x86_64
           key: android-sysimg-35-default-x86_64
