@@ -1,3 +1,20 @@
+/* Control glyphs from one file, on every platform.
+   The arrows, stars, chevrons and transport marks in this app are text, so
+   they used to render in Segoe UI Symbol on Windows, DejaVu on the Linux CI
+   runner and Noto on Android - the same arrow measured 0px / +2px / +2.8px
+   from its button's centre (Oct 23), which no shared padding can satisfy.
+   This is a 4KB subset of DejaVu Sans holding only the control codepoints
+   (listed with the licence in assets/fonts/DejaVuSans-COPYRIGHT.txt); every
+   other character falls through per glyph to the stacks below, so prose and
+   scripts are untouched. font-display: block - a glyph painting in a system
+   font and then swapping would move under the reader (and under the probe);
+   the asset is local and tiny, so the block period is never seen. */
+@font-face {
+  font-family: 'DejaVu Symbols';
+  src: url('./assets/fonts/dejavu-symbols.woff2') format('woff2');
+  font-display: block;
+}
+
 :root {
   --bg-0: #07150d;
   --bg-1: #0b1f14;
@@ -12,8 +29,8 @@
   --accent-1: #7fc9a0;
   --accent-2: #e8b06f;
   --danger: #ff9e8f;
-  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
-  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --serif: 'DejaVu Symbols', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
+  --sans: 'DejaVu Symbols', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --radius: 20px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -23,6 +40,18 @@
   padding: 0;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* The UA sheet pins form controls to Arial, which overrides inheritance:
+   every button in the app was rendering its labels (and, through per-glyph
+   fallback, its symbols) outside --sans/--serif - measured Oct 23, when the
+   back button's computed font-family read "Arial" and the bundled glyph font
+   never reached it. inherit reconnects controls to the stacks above. */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 html,
@@ -848,20 +877,18 @@ h3,
      a hair left of the button's true center. (Requested Oct 20.) */
   display: grid;
   place-items: center;
-  /* Vertically, this arrow's ink measured 1px low on Oct 22 (see .settings-back
-     for the same lift, sized to this page's own reading). */
-  padding-bottom: 2px;
+  /* No vertical padding: with the bundled glyph font (Oct 23) the shared
+     round buttons all ink within half a pixel at zero lift - back arrow +0.5,
+     favourite -0.5, share -0.5 (the share glyph reads -0.5 at any padding).
+     Before the font each glyph landed differently per platform, which is what
+     the old per-button padding values were chasing. */
 }
 
-/* The back arrow alone needs a bigger lift than its row-mates: the same glyph
-   reads 0px with Segoe UI Symbol (Windows), +2px with DejaVu (the Linux CI
-   runner) and +2.8px with Noto (Android) - measured Oct 23 - and 1.5px is the
-   largest lift that brings all three inside +-1.5px. Scoped to the first child
-   so the favourite and share buttons keep the 2px their own tuning assumed
-   (the row rule above reaches all three). */
-.back-row button:first-child {
-  padding-bottom: 5px;
-}
+/* The back arrow alone needed a bigger lift than its row-mates while each
+   platform drew it from a different font (Segoe / DejaVu / Noto, Oct 23
+   morning). With the bundled glyph font all three platforms draw the same
+   outline and the row's shared zero padding lands every glyph within half a
+   pixel, so the per-child lift is gone. */
 
 .legal-view .back-row {
   /* A touch more breathing room from the view edge than the generic 22px
@@ -1345,9 +1372,9 @@ html[dir='rtl'] .chooser-arrow.right {
   width: 52px;
   height: 52px;
   font-size: 19px;
-  /* The control glyphs inked up to 1.5px low (Oct 22 measurement); 1px of
-     padding lifts everything half a pixel without pushing the high ink of
-     the repeat glyph past centre. */
+  /* The shared 1px lift: with the bundled glyph font (Oct 23) the repeat and
+     tune glyphs ink at -0.5px on it. Play and stop need their own values -
+     see the overrides below. */
   padding-bottom: 1px;
 }
 
@@ -1360,6 +1387,15 @@ html[dir='rtl'] .chooser-arrow.right {
   width: 66px;
   height: 66px;
   font-size: 26px;
+  /* The play triangle's ink measured +2px at the base 1px lift with the
+     bundled glyph font (Oct 23 sweep): +4px of extra padding lands it at 0. */
+  padding-bottom: 5px;
+}
+
+/* The stop square reads +1px at the base lift; 3px lands it at 0 (Oct 23
+   sweep). Repeat and tune already sit at -0.5px on the shared 1px. */
+.ctrl-btn.stop {
+  padding-bottom: 3px;
 }
 
 /* pressing play gives instant feedback: a pulsing glow + spinner while the
@@ -2170,8 +2206,8 @@ html[dir='rtl'] .chooser-arrow.right {
   height: 34px;
   border-radius: 50%;
   font-size: 15px;
-  /* The ✕ inked half a pixel low (Oct 22). */
-  padding-bottom: 1px;
+  /* No lift needed: with the bundled glyph font the x ink reads -0.5px at
+     zero padding (Oct 23 sweep; the old 1px landed it at -1px). */
   cursor: pointer;
   transition: background 0.2s var(--ease), color 0.2s var(--ease);
 }
@@ -2381,8 +2417,9 @@ html[dir='rtl'] .chooser-arrow.right {
   font-size: 18px;
   /* The arrow's ink measures 1.5px below the button's centre (TextMetrics,
      Oct 22) - grid centering lines up the line box, not the glyph inside it.
-     Padding-bottom shrinks the content box, lifting the line by half of it. */
-  padding-bottom: 3px;
+     Padding-bottom shrinks the content box, lifting the line by half of it.
+     With the bundled glyph font (Oct 23) 1px lands the arrow at ~0. */
+  padding-bottom: 1px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }

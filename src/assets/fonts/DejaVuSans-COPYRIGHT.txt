@@ -1,0 +1,8 @@
+Copyright (c) 2003 by Bitstream, Inc. All Rights Reserved.
+Copyright (c) 2006 by Tavmjong Bah. All Rights Reserved.
+DejaVu changes are in public domain
+
+dejavu-symbols.woff2 is an unmodified-outlines subset of the font named above,
+containing only these codepoints and generated with subset-font:
+U+2190 U+2191 U+2192 U+2193 U+2197 U+21EA U+2039 U+203A U+221E U+2248 U+2328 U+25B6 U+25BC U+25FC U+2605 U+2606 U+2630 U+2638 U+2699 U+2713 U+2715 U+275A U+27F3 U+FE0E
+Source: DejaVu Sans (https://dejavu-fonts.github.io/)

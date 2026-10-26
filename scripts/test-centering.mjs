@@ -84,6 +84,12 @@ await page.goto(APP, { waitUntil: 'load' })
 await page.waitForFunction(() => !!window.__store, null, { timeout: COLD_READY_TIMEOUT })
 await page.evaluate(() => document.querySelector('.onboard-skip, .onboard-begin')?.click())
 await page.waitForTimeout(600)
+// Canvas2D falls back silently to the system font for an @font-face that has
+// not loaded, so the probe would keep measuring glyphs the app no longer
+// draws. Load the bundled glyph font explicitly before the first walk.
+await page.evaluate(async () => {
+  await Promise.all([document.fonts.load('16px "DejaVu Symbols"', '←▶'), document.fonts.ready])
+})
 
 // The page-side probe. Returns { sel, kind, off } per glyph-only control, off
 // in px: positive means the ink sits BELOW the button's centre.
