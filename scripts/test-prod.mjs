@@ -6,6 +6,7 @@
 
 import { spawn } from 'node:child_process'
 import WebSocket from 'ws'
+import buddhism from '../src/data/spirits/buddhism.js'
 
 const APP = process.env.APP_URL || 'http://localhost:4173'
 const EDGE = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
@@ -96,7 +97,10 @@ const prayer = await waitFor(`!!document.querySelector('.prayer-stage')`)
 ok('prayer view renders via deep link', !!prayer)
 ok('backdrop canvas present', !!(await waitFor(`!!document.querySelector('.earth-backdrop canvas')`)))
 const chips = await evaljs(`document.querySelectorAll('.chooser .chip:not(.chip-all)').length`)
-ok('prayer chips render', chips === 7, `chips=${chips}`)
+// Expected count comes from the catalog itself: the hardcoded 7 (from the
+// commit that introduced this smoke test) went stale as Buddhism grew -
+// observed 30 on Oct 26 against the production build.
+ok('prayer chips render', chips === buddhism.prayers.length, `chips=${chips} expected=${buddhism.prayers.length}`)
 
 // ---- deep link: full earth view ----
 await send('Page.navigate', { url: `${APP}/#/earth` })
