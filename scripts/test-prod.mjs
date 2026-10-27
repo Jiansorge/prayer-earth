@@ -1,17 +1,59 @@
-// Production smoke test: drives the built app (vite preview) and checks the
-// shell renders, deep links work, the service worker registers, and no console
-// errors occur. Unlike test-usage.mjs this does NOT depend on the dev-only
-// window.__store handle.
-// Run: npm run build && node scripts/test-prod.mjs
+// Production smoke test: drives the built app (vite preview or a LIVE url
+// via APP_URL) and checks the shell renders, deep links work, the service
+// worker registers, and no console errors occur. Unlike test-usage.mjs this
+// does NOT depend on the dev-only window.__store handle.
+//
+// Run:  npm run build && node scripts/test-prod.mjs
+// Live: APP_URL=https://joining-palms.app node scripts/test-prod.mjs
+//
+// sync-engine's deploy-app.mjs runs this against the freshly deployed site
+// as a post-deploy gate (skip with --skip-smoke there): /health, /stats and
+// the version contract can all pass while the app shell itself is broken,
+// and nothing else in the pipeline opens the page that was just shipped.
 
 import { spawn } from 'node:child_process'
+import { existsSync } from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import WebSocket from 'ws'
 import buddhism from '../src/data/spirits/buddhism.js'
 
 const APP = process.env.APP_URL || 'http://localhost:4173'
-const EDGE = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
 const DEBUG_PORT = 9237
-const PROFILE = `${process.env.TEMP}\\pe-prod-${Date.now()}`
+// os.tmpdir(), not process.env.TEMP: TEMP is Windows-only, and on the Linux
+// CI runner the old template produced a literal "undefined\pe-prod-..."
+// directory inside the repo.
+const PROFILE = path.join(os.tmpdir(), `pe-prod-${Date.now()}`)
+
+// Browser: this runs on the Windows dev box (Edge), the Linux CI runner
+// (Chrome), and possibly macOS. Pick the first candidate that exists;
+// BROWSER_BIN overrides. Not finding one is a hard failure on purpose - a
+// gate that silently skips itself is not a gate.
+const candidates = process.env.BROWSER_BIN
+  ? [process.env.BROWSER_BIN]
+  : process.platform === 'win32'
+    ? [
+        'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+        'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+        'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+      ]
+    : process.platform === 'darwin'
+      ? [
+          '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+          '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+        ]
+      : [
+          '/usr/bin/google-chrome',
+          '/usr/bin/google-chrome-stable',
+          '/usr/bin/chromium-browser',
+          '/usr/bin/chromium',
+        ]
+const BROWSER = candidates.find((c) => existsSync(c))
+if (!BROWSER) {
+  console.error(`[prod] FAIL  no browser found (looked for: ${candidates.join(', ')}) — set BROWSER_BIN`)
+  process.exit(1)
+}
 
 let fails = 0
 const ok = (name, cond, extra = '') => {
@@ -22,12 +64,19 @@ const ok = (name, cond, extra = '') => {
   }
 }
 
-const edge = spawn(EDGE, [
-  '--headless=new', '--disable-gpu', '--mute-audio', '--no-first-run',
+// CI runners block Chrome's setuid sandbox in some configurations; only add
+// the escape hatch there so local runs keep the sandbox.
+const ciFlags = process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : []
+const edge = spawn(BROWSER, [
+  '--headless=new', '--disable-gpu', '--mute-audio', '--no-first-run', ...ciFlags,
   `--user-data-dir=${PROFILE}`, `--remote-debugging-port=${DEBUG_PORT}`, 'about:blank'
 ])
 edge.stdout.on('data', () => {})
 edge.stderr.on('data', () => {})
+// Any throw below (no CDP, CDP error) must not leave a headless browser
+// behind: the deploy gate runs this on CI and locally, and leaked instances
+// accumulate across retries. Runs on normal exit too (kill is idempotent).
+process.on('exit', () => { try { edge.kill() } catch {} })
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 let cdpUrl = null
