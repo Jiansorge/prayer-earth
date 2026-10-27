@@ -144,7 +144,27 @@ ok('service worker registered', sw === true)
 await send('Page.navigate', { url: `${APP}/#/pray/buddhism/mani` })
 const prayer = await waitFor(`!!document.querySelector('.prayer-stage')`)
 ok('prayer view renders via deep link', !!prayer)
-ok('backdrop canvas present', !!(await waitFor(`!!document.querySelector('.earth-backdrop canvas')`)))
+// The backdrop is EITHER the live WebGL scene (a canvas) OR the documented
+// static fallback when the device is weak: navigator.hardwareConcurrency <= 4
+// or no WebGL2 (EarthBackdrop.jsx — the deliberate weak-device path, not a
+// failure). GitHub's runner takes that path, so demanding a canvas here made
+// this check unpassable on CI while it passed on a desktop. Assert the real
+// invariant — the backdrop rendered SOMETHING — and report which mode was
+// chosen plus the facts that decide it, so a future failure is self-explaining.
+const backdropReady = await waitFor(`(() => {
+  const root = document.querySelector('.earth-backdrop')
+  return !!root && (!!root.querySelector('canvas') || !!root.querySelector('.earth-fallback'))
+})()`)
+const backdropInfo = await evaljs(`(() => {
+  const root = document.querySelector('.earth-backdrop')
+  const mode = !root ? 'missing' : root.querySelector('canvas') ? 'live'
+    : root.querySelector('.earth-fallback') ? 'static' : 'blank'
+  let webgl2 = false
+  try { webgl2 = !!document.createElement('canvas').getContext('webgl2') } catch {}
+  return mode + ' cores=' + (navigator.hardwareConcurrency || '?') + ' webgl2=' + webgl2
+})()`)
+ok('backdrop renders (live scene or static fallback)', !!backdropReady,
+  typeof backdropInfo === 'string' ? backdropInfo : 'probe error')
 const chips = await evaljs(`document.querySelectorAll('.chooser .chip:not(.chip-all)').length`)
 // Expected count comes from the catalog itself: the hardcoded 7 (from the
 // commit that introduced this smoke test) went stale as Buddhism grew -
