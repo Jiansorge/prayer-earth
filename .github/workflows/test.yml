@@ -380,15 +380,15 @@ jobs:
   deploy-dispatch:
     # Deterministic gates only. android-smoke (a KVM emulator) is the flakiest
     # job in the file, so it reports Android health but does NOT block a
-    # production deploy â€” a stray emulator flake must not stop a copy change.
+    # staging deploy â€” a stray emulator flake must not stop a copy change.
     #
     # `android` is out for a different reason. It is a ~2.5 minute Gradle build
     # whose only product is an AAB, and nothing here deploys that AAB â€” the
     # release upload is a manual step against a file on disk. sync-engine rebuilds
-    # the app itself before it deploys, so waiting on android delays production
-    # without gating anything that reaches users. On run #263 the chain was
+    # the app itself before it deploys, so waiting on android delays the staging
+    # deploy without gating anything. On run #263 the chain was
     # test -> 19:35:54, android -> 19:38:19, dispatch 19:38:22: ~2.5 minutes of
-    # waiting for a job whose result production never sees. `android` still runs,
+    # waiting for a job whose result staging never sees. `android` still runs,
     # still fails loudly, and still blocks the release â€” just not this.
     #
     # `browser` IS a gate. Those suites used to be steps inside `test`, so they
@@ -400,14 +400,16 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Trigger auto-deploy
+      - name: Trigger auto-deploy (staging)
         env:
           # Pass the PAT through the environment, not into the run: script text.
           DEPLOY_PAT: ${{ secrets.DEPLOY_PAT }}
           # The SHA and run are handed to sync-engine so it can write a commit
           # status back here. Without them a commit shows green the moment the
-          # dispatch is posted, whether or not production actually shipped -
-          # which is how a failed deploy can look like a healthy one.
+          # dispatch is posted, whether or not the staging deploy actually
+          # shipped - which is how a failed deploy can look like a healthy one.
+          # Under stage-first this dispatch deploys STAGING; production is
+          # promoted separately (see sync-engine/deploy.yml).
           SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
         run: |
