@@ -71,16 +71,32 @@ const edge = spawn(BROWSER, [
   '--headless=new', '--disable-gpu', '--mute-audio', '--no-first-run', ...ciFlags,
   `--user-data-dir=${PROFILE}`, `--remote-debugging-port=${DEBUG_PORT}`, 'about:blank'
 ])
-edge.stdout.on('data', () => {})
-edge.stderr.on('data', () => {})
+// Keep the browser's own output instead of dropping it: when the launch fails
+// (missing shared libs, crash, profile lock) the only evidence is on stderr,
+// and a bare `no CDP` gave the deploy log nothing to diagnose from. Capped so
+// a chatty browser can't bloat the log.
+const browserLog = []
+const capLog = (chunk) => {
+  browserLog.push(chunk.toString())
+  if (browserLog.length > 40) browserLog.splice(0, browserLog.length - 40)
+}
+edge.stdout.on('data', capLog)
+edge.stderr.on('data', capLog)
+let browserExit = null
+edge.on('exit', (code, signal) => { browserExit = code === null ? `signal ${signal}` : `code ${code}` })
 // Any throw below (no CDP, CDP error) must not leave a headless browser
 // behind: the deploy gate runs this on CI and locally, and leaked instances
 // accumulate across retries. Runs on normal exit too (kill is idempotent).
 process.on('exit', () => { try { edge.kill() } catch {} })
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
+// 30s (120 x 250ms), not 10s: the runner is busy right after `wrangler deploy`
+// and a cold Chrome with a fresh profile can take several seconds to open the
+// debugging port. An early process exit fails fast below instead of waiting
+// the full window.
 let cdpUrl = null
-for (let i = 0; i < 40; i++) {
+for (let i = 0; i < 120; i++) {
+  if (browserExit !== null) break
   try {
     const list = await (await fetch(`http://localhost:${DEBUG_PORT}/json`)).json()
     const p = list.find((t) => t.type === 'page')
@@ -88,7 +104,13 @@ for (let i = 0; i < 40; i++) {
   } catch {}
   await sleep(250)
 }
-if (!cdpUrl) throw new Error('no CDP')
+if (!cdpUrl) {
+  const tail = browserLog.join('').trim().split('\n').slice(-15).join('\n')
+  throw new Error(
+    `no CDP (browser ${browserExit === null ? 'still running after 30s' : `exited early: ${browserExit}`}` +
+    `${tail ? `\n--- browser output ---\n${tail}` : '\n--- browser produced no output ---'})`
+  )
+}
 
 const ws = new WebSocket(cdpUrl)
 await new Promise((res, rej) => { ws.on('open', res); ws.on('error', rej) })
