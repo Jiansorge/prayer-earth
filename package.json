@@ -62,7 +62,7 @@
     "profile:scroll": "node scripts/profile-scroll.mjs"
   },
   "dependencies": {
-    "@capacitor/android": "^8.5.2",
+    "@capacitor/android": "^8.5.3",
     "@capacitor/app": "^8.1.2",
     "@capacitor/browser": "^8.0.5",
     "@capacitor/cli": "^8.5.0",
