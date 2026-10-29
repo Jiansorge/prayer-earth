@@ -10,8 +10,6 @@ every tradition pray together on one living Earth — live at
 
 ## Preview
 
-> *Add a 5-sec screen recording to `public/demo.gif` and a screenshot to `public/screenshot.png` — they render here automatically.*
-
 ![World view — the Earth glows as the world prays](public/screenshot.png)
 
 ![Demo — praying together, 5 sec](public/demo.gif)
@@ -38,7 +36,7 @@ every tradition pray together on one living Earth — live at
 | Real-time sync | [`sync-engine`](https://github.com/Jiansorge/sync-engine) — Cloudflare Workers + Durable Objects (WebSocket presence, live feed, durable anonymous totals) |
 | Voices | pre-rendered neural MP3s (`public/audio/`, `manifest.json`) + on-device TTS fallback |
 | Install/offline | service worker (`public/sw.js`), Web App Manifest |
-| CI | GitHub Actions: build + server tests + i18n audit on every push; `main` push triggers an auto-deploy to `joining-palms.app` via sync-engine |
+| CI | GitHub Actions: build + server tests + i18n audit + browser suites on every push; a `main` push auto-deploys **staging** (`staging.joining-palms.app`), production is a deliberate promote |
 
 ## Project
 
@@ -76,6 +74,9 @@ npm run audio      # render prayer MP3s (scripts/generate-audio.mjs)
 
 In dev the app runs its own Node sync server so nothing needs Cloudflare until
 you deploy.
+
+To put a build on a **real phone** (debug APK loop, local release install, or
+Play track) see [RELEASE.md](RELEASE.md) → "Test on a phone".
 
 ## Content guidelines (please read before adding prayers)
 
@@ -120,9 +121,10 @@ The gates, in order, and what each one exists to catch:
 | `npm run verify:aab` | opens the AAB and reads it — the only gate that inspects the artifact |
 | `npm run verify:aab-tamper` | that `verify:aab` still fails when it should |
 
-`[RELEASE.md](RELEASE.md)` is the release guide: the full Android/Play sequence,
-the toolchain requirements (JDK, which `gh` account to push as), and what each
-check proves.
+[RELEASE.md](RELEASE.md) is the release guide: the full Android/Play sequence,
+the **phone-testing paths** (debug APK loop / local release install via
+bundletool / Play track), the toolchain requirements (JDK, which `gh` account
+to push as), and what each check proves.
 
 The app and the sync engine ship together from `sync-engine`:
 
@@ -136,13 +138,23 @@ rollback backup), and deploys to `joining-palms.app`. Audio rides along; after
 changing the MP3 library, bump `public/sw.js`'s cache version and purge the
 Cloudflare `/audio/*` cache (see `sync-engine/docs/DEPLOYMENT.md`).
 
-**Pushes to `main` auto-deploy.** `test.yml` runs the build, the static audits
-and the server tests in one job, and the five browser suites as a **parallel
-matrix** — they are independent of each other, so running them one after another
-bought nothing but wall-clock time. It then dispatches a deploy to `sync-engine`
-(via the `DEPLOY_PAT` repo secret). The production deploy itself always runs in
-`sync-engine` behind two post-deploy safety gates (version contract + live
-endpoints) with automatic rollback; see
+**Pushes to `main` deploy staging, not production.** Since 2026-10-26 the flow
+is stage-first: `test.yml` runs the build, the static audits, the server tests
+and the five browser suites (a **parallel** matrix — they are independent, so
+running them serially bought only wall-clock time), then dispatches a deploy to
+`sync-engine` (via the `DEPLOY_PAT` repo secret) that lands on
+**`staging.joining-palms.app`**. Verify the change there, then promote:
+
+```bash
+cd ../sync-engine
+gh workflow run deploy --repo Jiansorge/sync-engine -f target=production   # or: npm run ship
+```
+
+The production deploy always runs in `sync-engine` behind three post-deploy
+gates — version contract, live endpoints, and a **live browser smoke** (the
+rendered backdrop on the real URL, with automatic rollback if any gate fails) —
+plus a 5-minute uptime watch that opens a GitHub issue on regression and closes
+it on recovery. See
 [`sync-engine/docs/DEPLOYMENT.md`](https://github.com/Jiansorge/sync-engine/blob/main/docs/DEPLOYMENT.md).
 
 ## Security & privacy

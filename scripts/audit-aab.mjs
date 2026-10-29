@@ -164,7 +164,7 @@ ok(
 const gradle = readFileSync(path.resolve('android/app/build.gradle'), 'utf8')
 const vc = Number((/versionCode\s+(\d+)/.exec(gradle) || [])[1])
 const vn = (/versionName\s+"([^"]+)"/.exec(gradle) || [])[1]
-ok(vc === 28, 'versionCode is 28', 'found ' + vc)
+ok(vc === 30, 'versionCode is 30', 'found ' + vc)
 ok(!!vn, 'versionName present', vn || 'missing')
 
 const manifest = readFileSync(

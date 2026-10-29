@@ -104,15 +104,18 @@ app-links chooser because `autoVerify` is intentionally off. To remove the choos
   `host="joining-palms.app"`).
 
 ## 5. Build & publish
-```bash
+```powershell
 # Use the release build. It forces the test hooks OFF and refuses to produce a
 # bundle that still contains them, so you cannot ship the backdoor by accident.
 npm run build:release
 npx cap sync android
-cd android && ./gradlew bundleRelease   # .aab for Play
+cd android
+.\gradlew.bat bundleRelease      # ./gradlew bundleRelease on macOS/Linux
+cd ..
 ```
-Then verify the artifact itself before uploading:
-```bash
+Then verify the artifact itself before uploading (it is **expected red** if the
+bundle is stale — rebuild, never work around it):
+```powershell
 npm run verify:aab
 ```
 This checks the AAB you are about to ship, not the source you built it from:
@@ -135,6 +138,72 @@ The application id could not be read back out of the bundle, so that one check
 only confirmed `build.gradle`. Everything else was still checked against the
 real artifact. It is reported rather than hidden because a check that quietly
 degrades to checking the source instead of the output is not a check.
+
+## Test on a phone
+
+You cannot install an `.aab` on hardware directly — Play splits and signs it.
+Three ways to get a build on a device, in increasing fidelity to what ships:
+
+### A. Debug APK — the daily loop (hooks ON, never upload it)
+
+```powershell
+# from prayer-earth root; phone over USB with USB debugging on
+npm run build
+npm run cap:sync                 # copies dist/ into android/app/src/main/assets/public
+cd android
+.\gradlew.bat :app:assembleDebug --console=plain     # ~90s warm
+cd ..
+adb install -r "android\app\build\outputs\apk\debug\app-debug.apk"
+adb shell am force-stop app.joiningpalms
+adb shell am start -n app.joiningpalms/.MainActivity
+```
+
+- `adb` is at `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe` — not on
+  PATH; use the full path or add it.
+- The WebView loads assets **out of the APK**: after any `src/` change the
+  phone runs a stale bundle until you reinstall. `npm run check:android:sync`
+  fails CI if `cap:sync` was skipped.
+- This build keeps `VITE_TEST_HOOKS` **on** for the on-device suites
+  (`npm run test:android` — full smoke; `node scripts/centering-on-device.mjs`
+  — glyph-ink probe) and is signed with the upload key so reinstalls stack
+  cleanly. **It must never be uploaded to Play.**
+
+### B. Release build installed locally (closest to Play; needs bundletool)
+
+```powershell
+npm run build:release
+npx cap sync android
+cd android; .\gradlew.bat bundleRelease; cd ..
+
+# one-time: download bundletool.jar from
+#   https://github.com/google/bundletool/releases
+$J = "C:\Program Files\Android\Android Studio\jbr\bin\java.exe"   # java is not on PATH
+& $J -jar bundletool.jar build-apks `
+  --bundle=android\app\build\outputs\bundle\release\app-release.aab `
+  --output=app.apks --mode=universal `
+  --ks=C:\Users\j\joining-palms-release.keystore `
+  --ks-pass=pass:<storePassword from android/key.properties> `
+  --ks-key-alias=joining-palms `
+  --key-pass=pass:<keyPassword from android/key.properties>
+& $J -jar bundletool.jar install-apks --apks=app.apks `
+  --adb=%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe
+```
+
+- `--mode=universal` yields one APK for any device — what you want for a real
+  phone (the split mode only matters for testing density/ABI splits).
+- Passing `--ks` is deliberate: without it bundletool signs the generated APKs
+  with a throwaway **debug** key, and the phone ends up juggling identities.
+  The passwords are the same ones `npm run check:signing` validates.
+- **Signature caveat:** everything built here is signed with the **upload**
+  key; a copy installed from Play is signed with Play's **app-signing** key.
+  Android treats them as different apps — uninstall the Play copy first, or
+  test on a device that never installed from Play.
+
+### C. Play closed testing — the real thing
+
+Upload the AAB to a testing track in the Play Console and install from Play.
+This is the only path signed with Play's app-signing key. Console steps:
+[`docs/PLAY-STORE.md`](docs/PLAY-STORE.md).
 
 ## Test-observability hooks (security)
 The app exposes `window.__store` / `__speech` / `__ambient` (full read/write
@@ -166,10 +235,12 @@ a copy is not a readable source drop. What is in place:
 Neither is a wall. Treat them as a speed bump plus a paper trail.
 
 ## Notes
-- `versionCode 28` / `versionName 1.0.0` in `android/app/build.gradle` — bump the
-  code for every Play upload (it must strictly increase). `verify:aab` asserts 28
-  against a **hardcoded** expectation; it cannot read the console, so confirm the
-  real figure there before uploading.
+- `versionCode 30` / `versionName 1.0.0` in `android/app/build.gradle` — bump
+  the code for every Play upload (it must strictly increase; confirm Play's
+  latest figure in the console first — it cannot be read from here).
+  `verify:aab` asserts the same number against a **hardcoded** expectation in
+  `scripts/verify-aab.mjs` on purpose: bump **both** together, every upload,
+  or the gate fails instead of letting a duplicate/old code through.
 - Gradle's `aaptOptions.ignoreAssetsPattern` contains a bare `.*`, which drops any
   asset whose name starts with a dot. That is why `.well-known/security.txt` is in
   `android/app/src/main/assets/public` but not in the AAB. Harmless today — the

@@ -16,45 +16,65 @@ and the exact commands.
 
 Target API 36 satisfies the Play target-API-level policy for 2025–2026.
 
-## 1. Build toolchain (not installed on this machine yet)
+## 1. Build toolchain (installed on this machine)
 
-The repo has **no Android SDK** and only **JDK 8**. AGP 8.13 + compileSdk 36
-need **JDK 17+**. Install one of:
+Verified present locally — skip this section unless you are on a fresh machine:
 
-- **Android Studio** (bundles the SDK + JDK 17) — easiest, gives you a device
-  emulator and the Play Console device check too, or
-- Command line: JDK 17 (Temurin/Adoptium) + `sdkmanager` with
-  `platform-tools`, `platforms;android-36`, `build-tools;36.0.0`.
+| piece | where |
+| --- | --- |
+| Android SDK | `%LOCALAPPDATA%\Android\Sdk`, wired into `android/local.properties` (`sdk.dir=…`) |
+| JDK 17 | Android Studio's JBR — `C:\Program Files\Android\Android Studio\jbr` (Gradle uses it via `org.gradle.java.home` in `~/.gradle/gradle.properties`; see RELEASE.md §0) |
+| adb | `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe` (**not** on PATH) |
+| keytool / java | Android Studio JBR only (**`java` is not on PATH** — use the full `jbr\bin\java.exe` path when a tool wants Java) |
 
-Then set `JAVA_HOME` and `ANDROID_HOME`, and make sure `android/local.properties`
-points at the SDK (`sdk.dir=C\:\\Users\\<you>\\AppData\\Local\\Android\\Sdk`).
+Fresh machine: install **Android Studio** (bundles the SDK + JDK 17), set
+`JAVA_HOME`/`ANDROID_HOME`, and point `android/local.properties` at the SDK
+(`sdk.dir=C\:\\Users\\<you>\\AppData\\Local\\Android\\Sdk`). AGP 8.13 +
+compileSdk 36 need JDK 17+; target API 36 satisfies Play's target-API policy
+for 2025–2026.
 
 ## 2. Build a release bundle (AAB)
 
 ```powershell
 cd prayer-earth
 npm install --legacy-peer-deps        # only if node_modules is stale
-npm run cap:sync                       # build web (legal pages + icon gen baked in) → cap sync
+npm run build:release                 # PUBLIC bundle — test hooks forced OFF (audited)
+npx cap sync android
 cd android
-.\gradlew.bat bundleRelease            # Windows;  ./gradlew bundleRelease on macOS/Linux
+.\gradlew.bat bundleRelease           # Windows;  ./gradlew bundleRelease on macOS/Linux
+cd ..
+npm run verify:aab                    # reads the artifact — must be green before upload
 ```
 
 Output: `android/app/build/outputs/bundle/release/app-release.aab`
 
+> **Never build the upload from `npm run cap:sync` alone.** That path (via
+> `build:capacitor`) deliberately keeps `VITE_TEST_HOOKS` on for the device
+> smoke test; uploading it would ship `window.__store` — a full read/write
+> handle on users' prayer data — to the public app. `npm run build:release`
+> forces the hooks off and fails the build if any survive. See `RELEASE.md`.
+
 Signing is wired in `android/app/build.gradle` and reads
-`android/key.properties` (gitignored). If that file is missing, the release
-build is simply unsigned — fine for CI, but Play needs it signed.
+`android/key.properties` (gitignored). If that file is missing or points at a
+path that does not exist, the release build **fails immediately** (it never
+falls back to silently producing an unsigned bundle). Debug builds don't need
+it.
 
-### The upload key (already generated)
+### The upload key (current: `joining-palms-release.keystore`)
 
-- Keystore: `C:\Users\j\.android\joining-palms\upload-keystore.jks` (**outside
-  the repo on purpose** — the repo is public)
-- Passwords/alias: `android/key.properties` (gitignored)
-- Alias: `joining-palms-upload`
+- Keystore: `C:\Users\j\joining-palms-release.keystore` (**outside** the repo
+  on purpose — gitignored)
+- Alias: `joining-palms`; passwords: `android/key.properties` (gitignored)
+- Verify any time: `npm run check:signing` (never prints passwords)
+- The older setup's `C:\Users\j\.android\joining-palms\upload-keystore.jks`
+  (alias `joining-palms-upload`) still exists on disk but **the build does not
+  use it** — `key.properties` decides what signs every build. Keep it backed up
+  regardless; if Play App Signing ever registered it, Play only knows that key.
 
-**Back both files up somewhere safe.** With Play App Signing, this is only the
-*upload* key — if you lose it you can request a reset — but losing it is still a
-headache. Never commit either file; the repo is public.
+**Back up the keystore + passwords somewhere safe** (two places, password in a
+password manager). Losing the upload key means asking Google to reset it — a
+headache, though recoverable with Play App Signing. Never commit either file;
+the repo is public.
 
 ## 3. Play Console setup (manual, one time)
 
@@ -155,12 +175,15 @@ donation is an external link, not IAP).
 
 ## 7. Release checklist
 
-- [ ] JDK 17 + Android SDK installed, `local.properties` set
-- [ ] `npm run cap:sync` succeeds; test on a real device (geolocation prompt now
-      appears and the "you are here" ring works)
-- [ ] Bump `versionCode` (integer, always increments) and `versionName` before
-      every upload
-- [ ] `gradlew bundleRelease` produces a signed `app-release.aab`
+- [x] JDK 17 + Android SDK installed, `local.properties` set (verified on this machine)
+- [ ] Bump `versionCode` in **both** `android/app/build.gradle` and the
+      hardcoded check in `scripts/verify-aab.mjs` (see RELEASE.md §Notes), and
+      confirm Play's latest code in the console
+- [ ] `npm run build:release` → `npx cap sync android` → `gradlew bundleRelease`
+      produces a signed `app-release.aab`
+- [ ] `npm run verify:aab` **green** against that fresh bundle
+- [ ] Test on a real device first — debug loop or local release install:
+      see `RELEASE.md` → "Test on a phone"
 - [ ] Closed test created, ≥12 testers opted in, 14 days elapsed
 - [ ] Apply for production access; address review feedback
 - [ ] Upload listing assets + fill Data safety, content rating, store settings
