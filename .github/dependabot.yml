@@ -8,6 +8,15 @@ updates:
       time: "06:00"
       timezone: UTC
     open-pull-requests-limit: 5
+    # Let a release sit before we're even offered it: catches fresh 0-days
+    # and bad/yanked releases in the first days. Security-triggered updates
+    # bypass this (applies-to: version-updates), so CVE fixes stay fast.
+    cooldown:
+      default-days: 7
+      semver-patch-days: 3
+      semver-minor-days: 7
+      semver-major-days: 14
+      applies-to: version-updates
     labels:
       - dependencies
     commit-message:
@@ -27,6 +36,12 @@ updates:
       day: monday
       time: "06:00"
       timezone: UTC
+    cooldown:
+      default-days: 7
+      semver-patch-days: 3
+      semver-minor-days: 7
+      semver-major-days: 14
+      applies-to: version-updates
     labels:
       - dependencies
     commit-message:
