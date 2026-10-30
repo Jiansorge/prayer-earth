@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.joiningpalms",
+      "sha256_cert_fingerprints": [
+        "3F:34:3C:DB:53:57:22:DD:77:5C:41:77:C3:82:95:D4:8B:05:E3:E9:23:5C:C3:D5:D5:27:7E:0B:56:23:BC:BD"
+      ]
+    }
+  }
+]

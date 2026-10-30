@@ -91,17 +91,29 @@ VITE_SYNC_ENGINE=cf VITE_PLAY_STORE_URL=https://play.google.com/store/apps/detai
 npx cap sync android
 ```
 
-## 4. (Recommended) Enable verified deep links
-Deep links (`https://joining-palms.app/#/pray/...`) currently work via the Android
-app-links chooser because `autoVerify` is intentionally off. To remove the chooser:
-- Host `/.well-known/assetlinks.json` on joining-palms.app containing your release
-  signing cert's SHA-256 fingerprint:
-  ```bash
-  keytool -list -v -keystore release.keystore -alias joining-palms | grep SHA256
-  ```
-- Add `android:autoVerify="true"` to the intent-filter in
-  `android/app/src/main/AndroidManifest.xml` (the `<data>` with
-  `host="joining-palms.app"`).
+## 4. Verified deep links (ENABLED 2026-10-29 — keep these two in sync)
+
+`android:autoVerify="true"` is on the VIEW intent-filter, which makes the
+`https://joining-palms.app/#/pray/...` association silent and chooser-free —
+**but only while the hosted statement matches the signing key.** Android fetches
+`https://joining-palms.app/.well-known/assetlinks.json` at install time; if the
+package + fingerprint aren't listed there, the filter does not associate at all
+(links open in the browser, no chooser — there is no silent half-state).
+
+- Hosted file: `public/.well-known/assetlinks.json` (deployed with the app).
+- Current fingerprint (upload/local key, `C:\Users\j\joining-palms-release.keystore`):
+  `3F:34:3C:DB:53:57:22:DD:77:5C:41:77:C3:82:95:D4:8B:05:E3:E9:23:5C:C3:D5:D5:27:7E:0B:56:23:BC:BD`
+  (re-read any time — password-free: `keytool -printcert -jarfile <the.aab>`)
+- **After the first Play upload:** Play App Signing re-signs installs with a
+  *different* (app-signing) key. Copy its SHA-256 from
+  **Play Console → Setup → App integrity** and append it as a **second** entry
+  in `sha256_cert_fingerprints` — the file supports several identities, so both
+  Play installs and local/adb installs verify.
+- **Order matters:** get the file live on production *before* installing from
+  Play (verification happens at install; a miss isn't retried until
+  reinstall/update — force one with `adb shell pm verify-app-links --re-verify
+  app.joiningpalms`).
+- Rotating the keystore? Update the hosted file **before** shipping the build.
 
 ## 5. Build & publish
 ```powershell

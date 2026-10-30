@@ -19,17 +19,26 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <!-- Deep links: the share/QR links (https://joining-palms.app/#/pray/...).
-                 autoVerify is intentionally omitted so the intent is delivered to
-                 the app without requiring a domain-verified assetlinks.json (and
-                 its signing cert). Android may show a "Browser / App" chooser;
-                 once the app handles the URL it routes the #/pray/... hash
-                 internally via @capacitor/app.
+                 autoVerify makes the association silent and chooser-free, but it is
+                 LOAD-BEARING: at install time Android fetches
+                   https://joining-palms.app/.well-known/assetlinks.json
+                 and, unless it lists this package plus the signing cert's SHA-256,
+                 the filter does not associate at all (links fall back to the
+                 browser with no chooser - there is no silent half-state). The
+                 hosted file must therefore list EVERY key that signs a real
+                 install:
+                   - upload/local key (builds from this machine) - in place
+                   - Play's app-signing key (Play installs) - add its fingerprint
+                     from Play Console > Setup > App integrity after the first
+                     upload; assetlinks supports several identities in one file.
+                 If the key ever rotates, update the hosted file BEFORE shipping
+                 the new build.
                  pathPattern="/" claims ONLY the root path: the fragment (where
                  the real #/pray/... route lives) is not part of the intent path,
                  so every share/QR link still matches, while real files like
                  /privacy.html and /terms.html keep opening in the browser
                  instead of being hijacked into the app's home view. -->
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
