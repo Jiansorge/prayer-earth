@@ -433,6 +433,164 @@ try {
         JSON.stringify(Object.fromEntries(levels.map(([k, v]) => [k, +v.toFixed(4)]))))
     })
 
+    // ---- the footer's vertical fader moves voice and bed the same way ------
+    // Reported: "the vertical sound toggle seems to disproportionately affect
+    // voice and ambient sound volumes".
+    //
+    // The steady-state balance is locked by construction: one store volume
+    // reaches both engines (applyVolumes), the voice applies it linearly,
+    // bedTarget is linear in volume, and both share one limiter - so the ratio
+    // cannot drift with the fader. What is NOT symmetric is how each engine
+    // gets to the new value:
+    //
+    //   voice  setVolume -> ~0.03 s ramp, either direction
+    //   bed    setVolume -> _rampMaster, whose RISING constant is 0.8 s - the
+    //          "a prayer arrives gently" swell meant for LEVEL changes. So
+    //          dragging up: the voice jumps, the bed follows over seconds;
+    //          dragging down: 0.07 s vs 0.03 s, near parity. A discrepancy
+    //          that depends on drag direction is what "disproportionate" is.
+    //
+    // So this section pins scheduling decisions instead of impressions: it
+    // wraps AudioParam.setTargetAtTime to record the constants the engines
+    // actually schedule, and drives the real footer slider to prove one move
+    // reaches both engines as the same number. Recording the schedule rather
+    // than sampling the gain over wall-clock is deliberate: a suspended
+    // headless context never advances its clock, and a running one only lets
+    // you chase a moving target.
+    await goView(page, '#/pray/christianity/lords-prayer', '.prayer-stage', 15000)
+    await page.waitForSelector('.vol-slider-vert', { timeout: 15000 })
+
+    const wire = await page.evaluate(async () => {
+      const store = window.__store
+      // Known, audible volume so every key step is a real move off the floor,
+      // and unmuted so the mute-seed branch in the control can't reroute it.
+      store.setState({ muted: false, volume: 0.8 })
+      await window.__ambient.ensure()
+      window.__faderGot = { voice: [], bed: [] }
+      const sp = window.__speech
+      const am = window.__ambient
+      const v0 = sp.setVolume
+      const a0 = am.setVolume
+      // Delegating wrappers, left installed: read once here, and the page is
+      // discarded at the end of the run.
+      sp.setVolume = function (v) { window.__faderGot.voice.push(v); return v0.call(this, v) }
+      am.setVolume = function (v) { window.__faderGot.bed.push(v); return a0.call(this, v) }
+      window.__faderTc = []
+      const orig = AudioParam.prototype.setTargetAtTime
+      AudioParam.prototype.setTargetAtTime = function (value, startTime, timeConstant) {
+        try {
+          const m = window.__ambient.master
+          if (m && this === m.gain) window.__faderTc.push({ value, timeConstant })
+        } catch {}
+        return orig.call(this, value, startTime, timeConstant)
+      }
+      return { has: !!document.querySelector('.vol-slider-vert') }
+    })
+    t('the prayer footer exposes its vertical fader', () => eq(wire.has, true))
+
+    // Move it the way a thumb does. usePrayerKeys may also answer the arrows
+    // (a separate +/-0.08 alongside the control's own 0.05 step); every
+    // assertion below is written against the invariant - the same number
+    // everywhere - so either path, or both, has to agree.
+    await page.focus('.vol-slider-vert')
+    for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowLeft')
+    await settle(page, 300)
+    const parity = await page.evaluate(() => ({
+      voice: window.__faderGot.voice,
+      bed: window.__faderGot.bed,
+      store: window.__store.getState().volume,
+      slider: Number(document.querySelector('.vol-slider-vert').value)
+    }))
+    note(`fader: steps=${parity.voice.length} voice=[${parity.voice.join(', ')}] bed=[${parity.bed.join(', ')}] store=${parity.store}`)
+    t('one footer fader move pushes the same level into voice and bed', () => {
+      assert(parity.voice.length > 0, 'the slider never reached either engine - no step fired')
+      assert(parity.voice.length === parity.bed.length,
+        `the engines saw different update counts: voice=${parity.voice.length} bed=${parity.bed.length}`)
+      for (let i = 0; i < parity.voice.length; i++) {
+        assert(parity.voice[i] === parity.bed[i],
+          `update ${i} split: voice=${parity.voice[i]} bed=${parity.bed[i]} - one slider, two levels`)
+      }
+      eq(parity.voice[parity.voice.length - 1], parity.store,
+        'the engines were not left at the store volume')
+      eq(Math.round(parity.store * 100) / 100, parity.slider,
+        'the slider position and the store volume disagree')
+    })
+
+    // The ramp constants. _rampMaster classifies rise-vs-fall from the live
+    // parameter, so a mid-ramp read (or a frozen suspended clock) would decide
+    // the classification for us. Pinning first makes every step below
+    // unambiguous: a setValueAtTime hold is constant however far the clock has
+    // moved, and nulling _lastRampTarget stops the skip check from swallowing
+    // the probe. The probe drives the engine API directly (not the store) so
+    // its values cannot be perturbed by UI state; it leaves the engine silent.
+    const ramps = await page.evaluate(() => {
+      const a = window.__ambient
+      if (!a.ctx || !a.master) return { error: 'no graph to schedule against' }
+      const rec = window.__faderTc
+      const take = () => { const out = rec.slice(); rec.length = 0; return out }
+      const pin = (at) => {
+        const t = a.ctx.currentTime
+        a.master.gain.cancelScheduledValues(t)
+        a.master.gain.setValueAtTime(at, t)
+        a._lastRampTarget = null
+      }
+      a.setVolume(0.5)          // a known volume; discarded
+      take()
+      pin(0)
+      a.setLevel(0.9)           // prayer arrival: must stay a GENTLE rise
+      const gentle = take()
+      pin(0)
+      a.setVolume(0.9)          // fader path, rising from the pinned 0
+      const up = take()
+      pin(10)
+      a.setVolume(0.1)          // fader path, falling from the pinned 10
+      const down = take()
+      pin(0)                    // leave the parameter where a stop would
+      return { gentle, up, down }
+    })
+    const lastTc = (r) => (r && r.length ? r[r.length - 1].timeConstant : null)
+    note(`ramps: gentle=${lastTc(ramps.gentle)} up=${lastTc(ramps.up)} down=${lastTc(ramps.down)}` +
+      (ramps.error ? ` (${ramps.error})` : ''))
+    t('the prayer-arrival swell keeps its gentle rise', () => {
+      if (ramps.error) throw new Error(ramps.error)
+      const tc = lastTc(ramps.gentle)
+      assert(tc !== null, 'setLevel scheduled no master ramp at all')
+      assert(tc >= 0.5, `arrival ramp tau ${tc}s < 0.5s - the swell was fast-tracked away`)
+    })
+    t('a fader rise ramps as fast as the voice, not like an arrival', () => {
+      if (ramps.error) throw new Error(ramps.error)
+      const tc = lastTc(ramps.up)
+      assert(tc !== null, 'setVolume scheduled no master ramp at all')
+      assert(tc <= 0.15,
+        `fader rise tau ${tc}s > 0.15s while the voice moves in ~0.03s - ` +
+        'the bed lags seconds behind on every upward drag (the reported disproportion)')
+    })
+    t('a fader fall is fast too', () => {
+      if (ramps.error) throw new Error(ramps.error)
+      const tc = lastTc(ramps.down)
+      assert(tc !== null, 'setVolume(fall) scheduled no master ramp at all')
+      assert(tc <= 0.15, `fader fall tau ${tc}s > 0.15s - down-drags lag the voice too`)
+    })
+
+    // The bed's side of "the same factor": bedTarget must be exactly
+    // proportional in volume, so the fader scales the bed the way it scales
+    // the voice (which is linear by construction).
+    const prop = await page.evaluate(async () => {
+      const { bedTarget } = await import('/src/audio/ambience.js')
+      const base = bedTarget({ level: 0.9, ambienceLevel: 0.5, volume: 1 })
+      const out = {}
+      for (const v of [0.2, 0.5, 0.8]) {
+        out[v] = bedTarget({ level: 0.9, ambienceLevel: 0.5, volume: v }) / base
+      }
+      return out
+    })
+    t('the bed scales in exact proportion to the fader', () => {
+      for (const [v, ratio] of Object.entries(prop)) {
+        assert(Math.abs(ratio - Number(v)) < 1e-9,
+          `volume ${v} gives bed ratio ${ratio} - not proportional`)
+      }
+    })
+
     // Navigation still answers after everything above. The deep link selects
     // the prayer itself; bare '#/prayer' renders only with a prior selection,
     // which a fresh profile does not have.

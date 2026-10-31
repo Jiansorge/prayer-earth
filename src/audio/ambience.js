@@ -36,12 +36,17 @@ export const BED_HEADROOM = 7.5
 // through an OfflineAudioContext and take the RMS past the crossfade.
 //
 // Measured at master gain 1 (median = Reiki):
-//   reiki 0.0765  ocean 0.0872  temple 0.0512  rain 0.0561
+//   reiki 0.0709  ocean 0.0872  temple 0.0512  rain 0.0561
 //   forest 0.0608  space 0.1176  warm   0.0855
-// i.e. Space ran 1.54x the median and Temple 0.67x - a 2.3x spread from
+// i.e. Space ran 1.66x the median and Temple 0.72x - a 2.3x spread from
 // the quietest bed to the loudest. Each trim is median/rms, so after the
 // table every bed lands on the same measured level (test-audio-ambient
 // renders all seven and asserts they stay inside a band).
+//
+// Reiki's figure is from the 2026-10-31 darkening (lowpass 420->300, air
+// 620/0.035->520/0.025); the other six are unchanged and their raws still
+// hold. Reiki dropped but remains the median, so it stays the anchor the
+// other six scale against.
 //
 // Kept as one table at the single choke point every bed passes through
 // (the bus ramp in buildPreset), so rebuilding a generator can never
@@ -49,12 +54,12 @@ export const BED_HEADROOM = 7.5
 // AudioContext - same pattern as BED_HEADROOM and ceilingCurve.
 export const PRESET_TRIM = {
   reiki: 1,
-  ocean: 0.88,
-  temple: 1.5,
-  rain: 1.36,
-  forest: 1.26,
-  space: 0.65,
-  warm: 0.9
+  ocean: 0.81,
+  temple: 1.38,
+  rain: 1.26,
+  forest: 1.17,
+  space: 0.6,
+  warm: 0.83
 }
 
 export function bedTarget({ level, ambienceLevel, volume }) {
@@ -424,9 +429,22 @@ export class AmbientEngine {
       // practice the default preset was several dB the loudest thing in the
       // rack - which is what "Reiki drift is too loud" is. Cut about 3 dB here
       // rather than rescaling the master, because the complaint is this bed.
+      //
+      // Darkened for "it's a bit high pitched" (2026-10-31). Measured across
+      // the rack, Reiki is the ONLY bed whose pad reaches the upper register -
+      // E4 329.63 and B4 493.88 Hz, where every other bed tops out at or below
+      // G3 196 Hz - and the old 420 Hz lowpass barely touched them (E4 passed
+      // at full amplitude, B4 only ~3 dB down). A 620 Hz bandpassed air layer
+      // at gain EQUAL to the pad (0.035/0.035) added a second high voice. Same
+      // loudness as the rack (spread 1.008x in test-audio-ambient), so the
+      // complaint was timbre, not level: brightness reads as "loud and thin",
+      // especially on a phone speaker. The chord is unchanged; the lowpass now
+      // sits under the top two voices (they arrive as felt partials, not
+      // whistles) and the air layer sits back. The re-measured raw level moves
+      // the rack median, so PRESET_TRIM below was recomputed from this build.
       reiki: (b, s) => {
-        this._pad(b, s, { notes: [130.81, 196.0, 261.63, 329.63, 493.88], gain: 0.035, filter: 420, breathe: 0.04, pulse: 0.2, pulseDepth: 0.3 })
-        this._air(b, s, { gain: 0.035, filter: 'bandpass', freq: 620, q: 0.4, lfo: 0.07, depth: 200 })
+        this._pad(b, s, { notes: [130.81, 196.0, 261.63, 329.63, 493.88], gain: 0.035, filter: 300, breathe: 0.04, pulse: 0.2, pulseDepth: 0.3 })
+        this._air(b, s, { gain: 0.025, filter: 'bandpass', freq: 520, q: 0.4, lfo: 0.07, depth: 200 })
       },
       // Ocean Hush — low pad under a slowly breathing band of surf noise, with
       // a slow tidal swell.
@@ -544,7 +562,15 @@ export class AmbientEngine {
 
   // Moving the bed up is a slow swell so a prayer arrives gently; moving it down
   // is fast, because waiting several seconds for silence after pressing stop
-  // reads as the app being stuck rather than as a fade.
+  // reads as the app being stuck rather than as a fade. That split belongs to
+  // LEVEL changes only: `fast` is how the volume path opts out of the swell.
+  // The voice tracks its volume in ~0.03 s either way, so a fader-driven bed
+  // rise at the arrival constant left voice and bed at visibly different
+  // levels for seconds after every upward drag - the reported "vertical fader
+  // disproportionately affects voice and ambient". Direction must not decide
+  // it either: on the volume path both directions use the short constant, and
+  // test-audio-ambient pins both contracts (arrival stays gentle, a fader move
+  // stays fast) by recording the time constants actually scheduled.
   //
   // Both directions use setTargetAtTime. The previous fall did
   // cancelScheduledValues + setValueAtTime(gain.value) + linearRamp, which was
@@ -553,7 +579,7 @@ export class AmbientEngine {
   // ramp could resume from the wrong point and jump. A short exponential
   // constant has no such discontinuity - it starts from wherever the parameter
   // actually is - and ~63% of the gap is gone in 70 ms.
-  _rampMaster(target) {
+  _rampMaster(target, { fast = false } = {}) {
     if (!this.master || !this.ctx) return
     const rising = target > this.master.gain.value
     // Skip when we are already heading to (or sitting at) this exact target.
@@ -568,10 +594,14 @@ export class AmbientEngine {
     // live reading is exactly what is mid-ramp and would defeat the check.
     if (this._lastRampTarget === target) return
     this._lastRampTarget = target
-    this.master.gain.setTargetAtTime(target, this.ctx.currentTime, rising ? 0.8 : 0.07)
+    const tau = fast ? 0.07 : rising ? 0.8 : 0.07
+    this.master.gain.setTargetAtTime(target, this.ctx.currentTime, tau)
   }
 
-  setLevel(level) {
+  // `opts.fast` marks the volume path (see _rampMaster): the level itself may
+  // not change here, but what a USER fader schedules must never wear the
+  // arrival swell.
+  setLevel(level, opts) {
     this.level = Math.max(0, Math.min(1, level))
     if (this.master && this.ctx) {
       const user = useStore.getState().ambienceLevel
@@ -584,15 +614,17 @@ export class AmbientEngine {
         ambienceLevel: user,
         volume: this.vol
       })
-      this._rampMaster(target)
+      this._rampMaster(target, opts)
     }
   }
 
   // Master loudness for everything the engine plays. Re-applies the current
-  // level so the change is heard immediately.
+  // level so the change is heard immediately - FAST, in both directions: this
+  // is the fader's own path, and the voice it shares the master with moves in
+  // ~0.03 s.
   setVolume(volume) {
     this.vol = Math.max(0, Math.min(1, volume))
-    this.setLevel(this.level)
+    this.setLevel(this.level, { fast: true })
     // Keep the chant/bell bus in step with the true mute.
     if (this.chanBus && this.ctx) {
       this.chanBus.gain.setTargetAtTime(this.vol, this.ctx.currentTime, 0.05)
