@@ -8,6 +8,9 @@ ext {
     androidxCoreVersion = '1.17.0'
     androidxFragmentVersion = '1.8.9'
     coreSplashScreenVersion = '1.2.0'
+    // Lets the app receive/install baseline profiles (bundled in the APK, and
+    // Play-delivered afterwards). Inert until a profile exists; see :benchmark.
+    androidxProfileinstallerVersion = '1.4.1'
     androidxWebkitVersion = '1.14.0'
     junitVersion = '4.13.2'
     androidxJunitVersion = '1.3.0'

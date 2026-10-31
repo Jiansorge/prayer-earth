@@ -66,6 +66,66 @@ visits (and the service worker) skip re-downloading unchanged code entirely.
 - `/audio/*` → cached 30 days (regenerated in place; CDN purged on update).
 - Service worker → offline and instant repeat loads.
 
+## Android Baseline Profile
+
+The app ships `androidx.profileinstaller` and a `<profileable android:shell="true">`
+tag (see `android/app/src/main/AndroidManifest.xml`), and the repo has a
+macrobenchmark module at `android/benchmark/` whose only job is to *record*
+which classes and methods the cold-start path actually touches. Play installs
+that recorded profile on users' devices and ART ahead-of-time compiles those
+paths — typically 10–30% faster cold start, most visible on low-end phones.
+
+Pieces, and what each one is worth if removed:
+
+- `android/benchmark/` (`com.android.test` module) — compiles standalone
+  (`:benchmark:assembleRelease`), runs only against a **connected device**, and
+  is never referenced by CI, the web build, or `bundleRelease`. Deleting it
+  cannot break anything else.
+- `androidx.profileinstaller` in `app/build.gradle` — inert no-op until a
+  profile file exists; it is the runtime half that installs profiles.
+- `<profileable android:shell="true">` in the manifest — lets the macrobenchmark
+  trace the **release** build (which is not debuggable). Shell-only: no
+  interactive access, and it is how Play's own profiling of production
+  installs works.
+
+### Recording the profile (needs a device)
+
+There is no generated profile committed yet — generation needs a physical
+Android device (the machine has no emulator system image). When a phone is
+plugged in over USB with USB debugging on:
+
+```powershell
+# 1. web app must be fresh + synced (the release build refuses otherwise)
+npm run build:release
+npx cap sync android
+
+# 2. record the profile (drives the app's release build on the device;
+#    the rule stops once the recorded paths are stable, ~15 min max)
+cd android
+.\gradlew.bat :benchmark:connectedReleaseAndroidTest --console=plain
+cd ..
+
+# 3. the rule emits the profile under the benchmark module's outputs;
+#    copy it where AGP packs it into the bundle
+Copy-Item android\benchmark\build\outputs\connected_android_test_additional_output\**\baseline-prof.txt `
+          android\app\src\main\baseline-prof.txt
+```
+
+Then rebuild the AAB (`npm run build:release && npx cap sync android &&
+gradlew -p android bundleRelease`) — `mergeReleaseArtProfile` packs
+`src/main/baseline-prof.txt` into the bundle automatically — and commit the
+`baseline-prof.txt` so every future build ships it. Re-record whenever the
+startup path changes substantially (new navigation, new heavy chunk on launch).
+
+The generator test is deliberately **Java**
+(`android/benchmark/src/main/java/.../BaselineProfile.java`): the repo has no
+Kotlin plugin, and adding one to the whole build for a single test file would
+put the release build at risk for no benefit. The benchmark API's
+`@JvmOverloads` does not help here (the trailing `profileBlock` has no
+default), so the Java call passes all arguments explicitly — if the library's
+`collect()` signature ever changes, that file is where it will fail to compile,
+and `:benchmark:assembleRelease` is the cheap device-free check for it.
+
 ## Regenerating the land mask
 
 The Earth's coastline mask is `public/land-mask.png`:

@@ -1,0 +1,63 @@
+// Macrobenchmark module: records the Android Baseline Profile.
+//
+// A com.android.test module. It builds an instrumentation APK that drives the
+// app's RELEASE variant on a connected device and records which classes and
+// methods the startup path actually touches. The recorded profile is committed
+// as app/src/main/baseline-prof.txt, which AGP converts and packs into the
+// bundle; Play then pre-compiles those paths on users' devices (typically
+// 10-30% faster cold start, most visible on low-end hardware).
+//
+// Nothing in the normal build or deploy pipeline runs this module - it only
+// assembles when asked (:benchmark:assembleRelease) and can only *generate*
+// with a physical device attached, so it can never block a release. The app
+// side of the setup is two inert lines: androidx.profileinstaller in
+// app/build.gradle and <profileable> in the manifest. See docs/PERFORMANCE.md.
+
+plugins {
+    id 'com.android.test'
+}
+
+android {
+    namespace = 'app.joiningpalms.benchmark'
+    compileSdk = rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        minSdk = rootProject.ext.minSdkVersion
+        testInstrumentationRunner = 'androidx.test.runner.AndroidJUnitRunner'
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    buildTypes {
+        release {
+            // The measuring instrument stays debuggable and debug-signed (it is
+            // never shipped); targetProjectPath below points it at the app's
+            // real release build - the code users get, non-debuggable, so the
+            // recorded hot paths match production.
+            debuggable = true
+            signingConfig = signingConfigs.debug
+            matchingFallbacks = ['release']
+        }
+    }
+
+    // Profile the app's release variant, not debug.
+    targetProjectPath = ':app'
+}
+
+dependencies {
+    implementation 'androidx.benchmark:benchmark-macro-junit4:1.5.0'
+    implementation 'androidx.test.uiautomator:uiautomator:2.3.0'
+    implementation "androidx.test.ext:junit:$androidxJunitVersion"
+    implementation "junit:junit:$junitVersion"
+}
+
+androidComponents {
+    beforeVariants(selector().all()) {
+        // Release is the only meaningful target - a profile recorded against
+        // the debug variant would describe code nobody ships.
+        it.enable = it.buildType == 'release'
+    }
+}

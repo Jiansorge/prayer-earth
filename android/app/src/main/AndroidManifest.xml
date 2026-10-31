@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -45,6 +46,15 @@
                 <data android:scheme="https" android:host="joining-palms.app" android:pathPattern="/" />
             </intent-filter>
         </activity>
+
+        <!-- Baseline profiles: lets the macrobenchmark (:benchmark) trace this
+             app's RELEASE build, which is not debuggable. Shell-only - it grants
+             no interactive access, and Play accepts it (it is how Play's own
+             profiling of production installs works). Ignore-on-older-devices;
+             tools:targetApi silences the pre-Android 10 lint. -->
+        <profileable
+            android:shell="true"
+            tools:targetApi="29" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
