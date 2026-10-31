@@ -250,18 +250,23 @@ a copy is not a readable source drop. What is in place:
 Neither is a wall. Treat them as a speed bump plus a paper trail.
 
 ## Notes
-- `versionCode 30` / `versionName 1.0.0` in `android/app/build.gradle` — bump
+- `versionCode 31` / `versionName 1.0.0` in `android/app/build.gradle` — bump
   the code for every Play upload (it must strictly increase; confirm Play's
   latest figure in the console first — it cannot be read from here).
-  `verify:aab` asserts the same number against a **hardcoded** expectation in
-  `scripts/verify-aab.mjs` on purpose: bump **both** together, every upload,
-  or the gate fails instead of letting a duplicate/old code through.
+  `verify:aab` and `audit:aab` assert the same number against **hardcoded**
+  expectations (`scripts/verify-aab.mjs`, `scripts/audit-aab.mjs`) on purpose:
+  bump gradle **and both** together, every upload, or the gates fail instead of
+  letting a duplicate/old code through. A release whose bundle is not a strict
+  upgrade over what is already on the track is what Play rejects with
+  "doesn't allow any existing users to upgrade to the newly added app bundles".
 - Gradle's `aaptOptions.ignoreAssetsPattern` contains a bare `.*`, which drops any
-  asset whose name starts with a dot. That is why `.well-known/security.txt` is in
-  `android/app/src/main/assets/public` but not in the AAB. Harmless today — the
-  Android app is served from the Capacitor origin, and the web deploy publishes
-  the copy that matters — but it is silent, so `verify:aab` names it as a known
-  exclusion and will fail on any second one.
+  asset whose name starts with a dot. That is why the `.well-known/` documents
+  (`security.txt`, `assetlinks.json`) land in `android/app/src/main/assets/public`
+  but not in the AAB. Harmless by design — both are fetched from the *domain*
+  over HTTPS (Android's asset-links check reads
+  `https://joining-palms.app/.well-known/assetlinks.json`, never an in-app copy;
+  the app itself is served from the Capacitor origin) — but it is silent, so
+  `verify:aab` names them as known exclusions and will fail on any third one.
 - The release keystore is the one unrecoverable asset: if it is lost, Play rejects
   every future update of the listing. Back it up in two places, and keep the
   password in a password manager — not only on the machine that built it.

@@ -176,9 +176,10 @@ donation is an external link, not IAP).
 ## 7. Release checklist
 
 - [x] JDK 17 + Android SDK installed, `local.properties` set (verified on this machine)
-- [ ] Bump `versionCode` in **both** `android/app/build.gradle` and the
-      hardcoded check in `scripts/verify-aab.mjs` (see RELEASE.md §Notes), and
-      confirm Play's latest code in the console
+- [ ] Bump `versionCode` in `android/app/build.gradle` **and both** hardcoded
+      checks (`scripts/verify-aab.mjs`, `scripts/audit-aab.mjs`; see RELEASE.md
+      §Notes), and confirm Play's latest code in the console — Play rejects a
+      bundle that is not a strict upgrade over what is already on the track
 - [ ] `npm run build:release` → `npx cap sync android` → `gradlew bundleRelease`
       produces a signed `app-release.aab`
 - [ ] `npm run verify:aab` **green** against that fresh bundle

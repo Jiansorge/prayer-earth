@@ -66,7 +66,7 @@ android {
     // opt-in presence sharing, which did not exist in the uploaded 25.
     // 28: the picker keeps your place in a tradition, its favourites strip fits
     // inside the sheet, and the home grid no longer returns half-blank.
-    versionCode 30
+    versionCode 31
     versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

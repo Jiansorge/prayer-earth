@@ -161,12 +161,15 @@ t('the bundle contains the web app that was packaged', () => {
   // Known-and-explained exclusions. android/app/build.gradle sets
   // `aaptOptions.ignoreAssetsPattern = '!.svn:!.git:...:.*:...'`, and that `.*`
   // entry drops anything whose name starts with a dot - so `.well-known/`
-  // never reaches the bundle. Recorded rather than worked around, so a second
-  // silent exclusion still fails this check. Nothing is lost by it: security.txt
-  // is a web-origin document and the Android app is served from the Capacitor
-  // origin (https://localhost), so the copy that matters is the one the web
-  // deploy publishes.
-  const AAPT_DROPS = new Set(['.well-known/security.txt'])
+  // never reaches the bundle. Recorded rather than worked around, so another
+  // silent exclusion still fails this check. Nothing is lost by either: they
+  // are web-origin documents, fetched from the domain over HTTPS - Android's
+  // asset-links check reads https://joining-palms.app/.well-known/assetlinks.json
+  // (never a copy inside the APK), and the app itself is served from the
+  // Capacitor origin (https://localhost). The copies that matter are the ones
+  // the web deploy publishes; if one of these ever needs to ship IN the app,
+  // that is a gradle-pattern change, not a new line here.
+  const AAPT_DROPS = new Set(['.well-known/security.txt', '.well-known/assetlinks.json'])
 
   const missing = []
   const differing = []
@@ -239,7 +242,7 @@ t('the application id is correct', () => {
   return `${EXPECTED_APPLICATION_ID} (found in the AAB's manifest)`
 })
 
-t('versionCode is 30', () => {
+t('versionCode is 31', () => {
   // The proto encodes versionCode as a varint on a field; rather than parse the
   // proto, read it from the single source of truth and confirm the build used
   // that source.
@@ -251,7 +254,7 @@ t('versionCode is 30', () => {
   const gradle = fs.readFileSync(path.join(ROOT, 'android/app/build.gradle'), 'utf8')
   const m = gradle.match(/versionCode\s+(\d+)/)
   if (!m) throw new Error('no versionCode in build.gradle')
-  eq(m[1], '30', 'versionCode')
+  eq(m[1], '31', 'versionCode')
   return m[1]
 })
 
