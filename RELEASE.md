@@ -101,14 +101,17 @@ package + fingerprint aren't listed there, the filter does not associate at all
 (links open in the browser, no chooser — there is no silent half-state).
 
 - Hosted file: `public/.well-known/assetlinks.json` (deployed with the app).
-- Current fingerprint (upload/local key, `C:\Users\j\joining-palms-release.keystore`):
-  `3F:34:3C:DB:53:57:22:DD:77:5C:41:77:C3:82:95:D4:8B:05:E3:E9:23:5C:C3:D5:D5:27:7E:0B:56:23:BC:BD`
-  (re-read any time — password-free: `keytool -printcert -jarfile <the.aab>`)
-- **After the first Play upload:** Play App Signing re-signs installs with a
-  *different* (app-signing) key. Copy its SHA-256 from
-  **Play Console → Setup → App integrity** and append it as a **second** entry
-  in `sha256_cert_fingerprints` — the file supports several identities, so both
-  Play installs and local/adb installs verify.
+  It lists **both** keys, so every real install verifies:
+  - **upload/local key** (`C:\Users\j\joining-palms-release.keystore`) — builds
+    from this machine / adb installs:
+    `3F:34:3C:DB:53:57:22:DD:77:5C:41:77:C3:82:95:D4:8B:05:E3:E9:23:5C:C3:D5:D5:27:7E:0B:56:23:BC:BD`
+    (re-read any time — password-free: `keytool -printcert -jarfile <the.aab>`)
+  - **Play's app-signing key** — what every Play-delivered install is actually
+    signed with (Play App Signing re-signs after upload; different key by
+    design, not a problem to fix):
+    `C0:03:D6:EB:51:7E:51:E7:16:2F:98:46:8E:82:4C:1A:35:97:43:A6:92:1F:E0:64:CC:3B:68:07:7F:87:FE:EE`
+    (added 2026-10-31 from **Play Console → Setup → App integrity → App
+    signing key certificate** → SHA-256 copy button)
 - **Order matters:** get the file live on production *before* installing from
   Play (verification happens at install; a miss isn't retried until
   reinstall/update — force one with `adb shell pm verify-app-links --re-verify
