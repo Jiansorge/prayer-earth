@@ -122,6 +122,7 @@ The gates, in order, and what each one exists to catch:
 | `npm run test:android:assets` | manifest permissions, missing chunks, wrong sync endpoint |
 | `npm run verify:aab` | opens the AAB and reads it — the only gate that inspects the artifact |
 | `npm run verify:aab-tamper` | that `verify:aab` still fails when it should |
+| `npm run verify:aab-guard` | that the shipped-hook checks are real (a tampered chunk is rejected) |
 
 [RELEASE.md](RELEASE.md) is the release guide: the full Android/Play sequence,
 the **phone-testing paths** (debug APK loop / local release install via
