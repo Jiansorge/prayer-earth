@@ -409,15 +409,25 @@ const stripComments = (text) =>
 }
 {
   const src = readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8')
-  const ramp = src.match(/_rampMaster\(target\)\s*\{[\s\S]{0,2000}?\n  \}/)
+  const ramp = src.match(/_rampMaster\([^)]*\)\s*\{[\s\S]{0,2000}?\n  \}/)
   const body = ramp ? ramp[0] : ''
   // A short exponential reaches ~63% of the gap in 70 ms and, unlike
   // cancelScheduledValues + setValueAtTime(gain.value), cannot resume from a
   // stale reading and jump.
-  check('the fall uses a short time constant', /setTargetAtTime\([^)]*,\s*rising\s*\?\s*0\.8\s*:\s*0\.0?\d/.test(body), body.slice(0, 160))
+  //
+  // The constant is chosen by purpose, not by direction: the volume path
+  // (fast, either way) and every downward level change are short, and only a
+  // GENTLE rise remains - the prayer-arrival swell. Direction alone used to
+  // pick 0.8s for the rise, which left the fader's bed seconds behind the
+  // voice it shares the master with; test-audio-ambient records the constants
+  // actually scheduled and pins that split at runtime.
+  check('the fall uses a short time constant',
+    /fast\s*\?\s*0\.07\s*:\s*rising\s*\?\s*0\.8\s*:\s*0\.07/.test(body), body.slice(0, 160))
   check('the fade does not cancel-and-resume from gain.value (click risk)',
     !/cancelScheduledValues/.test(body) && !/setValueAtTime\(g\.value/.test(body))
-  check('rising volume still swells gently', /0\.8/.test(body))
+  check('the gentle arrival swell still exists for rising level',
+    /0\.8/.test(body) && /fast\s*\?/.test(body),
+    'a fast flag with no 0.8s arm would flatten every prayer arrival')
   // Repeated identical setLevel calls must not re-issue setTargetAtTime: that
   // restarts the exponential from the current value, so the gain steps instead
   // of settling - the clicking heard while scrolling the settings sheet
