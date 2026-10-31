@@ -24,7 +24,8 @@ every tradition pray together on one living Earth — live at
 - 🌐 **15 interface languages** (en, es, fr, de, hi, pt, it, ru, zh, ar, ja, ko,
   vi, tl, bo) with RTL support for Arabic.
 - 📱 Installable PWA, offline-ready via a service worker; works on phones and
-  desktop.
+  desktop. Also on **Google Play** (Android, in closed testing — see
+  [RELEASE.md](RELEASE.md)).
 - 🔒 Privacy-first: only a coarse 1° location cell is ever shared; no accounts,
   no precise location, no personal data. Raw IPs are never logged.
 
@@ -33,6 +34,7 @@ every tradition pray together on one living Earth — live at
 | piece | tech |
 |---|---|
 | App | React 18, Vite, three.js, Zustand |
+| Android | Capacitor 8 wrapper (`android/`, `app.joiningpalms`) → AAB on Google Play; a macrobenchmark module records a Baseline Profile (see [docs/PERFORMANCE.md](docs/PERFORMANCE.md)) |
 | Real-time sync | [`sync-engine`](https://github.com/Jiansorge/sync-engine) — Cloudflare Workers + Durable Objects (WebSocket presence, live feed, durable anonymous totals) |
 | Voices | pre-rendered neural MP3s (`public/audio/`, `manifest.json`) + on-device TTS fallback |
 | Install/offline | service worker (`public/sw.js`), Web App Manifest |

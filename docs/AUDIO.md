@@ -49,3 +49,30 @@ so removed files disappear from production and replaced ones overwrite.
 
 > Tip: an interrupted `generate-audio` run keeps what it wrote (it saves the
 > manifest after every prayer). Re-run to finish.
+
+## Size diet (deferred 2026-10-31 — analysis done, decision: keep all voices)
+
+Audio is **~118 MB of the ~126 MB `public/` tree — 94% of the app** (5,941
+MP3s; the AAB is 108 MB mostly because of it). Measured facts, so this doesn't
+need re-auditing:
+
+- **Root cause:** every prayer ships up to **8 voice variants of the same
+  text** (`MAX_VOICES` in `scripts/generate-audio.mjs`, default 8). The four
+  fattest English voices alone are 65 MB.
+- **Bitrate is not a lever:** `msedge-tts` only offers 48 / 96 kbps mono MP3;
+  we already use the smaller one. Voice *count* is the only clean lever.
+- **The proposed diet:** `MAX_VOICES=8 → 3` (default female + male + one
+  alternate) → English drops ~60 MB, AAB lands near **~50 MB**. The voice
+  chips in the tune sheet adapt to any count, and a full re-render is free
+  (Edge TTS, no card) and incremental (`existsSync` skips existing files).
+- **Hidden bonus of any re-render:** old renders predate the `PRIMARY_REGION`
+  pin, so old prayers auto-play *en-AU-Natasha* while new ones play
+  *en-US-Ava*. A re-render fixes the inconsistency.
+- All 5,942 audio files are git-tracked, so a prune is fully revertible.
+- If ever done, the deploy chain is: re-render → prune files not in the new
+  manifest → `test:audio:runtime` + `test:android:assets` → `audio:r2:upload`
+  → `public/sw.js` CACHE bump → production `/audio/*` CDN purge → and the next
+  Play upload needs a **versionCode bump** (see RELEASE.md).
+
+**Decision 2026-10-31:** keep all 8 voices for now — the variety is a product
+feature worth the bytes. Revisit if install size ever becomes a complaint.
