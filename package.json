@@ -73,7 +73,7 @@
     "react-dom": "^18.3.1",
     "three": "^0.186.1",
     "ws": "^8.18.0",
-    "zustand": "^5.0.15"
+    "zustand": "^5.0.16"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
