@@ -2,6 +2,7 @@
 import dayUrl from '../assets/textures/earth_atmos_medium.jpg'
 import dayUrlSmall from '../assets/textures/earth_atmos_small.jpg'
 import { SPIRITUALITIES } from '../data/prayers.js'
+import { isSmallTouchDevice } from '../shared/deviceTier.js'
 
 // Each tradition's prayer-light colour, so the lights of the world glow by
 // faith (fall back to warm gold when a cell's faith is unknown).
@@ -495,10 +496,13 @@ export class EarthScene {
     // used to also trigger on any native build, which capped every phone at
     // DPR 1 - a third of the pixels on a 3x screen - regardless of how capable
     // the phone was. A flagship in the app has more GPU than a browser tab on
-    // an old laptop; packaging is not a performance tier. Devices that truly
-    // cannot hold the scene still get caught by `failed` in EarthBackdrop.
+    // an old laptop; packaging is not a performance tier. It also used to be a
+    // bare `hardwareConcurrency <= 4`, which is a statement about the BROWSER
+    // as much as the machine: the same Mac reports 8 cores to Chrome and 4 to
+    // Safari, so Safari got a coarser Earth on identical hardware. Devices that
+    // truly cannot hold the scene still get caught by `failed` in EarthBackdrop.
     this.reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-    this.lowPower = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4
+    this.lowPower = isSmallTouchDevice()
     this.seg = this.lowPower ? 96 : 128 // sphere segments (was 192)
 
     const w = container.clientWidth || 1
@@ -558,6 +562,11 @@ export class EarthScene {
         // that strict land validation is available, otherwise an ocean cell
         // can remain at its original position until the next sync update.
         if (this._lastLights) this.setLights(this._lastLights, this._lastLightSpirits)
+        // Same for the "you are here" ring: a geolocation fix usually lands
+        // long before this map does, and setYouLoc placed it from the raw
+        // position while the map was still untrusted. Re-apply so it snaps to
+        // the coast once there is a coast to snap to.
+        if (this.youLoc) this.setYouLoc(this.youLoc)
         this._maybeNotifyReady()
       },
       undefined,
@@ -1129,7 +1138,17 @@ if (this._readyTimer) clearTimeout(this._readyTimer)
     }
     let latG = loc.lat
     let lonG = loc.lon
-    if (this.isDeepOcean(latG, lonG)) {
+    // The strict land map arrives asynchronously with the day texture, and
+    // until it lands isDeepOcean() answers "water" for every cell - on purpose,
+    // so no prayer light can be placed from a half-built map. Taken at face
+    // value for the marker that was fatal: a location is published once, the
+    // snap found no land anywhere, and the marker was hidden for the rest of
+    // the session (nothing re-ran setYouLoc). So while the map is still
+    // loading, place the marker at the reported position and let the re-snap
+    // below - on the texture onload - move it to the coast if it really is
+    // offshore. Showing your own position a pixel off the coast is honest;
+    // never showing it is the bug.
+    if (this._snapCompTrusted && this.isDeepOcean(latG, lonG)) {
       const snap = this.snapToLand(latG, lonG)
       if (!snap) {
         this.youMarker.visible = false

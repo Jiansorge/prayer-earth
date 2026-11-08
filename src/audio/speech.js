@@ -486,6 +486,36 @@ class SpeechEngine {
     }
   }
 
+  // The watchdog for a phrase played by the shared <audio> element.
+  //
+  // A recording's own length is the only trustworthy bound on when it ends, but
+  // `duration / playbackRate` assumes the element is really playing at the rate
+  // we set. When a browser does not honour it (WebKit can report 1.8x while
+  // running at 1x), the timer fires early on every line long enough for the
+  // fixed margin to run out - the line is cut mid-word and the highlight jumps
+  // ahead. So at the deadline, ask the element: if it is still making progress,
+  // wait out what it has left at the rate it is actually reporting; if it has
+  // stopped moving, the phrase is over and the normal finish path applies. A
+  // dead element only costs a couple of extra timeouts before the stall guard
+  // takes over, and the re-arms are bounded.
+  _armPhraseDeadline(job, el, finish, isCurrent) {
+    let tries = 0
+    const arm = () => {
+      clearTimeout(job.advTimer)
+      const rate = Math.max(0.25, Number(el.playbackRate) || 1)
+      const left = Math.max(0, (el.duration || 0) - (el.currentTime || 0))
+      job.advTimer = setTimeout(() => {
+        if (!isCurrent()) return
+        const moving =
+          !el.paused && !el.ended && el.currentTime < (el.duration || 0) - 0.15
+        if (!moving) return finish()
+        if (++tries > 6) return finish()
+        arm()
+      }, (left / rate) * 1000 + 2500)
+    }
+    arm()
+  }
+
   async speakCloud(i) {
     const job = this.job
     if (!job || !job.active || job.mode !== 'tts') return false
@@ -650,6 +680,13 @@ class SpeechEngine {
         el.preservesPitch = true
         el.mozPreservesPitch = true
         el.webkitPreservesPitch = true
+        // The rate must survive the load, not just the assignment below.
+        // `defaultPlaybackRate` is the rate a freshly loaded resource starts at;
+        // WebKit can drop a `playbackRate` written before a new src takes over,
+        // which left the audio at 1x while the deadline below was priced at the
+        // 1.8x the element claimed - the reported Safari pair, "the speed
+        // control does nothing" and "it skips words mid-line".
+        el.defaultPlaybackRate = rate
         el.src = url
         // A recording's own length is the only trustworthy bound on when it
         // ends. The deadline already set above is seeded from an estimate that
@@ -663,9 +700,13 @@ class SpeechEngine {
         // prayer.
         el.onloadedmetadata = () => {
           if (!isCurrent() || !isFinite(el.duration) || el.duration <= 0) return
-          const secs = el.duration / (el.playbackRate || 1)
-          clearTimeout(job.advTimer)
-          job.advTimer = setTimeout(finish, secs * 1000 + 2500)
+          // Re-assert the rate now that the resource is loaded (see above) and
+          // price the deadline off what the element is actually reporting.
+          try {
+            el.defaultPlaybackRate = rate
+            if (el.playbackRate !== rate) el.playbackRate = rate
+          } catch {}
+          this._armPhraseDeadline(job, el, finish, isCurrent)
         }
         // Start silent and ramp up - the same click class the buffer path
         // already fades out of with its 20ms ramp: an mp3's first sample is
@@ -954,11 +995,24 @@ class SpeechEngine {
   setRate(rate) {
     const value = Math.max(0.6, Math.min(2, Number(rate) || 1))
     if (this.job) this.job.rate = value
+    // A phrase already playing has to move too, or the slider reads as dead
+    // until the next line starts. A decoded-buffer phrase (the 1x path) has no
+    // element to steer, so its source is retimed directly; the pitch rises with
+    // it, which is the honest trade for "apply now" on a buffer.
+    if (this.cloudSource) {
+      try {
+        this.cloudSource.playbackRate.value = value
+      } catch {}
+    }
     if (this.cloudAudio) {
       try {
         this.cloudAudio.preservesPitch = true
         this.cloudAudio.mozPreservesPitch = true
         this.cloudAudio.webkitPreservesPitch = true
+        // defaultPlaybackRate as well as playbackRate: it is the rate a newly
+        // loaded resource starts at, and WebKit can drop a bare playbackRate
+        // when the element's src changes (it reassigns it per phrase here).
+        this.cloudAudio.defaultPlaybackRate = value
         this.cloudAudio.playbackRate = value
       } catch {}
     }

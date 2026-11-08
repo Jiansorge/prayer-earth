@@ -232,7 +232,7 @@ const stripComments = (text) =>
 //     generation. This is a static check because the race needs a real browser.
 {
   const src = readFileSync(path.join(ROOT, 'src/sync/client.js'), 'utf8')
-  const fn = src.match(/ensureLocation\(\)\s*\{[\s\S]{0,2600}?\n  \}/)
+  const fn = src.match(/ensureLocation\(attempt = 0\)\s*\{[\s\S]{0,3200}?\n  \}/)
   const body = fn ? fn[0] : ''
   check('consent changes bump a generation counter', /_consentGen/.test(src))
   check('a stale fix is discarded', /stale\(\)\s*\)\s*return/.test(body))
@@ -463,38 +463,51 @@ const stripComments = (text) =>
 
 // --- the ambient bed must actually be adjustable ---------------------------
 //
-// Two bugs lived here. The bed gain was `(0.2 + 0.8 * ambienceLevel)`, so the
-// slider at 0 still played at a fifth of full and read as broken; and the
+// Three bugs lived here. The bed gain was `(0.2 + 0.8 * ambienceLevel)`, so the
+// slider at 0 still played at a fifth of full and read as broken. Then the
 // prayer-view fader only moved the voice, so the one control labelled "volume"
-// next to the main action did not change the room. Neither was reachable by a
-// test until the arithmetic was pulled out of the class, because both needed an
-// AudioContext to observe.
+// next to the main action did not change the room; routing that fader into the
+// bed overcorrected, and ambient at 100% with the prayer voice at 0 went
+// completely silent. The bed's third factor is now a mute GATE (1 open / 0
+// muted), never a level, and the voice volume is not a term in the expression at
+// all. The arithmetic is a pure exported function so all of it is testable
+// without an AudioContext.
 {
   const { bedTarget, BED_HEADROOM } = await import('../src/audio/ambience.js')
-  const at = (level, ambienceLevel, volume) =>
-    bedTarget({ level, ambienceLevel, volume })
+  const at = (level, ambienceLevel, gate) =>
+    bedTarget({ level, ambienceLevel, gate })
 
   check('the bed reaches true silence when the ambient slider is 0',
     at(0.9, 0, 1) === 0, 'target=' + at(0.9, 0, 1))
-  check('the bed reaches true silence when the master volume is 0',
+  check('the bed reaches true silence when the room is muted',
     at(0.9, 1, 0) === 0, 'target=' + at(0.9, 1, 0))
   check('the bed reaches true silence when the engine is stopped',
     at(0, 1, 1) === 0, 'target=' + at(0, 1, 1))
   check('the bed is not silent at any non-zero setting',
     at(0.9, 1, 1) > 0 && at(0.9, 0.05, 1) > 0, 'target=' + at(0.9, 0.05, 1))
 
+  // The prayer-voice volume must not be a bed factor. A `volume` key bolted on
+  // to the same arguments has to compute identically whatever it says - this is
+  // the exact regression (ambient 100% + prayer voice 0% = silence) in one line.
+  check('the prayer-voice volume is not a factor in the bed',
+    bedTarget({ level: 0.9, ambienceLevel: 0.7, gate: 1, volume: 0 }) ===
+      bedTarget({ level: 0.9, ambienceLevel: 0.7, gate: 1 }) &&
+    bedTarget({ level: 0.9, ambienceLevel: 0.7, gate: 1, volume: 0.4 }) ===
+      bedTarget({ level: 0.9, ambienceLevel: 0.7, gate: 1 }),
+    'a volume key changed the bed gain - the voice level is coupled back in')
+
   // Monotonic in each factor: raising any slider never lowers the bed, which is
   // the whole point of a slider.
   let mono = true
-  for (const f of ['level', 'ambienceLevel', 'volume']) {
+  for (const f of ['level', 'ambienceLevel', 'gate']) {
     for (let i = 1; i <= 20; i++) {
       const lo = {}
       const hi = {}
-      lo.level = 0.9; lo.ambienceLevel = 0.9; lo.volume = 0.9
-      hi.level = 0.9; hi.ambienceLevel = 0.9; hi.volume = 0.9
+      lo.level = 0.9; lo.ambienceLevel = 0.9; lo.gate = 0.9
+      hi.level = 0.9; hi.ambienceLevel = 0.9; hi.gate = 0.9
       lo[f] = (i - 1) / 20
       hi[f] = i / 20
-      if (at(hi.level, hi.ambienceLevel, hi.volume) < at(lo.level, lo.ambienceLevel, lo.volume)) {
+      if (at(hi.level, hi.ambienceLevel, hi.gate) < at(lo.level, lo.ambienceLevel, lo.gate)) {
         mono = false
       }
     }
@@ -570,6 +583,92 @@ const stripComments = (text) =>
   check('a script that only imports the store exits on its own',
     !leak.error && leak.signal === null && leak.status === 0,
     leak.error ? leak.error.message : `signal=${leak.signal} status=${leak.status}`)
+}
+
+// --- the room and the recitation are independently adjustable --------------
+//
+// Reported: "ambient at 100 and prayer voice at 0 must not silence ambient".
+// The footer fader is the prayer voice's level (it is labelled as such, with the
+// same string the Settings slider uses); the bed has its own slider; mute is the
+// one switch that silences the whole room. These pin the three halves.
+{
+  const volumes = readFileSync(path.join(ROOT, 'src/audio/volumes.js'), 'utf8')
+  const controls = readFileSync(path.join(ROOT, 'src/components/PrayerControls.jsx'), 'utf8')
+  const amb = readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8')
+
+  check('applyVolumes hands the ambient engine a mute gate, not the voice level',
+    /speech\.setVolume\(\s*s\.muted\s*\?\s*0\s*:\s*s\.volume\s*\)/.test(volumes) &&
+      /ambient\.setVolume\(\s*s\.muted\s*\?\s*0\s*:\s*1\s*\)/.test(volumes),
+    'passing s.volume into the bed is the bug that silenced a full room')
+
+  check('the footer fader is labelled as the prayer voice, not the room',
+    /aria-label=\{t\('sound\.prayerVoice'\)\}/.test(controls) &&
+      !/aria-label=\{t\('prayer\.volume'\)\}/.test(controls),
+    'a slider that only moves the voice must say so')
+
+  const ringAt = amb.indexOf('ring(intensity = 1) {')
+  const ring = ringAt >= 0 ? amb.slice(ringAt, amb.indexOf('\n  }', ringAt)) : ''
+  check('the welcome bell follows the ambient slider, not the prayer voice',
+    ring.length > 0 && /ambienceLevel/.test(ring) && !/getState\(\)\.volume/.test(ring),
+    'the bell is room sound; a voice fader at 0 must not silence it')
+}
+
+// --- the Safari pair: no marker, and a speed control that looked inert ------
+//
+// A location fix usually lands long before the land mask does, and until the
+// mask lands isDeepOcean() answers "water" for every cell. Snapping blindly on
+// that first fix hid the ring for the whole session. And WebKit can drop a
+// playbackRate written before a new src loads, which made the speed control do
+// nothing while the deadline - priced from the rate the element claimed - cut
+// lines mid-word.
+{
+  const scene = readFileSync(path.join(ROOT, 'src/three/EarthScene.js'), 'utf8')
+  const client = readFileSync(path.join(ROOT, 'src/sync/client.js'), 'utf8')
+
+  const youAt = scene.indexOf('setYouLoc(loc) {')
+  const you = youAt >= 0 ? scene.slice(youAt, scene.indexOf('\n  }', youAt)) : ''
+  check('the location marker is placed while the land mask is still loading',
+    you.length > 0 && /this\._snapCompTrusted\s*&&\s*this\.isDeepOcean/.test(you),
+    'snapping before the mask exists hides the marker permanently')
+  check('the location marker is re-snapped once the land mask arrives',
+    /this\.youLoc\) this\.setYouLoc\(this\.youLoc\)/.test(scene),
+    'a fix published before the texture loads must be re-applied, not stranded')
+
+  check('a slow or refused location fix is retried instead of lost for the session',
+    /ensureLocation\(attempt = 0\)/.test(client) && /this\._locRetry = setTimeout/.test(client) &&
+      /attempt >= 2/.test(client),
+    'iOS times out the first ask; one try per consent left the marker missing')
+  check('a location retry is cleared when the fix lands or the client stops',
+    /clearTimeout\(this\._locRetry\)/.test(client) &&
+      /stop\(\)\s*{[\s\S]{0,200}?clearTimeout\(this\._locRetry\)/.test(client))
+  check('the timezone guess never publishes a "you are here" marker',
+    (client.match(/publishReal\(\)/g) || []).length === 1 &&
+      /const done = \(pos\) => \{[\s\S]{0,400}?publishReal\(\)/.test(client),
+    'a guess is for the world light only; the ring means a real fix')
+}
+
+// --- one definition of "weak hardware", shared by every gate ---------------
+//
+// The reported "Safari gets a worse Earth and no marker" started here: the same
+// Mac reports 8 cores to Chrome and 4 to Safari, and a bare core count was
+// deciding the static fallback, the reduced geometry and the .low-power CSS.
+{
+  const tier = readFileSync(path.join(ROOT, 'src/shared/deviceTier.js'), 'utf8')
+  const plain = (p) => stripComments(readFileSync(path.join(ROOT, p), 'utf8'))
+  const backdrop = plain('src/components/EarthBackdrop.jsx')
+  const scene = plain('src/three/EarthScene.js')
+  const mainSrc = plain('src/main.jsx')
+  const canvasHook = plain('src/components/useBackdropCanvas.js')
+  check('weak hardware is defined once, as a small touch device',
+    /export function isSmallTouchDevice/.test(tier) &&
+      /pointer: coarse/.test(tier) && /hardwareConcurrency/.test(tier),
+    'the static globe and the low-power gate must agree on what "weak" means')
+  check('every hardware gate uses that one definition',
+    /\bisSmallTouchDevice\b/.test(backdrop) && /\bisSmallTouchDevice\b/.test(scene) &&
+      /\bisSmallTouchDevice\b/.test(mainSrc) && /\bisSmallTouchDevice\b/.test(canvasHook) &&
+      !/hardwareConcurrency\s*<=/.test(backdrop) && !/hardwareConcurrency\s*<=/.test(scene) &&
+      !/hardwareConcurrency\s*<=/.test(mainSrc) && !/hardwareConcurrency\s*<=/.test(canvasHook),
+    'a gate that still reads hardwareConcurrency directly can disagree by browser')
 }
 
 // --- sound must never clip, and never be cut while it is still audible -----
@@ -833,11 +932,13 @@ const stripComments = (text) =>
     'an unreferenced preview element cannot be stopped')
 
   // The engine used to force the bed's volume to 1 on start, so a prayer could
-  // begin louder than the very slider that governs it, and start() used to ring
-  // a second bowl on top of the call site's own.
+  // begin louder than the very slider that governs it. The bed's loudness is
+  // ambienceLevel (read live in setLevel); what start() must carry is the mute
+  // gate, or a muted app plays the bed at full until something else happens to
+  // call applyVolumes().
   const startBody = (amb.match(/async start\(\)\s*\{[\s\S]{0,2400}?\n  \}/) || [''])[0]
-  check('starting a prayer respects the master volume',
-    /s\.muted \? 0 : s\.volume \?\? 1/.test(startBody),
+  check('starting a prayer carries the room mute, not the voice level',
+    /s\.muted \? 0 : 1/.test(startBody),
     startBody.slice(-260))
   check('the engine does not ring a bowl the call site already rings',
     !/this\.ring\(/.test(startBody))
@@ -968,22 +1069,49 @@ const stripComments = (text) =>
   const staticInit = backdrop.slice(backdrop.indexOf('const [staticMode]'), backdrop.indexOf('const glow'))
   const lowPower = scene.slice(scene.indexOf('this.lowPower ='), scene.indexOf('this.seg ='))
   check('the backdrop globe is not made static because the app is packaged native',
-    staticInit.length > 0 && !/Capacitor|isNativePlatform/.test(staticInit),
-    'hardwareConcurrency / WebGL2 only')
+    staticInit.length > 0 && !/Capacitor|isNativePlatform/.test(staticInit) &&
+      /isSmallTouchDevice/.test(staticInit),
+    'the static fallback must key on isSmallTouchDevice() / WebGL2, never on packaging')
   check('the 3D Earth keeps full quality on a packaged build',
     lowPower.length > 0 && !/Capacitor|isNativePlatform/.test(lowPower) &&
-      /hardwareConcurrency/.test(lowPower),
-    'segments and antialiasing decided by cores, not by packaging')
+      /isSmallTouchDevice/.test(lowPower),
+    'segments and antialiasing decided by hardware tier, not by packaging')
 
   // (b) A recorded file's own length is the only trustworthy bound on when it
   // ends. estimateMs() prices text, so it under-counted a 12.3s Chinese verse
   // at 4.9s and its own safety net cut seven of twelve High King sutra verses.
+  // The deadline must also be re-armed from the element rather than fixed at
+  // `duration / playbackRate`: WebKit can report a rate it is not running, and
+  // that cut lines mid-word while the speed control looked inert on Safari.
   const speech = readFileSync(path.join(ROOT, 'src/audio/speech.js'), 'utf8')
   const at = speech.indexOf('el.onloadedmetadata')
   const meta = at >= 0 ? speech.slice(at, speech.indexOf('el.volume', at)) : ''
   check('a recorded file replaces the guessed deadline with its real duration',
-    at >= 0 && /el\.duration/.test(meta) && /job\.advTimer\s*=\s*setTimeout\(\s*finish/.test(meta),
+    at >= 0 && /el\.duration/.test(meta) &&
+      /_armPhraseDeadline\(job, el, finish, isCurrent\)/.test(meta),
     'the watchdog must be reseeded from the file, not from estimateMs')
+  check('the speed is re-asserted once the recording has loaded',
+    at >= 0 && /el\.defaultPlaybackRate\s*=\s*rate/.test(meta) &&
+      /el\.playbackRate\s*=\s*rate/.test(meta),
+    'WebKit drops a rate written before the src loads; the metadata path must set it again')
+  check('the speed is set before the element loads a new phrase',
+    (() => {
+      const srcAt = speech.indexOf('el.defaultPlaybackRate = rate')
+      const urlAt = speech.indexOf('el.src = url')
+      return srcAt > -1 && urlAt > -1 && srcAt < urlAt
+    })(),
+    'defaultPlaybackRate is the rate a newly loaded resource starts at - it must precede src')
+
+  // The progress-aware re-arm: the deadline asks the element whether it is
+  // still moving, and waits out what is left at the rate it is actually
+  // reporting, instead of trusting a single duration/rate division.
+  const armAt = speech.indexOf('_armPhraseDeadline(job, el, finish, isCurrent) {')
+  const arm = armAt >= 0 ? speech.slice(armAt, speech.indexOf('async speakCloud', armAt)) : ''
+  check('the phrase deadline re-arms while the recording is still moving',
+    arm.length > 0 && /el\.currentTime/.test(arm) && /clearTimeout\(job\.advTimer\)/.test(arm) &&
+      /if \(!moving\) return finish\(\)/.test(arm) &&
+      /if \(\+\+tries > 6\) return finish\(\)/.test(arm),
+    'a fixed deadline trusts a rate the browser may not honour - it must check progress and re-arm')
 
   // (c) /audio/* is cache-first on purpose - that is what lets the player work
   // offline - but the manifest is the index of what exists. Served stale it is
@@ -1612,7 +1740,7 @@ const stripComments = (text) =>
   check(
     'weak hardware is tagged before the first paint',
     /documentElement\.classList\.add\('low-power'\)/.test(mainSrc) &&
-      /hardwareConcurrency <= 4/.test(mainSrc) && /deviceMemory/.test(mainSrc),
+      /isSmallTouchDevice\(\)/.test(mainSrc) && /deviceMemory/.test(mainSrc),
     'the tag must be in the entry, not in a component that renders after the paint it gates'
   )
   const lpStyles = readFileSync(path.join(ROOT, 'src/styles.css'), 'utf8')

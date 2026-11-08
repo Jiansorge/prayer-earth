@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { isSmallTouchDevice } from '../shared/deviceTier.js'
 
 // Shared animation harness for the procedural canvas backdrops: sizes the
 // canvas, runs a requestAnimationFrame loop, pauses when the tab is hidden,
@@ -51,9 +52,11 @@ export function useBackdropCanvas(ref, draw) {
     const reduced = !!(
       window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
     )
-    // Low-end devices (few cores) get a lighter canvas: lower resolution and half
-    // the frame budget so the animated backdrop doesn't starve the rest of the app.
-    const low = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4
+    // Low-end devices get a lighter canvas: lower resolution and half the frame
+    // budget so the animated backdrop doesn't starve the rest of the app. Shares
+    // the one tier definition, because a bare core count classified a 4-core
+    // desktop browser - Safari on a Mac - as low-end.
+    const low = isSmallTouchDevice()
     const dpr = Math.min(window.devicePixelRatio || 1, low ? 1 : 1.5)
     const minFrameMs = low ? MIN_FRAME_MS * 2 : MIN_FRAME_MS
 

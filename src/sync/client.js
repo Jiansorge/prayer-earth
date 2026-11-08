@@ -220,7 +220,7 @@ class SyncClient {
     if (this.mode === 'live') this.sendPresence()
   }
 
-  ensureLocation() {
+  ensureLocation(attempt = 0) {
     // Any fix already in flight belongs to an older consent decision.
     const gen = this._consentGen || 0
     const stale = () => (this._consentGen || 0) !== gen
@@ -230,17 +230,31 @@ class SyncClient {
     const publishReal = () => useStore.getState().setYouLoc(this.loc)
     const done = (pos) => {
       if (stale()) return
+      clearTimeout(this._locRetry)
+      this._locRetry = null
       this.loc = {
         lat: +pos.coords.latitude.toFixed(1),
         lon: +pos.coords.longitude.toFixed(1)
       }
       publishReal()
     }
-    // The timezone fallback resolves synchronously, but going through the same
-    // guard keeps one rule for every path that can produce a position.
+    // A failure is often temporary: iOS/Safari routinely times out (or reports
+    // POSITION_UNAVAILABLE) on the first ask while it warms the fix up, and a
+    // prompt answered "no" can be changed later. The old code asked exactly
+    // once per consent decision, so one slow or refused ask left the ring
+    // missing for the whole session - the reported "no marker on Safari".
+    // Keep the honest rule (a guess is still never published) and simply ask
+    // again, a few times, spaced out; a real fix cancels the retry.
     const fallback = () => {
       if (stale()) return
       this.fallbackLoc()
+      if (attempt >= 2) return
+      clearTimeout(this._locRetry)
+      this._locRetry = setTimeout(() => {
+        this._locRetry = null
+        if (stale()) return
+        this.ensureLocation(attempt + 1)
+      }, 6000)
     }
     if (window.Capacitor?.isNativePlatform?.()) {
       // On native, use the Geolocation plugin via Plugins registry (no
@@ -286,6 +300,8 @@ class SyncClient {
 
   stop() {
     clearTimeout(this.retry)
+    clearTimeout(this._locRetry)
+    this._locRetry = null
     clearInterval(this.ping)
     clearInterval(this.syncTimer)
     if (this._vis) {

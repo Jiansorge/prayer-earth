@@ -167,12 +167,11 @@ await send('Page.navigate', { url: `${APP}/#/pray/buddhism/mani` })
 const prayer = await waitFor(`!!document.querySelector('.prayer-stage')`)
 ok('prayer view renders via deep link', !!prayer)
 // The backdrop is EITHER the live WebGL scene (a canvas) OR the documented
-// static fallback when the device is weak: navigator.hardwareConcurrency <= 4
-// or no WebGL2 (EarthBackdrop.jsx — the deliberate weak-device path, not a
-// failure). GitHub's runner takes that path, so demanding a canvas here made
-// this check unpassable on CI while it passed on a desktop. Assert the real
-// invariant — the backdrop rendered SOMETHING — and report which mode was
-// chosen plus the facts that decide it, so a future failure is self-explaining.
+// static fallback when the device is weak: a small touch device (coarse pointer
+// AND <= 4 cores, shared/deviceTier.js) or no WebGL2 (EarthBackdrop.jsx — the
+// deliberate weak-device path, not a failure). Assert the real invariant — the
+// backdrop rendered SOMETHING — and report which mode was chosen plus the facts
+// that decide it, so a future failure is self-explaining.
 const backdropReady = await waitFor(`(() => {
   const root = document.querySelector('.earth-backdrop')
   return !!root && (!!root.querySelector('canvas') || !!root.querySelector('.earth-fallback'))

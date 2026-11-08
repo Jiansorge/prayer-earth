@@ -433,39 +433,38 @@ try {
         JSON.stringify(Object.fromEntries(levels.map(([k, v]) => [k, +v.toFixed(4)]))))
     })
 
-    // ---- the footer's vertical fader moves voice and bed the same way ------
-    // Reported: "the vertical sound toggle seems to disproportionately affect
-    // voice and ambient sound volumes".
+    // ---- the footer fader is the voice, and only the voice ----------------
+    // Two reports, pulling in opposite directions, and they narrow the design
+    // rather than contradict it:
+    //   1. "the vertical sound toggle disproportionately affects voice and
+    //      ambient sound volumes" - so the two engines must reach a new level
+    //      by the same route when one control governs both.
+    //   2. "ambient at 100 + prayer voice at 0 must NOT silence ambient" - so
+    //      no single control may govern both.
+    // The resolution is that the footer fader IS the prayer voice's level (its
+    // aria-label says so, the same string the Settings slider uses), the bed has
+    // its own slider, and the room mute is the one switch that silences both.
     //
-    // The steady-state balance is locked by construction: one store volume
-    // reaches both engines (applyVolumes), the voice applies it linearly,
-    // bedTarget is linear in volume, and both share one limiter - so the ratio
-    // cannot drift with the fader. What is NOT symmetric is how each engine
-    // gets to the new value:
-    //
-    //   voice  setVolume -> ~0.03 s ramp, either direction
-    //   bed    setVolume -> _rampMaster, whose RISING constant is 0.8 s - the
-    //          "a prayer arrives gently" swell meant for LEVEL changes. So
-    //          dragging up: the voice jumps, the bed follows over seconds;
-    //          dragging down: 0.07 s vs 0.03 s, near parity. A discrepancy
-    //          that depends on drag direction is what "disproportionate" is.
-    //
-    // So this section pins scheduling decisions instead of impressions: it
-    // wraps AudioParam.setTargetAtTime to record the constants the engines
-    // actually schedule, and drives the real footer slider to prove one move
-    // reaches both engines as the same number. Recording the schedule rather
-    // than sampling the gain over wall-clock is deliberate: a suspended
-    // headless context never advances its clock, and a running one only lets
-    // you chase a moving target.
+    // This section pins that contract instead of an impression: it wraps the
+    // engines' setVolume and drives the real footer slider to prove the level
+    // reaches the voice and that the bed is only ever gated (1/0), never scaled
+    // by the voice. Recording the calls rather than sampling the gain over
+    // wall-clock is deliberate: a suspended headless context never advances its
+    // clock, and a running one only lets you chase a moving target.
     await goView(page, '#/pray/christianity/lords-prayer', '.prayer-stage', 15000)
     await page.waitForSelector('.vol-slider-vert', { timeout: 15000 })
 
     const wire = await page.evaluate(async () => {
       const store = window.__store
-      // Known, audible volume so every key step is a real move off the floor,
+      // Known, audible levels so every key step is a real move off the floor,
       // and unmuted so the mute-seed branch in the control can't reroute it.
-      store.setState({ muted: false, volume: 0.8 })
+      store.setState({ muted: false, volume: 0.8, ambienceLevel: 1 })
       await window.__ambient.ensure()
+      // A bed that is actually audible: the page is not praying, so the engine's
+      // own level is still at its idle value unless we set it, and a previous
+      // test may have left the room muted - open the gate explicitly.
+      window.__ambient.setVolume(1)
+      window.__ambient.setLevel(0.9)
       window.__faderGot = { voice: [], bed: [] }
       const sp = window.__speech
       const am = window.__ambient
@@ -490,8 +489,8 @@ try {
 
     // Move it the way a thumb does. usePrayerKeys may also answer the arrows
     // (a separate +/-0.08 alongside the control's own 0.05 step); every
-    // assertion below is written against the invariant - the same number
-    // everywhere - so either path, or both, has to agree.
+    // assertion below is written against the invariant - one level for the
+    // voice, a gate for the bed - so either path, or both, has to agree.
     await page.focus('.vol-slider-vert')
     for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowLeft')
     await settle(page, 300)
@@ -499,22 +498,69 @@ try {
       voice: window.__faderGot.voice,
       bed: window.__faderGot.bed,
       store: window.__store.getState().volume,
+      gate: window.__ambient.gate,
       slider: Number(document.querySelector('.vol-slider-vert').value)
     }))
     note(`fader: steps=${parity.voice.length} voice=[${parity.voice.join(', ')}] bed=[${parity.bed.join(', ')}] store=${parity.store}`)
-    t('one footer fader move pushes the same level into voice and bed', () => {
-      assert(parity.voice.length > 0, 'the slider never reached either engine - no step fired')
-      assert(parity.voice.length === parity.bed.length,
-        `the engines saw different update counts: voice=${parity.voice.length} bed=${parity.bed.length}`)
-      for (let i = 0; i < parity.voice.length; i++) {
-        assert(parity.voice[i] === parity.bed[i],
-          `update ${i} split: voice=${parity.voice[i]} bed=${parity.bed[i]} - one slider, two levels`)
-      }
+    t('the footer fader pushes its level into the voice', () => {
+      assert(parity.voice.length > 0, 'the slider never reached the voice - no step fired')
       eq(parity.voice[parity.voice.length - 1], parity.store,
-        'the engines were not left at the store volume')
+        'the voice was not left at the store volume')
       eq(Math.round(parity.store * 100) / 100, parity.slider,
         'the slider position and the store volume disagree')
     })
+    t('the footer fader never scales the bed - it only opens or closes its gate', () => {
+      assert(parity.bed.length > 0, 'the bed was never told about the move at all')
+      for (const v of parity.bed) {
+        assert(v === 1,
+          `the bed was handed ${v} - the voice level reached the ambient engine, ` +
+          'so a silent voice silences a full room')
+      }
+      eq(parity.gate, 1, 'the bed gate was left closed while the room is unmuted')
+    })
+
+    // The user's exact setting: ambient at 100%, prayer voice at 0. The bed must
+    // stay audible. Driven through the real slider (20 steps down to the floor),
+    // then read off the live master gain - this is the bug report, executed.
+    await page.focus('.vol-slider-vert')
+    for (let i = 0; i < 24; i++) await page.keyboard.press('ArrowLeft')
+    await settle(page, 600)
+    const silentVoice = await page.evaluate(() => {
+      const a = window.__ambient
+      // The engine skips re-scheduling an identical target (that is the click
+      // fix), so read the last target it actually SCHEDULED rather than a live
+      // audio-param sample: a suspended headless context never advances its
+      // clock, so gain.value would still be the pre-ramp number.
+      return {
+        volume: window.__store.getState().volume,
+        ambienceLevel: window.__store.getState().ambienceLevel,
+        muted: window.__store.getState().muted,
+        gate: a.gate,
+        level: a.level,
+        target: a._lastRampTarget
+      }
+    })
+    note(`silent voice: ` + JSON.stringify(silentVoice))
+    t('ambient at 100% survives a prayer voice at 0%', () => {
+      eq(silentVoice.volume, 0, 'the slider did not reach 0')
+      assert(silentVoice.muted === false, 'the room was muted by the voice slider')
+      eq(silentVoice.ambienceLevel, 1, 'the ambience slider moved with the voice')
+      eq(silentVoice.gate, 1, 'the voice slider closed the bed gate')
+      assert(silentVoice.target !== null, 'no audio graph to schedule against')
+      assert(silentVoice.target > 0.5,
+        `the bed master was scheduled to ${silentVoice.target} with the voice at 0 - ` +
+        'the room was silenced')
+    })
+
+    // ...and the room mute must still be absolute, exactly as before.
+    const mutedGain = await page.evaluate(async () => {
+      const { applyVolumes } = await import('/src/audio/volumes.js')
+      const store = window.__store
+      store.setState({ muted: true })
+      applyVolumes()
+      return { gate: window.__ambient.gate }
+    })
+    t('muting still closes the bed gate', () => eq(mutedGain.gate, 0))
 
     // The ramp constants. _rampMaster classifies rise-vs-fall from the live
     // parameter, so a mid-ramp read (or a frozen suspended clock) would decide
@@ -523,9 +569,15 @@ try {
     // moved, and nulling _lastRampTarget stops the skip check from swallowing
     // the probe. The probe drives the engine API directly (not the store) so
     // its values cannot be perturbed by UI state; it leaves the engine silent.
+    //
+    // An earlier test in this file muted the room, so the probe must first open
+    // the gate and the ambience slider: with either at 0 every target is 0, and
+    // the "ramp constants" below would describe a mute rather than a level.
     const ramps = await page.evaluate(() => {
       const a = window.__ambient
       if (!a.ctx || !a.master) return { error: 'no graph to schedule against' }
+      window.__store.setState({ muted: false, ambienceLevel: 1 })
+      a.setVolume(1)
       const rec = window.__faderTc
       const take = () => { const out = rec.slice(); rec.length = 0; return out }
       const pin = (at) => {
@@ -534,18 +586,19 @@ try {
         a.master.gain.setValueAtTime(at, t)
         a._lastRampTarget = null
       }
-      a.setVolume(0.5)          // a known volume; discarded
-      take()
+      take()                    // discard whatever the restore scheduled
       pin(0)
       a.setLevel(0.9)           // prayer arrival: must stay a GENTLE rise
       const gentle = take()
       pin(0)
-      a.setVolume(0.9)          // fader path, rising from the pinned 0
+      a.setVolume(1)            // gate path, rising from the pinned 0
       const up = take()
       pin(10)
-      a.setVolume(0.1)          // fader path, falling from the pinned 10
+      a.setVolume(0)            // gate path, falling from the pinned 10
       const down = take()
-      pin(0)                    // leave the parameter where a stop would
+      a.setVolume(1)            // hand the page on with the gate open...
+      take()
+      pin(0)                    // ...but the parameter where a stop leaves it
       return { gentle, up, down }
     })
     const lastTc = (r) => (r && r.length ? r[r.length - 1].timeConstant : null)
@@ -572,23 +625,27 @@ try {
       assert(tc <= 0.15, `fader fall tau ${tc}s > 0.15s - down-drags lag the voice too`)
     })
 
-    // The bed's side of "the same factor": bedTarget must be exactly
-    // proportional in volume, so the fader scales the bed the way it scales
-    // the voice (which is linear by construction).
-    const prop = await page.evaluate(async () => {
+    // The bed has no voice factor at all. This is the exact regression that
+    // silenced the room: bedTarget used to take the shared volume as a third
+    // multiplier, so a prayer voice at 0 muted a bed at 100% - and the ambience
+    // slider could not bring it back. An extra `volume` key must now be inert;
+    // the mute gate is the only thing the voice's engine can reach.
+    const independence = await page.evaluate(async () => {
       const { bedTarget } = await import('/src/audio/ambience.js')
-      const base = bedTarget({ level: 0.9, ambienceLevel: 0.5, volume: 1 })
-      const out = {}
-      for (const v of [0.2, 0.5, 0.8]) {
-        out[v] = bedTarget({ level: 0.9, ambienceLevel: 0.5, volume: v }) / base
+      return {
+        open: bedTarget({ level: 0.9, ambienceLevel: 1, gate: 1 }),
+        withVoice: bedTarget({ level: 0.9, ambienceLevel: 1, gate: 1, volume: 0 }),
+        closed: bedTarget({ level: 0.9, ambienceLevel: 1, gate: 0 }),
+        silentBed: bedTarget({ level: 0.9, ambienceLevel: 0, gate: 1 })
       }
-      return out
     })
-    t('the bed scales in exact proportion to the fader', () => {
-      for (const [v, ratio] of Object.entries(prop)) {
-        assert(Math.abs(ratio - Number(v)) < 1e-9,
-          `volume ${v} gives bed ratio ${ratio} - not proportional`)
-      }
+    note(`independence: ` + JSON.stringify(independence))
+    t('bedTarget ignores a voice volume and only obeys the mute gate', () => {
+      assert(independence.open > 0, 'a fully open bed computed as silent')
+      eq(independence.withVoice, independence.open,
+        'a `volume: 0` key changed the bed - the voice level is still a bed factor')
+      eq(independence.closed, 0, 'gate 0 did not silence the bed')
+      eq(independence.silentBed, 0, 'ambienceLevel 0 did not silence the bed')
     })
 
     // Navigation still answers after everything above. The deep link selects

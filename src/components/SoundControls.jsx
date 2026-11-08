@@ -49,16 +49,17 @@ export default function SoundControls({ layout = 'field', showBeds = true, previ
       applyMute(false)
     }
     setVolume(v)
-    // Same master the prayer-view fader drives, so a bed silenced from either
-    // place can be raised again from either place.
+    // Pushes the voice level; on the bed this is only the mute gate, so raising
+    // the recitation never raises (or lowers) the room.
     applyVolumes()
   }
 
   const onAmbient = (v) => {
     setAmbienceLevel(v)
     // Re-apply so the bed is heard immediately, not just on the next play.
-    // setLevel multiplies by the stored ambienceLevel and the master volume, so
-    // this is what makes 0 actually silent.
+    // setLevel multiplies by the stored ambienceLevel and the mute gate, so
+    // this is what makes 0 actually silent - and it is the only slider that
+    // moves the bed.
     ambient.setLevel(ambient.level)
   }
   const onSpeed = (r) => {

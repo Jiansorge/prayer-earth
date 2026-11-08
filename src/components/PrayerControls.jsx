@@ -1,5 +1,6 @@
 // The main control bar: repeat, play/pause, stop, tune, and the vertical
-// master fader.
+// prayer-voice fader (the bed has its own slider in the tune sheet and
+// Settings; mute is the footer nav's switch).
 import React from 'react'
 import { useT } from '../i18n.js'
 import { useStore } from '../store.js'
@@ -39,7 +40,7 @@ export default function PrayerControls({ loopOn, toggleLoop, starting, playing, 
       >
         {'\u2699\uFE0E'}
       </button>
-      <div className="vol-vert" role="group" aria-label={t('prayer.volume')}>
+      <div className="vol-vert" role="group" aria-label={t('sound.prayerVoice')}>
         <span className="vol-vert-icon" aria-hidden="true">
           {volume <= 0 ? '🔇' : volume < 0.4 ? '🔉' : '🔊'}
         </span>
@@ -61,7 +62,7 @@ export default function PrayerControls({ loopOn, toggleLoop, starting, playing, 
               applyMute(false)
             }
           }}
-          aria-label={t('prayer.volume')}
+          aria-label={t('sound.prayerVoice')}
         />
       </div>
     </div>

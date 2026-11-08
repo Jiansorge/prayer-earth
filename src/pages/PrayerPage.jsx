@@ -407,14 +407,12 @@ setChantMode(false)
 
   const setLiveVolume = (v) => {
     setVolume(v)
-    // This fader is labelled volume and sits beside the main control, so it is
-    // the master: it moves the voice and the ambient bed together.
-    //
-    // It used to be voice-only, deliberately, because routing it into the
-    // ambient engine meant dragging it to 0 silenced the bed with no way back -
-    // the Settings ambience slider only called setLevel, and setLevel
-    // multiplied by a volume that was already zero. applyVolumes() is shared
-    // with the Settings slider, so either one raises the bed again.
+    // The footer fader is the prayer voice's own level, and it says so: its
+    // aria-label is "Prayer voice volume", the same string the Settings slider
+    // uses. It briefly doubled as a room master (moving the bed too), which
+    // fixed the label and broke the setting - ambient at 100% went silent when
+    // the voice was dragged to 0, and the ambience slider could not undo it.
+    // Ambient has its own slider; mute is the one control for the whole room.
     applyVolumes()
   }
 

@@ -1,16 +1,20 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
+import { isSmallTouchDevice } from './shared/deviceTier.js'
 import './styles.css'
 
 // Tag weak hardware before the first paint so styles.css can gate the paint
 // that stacks on top of the WebGL canvas (stage blur, blend passes, particle
 // fields). The threshold mirrors EarthBackdrop's staticMode and sits where
-// EarthScene cuts its own geometry: <=4 cores or <=2GB catches the old iPads
-// and budget Androids that reported the chop without slowing anyone else.
+// EarthScene cuts its own geometry: a touch-first device with <=4 cores, or
+// <=2GB (Chrome-only, undefined in Safari/Firefox), catches the old iPads and
+// budget Androids that reported the chop without slowing anyone else. Cores on
+// their own put every 4-core desktop browser - Safari on a Mac included - in
+// this class, which is why the pointer type is part of the test.
 if (
   typeof navigator !== 'undefined' &&
-  (navigator.hardwareConcurrency <= 4 || (navigator.deviceMemory ?? 8) <= 2)
+  (isSmallTouchDevice() || (navigator.deviceMemory ?? 8) <= 2)
 ) {
   document.documentElement.classList.add('low-power')
 }

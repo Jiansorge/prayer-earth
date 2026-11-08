@@ -18,7 +18,13 @@ const XFADE = 0.85
 // Three independent factors, and any of them being 0 must be silence:
 //   level          the engine's own level (0 stopped, 0.4 settings, 0.9 praying)
 //   ambienceLevel  the user's "Ambient sound volume" slider
-//   volume         the master volume, shared with the prayer voice
+//   gate           the room mute, 1 open / 0 muted - NOT the voice fader
+//
+// The gate used to be the prayer-voice volume, shared with the voice engine, so
+// turning the voice down turned the room down and a voice at 0 silenced a bed
+// at 100%. The two levels are independent now (see audio/volumes.js); all this
+// factor still does is let the one true mute reach the bed without the bed
+// having to know what "muted" means.
 //
 // 7.5 is the headroom multiplier: the bed runs loud behind a limiter, because a
 // phone speaker rolls off hard below ~200 Hz and the pads alone are nearly
@@ -62,11 +68,11 @@ export const PRESET_TRIM = {
   warm: 0.83
 }
 
-export function bedTarget({ level, ambienceLevel, volume }) {
+export function bedTarget({ level, ambienceLevel, gate }) {
   const l = Math.max(0, Math.min(1, Number(level) || 0))
   const a = Math.max(0, Math.min(1, Number(ambienceLevel) || 0))
-  const v = Math.max(0, Math.min(1, Number(volume) || 0))
-  return l * BED_HEADROOM * a * v
+  const g = Math.max(0, Math.min(1, Number(gate) || 0))
+  return l * BED_HEADROOM * a * g
 }
 
 // Where the output ceiling starts to bend, and the WaveShaper curve behind it.
@@ -144,7 +150,9 @@ export class AmbientEngine {
     this.limiter = null
     this.ceiling = null
     this.level = 0
-    this.vol = 1
+    // The room mute as the engine sees it: 1 playing, 0 muted. Not a loudness
+    // slider - that is ambienceLevel, read live in setLevel().
+    this.gate = 1
     this.running = false
     this.startedAt = 0
     this.presetId = 'reiki'
@@ -206,7 +214,7 @@ export class AmbientEngine {
         // by the true mute — so the "soft chant" fallback and welcome bell stay
         // audible even with the ambience slider at 0.
         this.chanBus = this.ctx.createGain()
-        this.chanBus.gain.value = this.vol
+        this.chanBus.gain.value = this.gate
         this.chanBus.connect(this.limiter)
       } catch {
         return Promise.resolve()
@@ -612,22 +620,26 @@ export class AmbientEngine {
       const target = bedTarget({
         level: this.level,
         ambienceLevel: user,
-        volume: this.vol
+        gate: this.gate
       })
       this._rampMaster(target, opts)
     }
   }
 
-  // Master loudness for everything the engine plays. Re-applies the current
-  // level so the change is heard immediately - FAST, in both directions: this
-  // is the fader's own path, and the voice it shares the master with moves in
-  // ~0.03 s.
+  // The room mute, as the bed sees it: 1 = play at the ambience slider's level,
+  // 0 = silent. This is the only thing the voice engine's state does to the bed.
+  //
+  // It used to take the prayer-voice volume, which coupled the two: ambient at
+  // 100% + prayer voice at 0% was completely silent, and the ambience slider
+  // could not bring it back (it only re-ran setLevel with the same zero
+  // factor). Re-applies the current level so the change is heard immediately -
+  // FAST, in both directions, since mute has to feel instant.
   setVolume(volume) {
-    this.vol = Math.max(0, Math.min(1, volume))
+    this.gate = Math.max(0, Math.min(1, volume))
     this.setLevel(this.level, { fast: true })
     // Keep the chant/bell bus in step with the true mute.
     if (this.chanBus && this.ctx) {
-      this.chanBus.gain.setTargetAtTime(this.vol, this.ctx.currentTime, 0.05)
+      this.chanBus.gain.setTargetAtTime(this.gate, this.ctx.currentTime, 0.05)
     }
   }
 
@@ -676,9 +688,12 @@ export class AmbientEngine {
 
   ring(intensity = 1) {
     if (!this.ctx || !this.master) return
-    // Respect the stored prayer volume so a first-visit welcome bell never
-    // blasts at 100% while the user is set to (say) 5%.
-    const volume = (useStore.getState().volume ?? 0.8) || 0.001
+    // The bell is part of the room, not of the recitation: it follows the
+    // Ambient sound volume slider so a first-visit welcome bell never blasts at
+    // 100% while the user has the bed at (say) 5%. The voice fader used to
+    // scale it, which meant turning the voice off also silenced the bowl.
+    const level = useStore.getState().ambienceLevel
+    const ambience = Math.max(0, Math.min(1, Number(level) || 0))
     const ctx = this.ctx
     const t = ctx.currentTime
     const g = ctx.createGain()
@@ -689,7 +704,7 @@ export class AmbientEngine {
       { f: f * 4.05, gain: 0.05, dur: 2.2 }
     ]
     const out = ctx.createGain()
-    out.gain.value = 0.22 * intensity * volume
+    out.gain.value = 0.22 * intensity * ambience
     partials.forEach(({ f: pf, gain, dur }) => {
       const o = ctx.createOscillator()
       o.type = 'sine'
@@ -720,14 +735,13 @@ export class AmbientEngine {
     // Build the ambient bed the user selected (default: Reiki Drift).
     const chosen = useStore.getState().ambientPreset || 'reiki'
     this.buildPreset(AMBIENT_PRESETS.includes(chosen) ? chosen : 'reiki')
-    // Re-apply the user's master volume, and a persisted mute, to the bed.
-    // Nothing called setVolume at boot, so a muted app would otherwise play the
-    // bed at full; but the old fix for that forced 1, which meant the bed
-    // ignored the very slider meant to govern it until something else happened
-    // to call applyVolumes(). Starting a prayer could then be far louder than
-    // the setting says - which is its own way to clip.
+    // Re-apply the room mute to the bed. Nothing called setVolume at boot, so a
+    // muted app would otherwise play the bed at full; but the old fix forced 1,
+    // which meant the bed ignored the mute until something else happened to
+    // call applyVolumes(). The bed's own loudness is ambienceLevel, read in
+    // setLevel(), so there is no voice level to apply here any more.
     const s = useStore.getState()
-    this.setVolume(s.muted ? 0 : s.volume ?? 1)
+    this.setVolume(s.muted ? 0 : 1)
     this.setLevel(this.level)
     // No bell here. start() already ended with one, and the only caller rang
     // its own a moment later, so every prayer began with two bowls struck

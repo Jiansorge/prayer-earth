@@ -172,26 +172,33 @@ t('a payload with hostile counters cannot produce a negative total', () => {
 console.log('\n--- bedTarget: the full range of slider inputs ---')
 
 t('every slider at 0 is silence', () => {
-  assert.equal(bedTarget({ level: 1, ambienceLevel: 0, volume: 1 }), 0)
-  assert.equal(bedTarget({ level: 1, ambienceLevel: 1, volume: 0 }), 0)
-  assert.equal(bedTarget({ level: 0, ambienceLevel: 1, volume: 1 }), 0)
+  assert.equal(bedTarget({ level: 1, ambienceLevel: 0, gate: 1 }), 0)
+  assert.equal(bedTarget({ level: 1, ambienceLevel: 1, gate: 0 }), 0)
+  assert.equal(bedTarget({ level: 0, ambienceLevel: 1, gate: 1 }), 0)
+})
+
+t('a prayer-voice volume is not a bed factor', () => {
+  assert.equal(
+    bedTarget({ level: 1, ambienceLevel: 1, gate: 1, volume: 0 }),
+    bedTarget({ level: 1, ambienceLevel: 1, gate: 1 })
+  )
 })
 
 t('a slider dragged past its end clamps instead of exceeding full', () => {
-  assert.equal(bedTarget({ level: 5, ambienceLevel: 1, volume: 1 }), bedTarget({ level: 1, ambienceLevel: 1, volume: 1 }))
-  assert.equal(bedTarget({ level: 1, ambienceLevel: 9, volume: 1 }), bedTarget({ level: 1, ambienceLevel: 1, volume: 1 }))
-  assert.equal(bedTarget({ level: -3, ambienceLevel: 1, volume: 1 }), 0)
+  assert.equal(bedTarget({ level: 5, ambienceLevel: 1, gate: 1 }), bedTarget({ level: 1, ambienceLevel: 1, gate: 1 }))
+  assert.equal(bedTarget({ level: 1, ambienceLevel: 9, gate: 1 }), bedTarget({ level: 1, ambienceLevel: 1, gate: 1 }))
+  assert.equal(bedTarget({ level: -3, ambienceLevel: 1, gate: 1 }), 0)
 })
 
 t('unusable input yields a safe gain, never NaN or negative', () => {
   for (const bad of [undefined, null, NaN, 'abc', {}, [], true]) {
-    const g = bedTarget({ level: bad, ambienceLevel: 1, volume: 1 })
+    const g = bedTarget({ level: bad, ambienceLevel: 1, gate: 1 })
     assert.ok(Number.isFinite(g) && g >= 0, `level=${String(bad)} gave ${g}`)
   }
 })
 
 t('the gain stays inside Web Audio\'s safe range at full', () => {
-  const g = bedTarget({ level: 1, ambienceLevel: 1, volume: 1 })
+  const g = bedTarget({ level: 1, ambienceLevel: 1, gate: 1 })
   assert.ok(g > 0 && g <= 8, `full gain = ${g}`)
 })
 
