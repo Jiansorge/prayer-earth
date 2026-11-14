@@ -42,3 +42,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <App />
   </React.StrictMode>
 )
+
+// Opt-in diagnostics for a report we cannot reproduce in CI (Safari speed,
+// ambient crackle, coarse Earth, missing marker). Loaded by dynamic import, so
+// a normal visitor never downloads it, and it is read-only: it prints numbers
+// and copies them, it never exposes a handle on the store or the audio engines
+// (that is what src/shared/testHooks.js is warning about). `?diag=1` works in
+// the query or the hash, since the router owns the fragment.
+if (/(?:^|[?&#])diag=1\b/.test(window.location.search + window.location.hash)) {
+  import('./diag.js')
+    .then((m) => m.mountDiag())
+    .catch(() => {})
+}

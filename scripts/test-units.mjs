@@ -168,6 +168,24 @@ const stripComments = (text) =>
     offenders.join(' | ') || 'none')
 }
 
+// --- 3b. diagnostics are opt-in and read-only -------------------------------
+// `?diag=1` exists so a device we cannot drive from CI can report what it sees
+// (Safari's real playback rate, the audio buffer, the Earth tier). Two things
+// make that safe: it must be a dynamic import, so a normal visitor never
+// downloads or runs it, and it must never write - the ambient/voice engines and
+// the store are exactly the handles testHooks.js refuses to expose at runtime.
+{
+  const main = readFileSync(path.join(ROOT, 'src', 'main.jsx'), 'utf8')
+  check('the diagnostics panel is lazily imported behind ?diag=1',
+    /import\('\.\/diag\.js'\)/.test(main) && /diag=1/.test(main))
+
+  const diag = readFileSync(path.join(ROOT, 'src', 'diag.js'), 'utf8')
+  check('diagnostics never write to the store',
+    !/\.setState\s*\(/.test(diag))
+  check('diagnostics never drive the audio engines',
+    !/\.(setRate|setVolume|setLevel|ensure|start|stop)\s*\(/.test(diag))
+}
+
 // 4. The ambient bed must be adjustable. Its gain mapping used to be
 //    (1.0 + level * 6.5), which has a floor of 1.0, and later
 //    (0.2 + 0.8 * ambienceLevel), which still floored it at a fifth of full:
