@@ -12,6 +12,7 @@
 
 import { ambient } from './ambience.js'
 import { TEST_HOOKS } from '../shared/testHooks.js'
+import { isWebKitEngine } from '../shared/deviceTier.js'
 import { useStore } from '../store.js'
 
 function xhrGet(url) {
@@ -232,6 +233,14 @@ class SpeechEngine {
 
   // Fetch + decode a recorded phrase once, cached for repeats (mantras say the
   // same line many times). Returns null if the graph or the decode is missing.
+  //
+  // The cache is deliberately small. decodeAudioData returns float32 samples:
+  // a 10-second line at 44.1 kHz is ~1.7 MB, so the old 128-entry cap was up to
+  // ~200 MB of live audio for one long prayer - on a phone that is the memory
+  // pressure that makes the AudioContext start dropping buffers, heard as the
+  // bed clicking under load. A handful of entries covers what playback actually
+  // re-enters (a looping mantra, the next line prefetched ahead of time); the
+  // rest is a decode we can afford to do again.
   async _bufferFor(url) {
     const cached = this._bufferByUrl.get(url)
     // The map holds the in-flight request, not just the finished one. The
@@ -242,7 +251,7 @@ class SpeechEngine {
     if (cached) return await cached
     const ctx = ambient.ctx
     if (!ctx) return null
-    if (this._bufferByUrl.size >= 128) {
+    if (this._bufferByUrl.size >= 8) {
       const oldest = this._bufferByUrl.keys().next().value
       this._bufferByUrl.delete(oldest)
     }
@@ -585,8 +594,28 @@ class SpeechEngine {
       // can never hang a prayer — the phrase always advances.
       job.advTimer = setTimeout(finish, job.phraseHold * 2 + 1200)
       const ctx = ambient.ctx
+      // Which route plays this line.
+      //
+      // A decoded AudioBufferSourceNode is Web Audio's own node, so it honours
+      // playbackRate. A media element connected to the graph does not on WebKit
+      // (bugs.webkit.org 240405): it keeps REPORTING the rate it was handed while
+      // rendering at 1x, so the speed control looks inert and every deadline
+      // priced at the chosen rate cuts the line off early - the reported Safari
+      // pair, "the speed still doesn't work" and "it just cuts off earlier".
+      // So on a WebKit engine the recordings are decoded for every rate, not
+      // just 1x. The element stays on the hardware route there: iOS makes
+      // HTMLMediaElement.volume read-only (always 1), so the Web Audio gain is
+      // the only volume control available when a decode fails and this path
+      // falls back to the element.
+      //
+      // A buffer source resamples rather than time-stretching, so a sped-up
+      // line is pitch-shifted on Safari. That is a conscious trade: an audible
+      // rate beats a speed control that reports a number and does nothing.
+      // Native keeps the element (Capacitor's WebView is Chromium, where the
+      // element rate works and pitch is preserved).
+      const webkit = isWebKitEngine()
       const preferElement = !!window.Capacitor?.isNativePlatform?.()
-      const buffer = !preferElement && rate === 1 ? await this._bufferFor(url) : null
+      const buffer = !preferElement && (rate === 1 || webkit) ? await this._bufferFor(url) : null
       // A newer attempt now owns this phrase (or the job moved on): report it
       // as handled (true), NOT as a failure — the caller's recovery path counts
       // a `false` as a cloud failure and would permanently disable recorded
@@ -632,7 +661,10 @@ class SpeechEngine {
         if (!this._revConvolver) this.buildReverb(ctx)
         const src = ctx.createBufferSource()
         src.buffer = buffer
-        src.playbackRate.value = 1
+        // Honoured here, unlike on a graphed element in WebKit: this is what
+        // makes the speed control actually change pace instead of only
+        // changing when the line is cut.
+        src.playbackRate.value = rate
         const gain = ctx.createGain()
         // Fade in over 20ms. The first sample of a decoded phrase is only
         // zero by luck: starting at full gain turns whatever it happens to
@@ -754,11 +786,13 @@ class SpeechEngine {
         // Warm the next line's audio while this line is still playing. Without
         // it the very first pass pays the fetch (and the decode) after the
         // current line ends - inside the only gap the reader can hear, which is
-        // the reported pause between lines. The native/fast-rate routes can't
-        // use a decoded buffer, so they warm the HTTP cache instead; both are
-        // best-effort and never block the line that is playing.
+        // the reported pause between lines. Every rate that will decode has to
+        // prefetch a decoded buffer (WebKit decodes at every rate now), or
+        // Safari at speed pays a fresh decode between lines; the element routes
+        // warm the HTTP cache instead. Both are best-effort and never block the
+        // line that is playing.
         if (ns) {
-          if (!preferElement && rate === 1) {
+          if (!preferElement && (rate === 1 || webkit)) {
             this._bufferFor(ns).catch(() => {})
           } else {
             fetch(ns, { cache: 'force-cache' }).catch(() => {})

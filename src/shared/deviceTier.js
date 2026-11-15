@@ -30,3 +30,23 @@ export function isSmallTouchDevice() {
   }
   return coarse && (navigator.hardwareConcurrency || 0) <= 4
 }
+
+// Is this a WebKit engine (Safari, and every browser on iOS, since they all run
+// WebKit regardless of the badge on the icon)?
+//
+// It matters for exactly one thing, and it is the whole Safari audio report:
+// WebKit does not honour `playbackRate` or `preservesPitch` on a media element
+// that has been connected to an AudioContext through createMediaElementSource
+// (bugs.webkit.org 240405, reported on Safari 15 and only fixed in Safari
+// Technology Preview 241). The element keeps REPORTING the rate it was given
+// while it renders at 1x, so the speed control looks inert, every deadline
+// priced at the rate cuts the line early - "the words are skipped and it cuts
+// off" - and the same report describes the graph itself as choppy, which is the
+// clicking heard under the ambient bed. Chrome and Firefox are Blink/Gecko and
+// do not have it, so the test is the engine: AppleWebKit without a Blink vendor
+// token. iOS Chrome (CriOS) and iOS Edge (EdgiOS) are WebKit too and are
+// deliberately included.
+export function isWebKitEngine(ua) {
+  const s = ua === undefined ? (typeof navigator === 'undefined' ? '' : navigator.userAgent) : ua
+  return /AppleWebKit/.test(s) && !/Chrome|Chromium/.test(s)
+}

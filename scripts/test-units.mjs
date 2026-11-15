@@ -22,6 +22,7 @@ import { crc32, summarizeState, summarizePayload } from '../src/shared/backup.js
 import { useStore, quarantine, neverLoseData, safeStorage } from '../src/store.js'
 import { tPhrase, PHRASE_MEANING_L10N } from '../src/i18n/prayerL10n.js'
 import { mulberry } from '../src/components/mulberry.js'
+import { isWebKitEngine } from '../src/shared/deviceTier.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -872,6 +873,39 @@ const stripComments = (text) =>
   check('the graph attach leaves no stale element-volume timer running',
     !!phraseOut && /this\._volTimer/.test(phraseOut) && /clearTimeout\(this\._volTimer\)/.test(phraseOut),
     phraseOut ? 'a fallback-era ramp keeps writing el.volume under the graph' : '_phraseOut not found')
+  // WebKit ignores playbackRate (and preservesPitch) on an element joined to
+  // an AudioContext (bugs.webkit.org 240405, fixed only in Safari Technology
+  // Preview 241). The element keeps reporting the rate it was handed while it
+  // plays at 1x, so the speed control looked inert AND every deadline priced at
+  // the chosen rate cut the line early. A decoded AudioBufferSourceNode is a
+  // Web Audio node and does honour the rate, so Safari decodes at every rate
+  // now, not just 1x. The element is deliberately still used as the fallback
+  // there: iOS makes HTMLMediaElement.volume read-only, so the graph gain is
+  // the only voice volume control when a decode fails.
+  check('a WebKit engine decodes the recording at every rate, not just 1x',
+    /const webkit = isWebKitEngine\(\)/.test(stripComments(speech)) &&
+      !/isWebKitEngine\(\)\) return null/.test(phraseOut) &&
+      /const buffer = !preferElement && \(rate === 1 \|\| webkit\) \? await this\._bufferFor\(url\) : null/.test(stripComments(speech)) &&
+      /src\.playbackRate\.value = rate/.test(stripComments(speech)) &&
+      !/src\.playbackRate\.value = 1\b/.test(stripComments(speech)) &&
+      /if \(!preferElement && \(rate === 1 \|\| webkit\)\) \{\s*this\._bufferFor\(ns\)/.test(stripComments(speech)) &&
+      /import \{ isWebKitEngine \} from '\.\.\/shared\/deviceTier\.js'/.test(speech),
+    'Safari plays the line through a graphed element again - the rate reports but does not apply, and every line is cut early')
+  const webKitUa = (ua) => isWebKitEngine(ua)
+  check('WebKit detection covers Safari and every iOS browser, not Blink',
+    webKitUa('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15') &&
+      webKitUa('Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/123.0 Mobile/15E148 Safari/604.1') &&
+      webKitUa('Mozilla/5.0 (iPad; CPU OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1') &&
+      !webKitUa('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36') &&
+      !webKitUa('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36') &&
+      !webKitUa('Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0'),
+    'the engine test decides whether Safari keeps its speed control')
+  // Decoded phrases are float32: the old 128-entry cache was up to ~200 MB of
+  // live audio in one prayer, and that memory pressure is what makes a phone's
+  // AudioContext drop buffers (the bed clicking under load).
+  check('the decoded-phrase cache is bounded to a few lines, not a prayer',
+    /_bufferByUrl\.size >= 8\b/.test(speech) && !/_bufferByUrl\.size >= 128/.test(speech),
+    'decoded audio is ~1.7 MB per 10s line - a large cache is phone memory pressure')
   // Only _rampElementVolume ends a ramp - by finishing it, or by a newer
   // ramp superseding it (which resolves the promise first). stopCloudSource
   // clearing the shared timer killed a running cut's last tick without
