@@ -8,6 +8,31 @@ import { TEST_HOOKS } from '../shared/testHooks.js'
 // Crossfade duration (seconds) for swapping ambient beds.
 const XFADE = 0.85
 
+// A bounded timeline of what the engine actually did, read by the ?diag=1
+// panel and by nothing else.
+//
+// It exists because the ambient complaint is a SEQUENCE, not a state: "glitchy
+// sounds from the ambient stop/starting during navigation" describes events
+// that happened over the previous seconds, and a snapshot of the master gain
+// taken whenever someone manages to open the panel cannot show them. This
+// records the moments that can be heard - a start, a stop, a preset rebuild,
+// a teardown, every ramp that really scheduled (the skip guard means the
+// repeats a re-render produces are already filtered out), every gate change,
+// every context state change - stamped with wall-clock time so a note like
+// "the click was at 14:22:07" can be matched against the list.
+//
+// Read-only by construction: nothing in the engine reads it back, it only
+// pushes, and `note` cannot throw (a diagnostics helper must never be able to
+// take down a ramp). Capped so an hour of navigation cannot grow it.
+export const ambientLog = []
+const LOG_MAX = 48
+function note(what) {
+  try {
+    ambientLog.push({ t: Date.now(), what })
+    if (ambientLog.length > LOG_MAX) ambientLog.shift()
+  } catch {}
+}
+
 // How loud the bed should be, as a Web Audio gain.
 //
 // Pulled out of the class so the arithmetic can be tested without an
@@ -180,6 +205,7 @@ export class AmbientEngine {
       if (!AC) return Promise.resolve()
       try {
         this.ctx = new AC()
+        note('ctx new')
       // The bed is deliberately loud now (~2.5 master) and the
       // recorded voice shares this same AudioContext, so bed + voice (+ chant)
       // can sum past 1.0 and crackle. The compressor keeps the bed from
@@ -287,7 +313,13 @@ export class AmbientEngine {
       this._stateRetry = setTimeout(() => tryResume(attempt + 1), 2000)
     }
     this._tryResume = tryResume
-    this.ctx.onstatechange = () => tryResume(0)
+    this.ctx.onstatechange = () => {
+      // The interruption Safari is famous for lands here, and it is exactly the
+      // "everything went quiet then came back" report: record it so a readout
+      // can say whether the context was interrupted when the sound vanished.
+      note(`ctx ${this.ctx ? this.ctx.state : '?'}`)
+      tryResume(0)
+    }
     tryResume(0)
   }
 
@@ -506,6 +538,7 @@ export class AmbientEngine {
     if (!this.ctx) return
     const t = this.ctx.currentTime
     if (bus) {
+      note('teardown')
       // Fade to silence first, so the source cut below happens at zero rather
       // than mid-waveform.
       //
@@ -555,6 +588,7 @@ export class AmbientEngine {
     this.presetStops = []
     build(bus, this.presetStops)
     this.presetId = id
+    note(`preset ${id}`)
   }
 
   // Switch the ambient bed with a crossfade. Safe before the context exists.
@@ -604,6 +638,9 @@ export class AmbientEngine {
     this._lastRampTarget = target
     const tau = fast ? 0.07 : rising ? 0.8 : 0.07
     this.master.gain.setTargetAtTime(target, this.ctx.currentTime, tau)
+    // Only ever reached when a ramp really was scheduled, so the log shows the
+    // moves that happened rather than every re-render that asked for one.
+    note(`ramp ${target.toFixed(2)}${fast ? ' fast' : ''}`)
   }
 
   // `opts.fast` marks the volume path (see _rampMaster): the level itself may
@@ -635,7 +672,11 @@ export class AmbientEngine {
   // factor). Re-applies the current level so the change is heard immediately -
   // FAST, in both directions, since mute has to feel instant.
   setVolume(volume) {
+    const prev = this.gate
     this.gate = Math.max(0, Math.min(1, volume))
+    // Only on a real change: this is re-applied from the store often enough
+    // that logging every call would push the interesting events out of the ring.
+    if (this.gate !== prev) note(`gate ${this.gate}`)
     this.setLevel(this.level, { fast: true })
     // Keep the chant/bell bus in step with the true mute.
     if (this.chanBus && this.ctx) {
@@ -731,6 +772,7 @@ export class AmbientEngine {
     await this.ensure()
     if (!this.ctx || this.running) return
     this.running = true
+    note('start')
     this.startedAt = this.ctx.currentTime
     // Build the ambient bed the user selected (default: Reiki Drift).
     const chosen = useStore.getState().ambientPreset || 'reiki'
@@ -751,7 +793,11 @@ export class AmbientEngine {
   }
 
   stop() {
+    const was = this.running
     this.running = false
+    // Only a real transition: stop() is called from several unmount paths and
+    // logging the repeats would bury the ones that moved the bed.
+    if (was) note('stop')
     if (this.master && this.ctx) {
       // Fast linear fade, not the old 0.5s exponential: pressing stop should
       // feel instant, and an exponential tail lingers audibly.

@@ -21,14 +21,32 @@
 // This is a support tool, not a debug menu: it reads state, it copies to the
 // clipboard, it can reload. It changes nothing.
 import { useStore } from './store.js'
-import { ambient } from './audio/ambience.js'
-import { speech } from './audio/speech.js'
+import { ambient, ambientLog } from './audio/ambience.js'
+import { speech, speechLog } from './audio/speech.js'
 import { supportsWebGL2 } from './three/EarthScene.js'
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 const num = (v, digits = 2) =>
   typeof v === 'number' && isFinite(v) ? v.toFixed(digits) : '—'
+
+// Wall-clock stamp for the event timelines. Absolute, not elapsed: a reader
+// says "the click was around 14:22", and that has to be matchable by eye.
+function clock(t) {
+  const d = new Date(t)
+  const p = (n) => String(n).padStart(2, '0')
+  return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
+}
+
+// The two engines' bounded logs, as continuation lines under one label. Only
+// the tail is shown - a panel that scrolls past forty entries to reach the
+// moment being reported would be worse than none.
+function logLines(label, log, keep = 24) {
+  if (!log || log.length === 0) return [`${label.padEnd(9)}(nothing yet)`]
+  const tail = log.slice(-keep)
+  const head = log.length > keep ? `…${log.length - keep} earlier  ` : ''
+  return tail.map((e, i) => `${i === 0 ? label.padEnd(9) : ' '.repeat(9)}${clock(e.t)}  ${e.what}${i === 0 && head ? `   ${head}` : ''}`)
+}
 
 function buildName() {
   const s = [...document.querySelectorAll('script[src]')]
@@ -180,6 +198,11 @@ async function report() {
     audio: audioReport(),
     speech: speechReport(el),
     observed,
+    // Snapshots of what the engines did, not what they are: the two reports
+    // this panel cannot answer any other way (the ambient churn during
+    // navigation, and a prayer that advanced in silence).
+    ambLog: ambientLog.slice(-24),
+    spLog: speechLog.slice(-24),
     geo: await geoReport(),
     net: navigator.onLine ? 'online' : 'offline',
     visibility: document.visibilityState,
@@ -216,9 +239,11 @@ function lines(r) {
       : `element  none`,
     `         ${real}`,
     `geo      permission ${r.geo.permission} · youLoc ${r.geo.youLoc ? `${r.geo.youLoc.lat},${r.geo.youLoc.lon}` : 'null'} · sharing ${r.geo.presence ? 'on' : 'off'}`,
+    ...logLines('ambient', r.ambLog),
+    ...logLines('voice', r.spLog),
     `sw       ${r.sw}`,
     ``,
-    `tap Copy to put this on the clipboard, Reload to fetch a fresh build.`
+    `tap Copy to put this on the clipboard, Refresh after a glitch, Reload to fetch a fresh build.`
   ].join('\n')
 }
 
@@ -298,4 +323,8 @@ export function mountDiag() {
   // paint is what a reader sees immediately, the second carries the observed
   // rate that tells a lying playbackRate from a working one.
   setTimeout(paint, 2500)
+  // Repaint on demand. The moment worth reading is right after the glitch, and
+  // both automatic paints are long gone by then - the event timelines above are
+  // only useful if the reader can refresh them on the spot.
+  bar.append(button('Refresh', () => paint()))
 }

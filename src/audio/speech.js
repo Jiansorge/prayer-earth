@@ -15,6 +15,31 @@ import { TEST_HOOKS } from '../shared/testHooks.js'
 import { isWebKitEngine } from '../shared/deviceTier.js'
 import { useStore } from '../store.js'
 
+// A bounded timeline of what the voice engine did, read by the ?diag=1 panel
+// and by nothing else.
+//
+// The report it was built for is "I had to stop the non-playing prayer to get
+// the voice to work" - a state description of an event sequence. A snapshot
+// taken later cannot say whether the phrase took the decoded-buffer route or
+// the element, whether the context was suspended at that moment, whether
+// play() was refused (Safari's autoplay policy, which is exactly "restart it
+// and it works" because the restart carries a fresh gesture), or whether the
+// line was advanced by its own safety net in silence rather than by an onended
+// that never came. Those are the four ways a prayer can look alive and be
+// silent, so those are what get recorded, with wall-clock stamps.
+//
+// Read-only: nothing in the engine reads it back, `note` cannot throw, and the
+// ring is capped so an hour of prayer cannot grow it. Not a window handle -
+// the panel imports it the way it imports the engines.
+export const speechLog = []
+const LOG_MAX = 48
+function note(what) {
+  try {
+    speechLog.push({ t: Date.now(), what })
+    if (speechLog.length > LOG_MAX) speechLog.shift()
+  } catch {}
+}
+
 function xhrGet(url) {
   return new Promise((res, rej) => {
     const req = new XMLHttpRequest()
@@ -250,7 +275,10 @@ class SpeechEngine {
     // evicted, so a transient error is retried instead of poisoning the entry.
     if (cached) return await cached
     const ctx = ambient.ctx
-    if (!ctx) return null
+    if (!ctx) {
+      note('decode skipped: no context')
+      return null
+    }
     if (this._bufferByUrl.size >= 8) {
       const oldest = this._bufferByUrl.keys().next().value
       this._bufferByUrl.delete(oldest)
@@ -265,6 +293,10 @@ class SpeechEngine {
         this._bufferByUrl.set(url, buf)
         return buf
       } catch {
+        // A fetch or decode that failed: the line falls back to the element
+        // route (or to silence if that one is refused too), and the readout
+        // needs to be able to say which it was.
+        note('decode failed')
         this._bufferByUrl.delete(url)
         return null
       }
@@ -592,7 +624,14 @@ class SpeechEngine {
       }
       // Safety net set BEFORE playback so a stalled file or a muted environment
       // can never hang a prayer — the phrase always advances.
-      job.advTimer = setTimeout(finish, job.phraseHold * 2 + 1200)
+      job.advTimer = setTimeout(() => {
+        // Distinguish the two ways a line can end: a real onended, or this
+        // timer firing into silence. "It advanced but nothing was ever heard"
+        // is the whole non-playing-prayer report, and only this line tells the
+        // two apart.
+        note('safety-net advance')
+        finish()
+      }, job.phraseHold * 2 + 1200)
       const ctx = ambient.ctx
       // Which route plays this line.
       //
@@ -622,6 +661,7 @@ class SpeechEngine {
       // audio after two harmless supersedes.
       if (!isCurrent()) return true
       if (ctx && ctx.state === 'suspended') {
+        note('ctx suspended')
         // A user-tap call stack can resume the ambient graph; a refused resume
         // (headless/background) just falls through to the element backup.
         //
@@ -657,6 +697,7 @@ class SpeechEngine {
       }
       if (!isCurrent()) return true
       if (buffer && ctx && ctx.state === 'running' && !job.noCloud) {
+        note(`buffer ${rate}x`)
         this.stopCloudSource()
         if (!this._revConvolver) this.buildReverb(ctx)
         const src = ctx.createBufferSource()
@@ -689,6 +730,7 @@ class SpeechEngine {
         // media owns the platform's audio track (an orphan element cannot), so
         // it really plays here; swapping src keeps it registered as the active
         // media across every phrase.
+        note(`element ${rate}x`)
         this.stopCloudSource()
         // A cut fades the previous phrase out before pausing; the swap must
         // wait for that fade or the new src starts under a ramp still aimed
@@ -759,7 +801,16 @@ class SpeechEngine {
         this.cloudAudio = el
         try {
           await el.play()
-        } catch {}
+        } catch (err) {
+          // Safari's autoplay policy refuses a play() that arrives after the
+          // phrase's several awaits if the gesture has gone stale, and the
+          // element then never sounds while the safety net walks the prayer
+          // forward in silence - the reported "non-playing prayer I had to
+          // stop and start again", because the restart carries a fresh gesture.
+          // The reason is the one number that distinguishes this from a
+          // decode that never arrived.
+          note(`play rejected ${err && err.name ? err.name : '?'}`)
+        }
         // play() is the second await in this branch; if the job was superseded
         // while it settled (stop() nulled cloudAudio), ramping now would
         // re-volume an element the new job has already taken over.
@@ -927,6 +978,7 @@ class SpeechEngine {
   // instead of the top (e.g. after switching voices mid-prayer).
   async start(opts) {
     this.stop()
+    note(`job ${opts.prayerId || '?'} ${opts.index || 0}`)
     this.job = {
       ...opts,
       index: opts.index || 0,
@@ -1721,6 +1773,9 @@ class SpeechEngine {
   stop() {
     this.lastCancel = Date.now()
     if (this.job) {
+      // A real teardown: start() calls stop() first, and only a job that was
+      // actually running is worth a line in the log.
+      note('stop')
       clearTimeout(this.job.guard)
       clearTimeout(this.job.advTimer)
     }

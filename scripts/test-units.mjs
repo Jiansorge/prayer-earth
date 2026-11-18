@@ -1574,9 +1574,29 @@ const stripComments = (text) =>
   )
   check(
     'an interrupted audio graph revives itself',
-    /onstatechange = \(\) => tryResume/.test(ambSrc) && /_stateRetry = setTimeout\(\(\) => tryResume/.test(ambSrc),
+    /onstatechange = \(\) => \{[\s\S]{0,300}?tryResume\(0\)/.test(ambSrc) &&
+      /_stateRetry = setTimeout\(\(\) => tryResume/.test(ambSrc),
     'a call or a backgrounded tab left the context interrupted - the reported cuts-out-until-I-tap-it'
   )
+  // The ?diag=1 readout: two bounded, read-only timelines (what the engines
+  // DID, not what they are). The reports this panel exists for - ambient churn
+  // during navigation, a prayer that advanced in silence - are sequences, and
+  // a snapshot cannot show them. Bounded so an hour of prayer cannot grow the
+  // ring, and never hung off window (see shared/testHooks.js).
+  check('the engines keep a bounded timeline for the diagnostics panel',
+    /export const ambientLog = \[\]/.test(ambSrc) && /ambientLog\.shift\(\)/.test(ambSrc) &&
+      /export const speechLog = \[\]/.test(speechSrc) && /speechLog\.shift\(\)/.test(speechSrc) &&
+      !/window\.__(ambientLog|speechLog)/.test(ambSrc + speechSrc),
+    'the panel can only show a snapshot, so a churn or a silent phrase is unreportable')
+  check('the timeline records what a silent prayer would need explained',
+    /note\(`play rejected \$\{err && err\.name/.test(speechSrc) &&
+      /note\('safety-net advance'\)/.test(speechSrc) &&
+      /note\(`buffer \$\{rate\}x`\)/.test(speechSrc) &&
+      /note\(`element \$\{rate\}x`\)/.test(speechSrc),
+    'the four ways a prayer looks alive and is silent are not distinguishable after the fact')
+  check('the diagnostics timeline cannot throw into an audio ramp',
+    /function note\(what\) \{\s*try \{/.test(ambSrc) && /function note\(what\) \{\s*try \{/.test(speechSrc),
+    'a diagnostics helper that throws takes down the ramp or the phrase it was recording')
   check(
     'the revival gives up on its own instead of scheduling work forever',
     /attempt >= 30/.test(ambSrc),
