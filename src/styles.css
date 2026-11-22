@@ -1297,6 +1297,15 @@ html[dir='rtl'] .chooser-arrow.right {
 .vol-slider-vert {
   writing-mode: vertical-lr;
   direction: rtl;
+  /* Safari 15 (the 2014 iPad Air 2's ceiling) never learned writing-mode on
+     range inputs: it draws the control horizontally inside this 4x52 box, so
+     every tap lands near the left edge and reads as "mute" - the broken
+     vertical fader. `slider-vertical` (with the `orient` attribute on the
+     input, its legacy spelling) is the pre-2020 way to ask for a vertical
+     control and is what those engines honour; modern engines keep the
+     writing-mode mapping we already verified top=1 / mid=0.5 / bottom=0. */
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
   width: 4px;
   height: 52px;
   margin: 0;

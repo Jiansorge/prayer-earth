@@ -23,6 +23,7 @@ import { useStore, quarantine, neverLoseData, safeStorage } from '../src/store.j
 import { tPhrase, PHRASE_MEANING_L10N } from '../src/i18n/prayerL10n.js'
 import { mulberry } from '../src/components/mulberry.js'
 import { isWebKitEngine } from '../src/shared/deviceTier.js'
+import { stretch, stretchChunked } from '../src/audio/stretch.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -614,6 +615,11 @@ const stripComments = (text) =>
   const volumes = readFileSync(path.join(ROOT, 'src/audio/volumes.js'), 'utf8')
   const controls = readFileSync(path.join(ROOT, 'src/components/PrayerControls.jsx'), 'utf8')
   const amb = readFileSync(path.join(ROOT, 'src/audio/ambience.js'), 'utf8')
+  const faderCss = (() => {
+    const css = readFileSync(path.join(ROOT, 'src/styles.css'), 'utf8')
+    const at = css.indexOf('.vol-slider-vert {')
+    return at >= 0 ? css.slice(at, css.indexOf('}', at)) : ''
+  })()
 
   check('applyVolumes hands the ambient engine a mute gate, not the voice level',
     /speech\.setVolume\(\s*s\.muted\s*\?\s*0\s*:\s*s\.volume\s*\)/.test(volumes) &&
@@ -625,11 +631,92 @@ const stripComments = (text) =>
       !/aria-label=\{t\('prayer\.volume'\)\}/.test(controls),
     'a slider that only moves the voice must say so')
 
+  // The broken vertical fader (iPad, Safari 15): that engine ignores
+  // writing-mode on range inputs, so the control rendered horizontally inside
+  // its 4x52 box and every tap landed near the floor - read as "the fader
+  // mutes". slider-vertical plus the orient attribute are the pre-2020
+  // spelling those engines honour; both were verified to leave the modern
+  // engines' mapping (top=1, mid=0.5, bottom=0) and keyboard steps untouched.
+  check('the footer fader asks for a vertical control the old-Safari way too',
+    /-webkit-appearance: slider-vertical/.test(faderCss) &&
+      /appearance: slider-vertical/.test(faderCss) &&
+      /orient="vertical"/.test(controls),
+    'Safari 15 ignores writing-mode on range inputs - a horizontal slider in a 4px box reads as mute')
+  check('the old-Safari vertical spelling keeps the modern mapping',
+    /writing-mode: vertical-lr/.test(faderCss) && /direction: rtl/.test(faderCss),
+    'the legacy appearance must be additive, not a replacement for the current rule')
+
   const ringAt = amb.indexOf('ring(intensity = 1) {')
   const ring = ringAt >= 0 ? amb.slice(ringAt, amb.indexOf('\n  }', ringAt)) : ''
   check('the welcome bell follows the ambient slider, not the prayer voice',
     ring.length > 0 && /ambienceLevel/.test(ring) && !/getState\(\)\.volume/.test(ring),
     'the bell is room sound; a voice fader at 0 must not silence it')
+}
+
+// --- speed without the chipmunk: the stretcher holds pitch ------------------
+//
+// Reported on the iPad: raising the prayer speed raised the pitch with it. The
+// buffer route's playbackRate resamples, so the fix is stretching the samples
+// (WSOLA) and playing at 1x - which is DSP, and DSP silently breaks in ways
+// nothing else notices (wrong duration, drift, a window that does not sum to
+// 1). These run the real module in Node on synthetic signals where both facts
+// are knowable: the output must be exactly floor(input/rate) long and still
+// count as the input's frequency.
+{
+  const SR = 48000
+  const sine = (hz, sec, amp = 0.6) => {
+    const a = new Float32Array(Math.round(SR * sec))
+    for (let i = 0; i < a.length; i++) a[i] = amp * Math.sin((2 * Math.PI * hz * i) / SR)
+    return a
+  }
+  // Frequency by zero crossings over the middle 80%: exact for a stationary
+  // tone, which is what "pitch preserved" means at the resolution we need.
+  const zcHz = (x) => {
+    const lo = Math.floor(x.length * 0.1)
+    const hi = Math.floor(x.length * 0.9)
+    let zc = 0
+    for (let i = lo + 1; i < hi; i++) if ((x[i - 1] < 0) !== (x[i] < 0)) zc++
+    return (zc / 2) / ((hi - lo) / SR)
+  }
+  const rms = (x) => {
+    let e = 0
+    for (let i = 0; i < x.length; i++) e += x[i] * x[i]
+    return Math.sqrt(e / x.length)
+  }
+
+  const rates = [0.6, 0.85, 1.5, 2]
+  const bad = []
+  for (const hz of [120, 400]) {
+    for (const rate of rates) {
+      const input = sine(hz, 2)
+      const out = stretch([input], SR, rate)[0]
+      const drift = Math.abs(zcHz(out) / hz - 1)
+      if (out.length !== Math.floor(input.length / rate)) bad.push(`${hz}/${rate}: len ${out.length}`)
+      if (drift > 0.01) bad.push(`${hz}/${rate}: pitch drift ${(drift * 100).toFixed(1)}%`)
+      if (Math.abs(rms(out) - rms(input)) > 0.05) bad.push(`${hz}/${rate}: level ${rms(out).toFixed(3)}`)
+      if (!Number.isFinite(out[0])) bad.push(`${hz}/${rate}: not finite`)
+    }
+  }
+  check('stretching changes duration, never pitch or level',
+    bad.length === 0, bad.join('; '))
+
+  // The chunked entry (the one playback uses, so the page keeps breathing on
+  // the iPad) must be sample-identical to the synchronous one - it is the same
+  // algorithm with yields between batches, not a different path.
+  const input = sine(300, 1.5)
+  const sync = stretch([input], SR, 1.5)[0]
+  const chunked = (await stretchChunked([input], SR, 1.5, { yieldEvery: 7 }))[0]
+  let maxDiff = 0
+  for (let i = 0; i < sync.length; i++) maxDiff = Math.max(maxDiff, Math.abs(sync[i] - chunked[i]))
+  check('the chunked stretch is sample-identical to the synchronous one',
+    maxDiff === 0 && sync.length === chunked.length, `maxDiff=${maxDiff}`)
+
+  // A rate inside 1% of unity copies instead of resynthesizing - no DSP to
+  // fail, and the slider's default (0.85) still stretches for real.
+  const near1 = stretch([input], SR, 1.005)[0]
+  check('a near-1x rate passes the audio through untouched',
+    near1.length === input.length && near1[0] === input[0],
+    `len=${near1.length}`)
 }
 
 // --- the Safari pair: no marker, and a speed control that looked inert ------
@@ -874,23 +961,68 @@ const stripComments = (text) =>
     !!phraseOut && /this\._volTimer/.test(phraseOut) && /clearTimeout\(this\._volTimer\)/.test(phraseOut),
     phraseOut ? 'a fallback-era ramp keeps writing el.volume under the graph' : '_phraseOut not found')
   // WebKit ignores playbackRate (and preservesPitch) on an element joined to
-  // an AudioContext (bugs.webkit.org 240405, fixed only in Safari Technology
-  // Preview 241). The element keeps reporting the rate it was handed while it
-  // plays at 1x, so the speed control looked inert AND every deadline priced at
-  // the chosen rate cut the line early. A decoded AudioBufferSourceNode is a
-  // Web Audio node and does honour the rate, so Safari decodes at every rate
-  // now, not just 1x. The element is deliberately still used as the fallback
-  // there: iOS makes HTMLMediaElement.volume read-only, so the graph gain is
-  // the only voice volume control when a decode fails.
+  // an AudioContext (bugs.webkit.org 240405, fixed only in WebKit 2026). The
+  // element keeps reporting the rate it was handed while it plays at 1x, so the
+  // speed control looked inert AND every deadline priced at the chosen rate cut
+  // the line early. A decoded AudioBufferSourceNode is a Web Audio node and does
+  // honour the rate, so Safari decodes at every rate now, not just 1x. The
+  // element is deliberately still used as the fallback there: iOS makes
+  // HTMLMediaElement.volume read-only, so the graph gain is the only voice
+  // volume control when a decode fails.
   check('a WebKit engine decodes the recording at every rate, not just 1x',
     /const webkit = isWebKitEngine\(\)/.test(stripComments(speech)) &&
       !/isWebKitEngine\(\)\) return null/.test(phraseOut) &&
       /const buffer = !preferElement && \(rate === 1 \|\| webkit\) \? await this\._bufferFor\(url\) : null/.test(stripComments(speech)) &&
-      /src\.playbackRate\.value = rate/.test(stripComments(speech)) &&
-      !/src\.playbackRate\.value = 1\b/.test(stripComments(speech)) &&
+      /src\.playbackRate\.value = playRate/.test(stripComments(speech)) &&
       /if \(!preferElement && \(rate === 1 \|\| webkit\)\) \{\s*this\._bufferFor\(ns\)/.test(stripComments(speech)) &&
       /import \{ isWebKitEngine \} from '\.\.\/shared\/deviceTier\.js'/.test(speech),
     'Safari plays the line through a graphed element again - the rate reports but does not apply, and every line is cut early')
+
+  // Speed without the chipmunk: a buffer source's playbackRate resamples, so
+  // the WebKit buffer route pitch-shifted every non-1x line (the 2014 iPad can
+  // never receive WebKit's fix). The line is stretched instead and handed to
+  // the source at 1x; the ORIGINAL buffer plus playbackRate stays as the
+  // fallback so a DSP failure still speaks - audible at the old pitch beats
+  // missing. The whole cache is 4 phrase-sized buffers, so stretching cannot
+  // become the memory pressure that makes a phone's context drop buffers.
+  const sc = stripComments(speech)
+  check('a WebKit line at speed is stretched, not pitch-shifted',
+    /const stretched = await this\._stretchedFor\(url, buffer, rate\)/.test(sc) &&
+      /if \(webkit && rate !== 1\)/.test(sc) &&
+      /playBuf = stretched/.test(sc) && /playRate = 1/.test(sc) &&
+      /let playRate = rate/.test(sc) &&
+      /src\.playbackRate\.value = playRate/.test(sc) &&
+      /from '\.\/stretch\.js'/.test(speech),
+    'the speed slider bending pitch is the reported Safari defect')
+  check('the stretch cache is bounded and a failed stretch forgets itself',
+    /_stretchCache\.size >= 4/.test(sc) &&
+      /_stretchCache\.get\(key\) === load\) this\._stretchCache\.delete\(key\)/.test(sc),
+    'a phrase-sized float32 cache must not grow unbounded, and a transient failure must not poison a rate forever')
+  // The stretch happens BEFORE stopCloudSource and the prefetch warms it, so
+  // the work never opens a hole between lines.
+  check('the next line arrives with its stretch already warm',
+    /this\._stretchedFor\(ns, buf, rate\)/.test(sc) &&
+      sc.indexOf('const stretched = await') < sc.indexOf('this.stopCloudSource()'),
+    'stretching after the cut (or only at phrase time) opens an audible gap at speed')
+
+  // setRate used to steer the decoded phrase's own source live - playbackRate
+  // resamples, so the pitch swooped the moment the slider moved. The phrase in
+  // flight now finishes at the rate it started; only the element route (where
+  // the platform preserves pitch) is retimed live.
+  check('setRate never retimes a decoded phrase (the pitch swoop)',
+    !/cloudSource\.playbackRate/.test(sc) && /if \(this\.cloudAudio\) \{/.test(sc) &&
+      /this\.cloudAudio\.playbackRate = value/.test(sc),
+    'steering a buffer source live is what bent the pitch with the speed slider')
+
+  // The reverb tail hangs off the POST-FADER gain: fed from the source (as it
+  // was), the convolver got the phrase's full level no matter where the fader
+  // sat, so voice at 0 still recited a tail over the bed. And +20% wet overall
+  // (0.24 -> 0.288) on request.
+  check('the reverb tail follows the voice fader and is 28.8% wet',
+    /gain\.connect\(this\._revConvolver\)/.test(sc) &&
+      !/src\.connect\(this\._revConvolver\)/.test(sc) &&
+      /const REVERB_WET_GAIN = 0\.288/.test(speech),
+    'a pre-fader send means prayer voice at 0 still hears the room recite')
   const webKitUa = (ua) => isWebKitEngine(ua)
   check('WebKit detection covers Safari and every iOS browser, not Blink',
     webKitUa('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15') &&
@@ -1548,9 +1680,11 @@ const stripComments = (text) =>
     'the fallback walked the lines at plain reading pace whatever the reader selected'
   )
   check(
-    "the next line's audio is warmed while the current line is still playing",
-    /const next = i \+ 1[\s\S]{0,600}this\._bufferFor\(ns\)\.catch/.test(speechSrc),
-    'first pass paid the fetch inside the only gap the reader can hear'
+    "the next line's audio - decode and speed-stretch - is warmed while the current line still plays",
+    /const next = i \+ 1[\s\S]{0,700}this\._bufferFor\(ns\)/.test(speechSrc) &&
+      /\.then\(\(buf\) => \{[\s\S]{0,300}_stretchedFor\(ns, buf, rate\)/.test(speechSrc) &&
+      /\}\)\s*\n\s*\.catch\(\(\) => \{\}\)/.test(speechSrc),
+    'first pass paid the fetch (or the stretch) inside the only gap the reader can hear'
   )
   check(
     'the native and fast-rate routes warm the HTTP cache instead of decoding',

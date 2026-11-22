@@ -297,7 +297,7 @@ const testAudio = async () => {
   const audio = await cdp.waitFor(`window.__speech && (window.__speech.cloudAudio || window.__speech.cloudSource)`, 12000)
   const state = await cdp.evaluate(`(() => { const speech = window.__speech; const element = speech?.cloudAudio; return { reverb: speech?.reverbWetGain, mode: speech?.job?.mode, element: !!element, paused: element?.paused ?? null, rate: element?.playbackRate ?? null, volume: element?.volume ?? null } })()`)
   check('Android audio route starts', !!audio, JSON.stringify(state))
-  check('reverb configuration reaches the APK', state.reverb === 0.24, `gain=${state.reverb}`)
+  check('reverb configuration reaches the APK', state.reverb === 0.288, `gain=${state.reverb}`)
   if (state.element) check('audio element is not paused', state.paused === false, JSON.stringify(state))
   // Prove the phrase is audible THROUGH the graph. Since Oct 22 the element
   // route fades on a MediaElementSource gain node (the fix for the phone's

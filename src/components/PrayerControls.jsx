@@ -47,6 +47,10 @@ export default function PrayerControls({ loopOn, toggleLoop, starting, playing, 
         <input
           className="vol-slider-vert"
           type="range"
+          // Legacy vertical spelling: Safari 15 ignores writing-mode on range
+          // inputs, so this attribute (plus `appearance: slider-vertical` in
+          // styles.css) is what actually makes the control vertical there.
+          orient="vertical"
           min="0"
           max="1"
           step="0.05"

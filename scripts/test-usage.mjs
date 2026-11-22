@@ -1317,7 +1317,7 @@ ok(
   JSON.stringify(pitchSafePlayback)
 )
 const reverbMix = await c.eval(`window.__speech?.reverbWetGain`)
-ok('reverb mix is 24%', reverbMix === 0.24, `gain=${reverbMix}`)
+ok('reverb mix is 28.8%', reverbMix === 0.288, `gain=${reverbMix}`)
 await c.eval(`document.querySelector('.ctrl-btn.stop')?.click()`)
 
 // Regression: a stop while the cut's fade was still running used to strand

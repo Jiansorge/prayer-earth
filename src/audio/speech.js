@@ -13,6 +13,7 @@
 import { ambient } from './ambience.js'
 import { TEST_HOOKS } from '../shared/testHooks.js'
 import { isWebKitEngine } from '../shared/deviceTier.js'
+import { stretchChunked } from './stretch.js'
 import { useStore } from '../store.js'
 
 // A bounded timeline of what the voice engine did, read by the ?diag=1 panel
@@ -67,8 +68,11 @@ export const CHANT_VOICE = '__chant__'
 // The voice sits in a small hall. Raised from 0.20 to 0.24 - a fifth more wet -
 // so the prayer is heard in a room rather than pressed against the ear. The
 // voice still goes through the shared limiter with the ambient bed, so this
-// costs headroom rather than clipping.
-const REVERB_WET_GAIN = 0.24
+// costs headroom rather than clipping. Then +20% (0.288) on request: the tail
+// was judged a touch too shy against a full bed. It is also the ONLY wet level,
+// and since the convolver is now fed post-fader it scales with the voice fader
+// (voice 0 => tail 0, no recitation over the room).
+const REVERB_WET_GAIN = 0.288
 
 // Flatten sacred transliterations into something a fallback English voice can
 // read sensibly: strip diacritics, map the special consonants used in these
@@ -129,6 +133,11 @@ class SpeechEngine {
     // Decoded copies of each recorded phrase (Web Audio route) so a WebView
     // whose <audio> element stalls at 0:00 can still speak. Loaded on demand.
     this._bufferByUrl = new Map()
+    // Stretched copies keyed (url, rate), for the WebKit buffer route (see
+    // _stretchedFor). Deliberately tiny: each entry is a full phrase of
+    // float32, and a speed change mid-prayer simply re-stretches the line it
+    // needs rather than keeping every rate anyone has ever touched alive.
+    this._stretchCache = new Map()
     this.cloudSource = null
     this.cloudGain = null
     this.cloudNodes = []
@@ -305,6 +314,49 @@ class SpeechEngine {
     return await load
   }
 
+  // A pitch-preserved copy of a decoded phrase at `rate`, for engines whose
+  // buffer route would otherwise resample (chipmunk at 1.5x). WSOLA runs in
+  // stretch.js; this wraps it in an AudioContext buffer plus a small cache.
+  //
+  // Returns null whenever stretching is not available or failed (no context,
+  // DSP error), and the caller then plays the ORIGINAL at src.playbackRate -
+  // the pre-stretcher behavior, pitch shift and all. An audible line at the
+  // wrong pitch beats a missing line: the stretch is an improvement, never a
+  // dependency. In-flight promises live in the cache, so a line warming in the
+  // prefetch and the line being asked for share one run.
+  async _stretchedFor(url, buffer, rate) {
+    if (!buffer || Math.abs(rate - 1) < 0.01) return null
+    const ctx = ambient.ctx
+    if (!ctx) return null
+    const key = `${url}|${rate.toFixed(3)}`
+    const hit = this._stretchCache.get(key)
+    if (hit) return await hit
+    const load = (async () => {
+      try {
+        const channels = []
+        for (let c = 0; c < buffer.numberOfChannels; c++) channels.push(buffer.getChannelData(c))
+        const out = await stretchChunked(channels, buffer.sampleRate, rate)
+        const stretched = ctx.createBuffer(out.length, out[0].length, buffer.sampleRate)
+        for (let c = 0; c < out.length; c++) stretched.getChannelData(c).set(out[c])
+        if (this._stretchCache.size >= 4) {
+          const oldest = this._stretchCache.keys().next().value
+          this._stretchCache.delete(oldest)
+        }
+        note(`stretched ${rate}x`)
+        return stretched
+      } catch {
+        // Fall back to playbackRate on the original (see caller), and forget
+        // the failed entry so a later line can try again - a transient failure
+        // must not poison this rate forever (same rule as _bufferFor).
+        note('stretch failed')
+        if (this._stretchCache.get(key) === load) this._stretchCache.delete(key)
+        return null
+      }
+    })()
+    this._stretchCache.set(key, load)
+    return await load
+  }
+
   // The shared output stage: the ambience engine's limiter when available (so
   // the loud bed + voice never sum past 1.0), else the raw destination.
   _outNode(ctx) {
@@ -325,10 +377,15 @@ class SpeechEngine {
       gain.connect(lowpass)
       lowpass.connect(this._outNode(ctx))
       // Reverb tail is persistent (see buildReverb): just feed this phrase's
-      // source into the shared convolver. Teardown only needs to disconnect the
-      // source (cloudSource.disconnect), so no per-phrase reverb node leaks.
+      // POST-FADER gain into the shared convolver. It used to hang off `src`
+      // (pre-fader), so the tail was sent the phrase's full level no matter
+      // where the voice fader sat - prayer voice at 0 with the room full, and
+      // the wet tail still recited over the bed. Sending post-fader makes the
+      // tail follow the same level as the dry voice, and the fade-in envelope
+      // shapes it too (no reverb burst at phrase start). Teardown only needs to
+      // disconnect the gain (in cloudNodes), so no per-phrase node leaks.
       if (this._revConvolver) {
-        try { src.connect(this._revConvolver) } catch {}
+        try { gain.connect(this._revConvolver) } catch {}
       }
       this.cloudNodes.push(gain, lowpass)
     } catch {}
@@ -698,14 +755,36 @@ class SpeechEngine {
       if (!isCurrent()) return true
       if (buffer && ctx && ctx.state === 'running' && !job.noCloud) {
         note(`buffer ${rate}x`)
+        // Speed WITHOUT the chipmunk. A buffer source's playbackRate
+        // resamples, so before this stretch every Safari speed change bent the
+        // pitch (Safari plays this route at every rate - an element joined to
+        // the graph ignores playbackRate there, bugs.webkit.org 240405, and
+        // the 2014 iPad can never receive the fix). On a WebKit engine at a
+        // non-1x rate, stretch the samples instead and hand the source a 1x
+        // buffer: same pace, real pitch. Any failure (no context, DSP error)
+        // falls through to the original behavior below - the line still
+        // speaks, at the old pitch-shifted rate. Stretching happens BEFORE
+        // stopCloudSource so the previous line keeps sounding underneath the
+        // work instead of leaving a hole.
+        let playBuf = buffer
+        let playRate = rate
+        if (webkit && rate !== 1) {
+          const stretched = await this._stretchedFor(url, buffer, rate)
+          if (!isCurrent()) return true
+          if (stretched) {
+            playBuf = stretched
+            playRate = 1
+          } else {
+            note(`stretch off ${rate}x`)
+          }
+        }
         this.stopCloudSource()
         if (!this._revConvolver) this.buildReverb(ctx)
         const src = ctx.createBufferSource()
-        src.buffer = buffer
-        // Honoured here, unlike on a graphed element in WebKit: this is what
-        // makes the speed control actually change pace instead of only
-        // changing when the line is cut.
-        src.playbackRate.value = rate
+        src.buffer = playBuf
+        // The stretched WebKit line plays at 1 (pitch and pace come from the
+        // buffer itself); an engine without a stretch keeps the resample.
+        src.playbackRate.value = playRate
         const gain = ctx.createGain()
         // Fade in over 20ms. The first sample of a decoded phrase is only
         // zero by luck: starting at full gain turns whatever it happens to
@@ -844,7 +923,18 @@ class SpeechEngine {
         // line that is playing.
         if (ns) {
           if (!preferElement && (rate === 1 || webkit)) {
-            this._bufferFor(ns).catch(() => {})
+            // Decode AND, on WebKit at speed, stretch the next line while this
+            // one still plays - otherwise the line that needs a fresh stretch
+            // opens its phrase with the work (hundreds of ms on the iPad)
+            // instead of a cache hit. Both best-effort, neither blocks the
+            // line playing now.
+            this._bufferFor(ns)
+              .then((buf) => {
+                if (webkit && rate !== 1 && buf) {
+                  this._stretchedFor(ns, buf, rate).catch(() => {})
+                }
+              })
+              .catch(() => {})
           } else {
             fetch(ns, { cache: 'force-cache' }).catch(() => {})
           }
@@ -1081,15 +1171,14 @@ class SpeechEngine {
   setRate(rate) {
     const value = Math.max(0.6, Math.min(2, Number(rate) || 1))
     if (this.job) this.job.rate = value
-    // A phrase already playing has to move too, or the slider reads as dead
-    // until the next line starts. A decoded-buffer phrase (the 1x path) has no
-    // element to steer, so its source is retimed directly; the pitch rises with
-    // it, which is the honest trade for "apply now" on a buffer.
-    if (this.cloudSource) {
-      try {
-        this.cloudSource.playbackRate.value = value
-      } catch {}
-    }
+    // The phrase in flight is deliberately NOT retimed when it is a decoded
+    // buffer: its source's playbackRate resamples, so steering it live bent the
+    // pitch the moment the slider moved - the reported "pitch changes with
+    // speed" (a stretched WebKit line plays at 1, so there is nothing to steer
+    // there either). The line finishes at the rate it started and the NEXT
+    // line picks this one up. The element route still moves live: the platform
+    // time-stretches it with pitch preserved (and the WebKit graph ignores the
+    // write anyway), so the slider feels immediate without a pitch swoop.
     if (this.cloudAudio) {
       try {
         this.cloudAudio.preservesPitch = true
