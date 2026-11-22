@@ -122,10 +122,17 @@ t('the generated Play CSV states the real total', () => {
 // explanation of the bug as another instance of it.
 t('no file still quotes a superseded prayer count', () => {
   const stale = []
+  // The `m` flag is load-bearing on Windows: files checked out with CRLF end
+  // each line in "\r", which is a line terminator "." never matches and "$"
+  // (non-multiline) cannot cross - so without it a `# comment` (or a trailing
+  // `// note`) is never stripped on a local Windows run and the historical
+  // figures those comments deliberately quote get flagged as live claims. CI
+  // checks out LF and never saw it, which is exactly why it took a local run
+  // to notice.
   const stripComments = (text) =>
     text
       .split('\n')
-      .map((line) => line.replace(/\/\/.*$/, '').replace(/^\s*\*.*$/, '').replace(/^\s*#.*$/, ''))
+      .map((line) => line.replace(/\/\/.*$/m, '').replace(/^\s*\*.*$/m, '').replace(/^\s*#.*$/m, ''))
       .join('\n')
   const walk = (dir) => {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
